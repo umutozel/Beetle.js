@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Beetlejs.Client</id>
+        <version>1.0.2</version>
+        <title>Beetlejs Client Javascript Files</title>
+        <authors>Umut Özel</authors>
+        <owners>Umut Özel</owners>
+        <licenseUrl>https://beetlejs.codeplex.com/license</licenseUrl>
+        <projectUrl>https://beetlejs.codeplex.com/</projectUrl>
+        <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Beetle.js javascript files.</description>
+        <summary>Manage your data with Javascript easily.</summary>
+        <copyright>Copyright (c) 2013 Umut Özel</copyright>
+        <language>en-US</language>
+        <tags>Javascript Unit of Work</tags>
+    </metadata>
+    <files>
+        <file src="content\Scripts\beetle.queryExtensions.js" target="content\Scripts\beetle.queryExtensions.js" />
+        <file src="content\Scripts\beetle.js" target="content\Scripts\beetle.js" />
+        <file src="content\Scripts\beetle.min.js" target="content\Scripts\beetle.min.js" />
+    </files>
+</package>

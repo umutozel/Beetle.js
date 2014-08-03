@@ -1,0 +1,428 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="TestModel.Store" Alias="Self" Provider="System.Data.SqlServerCe.4.0" ProviderManifestToken="4.0" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityContainer Name="TestModelStoreContainer">
+          <EntitySet Name="Address" EntityType="TestModel.Store.Address" store:Type="Tables" />
+          <EntitySet Name="Company" EntityType="TestModel.Store.Company" store:Type="Tables" />
+          <EntitySet Name="Entity" EntityType="TestModel.Store.Entity" store:Type="Tables" />
+          <EntitySet Name="NamedEntity" EntityType="TestModel.Store.NamedEntity" store:Type="Tables" />
+          <EntitySet Name="NamedEntityType" EntityType="TestModel.Store.NamedEntityType" store:Type="Tables" />
+          <EntitySet Name="Order" EntityType="TestModel.Store.Order" store:Type="Tables" />
+          <EntitySet Name="OrderDetail" EntityType="TestModel.Store.OrderDetail" store:Type="Tables" />
+          <AssociationSet Name="FK_Address_Entity" Association="TestModel.Store.FK_Address_Entity">
+            <End Role="Entity" EntitySet="Entity" />
+            <End Role="Address" EntitySet="Address" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Company_Address" Association="TestModel.Store.FK_Company_Address">
+            <End Role="Address" EntitySet="Address" />
+            <End Role="Company" EntitySet="Company" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Company_NamedEntity" Association="TestModel.Store.FK_Company_NamedEntity">
+            <End Role="NamedEntity" EntitySet="NamedEntity" />
+            <End Role="Company" EntitySet="Company" />
+          </AssociationSet>
+          <AssociationSet Name="FK_NamedEntity_Entity" Association="TestModel.Store.FK_NamedEntity_Entity">
+            <End Role="Entity" EntitySet="Entity" />
+            <End Role="NamedEntity" EntitySet="NamedEntity" />
+          </AssociationSet>
+          <AssociationSet Name="FK_NamedEntity_NamedEntity_Parent" Association="TestModel.Store.FK_NamedEntity_NamedEntity_Parent">
+            <End Role="NamedEntity" EntitySet="NamedEntity" />
+            <End Role="NamedEntity1" EntitySet="NamedEntity" />
+          </AssociationSet>
+          <AssociationSet Name="FK_NamedEntity_NamedEntityType" Association="TestModel.Store.FK_NamedEntity_NamedEntityType">
+            <End Role="NamedEntityType" EntitySet="NamedEntityType" />
+            <End Role="NamedEntity" EntitySet="NamedEntity" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Order_OrderDetail" Association="TestModel.Store.FK_Order_OrderDetail">
+            <End Role="Order" EntitySet="Order" />
+            <End Role="OrderDetail" EntitySet="OrderDetail" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="Address">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Country" Type="nvarchar" MaxLength="100" />
+          <Property Name="City" Type="nvarchar" MaxLength="100" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="10" />
+          <Property Name="DoorNumber" Type="int" />
+          <Property Name="Extra" Type="nvarchar" MaxLength="100" />
+          <Property Name="Extra2" Type="nvarchar" MaxLength="100" />
+        </EntityType>
+        <EntityType Name="Company">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="AddressId" Type="uniqueidentifier" />
+          <Property Name="CompanyNo" Type="nvarchar" Nullable="false" MaxLength="100" />
+          <Property Name="CompanyType" Type="tinyint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Entity">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="ShortId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="UserNameCreate" Type="nvarchar" MaxLength="100" />
+          <Property Name="TimeCreate" Type="datetime" Nullable="false" />
+          <Property Name="IsCanceled" Type="bit" />
+        </EntityType>
+        <EntityType Name="NamedEntity">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="NamedEntityTypeId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="100" />
+          <Property Name="Description" Type="nvarchar" MaxLength="500" />
+          <Property Name="NamedEntityId_Parent" Type="uniqueidentifier" />
+        </EntityType>
+        <EntityType Name="NamedEntityType">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" Nullable="false" MaxLength="100" />
+        </EntityType>
+        <EntityType Name="Order">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="OrderNo" Type="nvarchar" Nullable="false" MaxLength="100" />
+          <Property Name="Price" Type="numeric" Nullable="false" Scale="3" />
+        </EntityType>
+        <EntityType Name="OrderDetail">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="OrderId" Type="int" Nullable="false" />
+          <Property Name="ProductNo" Type="nvarchar" MaxLength="100" />
+        </EntityType>
+        <Association Name="FK_Address_Entity">
+          <End Role="Entity" Type="TestModel.Store.Entity" Multiplicity="1" />
+          <End Role="Address" Type="TestModel.Store.Address" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Entity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Address">
+              <PropertyRef Name="Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Company_Address">
+          <End Role="Address" Type="TestModel.Store.Address" Multiplicity="0..1" />
+          <End Role="Company" Type="TestModel.Store.Company" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Address">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Company">
+              <PropertyRef Name="AddressId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Company_NamedEntity">
+          <End Role="NamedEntity" Type="TestModel.Store.NamedEntity" Multiplicity="1" />
+          <End Role="Company" Type="TestModel.Store.Company" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="NamedEntity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Company">
+              <PropertyRef Name="Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_NamedEntity_Entity">
+          <End Role="Entity" Type="TestModel.Store.Entity" Multiplicity="1" />
+          <End Role="NamedEntity" Type="TestModel.Store.NamedEntity" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Entity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="NamedEntity">
+              <PropertyRef Name="Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_NamedEntity_NamedEntity_Parent">
+          <End Role="NamedEntity" Type="TestModel.Store.NamedEntity" Multiplicity="0..1" />
+          <End Role="NamedEntity1" Type="TestModel.Store.NamedEntity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="NamedEntity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="NamedEntity1">
+              <PropertyRef Name="NamedEntityId_Parent" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_NamedEntity_NamedEntityType">
+          <End Role="NamedEntityType" Type="TestModel.Store.NamedEntityType" Multiplicity="1" />
+          <End Role="NamedEntity" Type="TestModel.Store.NamedEntity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="NamedEntityType">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="NamedEntity">
+              <PropertyRef Name="NamedEntityTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Order_OrderDetail">
+          <End Role="Order" Type="TestModel.Store.Order" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="OrderDetail" Type="TestModel.Store.OrderDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="OrderDetail">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="TestModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="TestEntities" p1:LazyLoadingEnabled="true">
+          <EntitySet Name="Entities" EntityType="TestModel.Entity" />
+          <EntitySet Name="NamedEntityTypes" EntityType="TestModel.NamedEntityType" />
+          <AssociationSet Name="FK_NamedEntity_NamedEntityType" Association="TestModel.FK_NamedEntity_NamedEntityType">
+            <End Role="NamedEntityType" EntitySet="NamedEntityTypes" />
+            <End Role="NamedEntity" EntitySet="Entities" />
+          </AssociationSet>
+          <AssociationSet Name="FK_NamedEntity_NamedEntity_Parent" Association="TestModel.FK_NamedEntity_NamedEntity_Parent">
+            <End Role="NamedEntity" EntitySet="Entities" />
+            <End Role="NamedEntity1" EntitySet="Entities" />
+          </AssociationSet>
+          <EntitySet Name="OrderDetails" EntityType="TestModel.OrderDetail" />
+          <AssociationSet Name="FK_Company_Address" Association="TestModel.FK_Company_Address">
+            <End Role="Address" EntitySet="Entities" />
+            <End Role="Company" EntitySet="Entities" />
+          </AssociationSet>
+          <EntitySet Name="Orders" EntityType="TestModel.Order" />
+          <AssociationSet Name="FK_Order_OrderDetail" Association="TestModel.FK_Order_OrderDetail">
+            <End Role="Order" EntitySet="Orders" />
+            <End Role="OrderDetail" EntitySet="OrderDetails" />
+          </AssociationSet>
+          </EntityContainer>
+        <EntityType Name="Company" BaseType="TestModel.NamedEntity">
+          <Property Type="Guid" Name="AddressId" />
+          <Property Type="String" Name="CompanyNo" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Address" Relationship="TestModel.FK_Company_Address" FromRole="Company" ToRole="Address" />
+          <Property Type="TestModel.CompanyType" Name="CompanyType" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Entity">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Guid" Name="Id" Nullable="false" />
+          <Property Type="Int32" Name="ShortId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="UserNameCreate" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Type="DateTime" Name="TimeCreate" Precision="3" Nullable="false" />
+          <Property Type="Boolean" Name="IsCanceled" />
+        </EntityType>
+        <EntityType Name="NamedEntity" BaseType="TestModel.Entity">
+          <Property Type="Guid" Name="NamedEntityTypeId" Nullable="false" />
+          <Property Type="String" Name="Name" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Description" MaxLength="500" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="NamedEntityType" Relationship="TestModel.FK_NamedEntity_NamedEntityType" FromRole="NamedEntity" ToRole="NamedEntityType" />
+          <Property Type="Guid" Name="NamedEntityId_Parent" />
+          <NavigationProperty Name="Children" Relationship="TestModel.FK_NamedEntity_NamedEntity_Parent" FromRole="NamedEntity" ToRole="NamedEntity1" />
+          <NavigationProperty Name="Parent" Relationship="TestModel.FK_NamedEntity_NamedEntity_Parent" FromRole="NamedEntity1" ToRole="NamedEntity" />
+        </EntityType>
+        <EntityType Name="NamedEntityType">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Guid" Name="Id" Nullable="false" />
+          <Property Type="String" Name="Name" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="NamedEntities" Relationship="TestModel.FK_NamedEntity_NamedEntityType" FromRole="NamedEntityType" ToRole="NamedEntity" />
+        </EntityType>
+        <Association Name="FK_NamedEntity_NamedEntityType">
+          <End Type="TestModel.NamedEntityType" Role="NamedEntityType" Multiplicity="1" />
+          <End Type="TestModel.NamedEntity" Role="NamedEntity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="NamedEntityType">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="NamedEntity">
+              <PropertyRef Name="NamedEntityTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_NamedEntity_NamedEntity_Parent">
+          <End Type="TestModel.NamedEntity" Role="NamedEntity" Multiplicity="0..1" />
+          <End Type="TestModel.NamedEntity" Role="NamedEntity1" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="NamedEntity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="NamedEntity1">
+              <PropertyRef Name="NamedEntityId_Parent" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="OrderDetail">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="Int32" Name="OrderId" Nullable="false" />
+          <Property Type="String" Name="ProductNo" MaxLength="100" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Order" Relationship="TestModel.FK_Order_OrderDetail" FromRole="OrderDetail" ToRole="Order" />
+        </EntityType>
+        <EntityType Name="Address" BaseType="TestModel.Entity">
+          <Property Type="String" Name="Country" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="City" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="PostalCode" MaxLength="10" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Companies" Relationship="TestModel.FK_Company_Address" FromRole="Address" ToRole="Company" />
+          <Property Type="Int32" Name="DoorNumber" />
+          <Property Type="String" Name="Extra" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Extra2" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_Company_Address">
+          <End Type="TestModel.Address" Role="Address" Multiplicity="0..1" />
+          <End Type="TestModel.Company" Role="Company" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Address">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Company">
+              <PropertyRef Name="AddressId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Order">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="OrderNo" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Type="Decimal" Name="Price" Precision="18" Scale="3" Nullable="false" />
+          <NavigationProperty Name="OrderDetails" Relationship="TestModel.FK_Order_OrderDetail" FromRole="Order" ToRole="OrderDetail" />
+        </EntityType>
+        <Association Name="FK_Order_OrderDetail">
+          <End Type="TestModel.Order" Role="Order" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="TestModel.OrderDetail" Role="OrderDetail" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="OrderDetail">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EnumType Name="CompanyType" UnderlyingType="Byte" IsFlags="true">
+          <Member Name="Customer" Value="1" />
+          <Member Name="Supplier" Value="2" />
+        </EnumType>
+        </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="TestModelStoreContainer" CdmEntityContainer="TestEntities">
+          <EntitySetMapping Name="Entities">
+            <EntityTypeMapping TypeName="IsTypeOf(TestModel.Entity)">
+              <MappingFragment StoreEntitySet="Entity">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="IsCanceled" ColumnName="IsCanceled" />
+                <ScalarProperty Name="TimeCreate" ColumnName="TimeCreate" />
+                <ScalarProperty Name="UserNameCreate" ColumnName="UserNameCreate" />
+                <ScalarProperty Name="ShortId" ColumnName="ShortId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+            <EntityTypeMapping TypeName="IsTypeOf(TestModel.NamedEntity)">
+              <MappingFragment StoreEntitySet="NamedEntity">
+                <ScalarProperty Name="NamedEntityId_Parent" ColumnName="NamedEntityId_Parent" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="NamedEntityTypeId" ColumnName="NamedEntityTypeId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+              </MappingFragment>
+            </EntityTypeMapping>
+            <EntityTypeMapping TypeName="IsTypeOf(TestModel.Company)">
+              <MappingFragment StoreEntitySet="Company">
+                <ScalarProperty Name="CompanyType" ColumnName="CompanyType" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="AddressId" ColumnName="AddressId" />
+                <ScalarProperty Name="CompanyNo" ColumnName="CompanyNo" />
+              </MappingFragment>
+            </EntityTypeMapping>
+            <EntityTypeMapping TypeName="IsTypeOf(TestModel.Address)">
+              <MappingFragment StoreEntitySet="Address">
+                <ScalarProperty Name="Extra2" ColumnName="Extra2" />
+                <ScalarProperty Name="Extra" ColumnName="Extra" />
+                <ScalarProperty Name="DoorNumber" ColumnName="DoorNumber" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="NamedEntityTypes">
+            <EntityTypeMapping TypeName="TestModel.NamedEntityType">
+              <MappingFragment StoreEntitySet="NamedEntityType">
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OrderDetails">
+            <EntityTypeMapping TypeName="TestModel.OrderDetail">
+              <MappingFragment StoreEntitySet="OrderDetail">
+                <ScalarProperty Name="ProductNo" ColumnName="ProductNo" />
+                <ScalarProperty Name="OrderId" ColumnName="OrderId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Orders">
+            <EntityTypeMapping TypeName="TestModel.Order">
+              <MappingFragment StoreEntitySet="Order">
+                <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="OrderNo" ColumnName="OrderNo" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

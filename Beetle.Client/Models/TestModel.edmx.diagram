@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="091533c140c14f699ccbebccecd817ae" Name="Diagram1">
+        <EntityTypeShape EntityType="TestModel.Company" Width="1.5" PointX="5.125" PointY="9.375" />
+        <EntityTypeShape EntityType="TestModel.Entity" Width="1.5" PointX="5.125" PointY="3.375" />
+        <EntityTypeShape EntityType="TestModel.NamedEntity" Width="1.5" PointX="3" PointY="6.25" />
+        <EntityTypeShape EntityType="TestModel.NamedEntityType" Width="1.5" PointX="0.75" PointY="3.875" />
+        <AssociationConnector Association="TestModel.FK_NamedEntity_NamedEntityType" />
+        <InheritanceConnector EntityType="TestModel.NamedEntity" />
+        <InheritanceConnector EntityType="TestModel.Company" />
+        <AssociationConnector Association="TestModel.FK_NamedEntity_NamedEntity_Parent" />
+        <EntityTypeShape EntityType="TestModel.OrderDetail" Width="1.5" PointX="3" PointY="0.875" />
+        <EntityTypeShape EntityType="TestModel.Address" Width="1.5" PointX="7.375" PointY="6.125" />
+        <AssociationConnector Association="TestModel.FK_Company_Address" />
+        <InheritanceConnector EntityType="TestModel.Address" />
+        <EntityTypeShape EntityType="TestModel.Order" Width="1.5" PointX="0.75" PointY="0.875" />
+        <AssociationConnector Association="TestModel.FK_Order_OrderDetail" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
