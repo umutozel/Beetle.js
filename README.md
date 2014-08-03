@@ -1,3 +1,5 @@
+Beetle.js
+=========
 Beetle is a data manager for Javascript.
 The goal is to be able to work with data as easy as Entity Framework and LINQ.
 
