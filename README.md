@@ -67,7 +67,7 @@ var hasDeleted = self.entities.q().any('e => e.IsDeleted').x();
 // alias is optional
 var hasDeleted = self.entities.q().any('IsDeleted').x();
 
-// with beetle.arrayExtensions.js we can write queries like these;
+// with beetle.queryExtensions.js we can write queries like these;
 // this query will be executed immediately and returns true or false
 var hasExpired = self.entities.any('IsExpired == true');
 // below query will be executed after it's length property is accessed (like LINQ GetEnumerator)
