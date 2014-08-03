@@ -4,7 +4,7 @@ Manage your data with Javascript easily.
 * Tracks objects and persists changes to server
 * Can work with Knockout and Angular objects (Backbone soon, and others can be implemented easily)
 * Can work with Q and jQuery promises
-* Supports inheritance
+* Supports data model inheritance
 * Supports aggregate functions
 * Can work without metadata
 * Can work with Mvc and WebApi Controllers
