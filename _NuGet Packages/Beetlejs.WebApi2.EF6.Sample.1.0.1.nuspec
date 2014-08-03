@@ -6,8 +6,8 @@
         <title>Beetlejs WebApi 2 Entity Framework 6 Todo Sample</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
-        <licenseUrl>https://beetlejs.codeplex.com/license</licenseUrl>
-        <projectUrl>https://beetlejs.codeplex.com/</projectUrl>
+        <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/License.txt</licenseUrl>
+        <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
         <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Beetle WebApi 2 Entity Framework 6 sample Todo project.</description>

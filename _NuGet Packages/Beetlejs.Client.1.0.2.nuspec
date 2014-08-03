@@ -6,8 +6,8 @@
         <title>Beetlejs Client Javascript Files</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
-        <licenseUrl>https://beetlejs.codeplex.com/license</licenseUrl>
-        <projectUrl>https://beetlejs.codeplex.com/</projectUrl>
+        <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/License.txt</licenseUrl>
+        <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
         <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Beetle.js javascript files.</description>
