@@ -28,19 +28,19 @@ All dependencies have base types so custom implementations can be made easily.
 ```cs
 public class BeetleTestController : BeetleApiController<EFContextHandler<TestEntities>> {
 		
-		[HttpGet]
-		public IQueryable<Entity> Entities() {
-			return ContextHandler.Context.Entities;
-		}
+	[HttpGet]
+	public IQueryable<Entity> Entities() {
+		return ContextHandler.Context.Entities;
+	}
 }
 ```
 * Configure routing
 ```cs
 public static class BeetleWebApiConfig {
 
-    public static void RegisterBeetlePreStart() {
-        GlobalConfiguration.Configuration.Routes.MapHttpRoute("BeetleApi", "api/{controller}/{action}");
-    }
+	public static void RegisterBeetlePreStart() {
+		GlobalConfiguration.Configuration.Routes.MapHttpRoute("BeetleApi", "api/{controller}/{action}");
+	}
 }
 ```
 * Create an entity manager
@@ -54,8 +54,8 @@ var query = manager.createQuery('Entities').where('e => e.Name != null');
 * Execute the query and edit the data
 ```javascript
 manager.executeQuery(query)
-    .then(function (data) {
-        self.entities = data;
+	.then(function (data) {
+		self.entities = data;
         data[0].UserNameCreate = 'Test Name';
     })
 ```
