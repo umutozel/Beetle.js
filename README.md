@@ -23,7 +23,7 @@ Manage your data with Javascript easily.
 * JQuery for ajax operations
 
 ##Usage
-* Create a Controller and inherit from BeetleApiController, generic parameter tells we are using Entity Framework context handler with TestEntities context (DbContext).
+* Create a Controller and inherit from BeetleApiController, generic parameter tells we are using Entity Framework context handler with TestEntities context (DbContext)
 ```cs
 public class BeetleTestController : BeetleApiController<EFContextHandler<TestEntities>> {
 		
@@ -83,4 +83,21 @@ manager.deleteEntity(net);
 ```
 * Save all changes
 ```javascript
+manager.saveChanges()
+    .then(function () {
+        alert('Save succesfull');
+    })
 ```
+
+##Supported Data Types
+string, guid, date, dateTimeOffset, time, boolean, int, number (for float, decimal, etc..), byte, enum, binary, geometry, geography (spatial types are supported partially, can be fully supported once we decide how to represent them at client side)
+
+##Validators
+required, stringLength, maximumLength, minimumLength, range, emailAddress, creditCard, url, phone, postalCode, time, regularExpression, compare
+
+##Supported Query Expressions
+ofType, where, orderBy, expand (include), select, skip, top (take), groupBy, distinct, reverse, selectMany, skipWhile, takeWhile, all, any, avg, max, min, sum, count, first, firstOrDefault, single, singleOrDefault, last, lastOrDefault
+
+##Supported Query Functions
+toupper, tolower, substring, substringof, length, trim, concat, replace, startswith, endswith, indexof, round, ceiling, floor, second, minute, hour, day, month, year, max, min, sum, count, avg, any, all, contains
+(can be used in expression strings, some are not supported by OData but can be used with beetle query string format)
