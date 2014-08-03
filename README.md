@@ -13,17 +13,18 @@ Manage your data with Javascript easily.
 * Can query server with Http POST
 * Can be extended to support almost every library (client and server side), flexible architecture
 * Auto fix navigation properties (after foreign key set, entity attach etc..)
-* Can check-auto convert values for it's proper data types
+* Can check-auto convert values for its proper data types
 * Can be internationalized (for internal messages, validation messages etc..)
 
 ##Current prerequisities
-* Entity Framework (more coming soon)
+All dependencies have base types so custom implementations can be made easily.
+* Entity Framework
 * WebApi or Asp.Net Mvc project for service
-* Knockout.js or Angular.js for providing observable objects (more coming soon)
+* Knockout.js or EcmaScript5 Properties (for Angular) for providing observable objects
 * JQuery for ajax operations
 
 ##Usage
-* Create a Controller and inherit from BeetleApiController, generic parameter tells we are using Entity Framework context handler with TestEntities context (DbContext)
+* Create a Controller and inherit from BeetleApiController, generic argument tells we are using Entity Framework context handler with TestEntities context (DbContext)
 ```cs
 public class BeetleTestController : BeetleApiController<EFContextHandler<TestEntities>> {
 		
