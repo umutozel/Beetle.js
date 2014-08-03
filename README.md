@@ -1,4 +1,6 @@
-Manage your data with Javascript easily.
+Beetle is a data manager for Javascript.
+The goal is to be able to work with data as easy as Entity Framework and LINQ.
+
 
 ##Features
 * Tracks objects and persists changes to server
