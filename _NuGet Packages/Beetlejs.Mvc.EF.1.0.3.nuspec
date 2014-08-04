@@ -6,7 +6,7 @@
         <title>Beetlejs Mvc Controller and Entity Framework Api</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
-        <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/License.txt</licenseUrl>
+        <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
         <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
