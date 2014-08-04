@@ -106,3 +106,6 @@ ofType, where, orderBy, expand (include), select, skip, top (take), groupBy, dis
 ##Supported Query Functions
 toupper, tolower, substring, substringof, length, trim, concat, replace, startswith, endswith, indexof, round, ceiling, floor, second, minute, hour, day, month, year, max, min, sum, count, avg, any, all, contains
 (can be used in expression strings, some are not supported by OData but can be used with beetle query string format)
+
+##License
+See [License](https://github.com/umutozel/Beetle.js/blob/master/License.txt)
