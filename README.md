@@ -108,4 +108,4 @@ toupper, tolower, substring, substringof, length, trim, concat, replace, startsw
 (can be used in expression strings, some are not supported by OData but can be used with beetle query string format)
 
 ##License
-See [License](https://github.com/umutozel/Beetle.js/blob/master/License.txt)
+See [License](https://github.com/umutozel/Beetle.js/blob/master/LICENSE)
