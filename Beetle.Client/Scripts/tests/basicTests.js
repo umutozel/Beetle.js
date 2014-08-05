@@ -2050,7 +2050,7 @@ if (metadata !== true) {
             com.$tracker.setValue('TimeCreate', 'try string');
             ok(false, 'should not set date with string');
         } catch (e) {
-            ok(true, 'cannot set date with string ');
+            ok(true, 'cannot set date with string');
         }
         try {
             com.$tracker.setValue('Id', 'try string');

@@ -6226,8 +6226,9 @@
                         /// </summary>
                         /// <returns type="">When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.</returns>
                         if (!this.isValid(value)) {
-                            value = this.tryParse(value);
-                            if (!value) throwAssignError(this, value);
+                            var v = value;
+                            value = this.tryParse(v);
+                            if (!value) throwAssignError(this, v);
                         }
                         return value;
                     };
