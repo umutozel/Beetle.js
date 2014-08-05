@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Beetle.js : Javascript ORM, manage your data easily.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Beetle.js</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/umutozel/Beetle.js">View on GitHub</a>
+
+          <h1 id="project_title">Beetle.js</h1>
+          <h2 id="project_tagline">Javascript ORM, manage your data easily.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/umutozel/Beetle.js/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/umutozel/Beetle.js/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="beetlejs" class="anchor" href="#beetlejs"><span class="octicon octicon-link"></span></a>Beetle.js</h1>
+
+<p>Beetle is a data manager for Javascript.
+The goal is to be able to work with data as easy as Entity Framework and LINQ.</p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Tracks objects and persists changes to server</li>
+<li>Can work with Knockout and Angular objects (Backbone soon, and others can be implemented easily)</li>
+<li>Can work with Q and jQuery promises</li>
+<li>Supports data model inheritance</li>
+<li>Supports aggregate functions</li>
+<li>Can work without metadata</li>
+<li>Can work with Mvc and WebApi Controllers</li>
+<li>Supports property, entity validations</li>
+<li>Can use existing data annotation validations (carries multi-language resource messages to client)</li>
+<li>Can query server with Http POST</li>
+<li>Can be extended to support almost every library (client and server side), flexible architecture</li>
+<li>Auto fix navigation properties (after foreign key set, entity attach etc..)</li>
+<li>Can check-auto convert values for its proper data types</li>
+<li>Can be internationalized (for internal messages, validation messages etc..)</li>
+</ul><h2>
+<a name="current-prerequisities" class="anchor" href="#current-prerequisities"><span class="octicon octicon-link"></span></a>Current prerequisities</h2>
+
+<p>All dependencies have base types so custom implementations can be made easily.</p>
+
+<ul>
+<li>Entity Framework</li>
+<li>WebApi or Asp.Net Mvc project for service</li>
+<li>Knockout.js or EcmaScript5 Properties (for Angular) for providing observable objects</li>
+<li>JQuery for ajax operations</li>
+</ul><h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<ul>
+<li>Create a Controller and inherit from BeetleApiController, generic argument tells we are using Entity Framework context handler with TestEntities context (DbContext)</li>
+</ul><div class="highlight highlight-cs"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">BeetleTestController</span> <span class="p">:</span> <span class="n">BeetleApiController</span><span class="p">&lt;</span><span class="n">EFContextHandler</span><span class="p">&lt;</span><span class="n">TestEntities</span><span class="p">&gt;&gt;</span> <span class="p">{</span>
+
+<span class="na">    [HttpGet]</span>
+    <span class="k">public</span> <span class="n">IQueryable</span><span class="p">&lt;</span><span class="n">Entity</span><span class="p">&gt;</span> <span class="n">Entities</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">ContextHandler</span><span class="p">.</span><span class="n">Context</span><span class="p">.</span><span class="n">Entities</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<ul>
+<li>Configure routing</li>
+</ul><div class="highlight highlight-cs"><pre><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">BeetleWebApiConfig</span> <span class="p">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">RegisterBeetlePreStart</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">GlobalConfiguration</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="n">Routes</span><span class="p">.</span><span class="n">MapHttpRoute</span><span class="p">(</span><span class="s">"BeetleApi"</span><span class="p">,</span> <span class="s">"api/{controller}/{action}"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<ul>
+<li>Create an entity manager</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">manager</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EntityManager</span><span class="p">(</span><span class="s1">'api/Test'</span><span class="p">);</span>
+</pre></div>
+
+<ul>
+<li>Create a query</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="nx">manager</span><span class="p">.</span><span class="nx">createQuery</span><span class="p">(</span><span class="s1">'Entities'</span><span class="p">).</span><span class="nx">where</span><span class="p">(</span><span class="s1">'e =&gt; e.Name != null'</span><span class="p">);</span>
+</pre></div>
+
+<ul>
+<li>Execute the query and edit the data</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="nx">manager</span><span class="p">.</span><span class="nx">executeQuery</span><span class="p">(</span><span class="nx">query</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">entities</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+        <span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">UserNameCreate</span> <span class="o">=</span> <span class="s1">'Test Name'</span><span class="p">;</span>
+    <span class="p">})</span>
+</pre></div>
+
+<ul>
+<li>Execute local query</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">hasCanceled</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">entities</span><span class="p">.</span><span class="nx">asQueryable</span><span class="p">().</span><span class="nx">any</span><span class="p">(</span><span class="s1">'e =&gt; e.IsCanceled == true'</span><span class="p">).</span><span class="nx">execute</span><span class="p">();</span>
+<span class="c1">// q is shortcut for asQueryable, x is shortcut for execute</span>
+<span class="kd">var</span> <span class="nx">hasDeleted</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">entities</span><span class="p">.</span><span class="nx">q</span><span class="p">().</span><span class="nx">any</span><span class="p">(</span><span class="s1">'e =&gt; e.IsDeleted'</span><span class="p">).</span><span class="nx">x</span><span class="p">();</span>
+<span class="c1">// alias is optional</span>
+<span class="kd">var</span> <span class="nx">hasDeleted</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">entities</span><span class="p">.</span><span class="nx">q</span><span class="p">().</span><span class="nx">any</span><span class="p">(</span><span class="s1">'IsDeleted'</span><span class="p">).</span><span class="nx">x</span><span class="p">();</span>
+
+<span class="c1">// with beetle.queryExtensions.js we can write queries like these;</span>
+<span class="c1">// this query will be executed immediately and returns true or false</span>
+<span class="kd">var</span> <span class="nx">hasExpired</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">entities</span><span class="p">.</span><span class="nx">any</span><span class="p">(</span><span class="s1">'IsExpired == true'</span><span class="p">);</span>
+<span class="c1">// below query will be executed after it's length property is accessed (like LINQ GetEnumerator)</span>
+<span class="kd">var</span> <span class="nx">news</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">entities</span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="s1">'IsNew'</span><span class="p">);</span>
+</pre></div>
+
+<ul>
+<li>Add a new entity</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">net</span> <span class="o">=</span> <span class="nx">manager</span><span class="p">.</span><span class="nx">createEntity</span><span class="p">(</span><span class="s1">'EntityType'</span><span class="p">,</span> <span class="p">{</span><span class="nx">Id</span><span class="o">:</span> <span class="nx">beetle</span><span class="p">.</span><span class="nx">helper</span><span class="p">.</span><span class="nx">createGuid</span><span class="p">()});</span>
+<span class="nx">net</span><span class="p">.</span><span class="nx">Name</span> <span class="o">=</span> <span class="s1">'Test EntityType'</span><span class="p">;</span>
+</pre></div>
+
+<ul>
+<li>Delete an entity</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="nx">manager</span><span class="p">.</span><span class="nx">deleteEntity</span><span class="p">(</span><span class="nx">net</span><span class="p">);</span>
+</pre></div>
+
+<ul>
+<li>Save all changes</li>
+</ul><div class="highlight highlight-javascript"><pre><span class="nx">manager</span><span class="p">.</span><span class="nx">saveChanges</span><span class="p">()</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">alert</span><span class="p">(</span><span class="s1">'Save succesfull'</span><span class="p">);</span>
+    <span class="p">})</span>
+</pre></div>
+
+<h2>
+<a name="supported-data-types" class="anchor" href="#supported-data-types"><span class="octicon octicon-link"></span></a>Supported Data Types</h2>
+
+<p>string, guid, date, dateTimeOffset, time, boolean, int, number (for float, decimal, etc..), byte, enum, binary, geometry, geography (spatial types are supported partially, can be fully supported once we decide how to represent them at client side)</p>
+
+<h2>
+<a name="validators" class="anchor" href="#validators"><span class="octicon octicon-link"></span></a>Validators</h2>
+
+<p>required, stringLength, maximumLength, minimumLength, range, emailAddress, creditCard, url, phone, postalCode, time, regularExpression, compare</p>
+
+<h2>
+<a name="supported-query-expressions" class="anchor" href="#supported-query-expressions"><span class="octicon octicon-link"></span></a>Supported Query Expressions</h2>
+
+<p>ofType, where, orderBy, expand (include), select, skip, top (take), groupBy, distinct, reverse, selectMany, skipWhile, takeWhile, all, any, avg, max, min, sum, count, first, firstOrDefault, single, singleOrDefault, last, lastOrDefault</p>
+
+<h2>
+<a name="supported-query-functions" class="anchor" href="#supported-query-functions"><span class="octicon octicon-link"></span></a>Supported Query Functions</h2>
+
+<p>toupper, tolower, substring, substringof, length, trim, concat, replace, startswith, endswith, indexof, round, ceiling, floor, second, minute, hour, day, month, year, max, min, sum, count, avg, any, all, contains
+(can be used in expression strings, some are not supported by OData but can be used with beetle query string format)</p>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>See <a href="https://github.com/umutozel/Beetle.js/blob/master/LICENSE">License</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Beetle.js maintained by <a href="https://github.com/umutozel">umutozel</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
