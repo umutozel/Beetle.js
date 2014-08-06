@@ -805,6 +805,7 @@ namespace System.Linq.Dynamic {
                         DateTime dateValue;
                         string value = ((ConstantExpression)right).Value.ToString();
                         if (DateTime.TryParse(value, out dateValue)) {
+                            dateValue = dateValue.ToUniversalTime();
                             DateTime? nullableDateValue = dateValue;
                             right = left.Type == typeof(DateTime?)
                                 ? Expression.Constant(nullableDateValue, typeof(DateTime?))

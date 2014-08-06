@@ -2667,11 +2667,10 @@
                 proto.parse = function (value) {
                     if (typeof value != "string") return null;
                     if (value.length < 10) return null;
-                    if (!/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(value.substr(0, 10))) return null;
                     if (/.\d{3}$/.test(value)) value += 'Z';
                     try {
                         var d = Date.parse(value);
-                        return !isNaN(d) && new Date(d);
+                        return isNaN(d) ? null : new Date(d);
                     } catch (e) {
                         return null;
                     }
@@ -8366,7 +8365,7 @@
 
                     var retVal = null;
                     // if there is no need for server query, return
-                    if (execution == enums.executionStrategy.Local || (execution == enums.executionStrategy.LocalIfEmptyServer && locals && locals.length > 0)) {
+                    if (execution == enums.executionStrategy.Local || (execution == enums.executionStrategy.LocalIfEmptyServer && locals && (locals.length == null || locals.length > 0))) {
                         locals = notifyExecuted(this, query, options, locals);
                         onSuccess(successCallback, pp, d, locals);
                     } else {
