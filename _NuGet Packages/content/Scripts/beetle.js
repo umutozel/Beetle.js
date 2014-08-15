@@ -7586,7 +7586,7 @@
                     return this.validationErrors;
                 };
 
-                proto.toRaw = function () {
+                proto.toRaw = function (includeNavigations) {
                     /// <summary>
                     /// Creates a raw javascript object representing this entity.
                     /// </summary>
@@ -7595,14 +7595,22 @@
                     var data = {};
                     var that = this;
                     if (type.hasMetadata) {
-                        // if type has metadata only copy data properties.
                         helper.forEach(type.dataProperties, function (dp) {
                             var v = that.getValue(dp.name);
                             if (v == null || !v.$tracker)
                                 data[dp.name] = dp.dataType.getRawValue(v);
-                            else if (v.$tracker.entityType.isComplexType)
-                                data[dp.name] = v.$tracker.toRaw();
+                            else if (includeNavigations == true || v.$tracker.entityType.isComplexType)
+                                data[dp.name] = v.$tracker.toRaw(includeNavigations);
                         });
+                        if (includeNavigations == true) {
+                            helper.forEach(type.navigationProperties, function (np) {
+                                var v = that.getValue(np.name);
+                                if (v == null)
+                                    data[np.name] = null;
+                                else
+                                    data[np.name] = v.$tracker.toRaw(true);
+                            });
+                        }
                     }
                     // process unmapped properties
                     helper.forEach(type.properties, function (p) {
@@ -7614,12 +7622,14 @@
                             helper.forEach(v, function (item) {
                                 if (item == null || !item.$tracker)
                                     data[p].push(item);
+                                else if (includeNavigations == true)
+                                    data[p].push(item.$tracker.toRaw(true));
                             });
                         } else {
                             if (v == null || !v.$tracker)
                                 data[p] = v;
-                            else if (v.$tracker.entityType.isComplexType)
-                                data[p] = v.$tracker.toRaw();
+                            else if (includeNavigations == true || v.$tracker.entityType.isComplexType)
+                                data[p] = v.$tracker.toRaw(includeNavigations);
                         }
                     });
                     return data;
