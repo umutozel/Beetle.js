@@ -307,7 +307,12 @@ namespace Beetle.Server {
         public virtual IQueryable HandleSelect(IQueryable query, string projection) {
             if (string.IsNullOrWhiteSpace(projection)) return query;
 
-            return query.Select(projection.Contains(',') ? string.Format("New({0})", projection) : projection);
+            try {
+                return query.Select(projection);
+            }
+            catch (ParseException) {
+                return query.Select(string.Format("New({0})", projection));
+            }
         }
 
         /// <summary>
@@ -338,12 +343,24 @@ namespace Beetle.Server {
         /// <param name="elementSelector">The element selector.</param>
         /// <returns></returns>
         public virtual IQueryable HandleGroupBy(IQueryable query, string keySelector, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(keySelector))
-                query = query.GroupBy(keySelector.Contains(',') ? string.Format("New({0})", keySelector) : keySelector, "it");
+            if (!string.IsNullOrWhiteSpace(keySelector)) {
+                try {
+                    query = query.GroupBy(keySelector, "it");
+                }
+                catch (ParseException) {
+                    query = query.GroupBy(string.Format("New({0})", keySelector), "it");
+                }
+            }
 
             if (string.IsNullOrWhiteSpace(elementSelector))
                 return query.Select("New(Key, it as Items)");
-            return query.Select(elementSelector.Contains(',') ? string.Format("New({0})", elementSelector) : elementSelector);
+
+            try {
+                return query.Select(elementSelector);
+            }
+            catch (ParseException) {
+                return query.Select(string.Format("New({0})", elementSelector));
+            }
         }
 
         /// <summary>
