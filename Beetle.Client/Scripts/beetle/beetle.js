@@ -9817,20 +9817,18 @@
                 ops.push(new ctor('NotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
                 ops.push(new ctor('StrictNotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
                 ops.push(new ctor('Greater', '>', function (obj1, obj2) {
-                    var o1 = obj1(), o2 = obj2();
-                    return (o1 && o2) && o1 > o2;
+                    return obj1() > obj2();
                 }, 'gt'));
                 ops.push(new ctor('Lesser', '<', function (obj1, obj2) {
-                    var o1 = obj1(), o2 = obj2();
-                    return (o1 && o2) && o1 < o2;
+                    return obj1() < obj2();
                 }, 'lt'));
                 ops.push(new ctor('GreaterEqual', '>=', function (obj1, obj2) {
                     var o1 = obj1(), o2 = obj2();
-                    return o1 == o2 || (o1 && o2 && o1 > o2);
+                    return o1 == o2 || o1 > o2;
                 }, 'ge'));
                 ops.push(new ctor('LesserEqual', '<=', function (obj1, obj2) {
                     var o1 = obj1(), o2 = obj2();
-                    return o1 == o2 || (o1 && o2 && o1 < o2);
+                    return o1 == o2 || o1 < o2;
                 }, 'le'));
                 // arithmetic
                 ops.push(new ctor('Sum', '+', function (obj1, obj2) { return obj1() + obj2(); }, 'add'));
