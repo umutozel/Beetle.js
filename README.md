@@ -49,7 +49,7 @@ public static class BeetleWebApiConfig {
 ```
 * Create an entity manager
 ```javascript
-var manager = new EntityManager('api/Test');
+var manager = new EntityManager('api/BeetleTest');
 ```
 * Create a query
 ```javascript
