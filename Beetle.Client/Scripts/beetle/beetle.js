@@ -1732,7 +1732,6 @@
                     /// if model has inheritance, when querying base type we can tell which derived type we want to load.
                     /// </summary>
                     /// <param name="type">Derived type.</param>
-                    /// <returns type="">Returns this query instance for method chaining.</returns>
                     var q = this.clone();
                     var ofType = q.getExpression(querying.expressions.ofTypeExp);
                     if (ofType) {
@@ -5908,7 +5907,7 @@
                     /// Entity query class. It can collect informations like where, orderBy etc.. 
                     /// </summary>
                     this.resource = resource;
-                    this.entityType = type;
+                    this.entityType = handleEntityType(type, manager);
                     this.manager = manager;
                     this.parameters = [];
 
@@ -5938,7 +5937,6 @@
                     ///     
                     ///     This query takes Orders and OrderDetails for each order in one query.
                     /// </summary>
-                    /// <returns type="">Returns this query instance for method chaining.</returns>
                     var q = this.clone();
                     var expand = q.getExpression(querying.expressions.expandExp);
                     if (expand) expand.combine(propertyPath);
@@ -5951,7 +5949,6 @@
                     /// <reference path="expand"/>
                     /// </summary>
                     /// <param name="propertyPath"></param>
-                    /// <returns type="">Returns this query instance for method chaining.</returns>
                     return this.expand.apply(this, arguments);
                 };
 
@@ -5961,11 +5958,20 @@
                     /// </summary>
                     /// <param name="name">Name of parameter.</param>
                     /// <param name="value">Value of parameter.</param>
-                    /// <returns type="">Returns this query instance for method chaining.</returns>
                     var q = this.clone();
                     var prm = helper.findInArray(q.parameters, name, 'name');
                     if (prm) prm.value = value;
                     else q.parameters.push({ name: name, value: value });
+                    return q;
+                };
+
+                proto.setEntityType = function (type) {
+                    /// <summary>
+                    /// Sets entity type for query (used when executing locally).
+                    /// </summary>
+                    type = handleEntityType(type, this.manager);
+                    var q = this.clone();
+                    q.entityType = type;
                     return q;
                 };
 
@@ -6000,6 +6006,16 @@
                         query.parameters.push(prm);
                     });
                 };
+
+                function handleEntityType(type, manager) {
+                    if (type == null) return null;
+                    if (assert.isTypeOf(type, 'string')) {
+                        if (manager == null) throw helper.createError(i18N.onlyManagerCreatedCanAcceptEntityShortName);
+                        return manager.getEntityType(type, true);
+                    }
+                    helper.assertPrm(type, 'type').isInstanceOf(metadata.entityType).check();
+                    return type;
+                }
 
                 return ctor;
             })()
@@ -6790,7 +6806,6 @@
                     /// Converts given value to OData filter format value.
                     /// </summary>
                     /// <param name="value">The value.</param>
-                    /// <returns type="">Converted value.</returns>
                     if (value == null) return 'null';
                     return expose.byValue(value).toODataValue(value);
                 };
@@ -6799,7 +6814,6 @@
                     /// Converts given value to OData filter format value.
                     /// </summary>
                     /// <param name="value">The value.</param>
-                    /// <returns type="">Converted value.</returns>
                     if (value == null) return 'null';
                     return expose.byValue(value).toBeetleValue(value);
                 };
@@ -7404,7 +7418,7 @@
                     /// it cannot be set from outside. 
                     /// </summary>
                     /// <param name="manager">Entity manager.</param>
-                    if (this.manager) throw helper.createError(i18N.entityNotBeingTracked, { otherManager: this.manager });
+                    if (this.manager) throw helper.createError(i18N.entityAlreadyBeingTracked, { otherManager: this.manager });
                     // Check if argument is an instance of entityManager.
                     helper.assertPrm(manager, 'manager').isInstanceOf(core.entityManager).check();
                     this.manager = manager;
@@ -10121,7 +10135,7 @@
                 couldNotParseToken: 'Could not parse %0.',
                 dataPropertyAlreadyExists: 'Data property already exists: %0.',
                 entityAlreadyBeingTracked: 'Entity is already being tracked by another manager.',
-                entityNotBeingTracked: 'Entity is being tracked by another manager.',
+                entityNotBeingTracked: 'Entity is not being tracked by a manager.',
                 executionBothNotAllowedForNoTracking: 'Execution strategy cannot be Both when merge strategy is NoTracking or NoTrackingRaw.',
                 expressionCouldNotBeFound: 'Expression could not be found.',
                 functionNeedsAlias: '%0 function needs alias to work properly. You can set alias like Linq, p => p.Name.',
@@ -10147,6 +10161,7 @@
                 notNullable: 'Cannot set %0 with null, property is not nullable.',
                 oDataNotSupportMultiTyped: 'Multi-Typed queries cannot be used for OData services.',
                 onlyManagerCreatedCanBeExecuted: 'Only queries which are created from a manager can be directly executed.',
+                onlyManagerCreatedCanAcceptEntityShortName: 'Only queries which are created from a manager can accept entity type short name parameter.',
                 pendingChanges: 'Pending changes',
                 pluralNeedsInverse: 'To load plural relations, navigation property must have inverse.',
                 projectionsMustHaveAlias: 'All projected values must have a property name or alias.',
@@ -10183,7 +10198,6 @@
     var beetle = (function () {
         return {
             // Export types
-
             version: '1.0',
             i18N: i18N,
 
@@ -10201,10 +10215,9 @@
             events: events,
             settings: settings,
 
-            entityManager: core.entityManager,
-
             // shortcuts
             MetadataManager: metadata.metadataManager,
+            entityManager: core.entityManager,
             EntityManager: core.entityManager,
             WebApiService: services.webApiService,
             MvcService: services.mvcService,
