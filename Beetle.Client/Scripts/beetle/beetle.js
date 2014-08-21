@@ -5447,7 +5447,7 @@
                             }
                             return false;
                         }
-                        return items && items.indexOf(item) > 0;
+                        return items && items.indexOf(item) >= 0;
                     };
 
                     return new ctor();
