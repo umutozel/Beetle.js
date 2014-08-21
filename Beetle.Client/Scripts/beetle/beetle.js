@@ -8423,8 +8423,8 @@
                                     // if option need local and server results both, after server query re-run same query on local.
                                     if (execution == enums.executionStrategy.Both) {
                                         newEntities = that.executeQueryLocally(query);
-                                        if (inlineCount)
-                                            inlineCount += newEntities.$addedCount - newEntities.$deletedCount;
+                                        if (inlineCount != null && newEntities.$inlineCountDiff != null)
+                                            inlineCount += newEntities.$inlineCountDiff;
                                     }
                                     if (newEntities) {
                                         if (query.inlineCountEnabled && inlineCount != null)
@@ -8470,23 +8470,29 @@
                     } else
                         throw helper.createError(i18N.typeRequiredForLocalQueries);
 
-                    var array = [], addedCount = 0, deletedCount = 0;
+                    var array = [], serverArray = [], modifiedClient = false;
                     helper.forEach(entities, function (entity) {
                         if (entity.$tracker.entityState == enums.entityStates.Added) {
-                            addedCount++;
+                            modifiedClient = true;
                             array.push(entity);
                         }
-                        else if (entity.$tracker.entityState == enums.entityStates.Deleted)
-                            deletedCount++;
-                        else
+                        else if (entity.$tracker.entityState == enums.entityStates.Deleted) {
+                            modifiedClient = true;
+                            serverArray.push(entity);
+                        }
+                        else {
                             array.push(entity);
+                            serverArray.push(entity);
+                        }
                     });
                     // get array handling function for query
                     var func = query.toFunction();
                     // run function against entities
                     array = func(array, varContext);
-                    array.$addedCount = addedCount;
-                    array.$deletedCount = deletedCount;
+                    if (array.$inlineCount && modifiedClient) {
+                        var serverResult = func(serverArray, varContext);
+                        array.$inlineCountDiff = array.$inlineCount - serverResult.$inlineCount;
+                    }
                     return array;
                 };
 
