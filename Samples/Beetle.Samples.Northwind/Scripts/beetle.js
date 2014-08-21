@@ -5447,7 +5447,7 @@
                             }
                             return false;
                         }
-                        return items && items.indexOf(item) > 0;
+                        return items && items.indexOf(item) >= 0;
                     };
 
                     return new ctor();
@@ -5507,7 +5507,7 @@
 
                     return new ctor();
                 })();
-                
+
                 /// <field>Returns second of date</field>
                 expose.second = (function () {
                     var ctor = function () {
@@ -8393,7 +8393,7 @@
 
                     // execute locally if needed.
                     if (execution == enums.executionStrategy.Local || execution == enums.executionStrategy.LocalIfEmptyServer)
-                        locals = this.executeQueryLocally(query);
+                        locals = this.executeQueryLocally(query, options && options.varContext);
 
                     var retVal = null;
                     // if there is no need for server query, return
@@ -8422,9 +8422,9 @@
                                     }
                                     // if option need local and server results both, after server query re-run same query on local.
                                     if (execution == enums.executionStrategy.Both) {
-                                        newEntities = that.executeQueryLocally(query);
-                                        if (inlineCount)
-                                            inlineCount += newEntities.$addedCount - newEntities.$deletedCount;
+                                        newEntities = that.executeQueryLocally(query, options && options.varContext, true);
+                                        if (inlineCount && newEntities.$inlineCountDiff)
+                                            inlineCount += newEntities.$inlineCountDiff;
                                     }
                                     if (newEntities) {
                                         if (query.inlineCountEnabled && inlineCount != null)
@@ -8450,7 +8450,7 @@
                     return retVal;
                 };
 
-                proto.executeQueryLocally = function (query, varContext) {
+                proto.executeQueryLocally = function (query, varContext, calculateInlineCountDiff) {
                     /// <summary>
                     /// Execute the query.
                     /// </summary>
@@ -8470,14 +8470,22 @@
                     } else
                         throw helper.createError(i18N.typeRequiredForLocalQueries);
 
-                    var array = [], addedCount = 0, deletedCount = 0;
+                    if (calculateInlineCountDiff && query.getExpression(querying.expressions.groupByExp, false)) {
+                        events.warning.notify({ message: i18N.countDiffCantBeCalculatedForGrouped, query: query, options: options });
+                        calculateInlineCountDiff = false;
+                    }
+
+                    var array = [], addeds = [], deleteds = [];
                     helper.forEach(entities, function (entity) {
                         if (entity.$tracker.entityState == enums.entityStates.Added) {
-                            addedCount++;
+                            if (calculateInlineCountDiff)
+                                addeds.push(entity);
                             array.push(entity);
                         }
-                        else if (entity.$tracker.entityState == enums.entityStates.Deleted)
-                            deletedCount++;
+                        else if (entity.$tracker.entityState == enums.entityStates.Deleted) {
+                            if (calculateInlineCountDiff)
+                                deleteds.push(entity);
+                        }
                         else
                             array.push(entity);
                     });
@@ -8485,8 +8493,11 @@
                     var func = query.toFunction();
                     // run function against entities
                     array = func(array, varContext);
-                    array.$addedCount = addedCount;
-                    array.$deletedCount = deletedCount;
+                    if (calculateInlineCountDiff && array.$inlineCount) {
+                        var addedEffect = addeds.length > 0 ? func(addeds, varContext).$inlineCount : 0;
+                        var deletedEffect = deleteds.length > 0 ? func(deleteds, varContext).$inlineCount : 0;
+                        array.$inlineCountDiff = addedEffect - deletedEffect;
+                    }
                     return array;
                 };
 
@@ -10159,6 +10170,7 @@
                 couldNotLocateNavFixer: 'Could not locate any observable provider.',
                 couldNotLocatePromiseProvider: 'Could not locate any promise provider.',
                 couldNotParseToken: 'Could not parse %0.',
+                countDiffCantBeCalculatedForGrouped: 'In-line count difference can not be calculated when query contains a "groupBy" expression',
                 dataPropertyAlreadyExists: 'Data property already exists: %0.',
                 entityAlreadyBeingTracked: 'Entity is already being tracked by another manager.',
                 entityNotBeingTracked: 'Entity is not being tracked by a manager.',

@@ -20,6 +20,7 @@
         couldNotLocateNavFixer: 'Observable provider bulunamadı.',
         couldNotLocatePromiseProvider: 'Promise provider bulunamadı.',
         couldNotParseToken: '%0 yorumlanamadı.',
+        countDiffCantBeCalculatedForGrouped: 'İç-satır sayısı farkı "groupBy" ifadesi içeren sorgular için hesaplanamaz.',
         dataPropertyAlreadyExists: 'Bu alan zaten eklenmiş: %0.',
         entityAlreadyBeingTracked: 'Bu varlık zaten başka bir yönetici tarafından takip ediliyor.',
         entityNotBeingTracked: 'Varlık bir yönetici tarafından takip edilmiyor.',
