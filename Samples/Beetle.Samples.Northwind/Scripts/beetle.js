@@ -90,7 +90,7 @@
                 var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
                 var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
                 return string
-                    .replace(pattern1, function(match, index) {
+                    .replace(pattern1, function (match, index) {
                         return args[Number(index) + 1] || '';
                     })
                     .replace(pattern2, function (match, index) {
@@ -123,12 +123,12 @@
                 for (var i = 0; i < array.length; i++)
                     this.tryFreeze(array[i], withChildren);
             },
-            indexOf: function (array, item) {
+            indexOf: function (array, item, index) {
                 /// <summary>Finds the index of the given item in the array.</summary>
                 /// <param name="array">Array to search.</param>
                 /// <param name="item">Item to find.</param>
                 /// <returns type="Number">Index. If the item could not be found returns '-1'.</returns>
-                for (var i = 0; i < array.length; i++)
+                for (var i = index || 0; i < array.length; i++)
                     if (array[i] === item) return i;
                 return -1;
             },
@@ -255,7 +255,7 @@
                     return value; // if its not observable get value of p
                 }
             },
-            getResourceValue: function(resourceName, altValue) {
+            getResourceValue: function (resourceName, altValue) {
                 var localizeFunc = settings.getLocalizeFunction();
                 return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
             },
@@ -3638,7 +3638,7 @@
                     this.enums = {};
                     this.name = null;
                     this.displayName = null;
-                    
+
                     if (metadataPrm)
                         this.parseBeetleMetadata(metadataPrm);
                 };
@@ -5245,12 +5245,12 @@
                         pos = pos(value);
                         length = length(value);
                         var end = Number(pos) + Number(length);
-                        return source.substring(pos, end);
+                        return source && source.substring(pos, end);
                     };
 
                     return new ctor();
                 })();
-                /// <field>When given value containes given find string returns true, otherwise returns false</field>
+                /// <field>When given value contains given find string returns true, otherwise returns false</field>
                 expose.substringof = (function () {
                     var ctor = function () {
                         baseTypes.queryFuncBase.call(this, 'substringof', 'Contains', 2);
@@ -5264,7 +5264,8 @@
                     };
 
                     proto.impl = function (value, find, source) {
-                        return (source ? source(value) : value).indexOf(find(value)) >= 0;
+                        source = (source ? source(value) : value);
+                        return source && source.indexOf(find(value)) >= 0;
                     };
 
                     return new ctor();
@@ -5358,7 +5359,7 @@
                             find = source;
                             source = value;
                         } else source = source(value);
-                        return source.indexOf(find(value), 0) === 0;
+                        return source && source.indexOf(find(value), 0) === 0;
                     };
 
                     return new ctor();
@@ -5378,7 +5379,7 @@
                         } else source = source(value);
                         find = find(value);
                         var index = source.length - find.length;
-                        return source.indexOf(find, index) !== -1;
+                        return source && source.indexOf(find, index) !== -1;
                     };
 
                     return new ctor();
@@ -5396,11 +5397,62 @@
                             find = source;
                             source = value;
                         } else source = source(value);
-                        return source.indexOf(find(value));
+                        return source && source.indexOf(find(value));
                     };
 
                     return new ctor();
                 })();
+                /// <field>if items contains given item returns true, otherwise false. Supports arrays and strings as items parameter.</field>
+                expose.contains = (function () {
+                    var ctor = function () {
+                        baseTypes.queryFuncBase.call(this, 'contains', 'Contains', 2);
+                    };
+                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    var proto = ctor.prototype;
+
+                    proto.toODataFunction = function (items, source) {
+                        if (assert.isTypeOf(items, 'string'))
+                            return expose.substringof.toODataFunction(source, items);
+                        var args = [];
+                        helper.forEach(items, function (item) {
+                            args.push(source + ' eq ' + core.dataTypes.toODataValue(item));
+                        });
+                        return '(' + args.join(' or ') + ')';
+                    };
+
+                    proto.toBeetleFunction = function (items, source) {
+                        if (assert.isTypeOf(items, 'string'))
+                            return expose.substringof.toBeetleFunction(source, items);
+                        var args = [];
+                        helper.forEach(items, function (item) {
+                            args.push(source + ' == ' + core.dataTypes.toBeetleValue(item));
+                        });
+                        return '(' + args.join(' || ') + ')';
+                    };
+
+                    proto.impl = function (value, items, item) {
+                        if (arguments.length == 1)
+                            items = value;
+                        else if (arguments.length == 2) {
+                            item = items;
+                            items = value;
+                        }
+                        else
+                            items = items(value);
+                        item = (item ? item(value) : value);
+                        if (assert.isArray(items)) {
+                            for (var i = 0; i < items.length; i++) {
+                                var v = items[i];
+                                if (v == item) return true;
+                            }
+                            return false;
+                        }
+                        return items && items.indexOf(item) > 0;
+                    };
+
+                    return new ctor();
+                })();
+
                 /// <field>Rounds given value to nearest integer</field>
                 expose.round = (function () {
                     var ctor = function () {
@@ -5455,6 +5507,7 @@
 
                     return new ctor();
                 })();
+                
                 /// <field>Returns second of date</field>
                 expose.second = (function () {
                     var ctor = function () {
@@ -5780,52 +5833,6 @@
                             if (predicate(v) !== true) return false;
                         }
                         return true;
-                    };
-
-                    return new ctor();
-                })();
-                /// <field>if items contains given item returns true, otherwise false</field>
-                expose.contains = (function () {
-                    var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'contains', 'Contains', 2);
-                    };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
-                    var proto = ctor.prototype;
-
-                    proto.toODataFunction = function (items, source) {
-                        if (assert.isTypeOf(items, 'string'))
-                            return expose.substringof.toODataFunction(source, items);
-                        var args = [];
-                        helper.forEach(items, function (item) {
-                            args.push(source + ' eq ' + core.dataTypes.toODataValue(item));
-                        });
-                        return '(' + args.join(' or ') + ')';
-                    };
-
-                    proto.toBeetleFunction = function (items, source) {
-                        if (assert.isTypeOf(items, 'string'))
-                            return expose.substringof.toBeetleFunction(source, items);
-                        var args = [];
-                        helper.forEach(items, function (item) {
-                            args.push(source + ' == ' + core.dataTypes.toBeetleValue(item));
-                        });
-                        return '(' + args.join(' || ') + ')';
-                    };
-
-                    proto.impl = function (value, items, item) {
-                        if (arguments.length == 1)
-                            items = value;
-                        else if (arguments.length == 2) {
-                            item = items;
-                            items = value;
-                        }
-                        else
-                            items = items(value);
-                        for (var i = 0; i < items.length; i++) {
-                            var v = items[i];
-                            if (v == (item ? item(value) : value)) return true;
-                        }
-                        return false;
                     };
 
                     return new ctor();
@@ -8038,7 +8045,7 @@
                     }
                     if (toRemove.length > 0)
                         for (var i = toRemove.length - 1; i >= 0; i--)
-                            items.splice(items.indexOf(toRemove[i]), 1);
+                            items.splice(helper.indexOf(items, toRemove[i]), 1);
                     if (toAdd.length > 0) items.push.apply(items, toAdd);
                 }
 
@@ -8412,13 +8419,19 @@
                                             if (isSingle)
                                                 newEntities = newEntities[0];
                                         }
+                                    }
+                                    // if option need local and server results both, after server query re-run same query on local.
+                                    if (execution == enums.executionStrategy.Both) {
+                                        newEntities = that.executeQueryLocally(query);
+                                        if (inlineCount)
+                                            inlineCount += newEntities.$addedCount - newEntities.$deletedCount;
+                                    }
+                                    if (newEntities) {
                                         if (query.inlineCountEnabled && inlineCount != null)
                                             newEntities.$inlineCount = inlineCount;
                                         if (extra)
                                             newEntities.$extra = extra;
                                     }
-                                    // if option need local and server results both, after server query re-run same query on local.
-                                    if (execution == enums.executionStrategy.Both) newEntities = that.executeQueryLocally(query);
                                     newEntities = notifyExecuted(that, query, options, newEntities);
                                     onSuccess(successCallback, pp, d, newEntities);
                                     if (!pp) retVal = newEntities;
@@ -8446,21 +8459,34 @@
                     /// <returns type="">Returns found entities from local cache.</returns>
                     // get entity type of the query
                     var et = query.entityType;
-                    var array = null;
+                    var entities;
                     if (et) {
                         // find entity set for the entity type.
                         var entitySet = this.entities.findEntitySet(et);
                         // get entities from entity set (container)
                         if (entitySet)
-                            array = entitySet.getEntities();
+                            entities = entitySet.getEntities();
+                        else return [];
                     } else
                         throw helper.createError(i18N.typeRequiredForLocalQueries);
-                    if (array && array.length > 0) {
-                        // get array handling function for query
-                        var func = query.toFunction();
-                        // run function against entities
-                        array = func(array, varContext);
-                    }
+
+                    var array = [], addedCount = 0, deletedCount = 0;
+                    helper.forEach(entities, function (entity) {
+                        if (entity.$tracker.entityState == enums.entityStates.Added) {
+                            addedCount++;
+                            array.push(entity);
+                        }
+                        else if (entity.$tracker.entityState == enums.entityStates.Deleted)
+                            deletedCount++;
+                        else
+                            array.push(entity);
+                    });
+                    // get array handling function for query
+                    var func = query.toFunction();
+                    // run function against entities
+                    array = func(array, varContext);
+                    array.$addedCount = addedCount;
+                    array.$deletedCount = deletedCount;
                     return array;
                 };
 
@@ -9306,7 +9332,7 @@
                                                 vr.$tracker.setValue(inverse.name, existing);
                                             else {
                                                 var iv = vr.$tracker.getValue(inverse.name);
-                                                var index = iv.indexOf(result);
+                                                var index = helper.indexOf(iv, result);
                                                 if (index >= 0)
                                                     iv.splice(index, 1, existing);
                                             }
@@ -9401,7 +9427,7 @@
                     /// <param name="instance">Entity manager instance.</param>
                     if (changes.removed.length > 0)
                         for (var i = changes.removed.length - 1; i >= 0; i--)
-                            instance.validationErrors.splice(instance.validationErrors.indexOf(changes.removed[i]), 1);
+                            instance.validationErrors.splice(helper.indexOf(instance.validationErrors, changes.removed[i]), 1);
                     if (changes.added.length > 0)
                         instance.validationErrors.push.apply(instance.validationErrors, changes.added);
                     if (changes.removed.length > 0 || changes.added.length > 0)
@@ -10198,7 +10224,6 @@
     var beetle = (function () {
         return {
             // Export types
-
             version: '1.0',
             i18N: i18N,
 
@@ -10216,10 +10241,9 @@
             events: events,
             settings: settings,
 
-            entityManager: core.entityManager,
-
             // shortcuts
             MetadataManager: metadata.metadataManager,
+            entityManager: core.entityManager,
             EntityManager: core.entityManager,
             WebApiService: services.webApiService,
             MvcService: services.mvcService,

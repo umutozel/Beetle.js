@@ -2005,6 +2005,28 @@ if (metadata !== true) {
         }
     });
 
+    test('executionStrategy Both check', 2, function () {
+        var manager = new EntityManager(service);
+        var oQuery = manager.createEntityQuery('Order', 'Orders').inlineCount().top(1);
+        stop();
+        manager.executeQuery(oQuery)
+            .then(function(data) {
+                var serverCount = data.$inlineCount;
+                manager.deleteEntity(data[0]);
+                var o1 = manager.createEntity('Order');
+                manager.createEntity('Order');
+
+                manager.executeQuery(oQuery, { execution: beetle.enums.executionStrategy.Both })
+                    .then(function(bothData) {
+                        equal(bothData[0], o1, 'deleted entity is skipped');
+                        equal(bothData.$inlineCount, serverCount + 1, 'inlineCount is corrected');
+                    })
+                    .fail(handleFail)
+                    .fin(start);
+            })
+            .fail(handleFail);
+    });
+
     test('Setting an entity property value to itself dosen\'t trigger entityState change', 1, function () {
         var manager = new EntityManager(service);
         var ne = manager.createDetachedEntity('NamedEntity');
