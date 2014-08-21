@@ -5447,7 +5447,7 @@
                             }
                             return false;
                         }
-                        return items && items.indexOf(item) >= 0;
+                        return items && items.indexOf(item) > 0;
                     };
 
                     return new ctor();
@@ -8423,8 +8423,8 @@
                                     // if option need local and server results both, after server query re-run same query on local.
                                     if (execution == enums.executionStrategy.Both) {
                                         newEntities = that.executeQueryLocally(query);
-                                        if (inlineCount != null && newEntities.$inlineCountDiff != null)
-                                            inlineCount += newEntities.$inlineCountDiff;
+                                        if (inlineCount)
+                                            inlineCount += newEntities.$addedCount - newEntities.$deletedCount;
                                     }
                                     if (newEntities) {
                                         if (query.inlineCountEnabled && inlineCount != null)
@@ -8470,29 +8470,23 @@
                     } else
                         throw helper.createError(i18N.typeRequiredForLocalQueries);
 
-                    var array = [], serverArray = [], modifiedClient = false;
+                    var array = [], addedCount = 0, deletedCount = 0;
                     helper.forEach(entities, function (entity) {
                         if (entity.$tracker.entityState == enums.entityStates.Added) {
-                            modifiedClient = true;
+                            addedCount++;
                             array.push(entity);
                         }
-                        else if (entity.$tracker.entityState == enums.entityStates.Deleted) {
-                            modifiedClient = true;
-                            serverArray.push(entity);
-                        }
-                        else {
+                        else if (entity.$tracker.entityState == enums.entityStates.Deleted)
+                            deletedCount++;
+                        else
                             array.push(entity);
-                            serverArray.push(entity);
-                        }
                     });
                     // get array handling function for query
                     var func = query.toFunction();
                     // run function against entities
                     array = func(array, varContext);
-                    if (array.$inlineCount && modifiedClient) {
-                        var serverResult = func(serverArray, varContext);
-                        array.$inlineCountDiff = array.$inlineCount - serverResult.$inlineCount;
-                    }
+                    array.$addedCount = addedCount;
+                    array.$deletedCount = deletedCount;
                     return array;
                 };
 
