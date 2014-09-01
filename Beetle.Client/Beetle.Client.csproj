@@ -162,7 +162,6 @@
     <Content Include="Scripts\q.min.js" />
     <Content Include="Scripts\qunit.js" />
     <Content Include="Scripts\tests\basicTests.js" />
-    <Content Include="Scripts\tests\common.js" />
     <Content Include="Scripts\tests\testMetadata.js">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -8423,8 +8423,10 @@
                                     // if option need local and server results both, after server query re-run same query on local.
                                     if (execution == enums.executionStrategy.Both) {
                                         newEntities = that.executeQueryLocally(query, options && options.varContext, true);
-                                        if (inlineCount && newEntities.$inlineCountDiff)
+                                        if (inlineCount && newEntities.$inlineCountDiff) {
                                             inlineCount += newEntities.$inlineCountDiff;
+                                            delete newEntities.$inlineCountDiff;
+                                        }
                                     }
                                     if (newEntities) {
                                         if (query.inlineCountEnabled && inlineCount != null)

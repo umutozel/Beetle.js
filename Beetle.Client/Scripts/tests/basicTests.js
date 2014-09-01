@@ -10,8 +10,41 @@ var basicTestViewModel = {
     }
 };
 
+function getUrlVars() {
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hashes.length; i++) {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+}
+
+function handleFail(error) {
+    if (error.handled === true) return;
+    if (error.message)
+        ok(false, error.message);
+    else
+        ok(false, "Failed: " + error.toString());
+    start();
+}
+
+function seed(serviceUri) {
+    var deferred = Q.defer();
+
+    $.post(serviceUri + '/Seed',
+        function (data, textStatus, xhr) {
+            deferred.resolve(
+                "Seed svc returned '" + xhr.status + "' with message: " + data);
+        })
+        .error(function (xhr, textStatus, errorThrown) { deferred.reject(errorThrown); });
+
+    return deferred.promise;
+}
+
 function populateVars() {
-    var urlVars = beetleCommon.helper.getUrlVars();
+    var urlVars = getUrlVars();
 
     var metadataType = urlVars['metadataType'];
     if (metadataType == 'MS')
@@ -46,7 +79,6 @@ function populateVars() {
 }
 populateVars();
 
-var handleFail = beetleCommon.helper.handleError;
 var EntityManager = beetle.EntityManager;
 var entityStates = beetle.EntityStates;
 var op = beetle.FilterOps;
@@ -177,7 +209,7 @@ module('basic tests');
 
 test('seed the test db', 1, function () {
     stop();
-    beetleCommon.helper.seed(service.uri)
+    seed(service.uri)
         .then(function (msg) {
             ok(0 < msg.indexOf('seed'), msg);
         })
