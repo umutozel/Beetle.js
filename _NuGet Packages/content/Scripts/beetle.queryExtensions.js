@@ -883,7 +883,7 @@
             if (arguments.length == 0) return [];
             if (arguments.length == 1) {
                 count = start;
-                start = count;
+                start = 0;
             }
             if (count < 0)
                 throw beetle.helper.createError(resources.indexOutOfRange, ['count']);
@@ -899,7 +899,7 @@
         Array.repeat = function (item, count) {
             if (arguments.length == 0) return [];
             if (arguments.length == 1) {
-                count = start;
+                count = item;
                 item = null;
             }
             if (count < 0)
