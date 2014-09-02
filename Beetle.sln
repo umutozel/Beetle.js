@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server", "Beetle.Server\Beetle.Server.csproj", "{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}"
 EndProject
@@ -143,49 +143,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc", "Mvc", "{440D7CDA-379
 		_NuGet Packages\content\Scripts\App\Mvc\app.js = _NuGet Packages\content\Scripts\App\Mvc\app.js
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B0B37508-2AF4-4483-9741-B58819857267}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 12
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://umutozel.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Beetle.Client\\Beetle.Client.csproj
-		SccProjectName1 = Beetle.Client
-		SccLocalPath1 = Beetle.Client
-		SccProjectUniqueName2 = Beetle.Server.EntityFramework6\\Beetle.Server.EntityFramework6.csproj
-		SccProjectName2 = Beetle.Server.EntityFramework6
-		SccLocalPath2 = Beetle.Server.EntityFramework6
-		SccProjectUniqueName3 = Beetle.Server.EntityFramework\\Beetle.Server.EntityFramework.csproj
-		SccProjectName3 = Beetle.Server.EntityFramework
-		SccLocalPath3 = Beetle.Server.EntityFramework
-		SccProjectUniqueName4 = Beetle.Server.Mvc5\\Beetle.Server.Mvc5.csproj
-		SccProjectName4 = Beetle.Server.Mvc5
-		SccLocalPath4 = Beetle.Server.Mvc5
-		SccProjectUniqueName5 = Beetle.Server.Mvc\\Beetle.Server.Mvc.csproj
-		SccProjectName5 = Beetle.Server.Mvc
-		SccLocalPath5 = Beetle.Server.Mvc
-		SccProjectUniqueName6 = Beetle.Server.WebApi2\\Beetle.Server.WebApi2.csproj
-		SccProjectName6 = Beetle.Server.WebApi2
-		SccLocalPath6 = Beetle.Server.WebApi2
-		SccProjectUniqueName7 = Beetle.Server.WebApi\\Beetle.Server.WebApi.csproj
-		SccProjectName7 = Beetle.Server.WebApi
-		SccLocalPath7 = Beetle.Server.WebApi
-		SccProjectUniqueName8 = Beetle.Server\\Beetle.Server.csproj
-		SccProjectName8 = Beetle.Server
-		SccLocalPath8 = Beetle.Server
-		SccProjectUniqueName9 = Samples\\Beetle.Samples.Northwind\\Beetle.Samples.Northwind.csproj
-		SccProjectTopLevelParentUniqueName9 = Beetle.sln
-		SccProjectName9 = Samples/Beetle.Samples.Northwind
-		SccLocalPath9 = Samples\\Beetle.Samples.Northwind
-		SccProjectUniqueName10 = Samples\\Todo\\Beetle.Samples.Todo.Angular\\Beetle.Samples.Todo.Angular.csproj
-		SccProjectTopLevelParentUniqueName10 = Beetle.sln
-		SccProjectName10 = Samples/Todo/Beetle.Samples.Todo.Angular
-		SccLocalPath10 = Samples\\Todo\\Beetle.Samples.Todo.Angular
-		SccProjectUniqueName11 = Samples\\Todo\\Beetle.Samples.Todo.Knockout\\Beetle.Samples.Todo.Knockout.csproj
-		SccProjectTopLevelParentUniqueName11 = Beetle.sln
-		SccProjectName11 = Samples/Todo/Beetle.Samples.Todo.Knockout
-		SccLocalPath11 = Samples\\Todo\\Beetle.Samples.Todo.Knockout
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
