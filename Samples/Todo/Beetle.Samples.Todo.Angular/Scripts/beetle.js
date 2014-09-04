@@ -327,12 +327,8 @@
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
                 if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                    if (exp.operator == '=>') {
-                        queryContext.aliases.push(exp.left.name);
-                        var r = helper.jsepToODataQuery(exp.right, queryContext);
-                        queryContext.aliases.pop();
-                        return r;
-                    }
+                    if (exp.operator == '=>')
+                        throw helper.createError(i18N.odataDoesNotSupportAlias);
                     var op = enums.langOperators.find(exp.operator).oData;
                     if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
                     return '(' + helper.jsepToODataQuery(exp.left, queryContext) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext) + ')';
@@ -349,13 +345,22 @@
                             val = queryContext.varContext[varName];
                         if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
                         return core.dataTypes.toODataValue(val);
+                    } else {
+                        var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                        if (a) return a.value;
                     }
                     return n;
                 } else if (exp.type == 'Literal')
                     return core.dataTypes.toODataValue(exp.value);
                 else if (exp.type == 'MemberExpression') {
-                    if (exp.object.name && exp.object.name != queryContext.currentAlias && helper.findInArray(queryContext.aliases, exp.object.name)) return exp.property.name;
-                    return helper.jsepToODataQuery(exp.object, queryContext) + '/' + exp.property.name;
+                    if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                        return exp.property.name;
+                    else {
+                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
+                        if (ali) o = ali.value;
+                        else o = helper.jsepToODataQuery(exp.object, queryContext);
+                        return o + '/' + exp.property.name;
+                    }
                 } else if (exp.type == 'Compound') {
                     var sts = [];
                     for (var i = 0; i < exp.body.length; i++) {
@@ -377,7 +382,8 @@
                 } else if (exp.type == 'CallExpression') {
                     var argList = exp.arguments, args = [], alias = null;
                     if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                        alias = argList[0].left.name;
+                        alias = { alias: argList[0].left.name };
+                        alias.value = alias.alias;
                         argList = [argList[0].right];
                     }
                     if (alias) {
@@ -418,7 +424,7 @@
                 else if (!queryContext.aliases) queryContext.aliases = [];
                 if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
                     if (exp.operator == '=>') {
-                        queryContext.aliases.push(exp.left.name);
+                        queryContext.aliases.push({ alias: exp.left.name, value: 'it' });
                         var r = helper.jsepToBeetleQuery(exp.right, queryContext);
                         queryContext.aliases.pop();
                         return r;
@@ -438,13 +444,22 @@
                             val = queryContext.varContext[varName];
                         if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
                         return core.dataTypes.toBeetleValue(val);
+                    } else {
+                        var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                        if (a) return a.value;
                     }
                     return n;
                 } else if (exp.type == 'Literal')
                     return core.dataTypes.toBeetleValue(exp.value);
                 else if (exp.type == 'MemberExpression') {
-                    if (exp.object.name && helper.findInArray(queryContext.aliases, exp.object.name)) return exp.property.name;
-                    return helper.jsepToBeetleQuery(exp.object, queryContext) + '.' + exp.property.name;
+                    if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                        return exp.property.name;
+                    else {
+                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
+                        if (ali) o = ali.value;
+                        else o = helper.jsepToBeetleQuery(exp.object, queryContext);
+                        return o + '.' + exp.property.name;
+                    }
                 } else if (exp.type == 'Compound') {
                     var sts = [];
                     for (var i = 0; i < exp.body.length; i++) {
@@ -466,7 +481,8 @@
                 } else if (exp.type == 'CallExpression') {
                     var argList = exp.arguments, args = [], alias = null;
                     if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                        alias = argList[0].left.name;
+                        alias = { alias: argList[0].left.name };
+                        alias.value = alias.alias;
                         argList = [argList[0].right];
                     }
                     if (alias) {
@@ -1707,7 +1723,7 @@
                     }
 
                     // to support both odata and beetle queries, I added an order for expressions.
-                    if (exp.order < this.lastExpOrder)
+                    if (exp.order < this.lastExpOrder || (this.hasBeetlePrm && !exp.onlyBeetle))
                         this.isMultiTyped = true;
                     if (exp.isProjection === true)
                         this.lastProjection = this.expressions.length - 1;
@@ -10179,7 +10195,7 @@
                 executionBothNotAllowedForNoTracking: 'Execution strategy cannot be Both when merge strategy is NoTracking or NoTrackingRaw.',
                 expressionCouldNotBeFound: 'Expression could not be found.',
                 functionNeedsAlias: '%0 function needs alias to work properly. You can set alias like Linq, p => p.Name.',
-                functionNotSupportedForOData: 'OData does not support %0 function, please use Beetle Query Strings (like: manager.executeQuery(query, {useBeetleQueryStrings: true}))',
+                functionNotSupportedForOData: 'OData does not support %0 function.',
                 instanceError: '%0 is not an instance of %1.',
                 invalidArguments: 'Invalid arguments.',
                 invalidDefaultValue: '%0 is not a valid default value for %0.',
@@ -10200,6 +10216,7 @@
                 notImplemented: '%0 %1 is not implemented.',
                 notNullable: 'Cannot set %0 with null, property is not nullable.',
                 oDataNotSupportMultiTyped: 'Multi-Typed queries cannot be used for OData services.',
+                odataDoesNotSupportAlias: 'OData services does not support query alias and primitive typed resources.',
                 onlyManagerCreatedCanBeExecuted: 'Only queries which are created from a manager can be directly executed.',
                 onlyManagerCreatedCanAcceptEntityShortName: 'Only queries which are created from a manager can accept entity type short name parameter.',
                 pendingChanges: 'Pending changes',

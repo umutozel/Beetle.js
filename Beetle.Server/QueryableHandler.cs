@@ -117,7 +117,7 @@ namespace Beetle.Server {
             var inlineCount = false;
             IQueryable inlineCountQuery = null;
             foreach (var prm in parameters) {
-                switch (prm.Key) {
+                switch (prm.Key.ToLowerInvariant()) {
                     case "inlinecount":
                         inlineCount = prm.Value == "allpages";
                         break;
@@ -164,16 +164,16 @@ namespace Beetle.Server {
                     case "reverse":
                         query = HandleReverse(query);
                         break;
-                    case "selectMany":
+                    case "selectmany":
                         inlineCountQuery = null;
                         query = HandleSelectMany(query, prm.Value);
                         break;
-                    case "skipWhile":
+                    case "skipwhile":
                         if (inlineCountQuery == null)
                             inlineCountQuery = query;
                         query = HandleSkipWhile(query, prm.Value);
                         break;
-                    case "takeWhile":
+                    case "takewhile":
                         if (inlineCountQuery == null)
                             inlineCountQuery = query;
                         query = HandleTakeWhile(query, prm.Value);
@@ -197,7 +197,7 @@ namespace Beetle.Server {
         /// Unknown beetle query parameter:  + prm.Key</exception>
         public virtual object HandleExecuter(IQueryable query, KeyValuePair<string, string> executer) {
             var exp = executer.Key.Substring(executer.Key.IndexOf(';') + 1);
-            switch (exp) {
+            switch (exp.ToLowerInvariant()) {
                 case "all":
                     return HandleAll(query, executer.Value);
                 case "any":
@@ -214,15 +214,15 @@ namespace Beetle.Server {
                     return HandleCount(query, executer.Value);
                 case "first":
                     return HandleFirst(query, executer.Value);
-                case "firstOD":
+                case "firstod":
                     return HandleFirstOrDefault(query, executer.Value);
                 case "single":
                     return HandleSingle(query, executer.Value);
-                case "singleOD":
+                case "singleod":
                     return HandleSingleOrDefault(query, executer.Value);
                 case "last":
                     return HandleLast(query, executer.Value);
-                case "lastOD":
+                case "lastod":
                     return HandleLastOrDefault(query, executer.Value);
                 default:
                     throw new BeetleException(string.Format(Resources.UnknownBeetleQueryExecuterParameter, executer.Key));

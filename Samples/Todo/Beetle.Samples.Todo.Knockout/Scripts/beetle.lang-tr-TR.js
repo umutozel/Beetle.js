@@ -27,7 +27,7 @@
         executionBothNotAllowedForNoTracking: 'Birleştirme stratejisi NoTracking veya NoTrackingRaw olduğunda (varlıklar takip edilmediğinde) çalışma stratejisi Both (önbellek+server) olamaz.',
         expressionCouldNotBeFound: 'Deyim bulunamadı.',
         functionNeedsAlias: '%0 foksiyonu düzgün çalışmak için takma ada ihtiyaç duyuyor. Takma adı linq gibi ayarlayabilirsiniz, p => p.Name.',
-        functionNotSupportedForOData: 'OData %0 fonksiyonunu desteklemiyor, lütfen Beetle sorgu cümleciğini kullanın (şunun gibi: manager.executeQuery(query, {useBeetleQueryStrings: true}))',
+        functionNotSupportedForOData: 'OData %0 fonksiyonunu desteklemiyor, lütfen Beetle sorgu cümleciğini kullanın.',
         instanceError: '%0, %1 türünden bir örnek değil.',
         invalidArguments: 'Geçersiz argümanlar.',
         invalidDefaultValue: '%0, %0 için geçerli bir varsayılan değer değil..',

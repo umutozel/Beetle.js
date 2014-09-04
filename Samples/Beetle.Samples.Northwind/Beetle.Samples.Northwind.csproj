@@ -131,7 +131,7 @@
       <LastGenOutput>NorthwindModel.cs</LastGenOutput>
     </Content>
     <Content Include="Scripts\app\customerViewModel.js" />
-    <Content Include="Scripts\beetle.arrayExtensions.js" />
+    <Content Include="Scripts\beetle.queryExtensions.js" />
     <Content Include="Scripts\beetle.js" />
     <Content Include="Scripts\beetle.lang-tr-TR.js" />
     <Content Include="Scripts\jquery-1.7.1.min.js" />

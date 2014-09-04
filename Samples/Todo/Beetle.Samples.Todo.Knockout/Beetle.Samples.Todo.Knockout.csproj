@@ -106,7 +106,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\App\app.js" />
-    <Content Include="Scripts\beetle.arrayExtensions.js" />
+    <Content Include="Scripts\beetle.queryExtensions.js" />
     <Content Include="Scripts\beetle.js" />
     <Content Include="Scripts\beetle.lang-tr-TR.js" />
     <Content Include="Scripts\App\director.js" />

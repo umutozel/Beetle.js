@@ -107,7 +107,7 @@
     <Content Include="Scripts\angular.min.js" />
     <Content Include="Scripts\app.js" />
     <Content Include="Scripts\base.js" />
-    <Content Include="Scripts\beetle.arrayExtensions.js" />
+    <Content Include="Scripts\beetle.queryExtensions.js" />
     <Content Include="Scripts\beetle.js" />
     <Content Include="Scripts\beetle.lang-tr-TR.js" />
     <Content Include="Scripts\controllers\todoCtrl.js" />
