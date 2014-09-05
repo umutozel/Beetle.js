@@ -23,8 +23,8 @@ namespace Beetle.Server {
         /// <param name="contextHandler">The context handler.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">queryable</exception>
-        public ProcessResult HandleContent(IQueryable queryable, IEnumerable<KeyValuePair<string, string>> parameters, ActionContext actionContext,
-                                           IBeetleService service = null, IContextHandler contextHandler = null) {
+        public virtual ProcessResult HandleContent(IQueryable queryable, IEnumerable<KeyValuePair<string, string>> parameters, ActionContext actionContext,
+                                                   IBeetleService service = null, IContextHandler contextHandler = null) {
             if (queryable == null)
                 throw new ArgumentNullException("queryable");
 
