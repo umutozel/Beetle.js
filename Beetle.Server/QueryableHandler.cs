@@ -338,18 +338,17 @@ namespace Beetle.Server {
         /// <param name="elementSelector">The element selector.</param>
         /// <returns></returns>
         public virtual IQueryable HandleGroupBy(IQueryable query, string keySelector, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(keySelector)) {
-                query = keySelector.Contains(",") || keySelector.Contains(" as ")
-                    ? query.GroupBy(string.Format("New({0})", keySelector), "it")
-                    : query.GroupBy(keySelector, "it");
-            }
+            if (string.IsNullOrWhiteSpace(keySelector)) 
+                keySelector = "true";
+            else if (keySelector.Contains(",") || keySelector.Contains(" as "))
+                keySelector = string.Format("New({0})", keySelector);
+            query = query.GroupBy(keySelector, "it");
 
             if (string.IsNullOrWhiteSpace(elementSelector))
-                return query.Select("New(Key, it as Items)");
-
-            return elementSelector.Contains(",") || elementSelector.Contains(" as ")
-                ? query.Select(string.Format("New({0})", elementSelector))
-                : query.Select(elementSelector);
+                elementSelector = "New(Key, it as Items)";
+            else if (elementSelector.Contains(",") || elementSelector.Contains(" as "))
+                elementSelector = string.Format("New({0})", elementSelector);
+            return query.Select(elementSelector);
         }
 
         /// <summary>
