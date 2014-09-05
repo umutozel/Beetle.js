@@ -195,11 +195,7 @@ namespace Beetle.Server {
         /// <param name="query">The query.</param>
         /// <returns></returns>
         BeforeQueryExecuteEventArgs IContextHandler.OnBeforeHandleQuery(ActionContext actionContext, IQueryable query) {
-            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
-            var handler = BeforeHandleQuery;
-            if (handler != null)
-                handler(this, args);
-            return args;
+            return OnBeforeHandleQuery(actionContext, query);
         }
 
         /// <summary>
@@ -209,7 +205,11 @@ namespace Beetle.Server {
         /// <param name="query">The query.</param>
         /// <returns></returns>
         protected virtual BeforeQueryExecuteEventArgs OnBeforeHandleQuery(ActionContext actionContext, IQueryable query) {
-            return ((IContextHandler)this).OnBeforeHandleQuery(actionContext, query);
+            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
+            var handler = BeforeHandleQuery;
+            if (handler != null)
+                handler(this, args);
+            return args;
         }
 
         /// <summary>
@@ -224,11 +224,7 @@ namespace Beetle.Server {
         /// <param name="query">The query.</param>
         /// <returns></returns>
         BeforeQueryExecuteEventArgs IContextHandler.OnBeforeQueryExecute(ActionContext actionContext, IQueryable query) {
-            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
-            var handler = BeforeQueryExecute;
-            if (handler != null)
-                handler(this, args);
-            return args;
+            return OnBeforeQueryExecute(actionContext, query);
         }
 
         /// <summary>
@@ -238,7 +234,11 @@ namespace Beetle.Server {
         /// <param name="query">The query.</param>
         /// <returns></returns>
         protected virtual BeforeQueryExecuteEventArgs OnBeforeQueryExecute(ActionContext actionContext, IQueryable query) {
-            return ((IContextHandler)this).OnBeforeQueryExecute(actionContext, query);
+            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
+            var handler = BeforeQueryExecute;
+            if (handler != null)
+                handler(this, args);
+            return args;
         }
 
         /// <summary>
@@ -254,11 +254,7 @@ namespace Beetle.Server {
         /// <param name="result">The result.</param>
         /// <returns></returns>
         AfterQueryExecuteEventArgs IContextHandler.OnAfterQueryExecute(ActionContext actionContext, IQueryable query, object result) {
-            var args = new AfterQueryExecuteEventArgs(actionContext, query, result);
-            var handler = AfterQueryExecute;
-            if (handler != null)
-                handler(this, args);
-            return args;
+            return OnAfterQueryExecute(actionContext, query, result);
         }
 
         /// <summary>
@@ -269,7 +265,11 @@ namespace Beetle.Server {
         /// <param name="result">The result.</param>
         /// <returns></returns>
         protected virtual AfterQueryExecuteEventArgs OnAfterQueryExecute(ActionContext actionContext, IQueryable query, object result) {
-            return ((IContextHandler)this).OnAfterQueryExecute(actionContext, query, result);
+            var args = new AfterQueryExecuteEventArgs(actionContext, query, result);
+            var handler = AfterQueryExecute;
+            if (handler != null)
+                handler(this, args);
+            return args;
         }
 
         /// <summary>
