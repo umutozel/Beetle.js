@@ -152,9 +152,6 @@
     <Content Include="Content\toastr.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="Scripts\beetle\beetle.min.js">
-      <DependentUpon>beetle.js</DependentUpon>
-    </Content>
     <Content Include="Scripts\beetle\beetle.queryExtensions.js" />
     <Content Include="Scripts\beetle\beetle.lang-tr-TR.js" />
     <Content Include="Scripts\jquery-1.8.3.min.js" />
@@ -219,11 +216,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>TestModel.edmx</DependentUpon>
       <LastGenOutput>TestModel.cs</LastGenOutput>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Scripts\beetle\beetle.min.js.map">
-      <DependentUpon>beetle.min.js</DependentUpon>
     </Content>
   </ItemGroup>
   <ItemGroup>

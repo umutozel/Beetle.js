@@ -7644,6 +7644,13 @@
                                 var v = that.getValue(np.name);
                                 if (v == null)
                                     data[np.name] = null;
+                                else if (assert.isArray(v))
+                                    helper.forEach(v, function (item) {
+                                        if (item == null || !item.$tracker)
+                                            data[p].push(item);
+                                        else
+                                            data[p].push(item.$tracker.toRaw(true));
+                                    });
                                 else
                                     data[np.name] = v.$tracker.toRaw(true);
                             });
