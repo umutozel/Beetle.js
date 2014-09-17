@@ -8074,7 +8074,7 @@
 
                 function updateForeignKeys(entity) {
                     /// <summary>
-                    // Update navigations' foreign keys to match with new key.
+                    /// Update navigations' foreign keys to match with new key.
                     /// </summary>
                     var tracker = entity.$tracker;
                     // For each navigation property.
@@ -9269,14 +9269,11 @@
                             if (!found)
                                 owners.push({ entity: entity, property: np });
                         } else {
-                            if (np.isScalar) {
-                                // fix replaced entity
-                                var newValue = handleScalar(tracker, value, np.name, instance);
-                                if (!newValue && autoFixScalar)
-                                    fixScalar(entity, np, value, instance);
-                            } else {
+                            if (np.isScalar) // fix replaced entity
+                                handleScalar(tracker, value, np, np.name, autoFixScalar, instance);
+                            else {
                                 // fix replaced entities
-                                handlePlural(tracker, value, instance);
+                                handlePlural(value, instance);
                                 if (autoFixPlural)
                                     fixPlural(entity, np, value, instance);
                             }
@@ -9302,34 +9299,37 @@
                     helper.forEach(tracker.entityType.properties, function (p) {
                         var value = tracker.getValue(p);
                         if (assert.isArray(value))
-                            handlePlural(tracker, value, instance);
+                            handlePlural(value, instance);
                         else
-                            handleScalar(tracker, value, p, instance);
+                            handleScalar(tracker, value, null, p, false, instance);
                     });
                 }
 
-                function handleScalar(tracker, value, property, instance) {
+                function handleScalar(tracker, value, np, npName, autoFix, instance) {
                     /// <summary>
                     /// If scalar navigation value is replaced with existing entity, fixes it
                     /// </summary>
-                    if (value && value.$tracker && value.$tracker.entityType.hasMetadata && value.$tracker.manager != instance) {
-                        var newValue = instance.getEntityByKey(value.$tracker.key, value.$tracker.entityType);
-                        tracker.setValue(property, newValue);
-                        return newValue;
+                    if (value) {
+                        if (value.$tracker && value.$tracker.manager != instance) {
+                            value = instance.getEntityByKey(value.$tracker.key, value.$tracker.entityType);
+                            tracker.setValue(npName, value);
+                        }
+                        if (np) helper.setForeignKeys(tracker.entity, np, value);
                     }
-                    return value;
+                    else if (np && autoFix)
+                        fixScalar(tracker, np, instance);
                 }
 
-                function handlePlural(tracker, value, instance) {
+                function handlePlural(array, instance) {
                     /// <summary>
                     /// If plural navigation items is replaced with existing entities, fixes them
                     /// </summary>
-                    for (var i = value.length - 1; i >= 0; i--) {
-                        var item = value[i];
-                        if (item && item.$tracker && item.$tracker.entityType.hasMetadata && item.$tracker.manager != instance) {
+                    for (var i = array.length - 1; i >= 0; i--) {
+                        var item = array[i];
+                        if (item && item.$tracker && item.$tracker.manager != instance) {
                             var newItem = instance.getEntityByKey(item.$tracker.key, item.$tracker.entityType);
-                            if (!newItem) value.splice(i, 1);
-                            else value.splice(i, 1, newItem);
+                            if (!newItem) array.splice(i, 1);
+                            else array.splice(i, 1, newItem);
                         }
                     }
                 }
@@ -9355,7 +9355,7 @@
                         if (np.isScalar) {
                             if (!ve) {
                                 if (autoFixScalar == true)
-                                    fixScalar(existing, np, null, instance);
+                                    fixScalar(te, np, instance);
                                 else if (!((autoFixScalar === true && np.inverse && np.inverse.isScalar) || (autoFixPlural === true && np.inverse && !np.inverse.isScalar))) {
                                     // when auto fix is not enabled, try to get items from query result
                                     var fkr = tr.foreignKey(np);
@@ -9390,17 +9390,12 @@
                     });
                 }
 
-                function fixScalar(entity, np, fkValue, instance) {
+                function fixScalar(tracker, np, instance) {
                     /// <summary>
                     /// Fixes scalar navigation property
                     /// </summary>
-                    var tracker = entity.$tracker;
                     var fk = tracker.foreignKey(np);
-                    if (!fkValue) {
-                        // if found set as new value.
-                        if (fk) tracker.setValue(np.name, instance.entities.getEntityByKey(fk, np.entityType));
-                    } else // if navigation property value exists refresh scalar navigation property.
-                        if (fk != fkValue.$tracker.key) setForeignKeys(entity, np, fkValue);
+                    tracker.setValue(np.name, instance.entities.getEntityByKey(fk, np.entityType));
                 }
 
                 function fixPlural(entity, np, array, instance) {
