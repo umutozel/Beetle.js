@@ -9343,13 +9343,14 @@
                     /// <param name="existing">Cached entity.</param>
                     /// <param name="autoFixScalar">When true all scalar navigations will be fixed.</param>
                     /// <param name="autoFixPlural">When true all plural navigations will be fixed.</param>
-                    var type = result.$tracker.entityType;
-                    var tr, te, vr, ve;
+                    var te = existing.$tracker;
+                    if (te.entityState == enums.entityStates.Deleted) return;
+
+                    var tr = result.$tracker, vr, ve;
+                    var type = tr.entityType;
                     helper.forEach(type.navigationProperties, function (np) {
                         if (np.isComplex) return;
 
-                        tr = result.$tracker;
-                        te = existing.$tracker;
                         vr = tr.getValue(np.name);
                         ve = te.getValue(np.name);
                         if (np.isScalar) {
@@ -9395,7 +9396,9 @@
                     /// Fixes scalar navigation property
                     /// </summary>
                     var fk = tracker.foreignKey(np);
-                    tracker.setValue(np.name, instance.entities.getEntityByKey(fk, np.entityType));
+                    var found = instance.entities.getEntityByKey(fk, np.entityType);
+                    if (found && found.$tracker.entityState == enums.entityStates.Deleted) found = null;
+                    tracker.setValue(np.name, found);
                 }
 
                 function fixPlural(entity, np, array, instance) {
@@ -9406,7 +9409,7 @@
                     var relations = instance.entities.getRelations(entity, np);
                     if (relations)
                         helper.forEach(relations, function (item) {
-                            if (!helper.findInArray(array, item))
+                            if (item.$tracker.entityState != enums.entityStates.Deleted && !helper.findInArray(array, item))
                                 array.push(item);
                         });
                 }

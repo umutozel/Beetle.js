@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace Beetle.Server {
 
@@ -90,10 +89,8 @@ namespace Beetle.Server {
         /// <summary>
         /// Called when [before handle query].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        BeforeQueryExecuteEventArgs OnBeforeHandleQuery(ActionContext actionContext, IQueryable query);
+        /// <param name="args">Before query execute event arguments.</param>
+        void OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args);
 
         /// <summary>
         /// Occurs when [before execute query].
@@ -103,10 +100,8 @@ namespace Beetle.Server {
         /// <summary>
         /// Called when [before query execute].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        BeforeQueryExecuteEventArgs OnBeforeQueryExecute(ActionContext actionContext, IQueryable query);
+        /// <param name="args">Before query execute event arguments.</param>
+        void OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args);
 
         /// <summary>
         /// Occurs when [after execute query].
@@ -116,11 +111,8 @@ namespace Beetle.Server {
         /// <summary>
         /// Called when [after query execute].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <param name="result">The result.</param>
-        /// <returns></returns>
-        AfterQueryExecuteEventArgs OnAfterQueryExecute(ActionContext actionContext, IQueryable query, object result);
+        /// <param name="args">After query execute event arguments.</param>
+        void OnAfterQueryExecute(AfterQueryExecuteEventArgs args);
 
         /// <summary>
         /// Occurs before save.

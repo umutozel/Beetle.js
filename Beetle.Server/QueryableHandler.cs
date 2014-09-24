@@ -31,10 +31,12 @@ namespace Beetle.Server {
             object result;
             int? inlineCount = null;
             // make before handle event callbacks
+            var beforeArgs = new BeforeQueryExecuteEventArgs(actionContext, queryable);
             if (service != null)
-                queryable = service.OnBeforeHandleQuery(actionContext, queryable).Query;
+                service.OnBeforeHandleQuery(beforeArgs);
             if (contextHandler != null)
-                queryable = contextHandler.OnBeforeHandleQuery(actionContext, queryable).Query;
+                contextHandler.OnBeforeHandleQuery(beforeArgs);
+            queryable = beforeArgs.Query;
 
             var maxResultCount = actionContext.MaxResultCount;
             if (service != null && service.MaxResultCount > 0 && service.MaxResultCount < maxResultCount)
@@ -46,17 +48,22 @@ namespace Beetle.Server {
             if (queryParameterList != null && queryParameterList.Count > 0) {
                 var executer = queryParameterList.SingleOrDefault(b => b.Key.StartsWith("exec;"));
                 if (!executer.Equals(default(KeyValuePair<string, string>))) queryParameterList.Remove(executer);
+
                 // handle query
                 var handledQuery = HandleQuery(queryable, queryParameterList);
-                queryable = handledQuery.Query;
+                beforeArgs.Query = handledQuery.Query;
+
                 // make before execute callbacks
                 if (service != null)
-                    queryable = service.OnBeforeQueryExecute(actionContext, queryable).Query;
+                    service.OnBeforeQueryExecute(beforeArgs);
                 if (contextHandler != null)
-                    queryable = contextHandler.OnBeforeQueryExecute(actionContext, queryable).Query;
+                    contextHandler.OnBeforeQueryExecute(beforeArgs);
+                queryable = beforeArgs.Query;
+
                 // get in-line count
                 if (handledQuery.InlineCountQuery != null)
                     inlineCount = Queryable.Count((dynamic)handledQuery.InlineCountQuery);
+
                 // execute query
                 if (!string.IsNullOrWhiteSpace(executer.Key))
                     result = HandleExecuter(queryable, executer);
@@ -69,25 +76,25 @@ namespace Beetle.Server {
             else {
                 // make before execute callbacks
                 if (service != null)
-                    queryable = service.OnBeforeQueryExecute(actionContext, queryable).Query;
+                    service.OnBeforeQueryExecute(beforeArgs);
                 if (contextHandler != null)
-                    queryable = contextHandler.OnBeforeQueryExecute(actionContext, queryable).Query;
+                    contextHandler.OnBeforeQueryExecute(beforeArgs);
+                queryable = beforeArgs.Query;
+
                 if (maxResultCount > 0)
                     CheckResultCount(queryable, maxResultCount);
                 result = Enumerable.ToList((dynamic)queryable);
             }
-            string userData = null;
+
             // make after execute callbacks
-            if (service != null) {
-                var modifiedResult = service.OnAfterQueryExecute(actionContext, queryable, result);
-                result = modifiedResult.Result;
-                userData = modifiedResult.UserData;
-            }
-            if (contextHandler != null) {
-                var modifiedResult = contextHandler.OnAfterQueryExecute(actionContext, queryable, result);
-                result = modifiedResult.Result;
-                userData = modifiedResult.UserData;
-            }
+            var afterArgs = new AfterQueryExecuteEventArgs(actionContext, queryable, result);
+            if (service != null)
+                service.OnAfterQueryExecute(afterArgs);
+            if (contextHandler != null)
+                contextHandler.OnAfterQueryExecute(afterArgs);
+            result = afterArgs.Result;
+            var userData = afterArgs.UserData;
+
             return new ProcessResult { Result = result, InlineCount = inlineCount, UserData = userData };
         }
 

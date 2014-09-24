@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Web.Mvc;
@@ -215,25 +214,19 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Called when [before handle query].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        BeforeQueryExecuteEventArgs IBeetleService.OnBeforeHandleQuery(ActionContext actionContext, IQueryable query) {
-            return OnBeforeHandleQuery(actionContext, query);
+        /// <param name="args">Before query execute event arguments.</param>
+        void IBeetleService.OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) {
+            OnBeforeHandleQuery(args);
         }
 
         /// <summary>
         /// Called when [before handle query].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        protected virtual BeforeQueryExecuteEventArgs OnBeforeHandleQuery(ActionContext actionContext, IQueryable query) {
-            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
+        /// <param name="args">Before query execute event arguments.</param>
+        protected virtual void OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) {
             var handler = BeforeHandleQuery;
             if (handler != null)
                 handler(this, args);
-            return args;
         }
 
         /// <summary>
@@ -244,25 +237,19 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Called when [before query execute].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        BeforeQueryExecuteEventArgs IBeetleService.OnBeforeQueryExecute(ActionContext actionContext, IQueryable query) {
-            return OnBeforeQueryExecute(actionContext, query);
+        /// <param name="args">Before query execute event arguments.</param>
+        void IBeetleService.OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) {
+            OnBeforeQueryExecute(args);
         }
 
         /// <summary>
         /// Called when [before query execute].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        protected virtual BeforeQueryExecuteEventArgs OnBeforeQueryExecute(ActionContext actionContext, IQueryable query) {
-            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
+        /// <param name="args">Before query execute event arguments.</param>
+        protected virtual void OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) {
             var handler = BeforeQueryExecute;
             if (handler != null)
                 handler(this, args);
-            return args;
         }
 
         /// <summary>
@@ -273,27 +260,19 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Called when [after query execute].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <param name="result">The result.</param>
-        /// <returns></returns>
-        AfterQueryExecuteEventArgs IBeetleService.OnAfterQueryExecute(ActionContext actionContext, IQueryable query, object result) {
-            return OnAfterQueryExecute(actionContext, query, result);
+        /// <param name="args">After query execute event arguments.</param>
+        void IBeetleService.OnAfterQueryExecute(AfterQueryExecuteEventArgs args) {
+            OnAfterQueryExecute(args);
         }
 
         /// <summary>
         /// Called when [after query execute].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <param name="result">The result.</param>
-        /// <returns></returns>
-        protected virtual AfterQueryExecuteEventArgs OnAfterQueryExecute(ActionContext actionContext, IQueryable query, object result) {
-            var args = new AfterQueryExecuteEventArgs(actionContext, query, result);
+        /// <param name="args">After query execute event arguments.</param>
+        protected virtual void OnAfterQueryExecute(AfterQueryExecuteEventArgs args) {
             var handler = AfterQueryExecute;
             if (handler != null)
                 handler(this, args);
-            return args;
         }
 
         /// <summary>
