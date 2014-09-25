@@ -3104,7 +3104,7 @@
                     /// </summary>
                     /// <param name="xhr">XML Http Request object.</param>
                     /// <returns type="">Error object.</returns>
-                    var obj = { status: xhr.status };
+                    var obj = { status: xhr.status, xhr: xhr };
                     if (xhr.responseText) {
                         try {
                             obj.detail = JSON.parse(xhr.responseText);
@@ -9409,7 +9409,7 @@
                     var relations = instance.entities.getRelations(entity, np);
                     if (relations)
                         helper.forEach(relations, function (item) {
-                            if (item.$tracker.entityState == enums.entityStates.Deleted && !helper.findInArray(array, item))
+                            if (item.$tracker.entityState != enums.entityStates.Deleted && !helper.findInArray(array, item))
                                 array.push(item);
                         });
                 }
@@ -9689,9 +9689,7 @@
                         // read inline count header.
                         var inlineCount = xhr.getResponseHeader("X-InlineCount");
                         var userData = xhr.getResponseHeader("X-UserData");
-                        var ud = null;
-                        if (userData != null)
-                            ud = { userData: userData };
+                        var ud = { userData: userData, xhr: xhr };
                         successCallback(data, allEntities, inlineCount && Number(inlineCount), ud);
                     },
                     function (error) {

@@ -1,4 +1,5 @@
-﻿using Beetle.Server.Properties;
+﻿using System.Collections;
+using Beetle.Server.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,6 +60,22 @@ namespace Beetle.Server {
     /// Needed to be implemented for each used ORM.
     /// </summary>
     public abstract class ContextHandler : IContextHandler {
+        private readonly IQueryHandler<IQueryable> _queryableHandler;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContextHandler"/> class.
+        /// </summary>
+        protected ContextHandler()
+            : this(Server.QueryableHandler.Instance) {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContextHandler"/> class.
+        /// </summary>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        protected ContextHandler(IQueryHandler<IQueryable> queryableHandler) {
+            _queryableHandler = queryableHandler;
+        }
 
         /// <summary>
         /// Initializes this instance.
@@ -108,6 +125,10 @@ namespace Beetle.Server {
             if (queryable != null)
                 return QueryableHandler.HandleContent(queryable, queryParameters, actionContext, service, this);
 
+            var enumerable = contentValue as IEnumerable;
+            if (enumerable != null)
+                return EnumerableHandler.HandleContent(enumerable, queryParameters, actionContext, service, this);
+
             return new ProcessResult { Result = contentValue };
         }
 
@@ -156,7 +177,7 @@ namespace Beetle.Server {
         /// <returns></returns>
         public virtual IEnumerable<GeneratedValue> GetHandledUnmappedGeneratedValues(IEnumerable<EntityBag> handledUnmappeds) {
             return Enumerable.Empty<GeneratedValue>();
-        } 
+        }
 
         /// <summary>
         /// Saves the changes.
@@ -168,10 +189,20 @@ namespace Beetle.Server {
         public abstract SaveResult SaveChanges(IEnumerable<EntityBag> entities);
 
         /// <summary>
+        /// Gets the enumerable handler.
+        /// </summary>
+        /// <value>
+        /// The enumerable handler.
+        /// </value>
+        public virtual IContentHandler<IEnumerable> EnumerableHandler {
+            get { return Server.EnumerableHandler.Instance; }
+        }
+
+        /// <summary>
         /// Gets query handler.
         /// </summary>
-        public virtual QueryableHandler QueryableHandler {
-            get { return QueryableHandler.Instance; }
+        public virtual IQueryHandler<IQueryable> QueryableHandler {
+            get { return _queryableHandler; }
         }
 
         /// <summary>

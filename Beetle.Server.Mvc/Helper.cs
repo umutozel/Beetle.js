@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -72,7 +73,7 @@ namespace Beetle.Server.Mvc {
             }
             else {
                 queryParams = request.QueryString;
-                if (actionParameters != null) {
+                if (actionParameters != null && parameters != null) {
                     actionArgs = actionParameters
                         .Select(pd => parameters[pd.ParameterName])
                         .ToArray();
@@ -101,6 +102,10 @@ namespace Beetle.Server.Mvc {
             var queryable = contentValue as IQueryable;
             if (queryable != null)
                 return QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service);
+
+            var enumerable = contentValue as IEnumerable;
+            if (enumerable != null)
+                return EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service);
 
             return new ProcessResult { Result = contentValue };
         }

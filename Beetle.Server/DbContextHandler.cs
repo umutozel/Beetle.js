@@ -32,6 +32,24 @@ namespace Beetle.Server {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DbContextHandler{TContext}"/> class.
+        /// </summary>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        protected DbContextHandler(IQueryHandler<IQueryable> queryableHandler)
+            : base(queryableHandler) {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbContextHandler{TContext}"/> class.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        protected DbContextHandler(TContext context, IQueryHandler<IQueryable> queryableHandler)
+            : base(queryableHandler) {
+            Context = context;
+        }
+
+        /// <summary>
         /// Initializes this instance.
         /// </summary>
         public override void Initialize() {
@@ -64,6 +82,20 @@ namespace Beetle.Server {
     public abstract class DbContextHandler : ContextHandler {
         private readonly object _metadataLocker = new object();
         private static readonly Dictionary<string, Metadata> _metadataCache = new Dictionary<string, Metadata>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbContextHandler"/> class.
+        /// </summary>
+        protected DbContextHandler() {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbContextHandler"/> class.
+        /// </summary>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        protected DbContextHandler(IQueryHandler<IQueryable> queryableHandler)
+            : base(queryableHandler) {
+        }
 
         /// <summary>
         /// Return metadata about data structure.
@@ -104,6 +136,9 @@ namespace Beetle.Server {
             if (type == null)
                 type = Type.GetType(string.Format("{0}.{1}, {2}", ModelNamespace, singular, ModelAssembly));
 
+            if (type == null)
+                throw new BeetleException(string.Format(Resources.CannotFindTypeInformation, singular));
+
             return GetType().GetMethod("CreateQueryable").MakeGenericMethod(type).Invoke(this, null);
         }
 
@@ -112,7 +147,7 @@ namespace Beetle.Server {
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> CreateQueryable<T>() where T : class {
-            return null; // todo: implement beetle queryable
+            throw new NotImplementedException(); // todo: implement beetle queryable
         }
 
         /// <summary>
@@ -287,7 +322,7 @@ namespace Beetle.Server {
                 IEnumerable<EntityBag> discarded;
                 MergeEntitiesBase(handledUnmappedList, out discarded);
                 saveList = saveList.Concat(handledUnmappedList).ToList();
-            } 
+            }
             if (!saveList.Any()) return SaveResult.Empty;
 
             OnBeforeSaveChanges(saveList);
@@ -568,7 +603,7 @@ namespace Beetle.Server {
             IEnumerable<string> concurrencyFilters;
             IDictionary<string, object> concurrencyParameters;
             PopulateConcurrencyFilters(entity, entityType, out concurrencyFilters, out concurrencyParameters);
-            var concurrencyFilterList = concurrencyFilters == null 
+            var concurrencyFilterList = concurrencyFilters == null
                 ? null
                 : concurrencyFilters as IList<string> ?? concurrencyFilters.ToList();
             if (valueParameters.Count == 0 && (concurrencyFilterList == null || !concurrencyFilterList.Any()))

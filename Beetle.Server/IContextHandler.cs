@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Beetle.Server.Meta;
 
 namespace Beetle.Server {
@@ -69,7 +70,7 @@ namespace Beetle.Server {
         /// <summary>
         /// Gets query handler.
         /// </summary>
-        QueryableHandler QueryableHandler { get; }
+        IQueryHandler<IQueryable> QueryableHandler { get; }
 
         /// <summary>
         /// Processes the request.

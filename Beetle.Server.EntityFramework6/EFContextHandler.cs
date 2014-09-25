@@ -97,7 +97,8 @@ namespace Beetle.Server.EntityFramework {
         /// <summary>
         /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
         /// </summary>
-        public EFContextHandler() {
+        public EFContextHandler()
+            : this(EFQueryHandler.Instance) {
         }
 
         /// <summary>
@@ -105,7 +106,24 @@ namespace Beetle.Server.EntityFramework {
         /// </summary>
         /// <param name="context">The context.</param>
         public EFContextHandler(TContext context)
-            : base(context) {
+            : this(context, EFQueryHandler.Instance) {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
+        /// </summary>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        public EFContextHandler(IQueryHandler<IQueryable> queryableHandler)
+            : base(queryableHandler) {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        public EFContextHandler(TContext context, IQueryHandler<IQueryable> queryableHandler)
+            : base(context, queryableHandler) {
         }
 
         /// <summary>
@@ -363,11 +381,6 @@ namespace Beetle.Server.EntityFramework {
             IQueryable<TEntity> query = _objectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
             return query.OfType<TEntity>();
         }
-
-        /// <summary>
-        /// Gets query handler.
-        /// </summary>
-        public override QueryableHandler QueryableHandler { get { return EFQueryHandler.Instance; } }
 
         /// <summary>
         /// Gets the connection.

@@ -701,10 +701,20 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
             }
         }
 
+        /// <summary>
+        /// Sets the metadata part names.
+        /// </summary>
+        /// <param name="clrObj">The CLR object.</param>
+        /// <param name="metadataPart">The metadata part.</param>
         public static void SetMetadataPartNames(object clrObj, MetadataPart metadataPart) {
             SetMetadataPartNames(metadataPart, clrObj.GetType());
         }
 
+        /// <summary>
+        /// Sets the metadata part names.
+        /// </summary>
+        /// <param name="metadataPart">The metadata part.</param>
+        /// <param name="clrMember">The CLR member.</param>
         public static void SetMetadataPartNames(MetadataPart metadataPart, MemberInfo clrMember) {
             var displayNameAtt = clrMember.GetAttributes<DisplayAttribute>(true).FirstOrDefault();
             if (displayNameAtt != null) {

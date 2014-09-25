@@ -1,3 +1,4 @@
+using System.Collections;
 using Beetle.Server.WebApi.Properties;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -53,7 +54,7 @@ namespace Beetle.Server.WebApi {
         /// <param name="service">The service.</param>
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
-        internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request, 
+        internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
                                                      bool forbidBeetleQueryParams = false, IBeetleService service = null) {
             var queryParams = actionContext.QueryParameters;
             // get beetle query parameters (supported parameters by default)
@@ -73,9 +74,14 @@ namespace Beetle.Server.WebApi {
                 processResult = contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, service);
             else {
                 var queryable = contentValue as IQueryable;
-                processResult = queryable != null
-                    ? QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service)
-                    : new ProcessResult {Result = contentValue};
+                if (queryable != null)
+                    processResult = QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service);
+                else {
+                    var enumerable = contentValue as IEnumerable;
+                    processResult = enumerable != null
+                        ? EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service)
+                        : new ProcessResult { Result = contentValue };
+                }
             }
 
             if (processResult.InlineCount == null && queryParams["$inlineCount"] == "allpages") {
@@ -106,7 +112,7 @@ namespace Beetle.Server.WebApi {
                 response = HttpContext.Current.Response;
 
             var type = processResult.Result == null
-                ? typeof (object)
+                ? typeof(object)
                 : processResult.Result.GetType();
             var retVal = new ObjectContent(type, processResult.Result, config.MediaTypeFormatter);
 

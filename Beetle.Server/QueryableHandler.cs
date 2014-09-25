@@ -38,10 +38,6 @@ namespace Beetle.Server {
                 contextHandler.OnBeforeHandleQuery(beforeArgs);
             queryable = beforeArgs.Query;
 
-            var maxResultCount = actionContext.MaxResultCount;
-            if (service != null && service.MaxResultCount > 0 && service.MaxResultCount < maxResultCount)
-                maxResultCount = service.MaxResultCount;
-
             var queryParameterList = parameters == null
                 ? null
                 : (parameters as IList<KeyValuePair<string, string>> ?? parameters.ToList());
@@ -68,8 +64,7 @@ namespace Beetle.Server {
                 if (!string.IsNullOrWhiteSpace(executer.Key))
                     result = HandleExecuter(queryable, executer);
                 else {
-                    if (maxResultCount > 0)
-                        CheckResultCount(queryable, maxResultCount);
+                    queryable = ValidateQuery(actionContext, queryable, service, contextHandler);
                     result = Enumerable.ToList((dynamic)queryable);
                 }
             }
@@ -81,8 +76,7 @@ namespace Beetle.Server {
                     contextHandler.OnBeforeQueryExecute(beforeArgs);
                 queryable = beforeArgs.Query;
 
-                if (maxResultCount > 0)
-                    CheckResultCount(queryable, maxResultCount);
+                queryable = ValidateQuery(actionContext, queryable, service, contextHandler);
                 result = Enumerable.ToList((dynamic)queryable);
             }
 
@@ -101,12 +95,24 @@ namespace Beetle.Server {
         /// <summary>
         /// Checks the result count.
         /// </summary>
+        /// <param name="actionContext">The action context.</param>
         /// <param name="queryable">The queryable.</param>
-        /// <param name="maxResultCount">The maximum result count.</param>
-        private static void CheckResultCount(IQueryable queryable, int maxResultCount) {
-            var count = Queryable.Count((dynamic) queryable);
-            if (count > maxResultCount)
-                throw new BeetleException(Resources.ResultCountExceeded);
+        /// <param name="service">The service.</param>
+        /// <param name="contextHandler">The context handler.</param>
+        /// <returns></returns>
+        /// <exception cref="Beetle.Server.BeetleException"></exception>
+        protected virtual IQueryable ValidateQuery(ActionContext actionContext, IQueryable queryable, IBeetleService service, IContextHandler contextHandler) {
+            var maxResultCount = actionContext.MaxResultCount;
+            if (service != null && service.MaxResultCount > 0 && service.MaxResultCount < maxResultCount)
+                maxResultCount = service.MaxResultCount;
+
+            if (maxResultCount > 0) {
+                var count = Queryable.Count((dynamic)queryable);
+                if (count > maxResultCount)
+                    throw new BeetleException(Resources.ResultCountExceeded);
+            }
+
+            return queryable;
         }
 
         /// <summary>
@@ -345,7 +351,7 @@ namespace Beetle.Server {
         /// <param name="elementSelector">The element selector.</param>
         /// <returns></returns>
         public virtual IQueryable HandleGroupBy(IQueryable query, string keySelector, string elementSelector) {
-            if (string.IsNullOrWhiteSpace(keySelector)) 
+            if (string.IsNullOrWhiteSpace(keySelector))
                 keySelector = "true";
             else if (keySelector.Contains(",") || keySelector.Contains(" as "))
                 keySelector = string.Format("New({0})", keySelector);
