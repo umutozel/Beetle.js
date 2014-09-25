@@ -1,4 +1,4 @@
-Beetle.js
+Beetle.js [![Build Status](https://ci.appveyor.com/api/projects/status/github/umutozel/Beetle.js?retina=true)](https://ci.appveyor.com/project/umutozel/Beetle-js)
 =========
 Beetle is a data manager for Javascript.
 The goal is to be able to work with data as easy as Entity Framework and LINQ.
