@@ -1,4 +1,14 @@
-﻿'use strict';
+﻿/// <reference path="../jquery-1.8.3.min.js" />
+/// <reference path="../qunit.js" />
+/// <reference path="../json2.js" />
+/// <reference path="../q.min.js" />
+/// <reference path="../knockout-2.1.0.js" />
+/// <reference path="../beetle/beetle.js" />
+/// <reference path="../beetle/beetle.queryExtensions.js" />
+/// <reference path="../toastr.js" />
+/// <reference path="testMetadata.js" />
+
+'use strict';
 
 var metadata, observableProvider, service;
 var basicTestViewModel = {

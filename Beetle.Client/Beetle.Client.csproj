@@ -170,6 +170,7 @@
       <DependentUpon>testMetadata.tt</DependentUpon>
     </Content>
     <Content Include="Scripts\toastr.js" />
+    <None Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -187,6 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Beetle.Server.EntityFramework\Beetle.Server.EntityFramework.csproj">
