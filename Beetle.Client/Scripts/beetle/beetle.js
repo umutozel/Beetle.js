@@ -769,7 +769,7 @@
             /// <summary>
             /// Checks if value is object.
             /// </summary>
-            if (!core.dataTypes.object.isValid(value)) {
+            if (value == null || !core.dataTypes.object.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'object'));
                 return false;
             }
@@ -779,7 +779,7 @@
             /// <summary>
             /// Checks if value is function.
             /// </summary>
-            if (!core.dataTypes.function.isValid(value)) {
+            if (value == null || !core.dataTypes.function.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'function'));
                 return false;
             }
@@ -789,7 +789,7 @@
             /// <summary>
             /// Checks if value is a non-empty string.
             /// </summary>
-            if (!ctor.isTypeOf(value, 'string', errors) || value === '') {
+            if (value == null || value === '' || !ctor.isTypeOf(value, 'string', errors)) {
                 if (errors) errors.push(helper.formatString(i18N.cannotBeEmptyString, name));
                 return false;
             }
@@ -811,7 +811,7 @@
             /// <summary>
             /// Checks if value is array.
             /// </summary>
-            if (!core.dataTypes.array.isValid(value)) {
+            if (value == null || !core.dataTypes.array.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'array'));
                 return false;
             }
@@ -2936,121 +2936,13 @@
 
                 return new ctor();
             })(),
-            /// <field>Backbone observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
             backboneObservableProviderInstance: (function () {
+                // not implemented yet
                 var ctor = function () {
-                    baseTypes.observableProviderBase.call('Backbone Observable Provider');
+                    baseTypes.observableProviderBase.call(this, 'Backbone Observable Provider');
                     helper.tryFreeze(this);
                 };
                 helper.inherit(ctor, baseTypes.observableProviderBase);
-                var proto = ctor.prototype;
-
-                proto.isObservable = function (object, property) {
-                    return object['$fields'] !== undefined && object['$fields'][property] !== undefined;
-                };
-
-                proto.toObservable = function (object, type, callbacks) {
-                    var pc = callbacks && callbacks.propertyChange;
-                    var ac = callbacks && callbacks.arrayChange;
-                    var dpc = callbacks && callbacks.dataPropertyChange;
-                    var snpc = callbacks && callbacks.scalarNavigationPropertyChange;
-                    var pnpc = callbacks && callbacks.pluralNavigationPropertyChange;
-                    var as = callbacks && callbacks.arraySet;
-
-                    var fields = {};
-                    var ps = [];
-                    helper.forEachProperty(object, function (p, v) {
-                        ps.push({ p: p, v: v });
-                    });
-                    if (type && type.hasMetadata) {
-                        helper.forEach(type.dataProperties, function (dp) {
-                            var v = object[dp.name];
-                            if (v === undefined) v = null;
-                            else v = dp.handle(v);
-                            delete object[dp.name];
-                            toObservableProperty(dp, dp.name, dpc);
-                            helper.removeFromArray(ps, dp.name, 'p');
-                            fields[dp.name] = v;
-                        });
-                        helper.forEach(type.navigationProperties, function (np) {
-                            var v = object[np.name];
-                            if (v === undefined) v = null;
-                            delete object[np.name];
-                            if (np.isScalar) {
-                                toObservableProperty(np, np.name, snpc);
-                                fields[np.name] = v;
-                            } else
-                                toObservableArray(np, np.name, v, pnpc, as);
-                            helper.removeFromArray(ps, np.name, 'p');
-                        });
-                    }
-                    helper.forEach(ps, function (pv) {
-                        var p = pv.p;
-                        var v = pv.v;
-                        delete object[p];
-                        if (assert.isArray(v))
-                            toObservableArray(p, p, v, ac, as);
-                        else {
-                            toObservableProperty(p, p, pc);
-                            fields[p] = v;
-                        }
-                        if (!helper.findInArray(type.properties, p))
-                            type.properties.push(p);
-                    });
-                    object['$fields'] = fields;
-                    return object;
-
-                    function toObservableProperty(property, propertyName, callback) {
-                        return Object.defineProperty(object, propertyName, {
-                            get: function () {
-                                return object['$fields'][propertyName];
-                            },
-                            set: function (newValue) {
-                                if (callback) {
-                                    var a = getAccessor(object, propertyName);
-                                    callback(object, property, a, newValue);
-                                } else
-                                    object['$fields'][propertyName] = newValue;
-                            },
-                            enumerable: true,
-                            configurable: true
-                        });
-                    }
-
-                    function toObservableArray(property, propertyName, value, after, setCallback) {
-                        value = value || [];
-                        if (after)
-                            value = new core.trackableArray(value, object, property, after);
-                        fields[propertyName] = value;
-
-                        return Object.defineProperty(object, propertyName, {
-                            get: function () {
-                                return object['$fields'][propertyName];
-                            },
-                            set: function (newItems) {
-                                if (setCallback)
-                                    setCallback(object, property, items, newItems);
-                                else
-                                    object['$fields'][propertyName] = newItems;
-                            }
-                        });
-                    }
-
-                    function getAccessor(o, p) {
-                        return function () {
-                            return arguments.length == 0 ? o['$fields'][p] : o['$fields'][p] = arguments[0];
-                        };
-                    }
-                };
-
-                proto.getValue = function (object, property) {
-                    return object[property];
-                };
-
-                proto.setValue = function (object, property, value) {
-                    object[property] = value;
-                };
-
                 return new ctor();
             })(),
             /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
@@ -6663,7 +6555,7 @@
                 /// <field>Enum type.</field>
                 expose.enum = (function () {
                     var ctor = function (enumType, enumTypeName, displayName) {
-                        baseTypes.dataTypeBase.call('enum');
+                        baseTypes.dataTypeBase.call(this, 'enum');
                         this.enumType = enumType;
                         this.enumTypeName = enumTypeName;
                         this.displayName = displayName || enumTypeName;
@@ -8427,10 +8319,14 @@
                         var that = this;
                         this.dataService.executeQuery(
                             query, options,
-                            function (newEntities, allEntities, inlineCount, extra) {
+                            function (newEntities, allEntities, xhr) {
                                 try {
                                     // merge results.
                                     var isSingle = false;
+                                    // read inline count header.
+                                    var inlineCount = xhr.getResponseHeader("X-InlineCount");
+                                    if (inlineCount) inlineCount = Number(inlineCount);
+                                    
                                     if (newEntities) {
                                         if (!noTracking) {
                                             // we convert result to array to get modified result (replaced with cached by manager when necessary).
@@ -8451,11 +8347,11 @@
                                             delete newEntities.$inlineCountDiff;
                                         }
                                     }
-                                    if (newEntities) {
+                                    if (newEntities && assert.isObject(newEntities)) {
                                         if (query.inlineCountEnabled && inlineCount != null)
                                             newEntities.$inlineCount = inlineCount;
-                                        if (extra)
-                                            newEntities.$extra = extra;
+
+                                        newEntities.$extra = { userData: xhr.getResponseHeader("X-UserData"), xhr: xhr };
                                     }
                                     newEntities = notifyExecuted(that, query, options, newEntities);
                                     onSuccess(successCallback, pp, d, newEntities);
@@ -9686,11 +9582,7 @@
                         var allEntities = null;
                         if (data)
                             allEntities = that.fixResults(data, makeObservable, handleUnmappedProperties);
-                        // read inline count header.
-                        var inlineCount = xhr.getResponseHeader("X-InlineCount");
-                        var userData = xhr.getResponseHeader("X-UserData");
-                        var ud = { userData: userData, xhr: xhr };
-                        successCallback(data, allEntities, inlineCount && Number(inlineCount), ud);
+                        successCallback(data, allEntities, xhr);
                     },
                     function (error) {
                         errorCallback(error);
