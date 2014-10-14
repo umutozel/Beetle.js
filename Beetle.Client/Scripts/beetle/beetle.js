@@ -8325,8 +8325,8 @@
                                     var isSingle = false;
                                     // read inline count header.
                                     var inlineCount = xhr.getResponseHeader("X-InlineCount");
-                                    if (inlineCount) inlineCount = Number(inlineCount);
-                                    
+                                    if (inlineCount != null) inlineCount = Number(inlineCount);
+
                                     if (newEntities) {
                                         if (!noTracking) {
                                             // we convert result to array to get modified result (replaced with cached by manager when necessary).
@@ -8342,10 +8342,9 @@
                                     // if option need local and server results both, after server query re-run same query on local.
                                     if (execution == enums.executionStrategy.Both) {
                                         newEntities = that.executeQueryLocally(query, options && options.varContext, true);
-                                        if (inlineCount && newEntities.$inlineCountDiff) {
+                                        if (inlineCount != null && newEntities.$inlineCountDiff)
                                             inlineCount += newEntities.$inlineCountDiff;
-                                            delete newEntities.$inlineCountDiff;
-                                        }
+                                        delete newEntities.$inlineCountDiff;
                                     }
                                     if (newEntities && assert.isObject(newEntities)) {
                                         if (query.inlineCountEnabled && inlineCount != null)
@@ -8377,6 +8376,7 @@
                     /// </summary>
                     /// <param name="query">The query.</param>
                     /// <param name="varContext">Variable context for the query.</param>
+                    /// <param name="calculateInlineCountDiff">When true, effect of the local entities to server entities will be calculated.</param>
                     /// <returns type="">Returns found entities from local cache.</returns>
                     // get entity type of the query
                     var et = query.entityType;
