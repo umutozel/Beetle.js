@@ -107,7 +107,7 @@ namespace Beetle.Server.Mvc {
             if (enumerable != null)
                 return EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service);
 
-            return new ProcessResult { Result = contentValue };
+            return new ProcessResult(actionContext) { Result = contentValue };
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Beetle.Server.Mvc {
                 response.Headers.Add("X-UserData", processResult.UserData);
 
             // write the result to response content
-            return new BeetleJsonResult(config) {
+            return new BeetleJsonResult(config, processResult) {
                 Data = processResult.Result,
                 ContentEncoding = response.HeaderEncoding,
                 ContentType = "application/json",

@@ -10,13 +10,26 @@ namespace Beetle.Server.Mvc {
     /// </summary>
     public class BeetleJsonResult: JsonResult {
         private readonly BeetleConfig _config;
+        private readonly ProcessResult _processResult;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleJsonResult"/> class.
+        /// Initializes a new instance of the <see cref="BeetleJsonResult" /> class.
         /// </summary>
         /// <param name="config">The configuration.</param>
-        public BeetleJsonResult(BeetleConfig config) {
+        /// <param name="processResult">The process result.</param>
+        public BeetleJsonResult(BeetleConfig config, ProcessResult processResult) {
             _config = config;
+            _processResult = processResult;
+        }
+
+        /// <summary>
+        /// Gets the process result.
+        /// </summary>
+        /// <value>
+        /// The process result.
+        /// </value>
+        public ProcessResult ProcessResult {
+            get { return _processResult; }
         }
 
         /// <summary>
@@ -29,8 +42,8 @@ namespace Beetle.Server.Mvc {
             if (JsonRequestBehavior == JsonRequestBehavior.DenyGet && context.HttpContext.Request.HttpMethod == "GET")
                 throw new InvalidOperationException(Resources.GETRequestNotAllowed);
 
-            response.ContentType = !string.IsNullOrEmpty(ContentType) 
-                ? ContentType 
+            response.ContentType = !string.IsNullOrEmpty(ContentType)
+                ? ContentType
                 : "application/json";
 
             if (ContentEncoding != null)

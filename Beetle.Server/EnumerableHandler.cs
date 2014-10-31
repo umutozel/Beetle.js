@@ -36,7 +36,7 @@ namespace Beetle.Server {
                     throw new BeetleException(Resources.ResultCountExceeded);
             }
 
-            return new ProcessResult { Result = contentValue };
+            return new ProcessResult(actionContext) { Result = contentValue };
         }
 
         /// <summary>

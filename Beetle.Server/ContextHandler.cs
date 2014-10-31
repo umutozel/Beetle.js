@@ -129,7 +129,7 @@ namespace Beetle.Server {
             if (enumerable != null)
                 return EnumerableHandler.HandleContent(enumerable, queryParameters, actionContext, service, this);
 
-            return new ProcessResult { Result = contentValue };
+            return new ProcessResult(actionContext) { Result = contentValue };
         }
 
         /// <summary>

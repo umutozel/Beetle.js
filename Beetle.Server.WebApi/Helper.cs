@@ -80,7 +80,7 @@ namespace Beetle.Server.WebApi {
                     var enumerable = contentValue as IEnumerable;
                     processResult = enumerable != null
                         ? EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service)
-                        : new ProcessResult { Result = contentValue };
+                        : new ProcessResult(actionContext) { Result = contentValue };
                 }
             }
 

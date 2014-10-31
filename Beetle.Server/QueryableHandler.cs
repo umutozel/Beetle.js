@@ -89,7 +89,7 @@ namespace Beetle.Server {
             result = afterArgs.Result;
             var userData = afterArgs.UserData;
 
-            return new ProcessResult { Result = result, InlineCount = inlineCount, UserData = userData };
+            return new ProcessResult(actionContext) { Result = result, InlineCount = inlineCount, UserData = userData };
         }
 
         /// <summary>
