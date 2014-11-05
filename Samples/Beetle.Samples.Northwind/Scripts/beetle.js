@@ -9,14 +9,12 @@
                 /// <summary>Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check(). (adapted from breezejs)</summary>
                 /// <param name="value">The value.</param>
                 /// <param name="name">Name of the parameter.</param>
-                /// <returns type="">Assert oject.</returns>
                 return new assert(value, name);
             },
             combine: function (obj1, obj2) {
                 /// <summary>Combines first object's properties with second object's properties on a new object.</summary>
                 /// <param name="obj1">First object.</param>
                 /// <param name="obj2">Second object.</param>
-                /// <returns type="Boolean">Extended first object or newly created object.</returns>
                 if (obj1 == obj2) return obj1;
                 var obj = {};
                 if (obj1 != null) {
@@ -38,7 +36,6 @@
                 /// <summary>Checks if two objects are equal. if parameters are both objects, recursively controls their properties too.</summary>
                 /// <param name="obj1">First object.</param>
                 /// <param name="obj2">Second object.</param>
-                /// <returns type="Boolean">When objects are equal returns true, otherwise false.</returns>
                 if (obj1 == obj2)
                     return true;
 
@@ -58,26 +55,34 @@
 
                 return false;
             },
+            isCaseSensitive: function (options) {
+                /// <summary>Returns string case option for current operation context.</summary>
+                /// <param name="options">Options for the context.</param>
+                var isCaseSensitive = options && options.isCaseSensitive;
+                return isCaseSensitive == null ? settings.isCaseSensitive : isCaseSensitive;
+            },
+            ignoreWhiteSpaces: function (options) {
+                /// <summary>Returns whitespace ignore option for current operation context.</summary>
+                /// <param name="options">Options for the context.</param>
+                var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
+                return ignoreWhiteSpaces == null ? settings.ignoreWhiteSpaces : ignoreWhiteSpaces;
+            },
+            handleStrOptions: function (str, options) {
+                /// <summary>Applies current operation context string options to given parameter.</summary>
+                /// <param name="options">Options for the context.</param>
+                if (!helper.isCaseSensitive(options)) str = str.toLowerCase();
+                if (helper.ignoreWhiteSpaces(options)) str = str.trim();
+                return str;
+            },
             equals: function (obj1, obj2, isStrict, options) {
                 /// <summary>Compares two objects. Uses given options when necessary.</summary>
                 /// <param name="obj1">First object.</param>
                 /// <param name="obj2">Second object.</param>
                 /// <param name="isStrict">Use strict comparing (===).</param>
                 /// <param name="options">Comparing options: isCaseSensitive, ignoreWhiteSpaces.</param>
-                /// <returns type="Boolean">When objects are equal returns true, otherwise false.</returns>
                 if (typeof obj1 === 'string' && typeof obj2 === 'string') {
-                    var isCaseSensitive = options && options.isCaseSensitive;
-                    if (isCaseSensitive == null) isCaseSensitive = settings.isCaseSensitive;
-                    var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
-                    if (ignoreWhiteSpaces == null) ignoreWhiteSpaces = settings.ignoreWhiteSpaces;
-                    if (!isCaseSensitive) {
-                        obj1 = obj1.toLowerCase();
-                        obj2 = obj2.toLowerCase();
-                    }
-                    if (ignoreWhiteSpaces) {
-                        obj1 = obj1.trim();
-                        obj2 = obj2.trim();
-                    }
+                    obj1 = helper.handleStrOptions(obj1, options);
+                    obj2 = helper.handleStrOptions(obj2, options);
                 }
                 return isStrict ? obj1 === obj2 : obj1 == obj2;
             },
@@ -85,7 +90,6 @@
                 /// <summary>Works like c#'s string.Format. First paramater is message, other paramaters are replace arguments.</summary>
                 /// <param name="string">Message string.</param>
                 /// <param name="params">Arguments to replace.</param>
-                /// <returns type="String">Formatted string.</returns>
                 var args = arguments;
                 var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
                 var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
@@ -101,7 +105,6 @@
                 /// <summary>Calls Object.freeze() method if available. Old browsers does not support this.</summary>
                 /// <param name="obj">Object to freeze.</param>
                 /// <param name="withChildren">When 'true', all object parameters, and all items of array parameters will be freezed also.</param>
-                /// <returns type="Object">Frozen object (when available) or same object.</returns>
                 if (!obj || !Object.freeze) return obj;
                 Object.freeze(obj);
                 if (withChildren === true) {
@@ -153,11 +156,10 @@
                 }
             },
             findInArray: function (array, value, property) {
-                /// <summary>Finds given item in the array. When property is given, looks item's given property, otherwise compares items itself. if item could not be found returns null.</summary>
+                /// <summary>Finds given item in the array. When property is given, looks item's given property, otherwise compares items' itself. if item could not be found returns null.</summary>
                 /// <param name="array">Array to search.</param>
                 /// <param name="value">Value to find.</param>
                 /// <param name="property">Property that holds the item. Optional.</param>
-                /// <returns>If found returns object that hold the item, or items itself.</returns>
                 for (var i = 0; i < array.length; i++)
                     if (property) {
                         if (array[i][property] === value) return array[i];
@@ -168,7 +170,6 @@
                 /// <summary>Copies array items that match the given conditions to another array and returns the new array.</summary>
                 /// <param name="array">Array to filter.</param>
                 /// <param name="predicate">Select conditions.</param>
-                /// <returns type="Array">New array.</returns>
                 var retVal = [];
                 for (var i = 0; i < array.length; i++) {
                     var item = array[i];
@@ -203,7 +204,6 @@
             },
             createGuid: function () {
                 /// <summary>Creates a guid.</summary>
-                /// <returns type="String">The guid.</returns>
 
                 function s4() {
                     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -231,7 +231,6 @@
                 /// <summary>Reads property of value, used when we are not sure if property is observable.</summary>
                 /// <param name="object">The object.</param>
                 /// <param name="property">The property.</param>
-                /// <returns>Value of the property.</returns>
                 if (object == null) return undefined;
                 var op = settings.getObservableProvider();
                 // split propertyPath path and read every items value
@@ -266,7 +265,6 @@
                 /// <param name="property">The property.</param>
                 /// <param name="message">Validation message.</param>
                 /// <param name="validatorObj">Validator instance.</param>
-                /// <returns type="Object"></returns>
                 var retVal = { entity: entity, message: message, validator: validatorObj };
                 if (value) retVal.value = value;
                 if (property) retVal.property = property;
@@ -279,7 +277,6 @@
                 /// <param name="message">Error message.</param>
                 /// <param name="arg1">Message format arguments.</param>
                 /// <param name="arg2">Extra informations, will be attached to error object.</param>
-                /// <returns type="Object">Error object.</returns>
                 var args = null, obj = null;
                 if (assert.isArray(arg1)) {
                     args = arg1;
@@ -323,7 +320,6 @@
                 /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
                 /// <param name="exp">Jsep expression.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                /// <returns type="String">OData representation of the expression.</returns>
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
                 if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
@@ -419,7 +415,6 @@
                 /// <summary>Converts parsed javascript expression (jsep) to Beetle format query string.</summary>
                 /// <param name="exp">Jsep expression.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                /// <returns type="String">Beetle representation of the expression.</returns>
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
                 if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
@@ -513,7 +508,6 @@
                 /// <summary>Converts parsed javascript expression (jsep) to Javascript function.</summary>
                 /// <param name="exp">Jsep expression.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                /// <returns type="Function">Executable function representative of the expression.</returns>
                 return function (value) {
                     if (!queryContext) queryContext = { aliases: [] };
                     else if (!queryContext.aliases) queryContext.aliases = [];
@@ -630,7 +624,6 @@
                 /// <summary>Converts parsed javascript expression (jsep) to Javascript projection selector (creates new projected object).</summary>
                 /// <param name="exps">Jsep expressions.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                /// <returns type="Function">Executable function which can create projected object from given item.</returns>
                 var projectExps = [];
                 if (!assert.isArray(exps)) exps = [exps];
                 for (var i = 0; i < exps.length; i++) {
@@ -2131,7 +2124,6 @@
                     /// <summary>
                     /// Creates a function that can execute query operations against given array.
                     /// </summary>
-                    /// <returns type="">Generated javascript function.</returns>
                     var that = this;
                     return function (array, varContext) {
                         var qc = { varContext: varContext };
@@ -2457,7 +2449,6 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Created entity.</returns>
                     if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
                     return this.metadataManager.createRawEntity(shortName, initialValues);
                 };
@@ -2708,7 +2699,6 @@
                     /// </summary>
                     /// <param name="target">Observable to extend.</param>
                     /// <param name="interceptor">Extender parameter. We pass before and after callbacks with this.</param>
-                    /// <returns type="">Extended computed observable.</returns>
                     ko.extenders.intercept = function (target, interceptor) {
                         var result = ko.computed({
                             read: target,
@@ -2995,7 +2985,6 @@
                     /// Creates an error object by parsing XHR result.
                     /// </summary>
                     /// <param name="xhr">XML Http Request object.</param>
-                    /// <returns type="">Error object.</returns>
                     var obj = { status: xhr.status, xhr: xhr };
                     if (xhr.responseText) {
                         try {
@@ -3130,7 +3119,6 @@
                     /// Checks if given value is valid for this property.
                     /// </summary>
                     /// <param name="value">Value to check.</param>
-                    /// <returns type="">When value is valid for this type true, otherwise false.</returns>
                     if (value == null) return !this.isNullable;
                     else return this.dataType.isValid(value, this);
                 };
@@ -3312,7 +3300,6 @@
                     /// this method will look to related navigation properties until Address and it will retun City property as dataProperty (if exists).
                     /// </summary>
                     /// <param name="propertyPath">Property path to navigate.</param>
-                    /// <returns type="">When found dataPropertyBased derived type, otherwise null.</returns>
                     return getProperty(propertyPath.split('.'), this);
                 };
 
@@ -3322,7 +3309,6 @@
                     /// </summary>
                     /// <param name="resourceName">WebApi query resource name (Service controller action).</param>
                     /// <param name="manager">The entity manager.</param>
-                    /// <returns type="">Entity typed query.</returns>
                     if (resourceName) return new querying.entityQuery(resourceName, this, manager);
 
                     var q = new querying.entityQuery(this.setName, this, manager);
@@ -3350,7 +3336,6 @@
                     /// Creates a new entity for this type.
                     /// </summary>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Trackable object.</returns>
                     var result = this.createRawEntity(initialValues);
                     // make it observable
                     return core.entityTracker.toEntity(result, this, settings.getObservableProvider());
@@ -3361,7 +3346,6 @@
                     /// Creates a new entity for this type but do not convert it to observable.
                     /// </summary>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Trackable object.</returns>
                     var result = initialValues || {};
                     // create properties with default values for each data property defined in metadata.
                     helper.forEach(this.dataProperties, function (dp) {
@@ -3398,7 +3382,6 @@
                     /// Checks if this type can be set with given type.
                     /// </summary>
                     /// <param name="otherType">Type to assign.</param>
-                    /// <returns type="">When can be assigned true, otherwise false.</returns>
                     return isAssignableWith(this, otherType);
                 };
 
@@ -3407,7 +3390,6 @@
                     /// Checks if this type can be set to given type.
                     /// </summary>
                     /// <param name="otherType">Type to check.</param>
-                    /// <returns type="">When can be assigned true, otherwise false.</returns>
                     return isAssignableTo(this, otherType);
                 };
 
@@ -3417,7 +3399,6 @@
                     /// This method is used to check key violation between different types.
                     /// </summary>
                     /// <param name="type">Other type.</param>
-                    /// <returns type="">When types derived from same base type returns true, otherwise false.</returns>
                     return this.floorType.name === type.floorType.name;
                 };
 
@@ -3486,7 +3467,6 @@
                     /// </summary>
                     /// <param name="propertyPath">Property path array.</param>
                     /// <param name="type">The type of the entity.</param>
-                    /// <returns type="">When found dataPropertyBased derived type, otherwise null.</returns>
                     var len = propertyPaths.length;
                     for (var i = 0; i < len; i++) {
                         var p = propertyPaths[i];
@@ -3510,7 +3490,6 @@
                     /// </summary>
                     /// <param name="type1">Type to be assigned.</param>
                     /// <param name="type2">Type to assign.</param>
-                    /// <returns type="">When can be assigned returns true, otherwise false.</returns>
                     if (type1.name === type2.name)
                         return true;
                     else if (type2.baseType != null)
@@ -3525,7 +3504,6 @@
                     /// </summary>
                     /// <param name="type1">Type to set.</param>
                     /// <param name="type2">Type to check.</param>
-                    /// <returns type="">When can be assigned returns true, otherwise false.</returns>
                     var name = assert.isTypeOf(type2, 'string') ? type2 : type2.name;
                     if (type1.name === name)
                         return true;
@@ -3565,7 +3543,6 @@
                     /// </summary>
                     /// <param name="typeName">Type name</param>
                     /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
-                    /// <returns type="">When type is found in the list entityType derived object, otherwise null.</returns>
                     var type = helper.findInArray(this.types, typeName, 'name');
                     if (!type && throwIfNotFound === true)
                         throw helper.createError(i18N.notFoundInMetadata, [typeName], { metadataManager: this, typeName: typeName });
@@ -3578,7 +3555,6 @@
                     /// </summary>
                     /// <param name="shortName">Type name</param>
                     /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
-                    /// <returns type="">When type is found in the list entityType derived object, otherwise null.</returns>
                     var type = helper.findInArray(this.types, shortName, 'shortName');
                     if (!type && throwIfNotFound === true)
                         throw helper.createError(i18N.notFoundInMetadata, [shortName], { metadataManager: this, typeShortName: shortName });
@@ -3592,7 +3568,6 @@
                     /// <param name="resourceName">Query resource name.</param>
                     /// <param name="shortName">Type name</param>
                     /// <param name="manager">Entity manager</param>
-                    /// <returns type="">Entity typed query.</returns>
                     // if shortName is given find entityType and create query for it.
                     if (shortName) return this.getEntityTypeByShortName(shortName, true).createQuery(resourceName, manager);
                     // try to find entity type by its resource (set) name.
@@ -3619,12 +3594,10 @@
                     /// </summary>
                     /// <param name="shortName">Type name</param>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">When type is found in the list trackable object, otherwise null.</returns>
                     // find entity type.
                     var type = this.getEntityTypeByShortName(shortName, true);
                     // create entity for this type
-                    if (type) return type.createEntity(initialValues);
-                    return null;
+                    return type.createEntity(initialValues);
                 };
 
                 proto.createRawEntity = function (shortName, initialValues) {
@@ -3633,12 +3606,10 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Created entity.</returns>
                     // find entity type.
                     var type = this.getEntityTypeByShortName(shortName, true);
                     // create entity for this type
-                    if (type) return type.createRawEntity(initialValues);
-                    return null;
+                    return type.createRawEntity(initialValues);
                 };
 
                 proto.parseBeetleMetadata = function (metadataPrm) {
@@ -3973,7 +3944,6 @@
                             /// Combines given predication with previous filters using 'and'.
                             /// </summary>
                             /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            /// <returns type="">Returns this predicate builder instance for method chaining.</returns>
                             // add this filter to current group's filter list.
                             if (!this.currentGroup) createGroup(args, false, this);
                             else parseFilterArgs(args, false, this.currentGroup);
@@ -3985,7 +3955,6 @@
                             /// Combines given predication with previous filters using 'or'.
                             /// </summary>
                             /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            /// <returns type="">Returns this predicate builder instance for method chaining.</returns>
                             if (!this.currentGroup) createGroup(args, true, this);
                             else parseFilterArgs(args, true, this.currentGroup);
                             return this;
@@ -3996,7 +3965,6 @@
                             /// Creates new group with given initial filter and combines it with previous group using 'and'.
                             /// </summary>
                             /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            /// <returns type="">Returns this predicate builder instance for method chaining.</returns>
                             // create new group with initial filter and false (to say it is not an 'or').
                             createGroup(arguments, false, this);
                             return this;
@@ -4007,7 +3975,6 @@
                             /// Creates new group with given initial filter and combines it with previous group using 'or'.
                             /// </summary>
                             /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            /// <returns type="">Returns this predicate builder instance for method chaining.</returns>
                             createGroup(arguments, true, this);
                             return this;
                         };
@@ -4017,7 +3984,6 @@
                             /// gets lastly opened group from stack and sets the last item as current. 
                             /// </summary>
                             /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            /// <returns type="">Returns this predicate builder instance for method chaining.</returns>
                             // get last opened group.
                             var og = this.openGroups.pop();
                             // if there is no open group, throw an error.
@@ -4097,7 +4063,6 @@
                             /// now this is the active group, so set it as currentGroup and add this group to openGroups.
                             /// </summary>
                             /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] for now.</param>
-                            /// <returns type="">Returns this predicate builder instance for method chaining.</returns>
                             // new group object.
                             var group = new filterGroup(isOr);
                             if (args.length > 0)
@@ -5173,7 +5138,9 @@
 
                     proto.impl = function (value, find, source) {
                         source = (source ? source(value) : value);
-                        return source && source.indexOf(find(value)) >= 0;
+                        source = helper.handleStrOptions(source, this.varContext);
+                        find = helper.handleStrOptions(find(value), this.varContext);
+                        return source && source.indexOf(find) >= 0;
                     };
 
                     return new ctor();
@@ -5249,7 +5216,13 @@
                             find = source;
                             source = value;
                         } else source = source(value);
-                        return source.replace(find(value), replace(value));
+                        find = find(value);
+                        
+                        if (helper.ignoreWhiteSpaces(this.varContext))
+                            find = find.trim();
+                        if (!helper.isCaseSensitive(this.varContext))
+                            find = new RegExp(find, 'gi');
+                        return source.replace(find, replace(value));
                     };
 
                     return new ctor();
@@ -5267,7 +5240,9 @@
                             find = source;
                             source = value;
                         } else source = source(value);
-                        return source && source.indexOf(find(value), 0) === 0;
+                        source = helper.handleStrOptions(source, this.varContext);
+                        find = helper.handleStrOptions(find(value), this.varContext);
+                        return source && source.indexOf(find, 0) === 0;
                     };
 
                     return new ctor();
@@ -5285,7 +5260,8 @@
                             find = source;
                             source = value;
                         } else source = source(value);
-                        find = find(value);
+                        source = helper.handleStrOptions(source, this.varContext);
+                        find = helper.handleStrOptions(find(value), this.varContext);
                         var index = source.length - find.length;
                         return source && source.indexOf(find, index) !== -1;
                     };
@@ -5305,7 +5281,9 @@
                             find = source;
                             source = value;
                         } else source = source(value);
-                        return source && source.indexOf(find(value));
+                        source = helper.handleStrOptions(source, this.varContext);
+                        find = helper.handleStrOptions(find(value), this.varContext);
+                        return source && source.indexOf(find);
                     };
 
                     return new ctor();
@@ -5318,22 +5296,22 @@
                     helper.inherit(ctor, baseTypes.queryFuncBase);
                     var proto = ctor.prototype;
 
-                    proto.toODataFunction = function (items, source) {
+                    proto.toODataFunction = function (items, item) {
                         if (assert.isTypeOf(items, 'string'))
-                            return expose.substringof.toODataFunction(source, items);
+                            return expose.substringof.toODataFunction(item, items);
                         var args = [];
-                        helper.forEach(items, function (item) {
-                            args.push(source + ' eq ' + core.dataTypes.toODataValue(item));
+                        helper.forEach(items, function (i) {
+                            args.push(item + ' eq ' + core.dataTypes.toODataValue(i));
                         });
                         return '(' + args.join(' or ') + ')';
                     };
 
-                    proto.toBeetleFunction = function (items, source) {
+                    proto.toBeetleFunction = function (items, item) {
                         if (assert.isTypeOf(items, 'string'))
-                            return expose.substringof.toBeetleFunction(source, items);
+                            return expose.substringof.toBeetleFunction(item, items);
                         var args = [];
-                        helper.forEach(items, function (item) {
-                            args.push(source + ' == ' + core.dataTypes.toBeetleValue(item));
+                        helper.forEach(items, function (i) {
+                            args.push(item + ' == ' + core.dataTypes.toBeetleValue(i));
                         });
                         return '(' + args.join(' || ') + ')';
                     };
@@ -5355,6 +5333,8 @@
                             }
                             return false;
                         }
+                        items = helper.handleStrOptions(items, this.varContext);
+                        item = helper.handleStrOptions(item, this.varContext);
                         return items && items.indexOf(item) >= 0;
                     };
 
@@ -6147,7 +6127,6 @@
                         /// <summary>
                         /// Checks if given value is date.
                         /// </summary>
-                        /// <returns type="">When value is valid for this type true, otherwise false.</returns>
                         return Object.prototype.toString.call(value) === '[object Date]';
                     };
 
@@ -7036,7 +7015,6 @@
                         /// </summary>
                         /// <param name="fk">The foreign key.</param>
                         /// <param name="navProperty">The navigation property.</param>
-                        /// <returns type="">Found relation list.</returns>
                         // get other side of the navigation property.
                         var inverse = navProperty.inverse;
                         // if there is no other side, return null.
@@ -7120,7 +7098,6 @@
                         /// </summary>
                         /// <param name="key">The key.</param>
                         /// <param name="keyIndex">The key index table.</param>
-                        /// <returns type="">Proper location index.</returns>
                         var i = 0;
                         while (i < keyIndex.length && key > keyIndex[i].key) i++;
                         return i;
@@ -7197,7 +7174,6 @@
                     /// <summary>
                     /// Gets cached entity list.
                     /// </summary>
-                    /// <returns type="">All cached entities.</returns>
                     return this.allEntities;
                 };
 
@@ -7207,7 +7183,6 @@
                     /// </summary>
                     /// <param name="key">The key.</param>
                     /// <param name="type">The entity type.</param>
-                    /// <returns type="">Entity if found, otherwise null.</returns>
                     if (!key) return null;
                     // get entity set for type
                     var es = this.findEntitySet(type);
@@ -7221,7 +7196,6 @@
                     /// </summary>
                     /// <param name="entity">The entity.</param>
                     /// <param name="navProperty">The navigation property.</param>
-                    /// <returns type="">Found relation list.</returns>
                     // Example: We may want OrderDetails for Order
                     //  So entity: Order, navProperty: npOrderDetails
                     //  Other side: npOrder (from OrderDetail's side)
@@ -7268,7 +7242,6 @@
                     /// <summary>
                     /// Gets all changed entities from cache (Modified, Added, Deleted)
                     /// </summary>
-                    /// <returns type="">Changed entities.</returns>
                     return helper.filterArray(this.allEntities, function (item) {
                         return !(item.$tracker.entityType.isComplexType && item.$tracker.owners.length > 0) && item.$tracker.isChanged();
                     });
@@ -7278,7 +7251,6 @@
                     /// <summary>
                     /// Returns cached entity count.
                     /// </summary>
-                    /// <returns type="">Count of entities.</returns>
                     return this.allEntities.length;
                 };
 
@@ -7297,7 +7269,6 @@
                     /// </summary>
                     /// <param name="type">The entity type.</param>
                     /// <param name="entitySets">Cached entity sets.</param>
-                    /// <returns type="">Newly created entity set.</returns>
                     var es = new entitySet(type);
                     entitySets.push(es);
                     return es;
@@ -7343,7 +7314,6 @@
                     /// <summary>
                     /// Gets if entity is changed.
                     /// </summary>
-                    /// <returns type="">True if changed, otherwise false.</returns>
                     return this.entityState === enums.entityStates.Added || this.entityState === enums.entityStates.Deleted || this.entityState === enums.entityStates.Modified;
                 };
 
@@ -7423,7 +7393,6 @@
                     /// Gets internal value of the property from observable entity
                     /// </summary>
                     /// <param name="property">The property</param>
-                    /// <returns type="">Internal value</returns>
                     return this.observableProvider.getValue(this.entity, property);
                 };
 
@@ -7441,7 +7410,7 @@
                     /// Get foreign key value for this navigation property.
                     /// </summary>
                     /// <param name="navProperty">The navigation property.</param>
-                    /// <returns type="">Comma seperated foreign keys.</returns>
+                    /// <returns type="">Comma separated foreign keys.</returns>
                     var type = navProperty.entityType;
                     if (type.keys.length == 0) return null;
                     var retVal = [];
@@ -7578,7 +7547,6 @@
                     /// <param name="result">The raw result.</param>
                     /// <param name="type">The entity type.</param>
                     /// <param name="op">Observable provider instance.</param>
-                    /// <returns type="">Observable entity.</returns>
                     // Crate entity tracker with this static method.
                     return new core.entityTracker(result, type, op).entity;
                 };
@@ -7644,7 +7612,7 @@
                     /// <param name="tracker">The entity tracker.</param>
                     /// <param name="p">The property.</param>
                     /// <param name="v">The value.</param>
-                    /// <returns type="">Comma seperated keys.</returns>
+                    /// <returns type="">Comma separated keys.</returns>
                     var type = tracker.entityType;
                     if (type.keys.length == 0) return null;
                     var retVal = [];
@@ -7671,7 +7639,6 @@
                     /// <param name="navPropName">Name of the navigation property (to use in error message).</param>
                     /// <param name="resourceName">Resource (query name) for the entity type of the navigation property.</param>
                     /// <param name="tracker">Tracker instance.</param>
-                    /// <returns type="">Entity query.</returns>
                     if (!navProp)
                         throw helper.createError(i18N.propertyNotFound, [navPropName],
                             { propertyName: navPropName, entity: tracker.entity, manager: tracker.manager });
@@ -8115,7 +8082,6 @@
                     /// Gets entity type by its short name from data service.
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
-                    /// <returns type="">Entity type.</returns>
                     return this.dataService.getEntityType(shortName);
                 };
 
@@ -8125,7 +8091,6 @@
                     /// </summary>
                     /// <param name="resourceName">The resource to query (service operation name, not entity type name).</param>
                     /// <param name="shortName">Entity type short name.</param>
-                    /// <returns type="">The query.</returns>
                     return this.dataService.createQuery(resourceName, shortName, this);
                 };
 
@@ -8135,7 +8100,6 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name (mandatory).</param>
                     /// <param name="resourceName">The resource to query (service operation name, not entity type name).</param>
-                    /// <returns type="">The query.</returns>
                     return this.dataService.createEntityQuery(shortName, resourceName, this);
                 };
 
@@ -8157,7 +8121,6 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Created entity.</returns>
                     var result = this.dataService.createEntity(shortName, initialValues);
                     var results = [result];
                     mergeEntities(results, null, enums.mergeStrategy.ThrowError, enums.entityStates.Added, this);
@@ -8170,7 +8133,6 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Created entity.</returns>
                     return this.dataService.createEntity(shortName, initialValues);
                 };
 
@@ -8180,7 +8142,6 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
-                    /// <returns type="">Created entity.</returns>
                     return this.dataService.createRawEntity(shortName, initialValues);
                 };
 
@@ -8274,7 +8235,7 @@
                     /// <param name="options">Query options (optional), for detail read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded (optional).</param>
                     /// <param name="errorCallback">Function to call when operation fails (optional).</param>
-                    /// <returns type="">Returns promise if possible.</returns>
+                    /// <returns type="">Returns promise if supported.</returns>
                     if (query.options)
                         options = helper.combine(query.options, options);
                     var modifiedArgs = notifyExecuting(this, query, options);
@@ -8374,12 +8335,11 @@
 
                 proto.executeQueryLocally = function (query, varContext, calculateInlineCountDiff) {
                     /// <summary>
-                    /// Execute the query.
+                    /// Execute the query against local cache.
                     /// </summary>
                     /// <param name="query">The query.</param>
                     /// <param name="varContext">Variable context for the query.</param>
                     /// <param name="calculateInlineCountDiff">When true, effect of the local entities to server entities will be calculated.</param>
-                    /// <returns type="">Returns found entities from local cache.</returns>
                     // get entity type of the query
                     var et = query.entityType;
                     var entities;
@@ -8430,7 +8390,6 @@
                     /// </summary>
                     /// <param name="key">Entity key as a string. When entity has more than one key, the key is keys joined with a ','.</param>
                     /// <param name="type">Entity type or type short name.</param>
-                    /// <returns type="">Entity type.</returns>
                     var t = assert.isInstanceOf(type, metadata.entityType) ? type : this.getEntityType(type, true);
                     return this.entities.getEntityByKey(key, t);
                 };
@@ -8616,7 +8575,6 @@
                     ///  forceUpdate: When true, each entity will be updated -even there is no modified property
                     ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
                     /// </summary>
-                    /// <returns type="">Exported entities.</returns>
                     var entityList = [];
                     entities = entities || this.entities.getEntities();
                     var forceUpdate = options && options.forceUpdate;
@@ -8749,7 +8707,6 @@
                     /// <summary>
                     /// Check if there is any pending changes.
                     /// </summary>
-                    /// <returns type="boolean">When there is pending changes returns true, otherwise false.</returns>
                     return this.pendingChangeCount > 0;
                 };
 
@@ -8777,7 +8734,7 @@
                     /// <param name="options">Save options, for details read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    /// <returns type="">Returns promise if possible.</returns>
+                    /// <returns type="">Returns promise if supported.</returns>
                     var changes = (options && options.entities) || this.getChanges();
                     options = notifySaving(this, changes, options);
 
@@ -8889,7 +8846,6 @@
                     /// Checks if given entity is being tracked by this manager.
                     /// </summary>
                     /// <param name="entity">The entity.</param>
-                    /// <returns type="">If entity is being tracked by this manager, returns true, otherwise false.</returns>
                     return entity.$tracker.manager == this;
                 };
 
@@ -8901,7 +8857,6 @@
                     ///     with flatting this entity, we can merge Order, OrderDetails and Suppliers with one call.
                     /// </summary>
                     /// <param name="entities">Entities to float.</param>
-                    /// <returns type="">Flattened list.</returns>
                     var that = this;
                     var flatList = arguments[1] || [];
                     if (!assert.isArray(entities)) entities = [entities];
@@ -9632,7 +9587,6 @@
                 /// <param name="results">Raw data.</param>
                 /// <param name="makeObservable">When not false entities will be converted to observables.</param>
                 /// <param name="handleUnmappedProperties">When null, value is read from settings. When true, all values will be handled (types changed) by their value.</param>
-                /// <returns type="">Fixed and observable entities.</returns>
                 var that = this;
                 var flatList = arguments[3] || [];
                 if (!assert.isArray(results)) results = [results];
@@ -9947,7 +9901,6 @@
             /// <summary>
             /// Gets static observable provider instance.
             /// </summary>
-            /// <returns type="">Observable provider instance.</returns>
             return _observableProvider;
         };
 
@@ -9980,7 +9933,6 @@
             /// <summary>
             /// Gets static promise provider instance.
             /// </summary>
-            /// <returns type="">Promise provider instance.</returns>
             return _promiseProvider;
         };
 
@@ -10013,7 +9965,6 @@
             /// <summary>
             /// Gets array set behaviour.
             /// </summary>
-            /// <returns type="">Current array set behaviour.</returns>
             return _arraySetBehaviour;
         };
 
@@ -10047,7 +9998,6 @@
             /// <summary>
             /// Gets localized function (used for validation).
             /// </summary>
-            /// <returns type="">Current localized function.</returns>
             return _localizeFunction;
         };
 
