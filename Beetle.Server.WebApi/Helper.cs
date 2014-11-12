@@ -57,11 +57,11 @@ namespace Beetle.Server.WebApi {
         internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
                                                      bool forbidBeetleQueryParams = false, IBeetleService service = null) {
             var queryParams = actionContext.QueryParameters;
+            var inlineCountParam = queryParams["$inlineCount"];
             // get beetle query parameters (supported parameters by default)
             var beetlePrms = Server.Helper.GetBeetleParameters(queryParams);
             if (beetlePrms.Count > 0) {
                 if (forbidBeetleQueryParams) throw new BeetleException(Resources.BeetleQueryStringsAreNotAllowed);
-                var inlineCountParam = queryParams["$inlineCount"];
                 // if inlineCount parameter is given with OData format, add it to beetle parameters to return correct in-line count
                 if (!string.IsNullOrWhiteSpace(inlineCountParam))
                     beetlePrms.Add(new KeyValuePair<string, string>("inlineCount", inlineCountParam));
@@ -84,7 +84,7 @@ namespace Beetle.Server.WebApi {
                 }
             }
 
-            if (processResult.InlineCount == null && queryParams["$inlineCount"] == "allpages") {
+            if (processResult.InlineCount == null && inlineCountParam == "allpages") {
                 object inlineCount;
                 if (!request.Properties.TryGetValue("MS_InlineCount", out inlineCount)) {
                     object inlineCountQueryObj;
@@ -120,8 +120,10 @@ namespace Beetle.Server.WebApi {
             object inlineCount = processResult.InlineCount;
             if (inlineCount != null && response.Headers["X-InlineCount"] == null)
                 response.Headers["X-InlineCount"] = inlineCount.ToString();
-            if (processResult.UserData != null && response.Headers["X-UserData"] == null)
-                response.Headers["X-UserData"] = processResult.UserData;
+            if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
+                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, config.JsonSerializerSettings);
+                response.Headers["X-UserData"] = userDataStr;
+            }
 
             return retVal;
         }

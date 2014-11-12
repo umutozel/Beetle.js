@@ -81,7 +81,7 @@ namespace Beetle.Server {
             }
 
             // make after execute callbacks
-            var afterArgs = new AfterQueryExecuteEventArgs(actionContext, queryable, result);
+            var afterArgs = new AfterQueryExecuteEventArgs(actionContext, queryable, result, beforeArgs.UserData);
             if (service != null)
                 service.OnAfterQueryExecute(afterArgs);
             if (contextHandler != null)

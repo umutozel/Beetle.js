@@ -183,6 +183,20 @@ namespace Beetle.Server.EntityFramework {
             return base.CreateType(typeName);
         }
 
+
+        /// <summary>
+        /// Creates the queryable.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <returns></returns>
+        public override IQueryable<TEntity> CreateQueryable<TEntity>() {
+            if (_dbContext != null)
+                return _dbContext.Set<TEntity>();
+
+            var setName = FindEntitySet(typeof(TEntity));
+            IQueryable<TEntity> query = _objectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
+            return query.OfType<TEntity>();
+        }
         /// <summary>
         /// Merges the entities.
         /// </summary>
@@ -299,10 +313,12 @@ namespace Beetle.Server.EntityFramework {
         /// Saves the changes.
         /// </summary>
         /// <param name="entityBags">The entity bags.</param>
+        /// <param name="saveContext">The save context.</param>
         /// <returns>
         /// Save result.
         /// </returns>
-        public override SaveResult SaveChanges(IEnumerable<EntityBag> entityBags) {
+        /// <exception cref="EntityValidationException"></exception>
+        public override SaveResult SaveChanges(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntities(entityBags, out unmappeds);
             var mergeList = merges == null
@@ -319,7 +335,7 @@ namespace Beetle.Server.EntityFramework {
             }
             if (!saveList.Any()) return SaveResult.Empty;
 
-            OnBeforeSaveChanges(saveList);
+            OnBeforeSaveChanges(new BeforeSaveEventArgs(saveList, saveContext));
             // do data annotation validations
             if (ValidateOnSaveEnabled) {
                 var toValidate = saveList.Where(eb => eb.EntityState == EntityState.Added || eb.EntityState == EntityState.Modified).Select(eb => eb.Entity);
@@ -329,15 +345,19 @@ namespace Beetle.Server.EntityFramework {
             }
             var affectedCount = _dbContext != null ? _dbContext.SaveChanges() : _objectContext.SaveChanges();
 
-            OnAfterSaveChanges(saveList);
             var generatedValues = GetGeneratedValues(mergeList);
-            if (handledUnmappedList != null && !handledUnmappedList.Any()) return new SaveResult(affectedCount, generatedValues);
+            if (handledUnmappedList != null && handledUnmappedList.Any()) {
+                var generatedValueList = generatedValues == null
+                    ? new List<GeneratedValue>()
+                    : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
+                generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
+                generatedValues = generatedValueList;
+            }
 
-            var generatedValueList = generatedValues == null
-                ? new List<GeneratedValue>()
-                : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
-            generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
-            return new SaveResult(affectedCount, generatedValueList);
+            var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
+            OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
+
+            return saveResult;
         }
 
         /// <summary>
@@ -366,20 +386,6 @@ namespace Beetle.Server.EntityFramework {
                 entityType = entityType.BaseType;
             }
             return null;
-        }
-
-        /// <summary>
-        /// Creates the queryable.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <returns></returns>
-        public override IQueryable<TEntity> CreateQueryable<TEntity>() {
-            if (_dbContext != null)
-                return _dbContext.Set<TEntity>();
-
-            var setName = FindEntitySet(typeof(TEntity));
-            IQueryable<TEntity> query = _objectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
-            return query.OfType<TEntity>();
         }
 
         /// <summary>

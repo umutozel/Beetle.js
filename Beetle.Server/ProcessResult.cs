@@ -27,12 +27,12 @@
         /// <value>
         /// The user data.
         /// </value>
-        public string UserData { get; set; }
+        public object UserData { get; set; }
         /// <summary>
-        /// Gets or sets the inline count.
+        /// Gets or sets the in-line count.
         /// </summary>
         /// <value>
-        /// The inline count.
+        /// The in-line count.
         /// </value>
         public int? InlineCount { get; set; }
 

@@ -84,16 +84,6 @@ namespace Beetle.Server {
         }
 
         /// <summary>
-        /// Handles the unknown action.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public virtual object HandleUnknownAction(string action) {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Return metadata about data structure.
         /// </summary>
         /// <returns>Metadata object.</returns>
@@ -109,6 +99,16 @@ namespace Beetle.Server {
             var type = Type.GetType(typeName);
             if (type == null) throw new ArgumentException(string.Format(Resources.TypeCouldNotBeFound, typeName));
             return Activator.CreateInstance(type);
+        }
+
+        /// <summary>
+        /// Handles the unknown action.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public virtual object HandleUnknownAction(string action) {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -183,10 +183,11 @@ namespace Beetle.Server {
         /// Saves the changes.
         /// </summary>
         /// <param name="entities">The entities.</param>
+        /// <param name="saveContext">The save context.</param>
         /// <returns>
         /// Save result.
         /// </returns>
-        public abstract SaveResult SaveChanges(IEnumerable<EntityBag> entities);
+        public abstract SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
 
         /// <summary>
         /// Gets the enumerable handler.
@@ -286,29 +287,29 @@ namespace Beetle.Server {
         /// <summary>
         /// Occurs before save.
         /// </summary>
-        public event ContextSaveDelegate BeforeSaveChanges;
+        public event BeforeSaveDelegate BeforeSaveChanges;
 
         /// <summary>
         /// Called when [before save changes].
         /// </summary>
-        /// <param name="entities">The entities.</param>
-        protected virtual void OnBeforeSaveChanges(IEnumerable<EntityBag> entities) {
+        /// <param name="args">The <see cref="BeforeSaveEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnBeforeSaveChanges(BeforeSaveEventArgs args) {
             var handler = BeforeSaveChanges;
-            if (handler != null) handler(this, new ContextSaveEventArgs(entities));
+            if (handler != null) handler(this, args);
         }
 
         /// <summary>
         /// Occurs after save.
         /// </summary>
-        public event ContextSaveDelegate AfterSaveChanges;
+        public event AfterSaveDelegate AfterSaveChanges;
 
         /// <summary>
         /// Called when [after save changes].
         /// </summary>
-        /// <param name="entities">The entities.</param>
-        protected virtual void OnAfterSaveChanges(IEnumerable<EntityBag> entities) {
+        /// <param name="args">The <see cref="AfterSaveEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
             var handler = AfterSaveChanges;
-            if (handler != null) handler(this, new ContextSaveEventArgs(entities));
+            if (handler != null) handler(this, args);
         }
 
         /// <summary>

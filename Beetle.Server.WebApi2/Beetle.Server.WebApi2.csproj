@@ -76,24 +76,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BeetleActionFilterAttribute.cs" />
-    <Compile Include="BeetleApiController.cs">
-      <SubType>
-      </SubType>
+    <Compile Include="..\Beetle.Server.WebApi\BeetleActionFilterAttribute.cs">
+      <Link>BeetleActionFilterAttribute.cs</Link>
     </Compile>
-    <Compile Include="BeetleApiControllerAttribute.cs" />
-    <Compile Include="BeetleQueryableAttribute.cs">
-      <SubType>
-      </SubType>
+    <Compile Include="..\Beetle.Server.WebApi\BeetleApiController.cs">
+      <Link>BeetleApiController.cs</Link>
     </Compile>
-    <Compile Include="BeetleQueryableFilterProvider.cs" />
-    <Compile Include="Helper.cs">
-      <SubType>
-      </SubType>
+    <Compile Include="..\Beetle.Server.WebApi\BeetleApiControllerAttribute.cs">
+      <Link>BeetleApiControllerAttribute.cs</Link>
     </Compile>
-    <Compile Include="IODataService.cs">
-      <SubType>
-      </SubType>
+    <Compile Include="..\Beetle.Server.WebApi\BeetleQueryableAttribute.cs">
+      <Link>BeetleQueryableAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Beetle.Server.WebApi\BeetleQueryableFilterProvider.cs">
+      <Link>BeetleQueryableFilterProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Beetle.Server.WebApi\Helper.cs">
+      <Link>Helper.cs</Link>
+    </Compile>
+    <Compile Include="..\Beetle.Server.WebApi\IODataService.cs">
+      <Link>IODataService.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

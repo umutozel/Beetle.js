@@ -27,15 +27,23 @@ namespace Beetle.Server {
     public interface IContextHandler {
 
         /// <summary>
+        /// Initializes this instance.
+        /// </summary>
+        void Initialize();
+
+        /// <summary>
         /// Return metadata about data structure.
         /// </summary>
         /// <returns>Metadata object.</returns>
         Metadata Metadata();
 
         /// <summary>
-        /// Initializes this instance.
+        /// Creates the type by name.
         /// </summary>
-        void Initialize();
+        /// <param name="typeName">Name of the type.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        object CreateType(string typeName);
 
         /// <summary>
         /// Handles the unknown action.
@@ -45,12 +53,14 @@ namespace Beetle.Server {
         object HandleUnknownAction(string action);
 
         /// <summary>
-        /// Creates the type by name.
+        /// Processes the request.
         /// </summary>
-        /// <param name="typeName">Name of the type.</param>
+        /// <param name="contentValue">The content value.</param>
+        /// <param name="queryParameters">The query parameters.</param>
+        /// <param name="actionContext">The action context.</param>
+        /// <param name="service">The service.</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentException"></exception>
-        object CreateType(string typeName);
+        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, ActionContext actionContext, IBeetleService service);
 
         /// <summary>
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).
@@ -62,25 +72,16 @@ namespace Beetle.Server {
         /// Saves the changes.
         /// </summary>
         /// <param name="entities">The entities.</param>
+        /// <param name="saveContext">The save context.</param>
         /// <returns>
         /// Save result.
         /// </returns>
-        SaveResult SaveChanges(IEnumerable<EntityBag> entities);
+        SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
 
         /// <summary>
         /// Gets query handler.
         /// </summary>
         IQueryHandler<IQueryable> QueryableHandler { get; }
-
-        /// <summary>
-        /// Processes the request.
-        /// </summary>
-        /// <param name="contentValue">The content value.</param>
-        /// <param name="queryParameters">The query parameters.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, ActionContext actionContext, IBeetleService service);
 
         /// <summary>
         /// Occurs when [before handle query].
@@ -118,11 +119,11 @@ namespace Beetle.Server {
         /// <summary>
         /// Occurs before save.
         /// </summary>
-        event ContextSaveDelegate BeforeSaveChanges;
+        event BeforeSaveDelegate BeforeSaveChanges;
 
         /// <summary>
         /// Occurs after save.
         /// </summary>
-        event ContextSaveDelegate AfterSaveChanges;
+        event AfterSaveDelegate AfterSaveChanges;
     }
 }

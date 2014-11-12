@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Linq;
+using Beetle.Server.Meta;
+#if EF6
+using System.Data.Entity.Core.EntityClient;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Core.Metadata.Edm;
+using EFQueryHandler = Beetle.Server.EntityFramework.EF6QueryHandler;
+using EFState = System.Data.Entity.EntityState;
+using EntityType = System.Data.Entity.Core.Metadata.Edm.EntityType;
+#else
 using System.Data.EntityClient;
 using System.Data.Metadata.Edm;
 using System.Data.Objects;
-using System.Linq;
-using Beetle.Server.Meta;
 using EFQueryHandler = Beetle.Server.QueryableHandler;
 using EFState = System.Data.EntityState;
 using EntityType = System.Data.Metadata.Edm.EntityType;
+#endif
 
 namespace Beetle.Server.EntityFramework {
 
@@ -184,6 +193,20 @@ namespace Beetle.Server.EntityFramework {
         }
 
         /// <summary>
+        /// Creates the queryable.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <returns></returns>
+        public override IQueryable<TEntity> CreateQueryable<TEntity>() {
+            if (_dbContext != null)
+                return _dbContext.Set<TEntity>();
+
+            var setName = FindEntitySet(typeof(TEntity));
+            IQueryable<TEntity> query = _objectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
+            return query.OfType<TEntity>();
+        }
+
+        /// <summary>
         /// Merges the entities.
         /// </summary>
         /// <param name="entities">The entities.</param>
@@ -299,10 +322,12 @@ namespace Beetle.Server.EntityFramework {
         /// Saves the changes.
         /// </summary>
         /// <param name="entityBags">The entity bags.</param>
+        /// <param name="saveContext">The save context.</param>
         /// <returns>
         /// Save result.
         /// </returns>
-        public override SaveResult SaveChanges(IEnumerable<EntityBag> entityBags) {
+        /// <exception cref="EntityValidationException"></exception>
+        public override SaveResult SaveChanges(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntities(entityBags, out unmappeds);
             var mergeList = merges == null
@@ -319,7 +344,7 @@ namespace Beetle.Server.EntityFramework {
             }
             if (!saveList.Any()) return SaveResult.Empty;
 
-            OnBeforeSaveChanges(saveList);
+            OnBeforeSaveChanges(new BeforeSaveEventArgs(saveList, saveContext));
             // do data annotation validations
             if (ValidateOnSaveEnabled) {
                 var toValidate = saveList.Where(eb => eb.EntityState == EntityState.Added || eb.EntityState == EntityState.Modified).Select(eb => eb.Entity);
@@ -329,15 +354,19 @@ namespace Beetle.Server.EntityFramework {
             }
             var affectedCount = _dbContext != null ? _dbContext.SaveChanges() : _objectContext.SaveChanges();
 
-            OnAfterSaveChanges(saveList);
             var generatedValues = GetGeneratedValues(mergeList);
-            if (handledUnmappedList != null && !handledUnmappedList.Any()) return new SaveResult(affectedCount, generatedValues);
+            if (handledUnmappedList != null && handledUnmappedList.Any()) {
+                var generatedValueList = generatedValues == null
+                    ? new List<GeneratedValue>()
+                    : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
+                generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
+                generatedValues = generatedValueList;
+            }
 
-            var generatedValueList = generatedValues == null
-                ? new List<GeneratedValue>()
-                : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
-            generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
-            return new SaveResult(affectedCount, generatedValueList);
+            var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
+            OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
+
+            return saveResult;
         }
 
         /// <summary>
@@ -366,20 +395,6 @@ namespace Beetle.Server.EntityFramework {
                 entityType = entityType.BaseType;
             }
             return null;
-        }
-
-        /// <summary>
-        /// Creates the queryable.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <returns></returns>
-        public override IQueryable<TEntity> CreateQueryable<TEntity>() {
-            if (_dbContext != null)
-                return _dbContext.Set<TEntity>();
-
-            var setName = FindEntitySet(typeof(TEntity));
-            IQueryable<TEntity> query = _objectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
-            return query.OfType<TEntity>();
         }
 
         /// <summary>

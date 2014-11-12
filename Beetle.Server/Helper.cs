@@ -254,8 +254,9 @@ namespace Beetle.Server {
                 // entity's index in the client save array
                 var index = int.Parse(tracker.i.ToString());
                 // read original values
-                if (tracker.o != null) {
-                    foreach (JProperty ov in tracker.o as IEnumerable) {
+                var ovs = tracker.o != null ? tracker.o as IEnumerable : null;
+                if (ovs != null) {
+                    foreach (JProperty ov in ovs) {
                         var loopType = ov.Name.Split('.').Aggregate(type, GetPropertyType);
                         if (loopType == null)
                             throw new BeetleException(string.Format(Resources.OriginalValuePropertyCouldNotBeFound, ov.Name));

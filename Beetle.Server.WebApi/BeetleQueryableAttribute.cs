@@ -125,7 +125,9 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="queryable">The queryable.</param>
         /// <param name="queryOptions">The query options.</param>
-        /// <returns>The queryable.</returns>
+        /// <returns>
+        /// The queryable.
+        /// </returns>
         public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions) {
             var request = queryOptions.Request;
             var queryString = request.RequestUri.ParseQueryString();
@@ -162,7 +164,9 @@ namespace Beetle.Server.WebApi {
                     else
                         actionContext = new ActionContext();
 
-                    queryable = odataService.OnBeforeODataHandleQuery(actionContext, queryable).Query;
+                    var args = new BeforeODataQueryHandleEventArgs(actionContext, queryable, queryOptions);
+                    odataService.OnBeforeODataQueryHandle(args);
+                    queryable = args.Query;
                 }
             }
 

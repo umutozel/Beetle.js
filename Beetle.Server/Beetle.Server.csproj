@@ -68,6 +68,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SaveContext.cs" />
     <Compile Include="SimpleResultConfig.cs" />
     <Compile Include="DbContextHandler.cs" />
     <Compile Include="DbType.cs" />

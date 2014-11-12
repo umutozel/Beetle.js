@@ -1,17 +1,25 @@
 using Beetle.Server.EntityFramework.Properties;
 using System;
 using System.Collections.Generic;
-using System.Data.Metadata.Edm;
-using System.Data.Spatial;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Beetle.Server.Meta;
+#if EF6
+using System.Data.Entity.Core.Metadata.Edm;
+using System.Data.Entity.Spatial;
+using EntityType = System.Data.Entity.Core.Metadata.Edm.EntityType;
+using EnumType = System.Data.Entity.Core.Metadata.Edm.EnumType;
+using NavigationProperty = System.Data.Entity.Core.Metadata.Edm.NavigationProperty;
+#else
+using System.Data.Metadata.Edm;
+using System.Data.Spatial;
 using EntityType = System.Data.Metadata.Edm.EntityType;
 using EnumType = System.Data.Metadata.Edm.EnumType;
 using NavigationProperty = System.Data.Metadata.Edm.NavigationProperty;
+#endif
 
 namespace Beetle.Server.EntityFramework {
 

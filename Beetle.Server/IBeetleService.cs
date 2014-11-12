@@ -117,11 +117,11 @@ namespace Beetle.Server {
         /// <summary>
         /// Occurs before save.
         /// </summary>
-        event ServiceSaveDelegate BeforeSaveChanges;
+        event BeforeSaveDelegate BeforeSaveChanges;
 
         /// <summary>
         /// Occurs after save.
         /// </summary>
-        event ServiceSaveDelegate AfterSaveChanges;
+        event AfterSaveDelegate AfterSaveChanges;
     }
 }

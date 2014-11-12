@@ -63,29 +63,30 @@ function populateVars() {
         metadata = false;
     else if (metadataType == 'NM')
         metadata = true;
-    else
+    else {
+        metadataType = 'MM';
         metadata = new beetle.metadata.metadataManager(testMetadata);
-    if (metadataType) basicTestViewModel.metadataType = metadataType;
-    else basicTestViewModel.metadataType = 'MM';
+    }
+    basicTestViewModel.metadataType = metadataType;
 
     var observableProviderType = urlVars['observableProviderType'];
     if (observableProviderType == 'PR')
         observableProvider = beetle.enums.observableProviders.Property;
-    else if (observableProviderType == 'BB')
-        observableProvider = beetle.enums.observableProviders.Backbone;
-    else
-        observableProvider = beetle.enums.observableProviders.Knockout;;
-    if (observableProviderType) basicTestViewModel.observableProviderType = observableProviderType;
-    else basicTestViewModel.observableProviderType = 'KO';
+    else {
+        observableProviderType = 'KO';
+        observableProvider = beetle.enums.observableProviders.Knockout;
+    }
+    basicTestViewModel.observableProviderType = observableProviderType;
     beetle.settings.setObservableProvider(observableProvider);
 
     var serviceType = urlVars['serviceType'];
     if (serviceType == 'MV')
         service = new beetle.services.mvcService('Home', metadata);
-    else
+    else {
+        serviceType = 'WA';
         service = new beetle.services.webApiService('api/BeetleTest', metadata);
-    if (serviceType) basicTestViewModel.serviceType = serviceType;
-    else basicTestViewModel.serviceType = 'WA';
+    }
+    basicTestViewModel.serviceType = serviceType;
 }
 populateVars();
 

@@ -37,6 +37,14 @@ namespace Beetle.Server {
         /// The query.
         /// </value>
         public IQueryable Query { get; set; }
+
+        /// <summary>
+        /// Gets the user data.
+        /// </summary>
+        /// <value>
+        /// The user data.
+        /// </value>
+        public string UserData { get; set; }
     }
 
     /// <summary>
@@ -59,11 +67,12 @@ namespace Beetle.Server {
         /// <param name="actionContext">The action context.</param>
         /// <param name="query">The query.</param>
         /// <param name="result">The result.</param>
-        public AfterQueryExecuteEventArgs(ActionContext actionContext, IQueryable query, object result) {
+        /// <param name="userData">The user data.</param>
+        public AfterQueryExecuteEventArgs(ActionContext actionContext, IQueryable query, object result, object userData) {
             _actionContext = actionContext;
             _query = query;
             Result = result;
-            UserData = null;
+            UserData = userData;
         }
 
         /// <summary>
@@ -100,7 +109,7 @@ namespace Beetle.Server {
         /// <value>
         /// The user data.
         /// </value>
-        public string UserData { get; set; }
+        public object UserData { get; set; }
     }
 
     /// <summary>
@@ -111,17 +120,20 @@ namespace Beetle.Server {
     public delegate void AfterQueryExecuteDelegate(object sender, AfterQueryExecuteEventArgs eventArgs);
 
     /// <summary>
-    /// Holds context save event args.
+    /// Holds before save event args.
     /// </summary>
-    public class ServiceSaveEventArgs : EventArgs {
+    public class BeforeSaveEventArgs : EventArgs {
         private readonly IEnumerable<EntityBag> _entities;
+        private readonly SaveContext _saveContext;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceSaveEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="BeforeSaveEventArgs" /> class.
         /// </summary>
         /// <param name="entities">The entities.</param>
-        public ServiceSaveEventArgs(IEnumerable<EntityBag> entities) {
+        /// <param name="saveContext">The save context.</param>
+        public BeforeSaveEventArgs(IEnumerable<EntityBag> entities, SaveContext saveContext) {
             _entities = entities;
+            _saveContext = saveContext;
         }
 
         /// <summary>
@@ -133,27 +145,38 @@ namespace Beetle.Server {
         public IEnumerable<EntityBag> Entities {
             get { return _entities; }
         }
+
+        /// <summary>
+        /// Gets the save context.
+        /// </summary>
+        /// <value>
+        /// The save context.
+        /// </value>
+        public SaveContext SaveContext { get { return _saveContext; } }
     }
 
     /// <summary>
-    /// Fired before and after context save.
+    /// Fired before save.
     /// </summary>
     /// <param name="sender">The sender.</param>
-    /// <param name="eventArgs">The <see cref="ServiceSaveEventArgs"/> instance containing the event data.</param>
-    public delegate void ServiceSaveDelegate(object sender, ServiceSaveEventArgs eventArgs);
+    /// <param name="eventArgs">The <see cref="BeforeSaveEventArgs"/> instance containing the event data.</param>
+    public delegate void BeforeSaveDelegate(object sender, BeforeSaveEventArgs eventArgs);
 
     /// <summary>
-    /// Holds context save event args.
+    /// Holds after save event args.
     /// </summary>
-    public class ContextSaveEventArgs : EventArgs {
+    public class AfterSaveEventArgs : EventArgs {
         private readonly IEnumerable<EntityBag> _entities;
+        private readonly SaveResult _saveResult;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContextSaveEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="AfterSaveEventArgs" /> class.
         /// </summary>
         /// <param name="entities">The entities.</param>
-        public ContextSaveEventArgs(IEnumerable<EntityBag> entities) {
+        /// <param name="saveResult">The save result.</param>
+        public AfterSaveEventArgs(IEnumerable<EntityBag> entities, SaveResult saveResult) {
             _entities = entities;
+            _saveResult = saveResult;
         }
 
         /// <summary>
@@ -165,12 +188,22 @@ namespace Beetle.Server {
         public IEnumerable<EntityBag> Entities {
             get { return _entities; }
         }
+
+        /// <summary>
+        /// Gets the save result.
+        /// </summary>
+        /// <value>
+        /// The save result.
+        /// </value>
+        public SaveResult SaveResult {
+            get { return _saveResult; }
+        }
     }
 
     /// <summary>
-    /// Fired before and after context save.
+    /// Fired after save.
     /// </summary>
     /// <param name="sender">The sender.</param>
-    /// <param name="eventArgs">The <see cref="ContextSaveEventArgs"/> instance containing the event data.</param>
-    public delegate void ContextSaveDelegate(object sender, ContextSaveEventArgs eventArgs);
+    /// <param name="eventArgs">The <see cref="AfterSaveEventArgs"/> instance containing the event data.</param>
+    public delegate void AfterSaveDelegate(object sender, AfterSaveEventArgs eventArgs);
 }

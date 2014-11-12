@@ -175,9 +175,10 @@ namespace Beetle.Server.Mvc {
             if (handledUnknowns != null) entityBagList.AddRange(handledUnknowns);
             if (!entityBagList.Any()) return SaveResult.Empty;
 
-            OnBeforeSaveChanges(entityBagList);
-            var retVal = ContextHandler.SaveChanges(entityBagList);
-            OnAfterSaveChanges(entityBagList);
+            var saveContext = new SaveContext();
+            OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
+            var retVal = ContextHandler.SaveChanges(entityBagList, saveContext);
+            OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
 
             return retVal;
         }
@@ -278,29 +279,29 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Occurs before save.
         /// </summary>
-        public event ServiceSaveDelegate BeforeSaveChanges;
+        public event BeforeSaveDelegate BeforeSaveChanges;
 
         /// <summary>
         /// Called when [before save changes].
         /// </summary>
-        /// <param name="entities">The entities.</param>
-        protected virtual void OnBeforeSaveChanges(IEnumerable<EntityBag> entities) {
+        /// <param name="args">The <see cref="BeforeSaveEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnBeforeSaveChanges(BeforeSaveEventArgs args) {
             var handler = BeforeSaveChanges;
-            if (handler != null) handler(this, new ServiceSaveEventArgs(entities));
+            if (handler != null) handler(this, args);
         }
 
         /// <summary>
         /// Occurs after save.
         /// </summary>
-        public event ServiceSaveDelegate AfterSaveChanges;
+        public event AfterSaveDelegate AfterSaveChanges;
 
         /// <summary>
         /// Called when [after save changes].
         /// </summary>
-        /// <param name="entities">The entities.</param>
-        protected virtual void OnAfterSaveChanges(IEnumerable<EntityBag> entities) {
+        /// <param name="args">The <see cref="AfterSaveEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
             var handler = AfterSaveChanges;
-            if (handler != null) handler(this, new ServiceSaveEventArgs(entities));
+            if (handler != null) handler(this, args);
         }
 
         #endregion

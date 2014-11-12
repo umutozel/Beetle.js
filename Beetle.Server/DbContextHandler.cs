@@ -295,20 +295,22 @@ namespace Beetle.Server {
         /// Saves the changes.
         /// </summary>
         /// <param name="entities">The entities.</param>
+        /// <param name="saveContext">The save context.</param>
         /// <returns>
         /// Save result.
         /// </returns>
-        public override SaveResult SaveChanges(IEnumerable<EntityBag> entities) {
-            return SaveChangesBase(entities);
+        public override SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext) {
+            return SaveChangesBase(entities, saveContext);
         }
 
         /// <summary>
         /// Saves the changes directly using SQL queries.
         /// </summary>
         /// <param name="entityBags">The entity bags.</param>
+        /// <param name="saveContext">The save context.</param>
         /// <returns></returns>
         /// <exception cref="EntityValidationException"></exception>
-        protected SaveResult SaveChangesBase(IEnumerable<EntityBag> entityBags) {
+        protected SaveResult SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntitiesBase(entityBags, out unmappeds);
             var mergeList = merges == null
@@ -325,7 +327,7 @@ namespace Beetle.Server {
             }
             if (!saveList.Any()) return SaveResult.Empty;
 
-            OnBeforeSaveChanges(saveList);
+            OnBeforeSaveChanges(new BeforeSaveEventArgs(saveList, saveContext));
             // do data annotation validations
             if (ValidateOnSaveEnabled) {
                 var toValidate = saveList.Where(eb => eb.EntityState == EntityState.Added || eb.EntityState == EntityState.Modified).Select(eb => eb.Entity);
@@ -404,15 +406,19 @@ namespace Beetle.Server {
                 }
             }
 
-            OnAfterSaveChanges(saveList);
             var generatedValues = GetGeneratedValues(mergeList);
-            if (handledUnmappedList == null || !handledUnmappedList.Any()) return new SaveResult(affectedCount, generatedValues);
+            if (handledUnmappedList != null && handledUnmappedList.Any()) {
+                var generatedValueList = generatedValues == null
+                    ? new List<GeneratedValue>()
+                    : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
+                generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
+                generatedValues = generatedValueList;
+            }
 
-            var generatedValueList = generatedValues == null
-                ? new List<GeneratedValue>()
-                : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
-            generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
-            return new SaveResult(affectedCount, generatedValueList);
+            var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
+            OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
+
+            return saveResult;
         }
 
         /// <summary>

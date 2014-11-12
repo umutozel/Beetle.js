@@ -213,9 +213,10 @@ namespace Beetle.Server.WebApi {
             if (handledUnknowns != null) entityBagList.AddRange(handledUnknowns);
             if (!entityBagList.Any()) return SaveResult.Empty;
 
-            OnBeforeSaveChanges(entityBagList);
-            var retVal = ContextHandler.SaveChanges(entityBagList);
-            OnBeforeSaveChanges(entityBagList);
+            var saveContext = new SaveContext();
+            OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
+            var retVal = ContextHandler.SaveChanges(entityBagList, saveContext);
+            OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
 
             return retVal;
         }
@@ -316,29 +317,29 @@ namespace Beetle.Server.WebApi {
         /// <summary>
         /// Occurs before save.
         /// </summary>
-        public event ServiceSaveDelegate BeforeSaveChanges;
+        public event BeforeSaveDelegate BeforeSaveChanges;
 
         /// <summary>
         /// Called when [before save changes].
         /// </summary>
-        /// <param name="entities">The entities.</param>
-        protected virtual void OnBeforeSaveChanges(IEnumerable<EntityBag> entities) {
+        /// <param name="args">The <see cref="BeforeSaveEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnBeforeSaveChanges(BeforeSaveEventArgs args) {
             var handler = BeforeSaveChanges;
-            if (handler != null) handler(this, new ServiceSaveEventArgs(entities));
+            if (handler != null) handler(this, args);
         }
 
         /// <summary>
         /// Occurs after save.
         /// </summary>
-        public event ServiceSaveDelegate AfterSaveChanges;
+        public event AfterSaveDelegate AfterSaveChanges;
 
         /// <summary>
         /// Called when [after save changes].
         /// </summary>
-        /// <param name="entities">The entities.</param>
-        protected virtual void OnAfterSaveChanges(IEnumerable<EntityBag> entities) {
+        /// <param name="args">The <see cref="AfterSaveEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
             var handler = AfterSaveChanges;
-            if (handler != null) handler(this, new ServiceSaveEventArgs(entities));
+            if (handler != null) handler(this, args);
         }
 
         #endregion
@@ -348,31 +349,24 @@ namespace Beetle.Server.WebApi {
         /// <summary>
         /// Occurs when [before handle query].
         /// </summary>
-        public event BeforeQueryExecuteDelegate BeforeODataHandleQuery;
+        public event BeforeODataQueryHandleDelegate BeforeODataQueryHandle;
 
         /// <summary>
         /// Called when [before handle query].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        BeforeQueryExecuteEventArgs IODataService.OnBeforeODataHandleQuery(ActionContext actionContext, IQueryable query) {
-            var args = new BeforeQueryExecuteEventArgs(actionContext, query);
-            var handler = BeforeODataHandleQuery;
+        /// <param name="args">The <see cref="BeforeQueryExecuteEventArgs" /> instance containing the event data.</param>
+        void IODataService.OnBeforeODataQueryHandle(BeforeODataQueryHandleEventArgs args) {
+            var handler = BeforeODataQueryHandle;
             if (handler != null)
                 handler(this, args);
-            return args;
         }
 
         /// <summary>
         /// Called when [before handle query].
         /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns></returns>
-        protected BeforeQueryExecuteEventArgs OnBeforeODataHandleQuery(ActionContext actionContext, IQueryable query) {
-            return ((IODataService)this).OnBeforeODataHandleQuery(actionContext, query);
+        /// <param name="args">The <see cref="BeforeQueryExecuteEventArgs" /> instance containing the event data.</param>
+        protected void OnBeforeODataHandleQuery(BeforeODataQueryHandleEventArgs args) {
+            ((IODataService)this).OnBeforeODataQueryHandle(args);
         }
 
         #endregion

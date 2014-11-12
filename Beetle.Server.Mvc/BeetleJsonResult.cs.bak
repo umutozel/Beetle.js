@@ -8,7 +8,7 @@ namespace Beetle.Server.Mvc {
     /// <summary>
     /// Beetle Json result to modify default Json serialization.
     /// </summary>
-    public class BeetleJsonResult: JsonResult {
+    public class BeetleJsonResult : JsonResult {
         private readonly BeetleConfig _config;
         private readonly ProcessResult _processResult;
 

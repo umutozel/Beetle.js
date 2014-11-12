@@ -127,8 +127,10 @@ namespace Beetle.Server.Mvc {
             object inlineCount = processResult.InlineCount;
             if (inlineCount != null && response.Headers["X-InlineCount"] == null)
                 response.Headers.Add("X-InlineCount", inlineCount.ToString());
-            if (processResult.UserData != null && response.Headers["X-UserData"] == null)
-                response.Headers.Add("X-UserData", processResult.UserData);
+            if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
+                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, config.JsonSerializerSettings);
+                response.Headers.Add("X-UserData", userDataStr);
+            }
 
             // write the result to response content
             return new BeetleJsonResult(config, processResult) {
