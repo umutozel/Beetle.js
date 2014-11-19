@@ -70,6 +70,7 @@
             handleStrOptions: function (str, options) {
                 /// <summary>Applies current operation context string options to given parameter.</summary>
                 /// <param name="options">Options for the context.</param>
+                if (str == null) return str;
                 if (!helper.isCaseSensitive(options)) str = str.toLowerCase();
                 if (helper.ignoreWhiteSpaces(options)) str = str.trim();
                 return str;
@@ -4170,8 +4171,9 @@
                             for (var i = 0; i < exps.length; i++) {
                                 var isDesc = false;
                                 var exp = exps[i];
-                                if (exps[i + 1]) {
-                                    var ls = exps[i + 1].name.toLowerCase();
+                                var nexp = exps[i + 1];
+                                if (nexp && nexp.type == 'Identifier') {
+                                    var ls = nexp.name.toLowerCase();
                                     if (ls == 'desc') {
                                         isDesc = true;
                                         i++;
