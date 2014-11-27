@@ -7407,6 +7407,15 @@
                     this.observableProvider.setValue(this.entity, property, value);
                 };
 
+                proto.getOriginalValue = function(property) {
+                    /// <summary>
+                    /// Gets original value for property.
+                    /// </summary>
+                    /// <param name="property">The property</param>
+                    var ov = helper.findInArray(this.originalValues, property, 'p');
+                    return ov ? ov.v : this.getValue(property);
+                };
+
                 proto.foreignKey = function (navProperty) {
                     /// <summary>
                     /// Get foreign key value for this navigation property.
