@@ -8387,7 +8387,7 @@
                     var func = query.toFunction();
                     // run function against entities
                     array = func(array, varContext);
-                    if (calculateInlineCountDiff && array.$inlineCount) {
+                    if (calculateInlineCountDiff && array.$inlineCount != null) {
                         var addedEffect = addeds.length > 0 ? func(addeds, varContext).$inlineCount : 0;
                         var deletedEffect = deleteds.length > 0 ? func(deleteds, varContext).$inlineCount : 0;
                         array.$inlineCountDiff = addedEffect - deletedEffect;
