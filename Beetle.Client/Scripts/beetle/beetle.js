@@ -8781,6 +8781,9 @@
                                 options,
                                 function (result) {
                                     try {
+                                        // Accept all changes, means Added -> Unchanged; Modified -> Unchanged, Clear Original Values; Deleted -> Remove from cache.
+                                        acceptSaves(changes, that.entities, that);
+
                                         // merge generated entities
                                         if (result.GeneratedEntities != null && result.GeneratedEntities.length > 0)
                                             mergeEntities(result.GeneratedEntities, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, autoFixScalar, autoFixPlural);
@@ -8808,8 +8811,6 @@
                                             });
                                         }
 
-                                        // Accept all changes, means Added -> Unchanged; Modified -> Unchanged, Clear Original Values; Deleted -> Remove from cache.
-                                        acceptSaves(changes, that.entities, that);
                                         notifySaved(that, changes, options);
                                         onSuccess(successCallback, pp, d, result);
                                         if (!pp) retVal = result;
