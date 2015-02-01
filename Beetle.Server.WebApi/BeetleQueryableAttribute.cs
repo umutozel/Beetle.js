@@ -45,7 +45,8 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="configType">Type of the config.</param>
         /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
-        public BeetleQueryableAttribute(Type configType): this() {
+        public BeetleQueryableAttribute(Type configType)
+            : this() {
             if (configType != null) {
                 _beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
                 if (_beetleConfig == null)
@@ -70,8 +71,9 @@ namespace Beetle.Server.WebApi {
             var queryParams = GetParameters(actionExecutedContext);
             object contentValue;
             if (!response.TryGetContentValue(out contentValue)) return;
-            var actionContext = new ActionContext(action, contentValue, queryParams, MaxResultCount);
-           
+
+            var actionContext = new ActionContext(action, contentValue, queryParams, MaxResultCount, CheckQueryHash);
+
             request.Properties["BeetleService"] = service;
             request.Properties["BeetleActionContext"] = actionContext;
 
@@ -160,7 +162,7 @@ namespace Beetle.Server.WebApi {
                     object actionObj;
                     ActionContext actionContext;
                     if (request.Properties.TryGetValue("BeetleActionContext", out actionObj) && actionObj != null)
-                        actionContext = (ActionContext) actionObj;
+                        actionContext = (ActionContext)actionObj;
                     else
                         actionContext = new ActionContext();
 
@@ -275,5 +277,13 @@ namespace Beetle.Server.WebApi {
         /// The maximum result count.
         /// </value>
         public int MaxResultCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        /// </value>
+        public bool? CheckQueryHash { get; set; }
     }
 }

@@ -156,19 +156,27 @@ namespace Beetle.Server.EntityFramework {
                 entityResources.Add(entityResource);
             }
 
-            return Mapping(entityResources, itemCollection, container);
+            var enumResources = new List<EnumResource>();
+            foreach (var enumType in itemCollection.OfType<EnumType>()) {
+                var oSpaceEnumType = objectItemCollection.OfType<EnumType>().First(x => x.Name == enumType.Name);
+                var enumClrType = objectItemCollection.GetClrType(oSpaceEnumType);
+                enumResources.Add(new EnumResource { EnumType = enumType, ClrType = enumClrType });
+            }
+
+            return Mapping(entityResources, enumResources, itemCollection, container);
         }
 
         /// <summary>
         /// Generates mappings.
         /// </summary>
         /// <param name="entityResources">The entity resources.</param>
+        /// <param name="enumResources">The enum resources.</param>
         /// <param name="itemCollection">The item collection.</param>
         /// <param name="container">The entity container.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">itemCollection</exception>
         /// <exception cref="System.Exception">Unknown data type:  + p.TypeUsage.EdmType.Name</exception>
-        private static Metadata Mapping(IEnumerable<EntityResource> entityResources, IEnumerable<GlobalItem> itemCollection, EntityContainer container) {
+        private static Metadata Mapping(IEnumerable<EntityResource> entityResources, IEnumerable<EnumResource> enumResources, IEnumerable<GlobalItem> itemCollection, EntityContainer container) {
             if (itemCollection == null)
                 throw new ArgumentNullException("itemCollection");
 
@@ -178,8 +186,8 @@ namespace Beetle.Server.EntityFramework {
             // entity types
             foreach (var er in entityResources) {
                 var fullName = string.Format("{0}, {1}", er.ClrType.FullName, er.ClrType.Assembly.GetName().Name);
-                var et = new Meta.EntityType(fullName, er.Name);
-                et.TableName = er.TableName;
+                var et = new Meta.EntityType(fullName, er.Name) {TableName = er.TableName};
+
                 // entity informations
                 if (er.Entity != null) {
                     et.QueryName = er.EntitySet.Name;
@@ -189,17 +197,21 @@ namespace Beetle.Server.EntityFramework {
                     // if entity has base type, set the base type's name
                     if (er.Entity.BaseType != null)
                         et.BaseTypeName = er.Entity.BaseType.Name;
-                    if (er.ClrType != null) {
+                    if (er.ClrType != null)
                         et.ClrType = er.ClrType;
-                        Helper.SetMetadataPartNames(et, et.ClrType);
-                    }
 
                     // navigation properties
                     if (er.NavigationProperties != null) {
                         foreach (var p in er.NavigationProperties) {
                             var ass = globalItems.OfType<AssociationType>().First(a => a.Name == p.RelationshipType.Name);
+                            Func<string> displayNameGetter = null;
+                            if (er.ClrType != null) {
+                                var propertyInfo = er.ClrType.GetMember(p.Name).FirstOrDefault();
+                                if (propertyInfo != null)
+                                    displayNameGetter = Helper.GetDisplayNameGetter(propertyInfo);
+                            }
 
-                            var np = new Meta.NavigationProperty(p.Name);
+                            var np = new Meta.NavigationProperty(p.Name, displayNameGetter);
                             np.EntityTypeName = (((RefType)p.ToEndMember.TypeUsage.EdmType).ElementType).Name;
 
                             var isScalar = p.ToEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many;
@@ -223,16 +235,18 @@ namespace Beetle.Server.EntityFramework {
                     // complex properties
                     if (er.ComplexProperties != null) {
                         foreach (var p in er.ComplexProperties) {
-                            var cp = new ComplexProperty(p.Key.Name);
-
+                            Func<string> displayNameGetter = null;
                             if (er.ClrType != null) {
-                                var clrProperty = er.ClrType.GetMember(p.Key.Name).FirstOrDefault();
-                                if (clrProperty != null)
-                                    Helper.SetMetadataPartNames(cp, clrProperty);
+                                var propertyInfo = er.ClrType.GetMember(p.Key.Name).FirstOrDefault();
+                                if (propertyInfo != null)
+                                    displayNameGetter = Helper.GetDisplayNameGetter(propertyInfo);
                             }
 
-                            cp.TypeName = p.Key.TypeUsage.EdmType.Name;
-                            cp.Mappings = p.Value;
+                            var cp = new ComplexProperty(p.Key.Name, displayNameGetter) {
+                                TypeName = p.Key.TypeUsage.EdmType.Name,
+                                Mappings = p.Value
+                            };
+
                             et.ComplexProperties.Add(cp);
                         }
                     }
@@ -243,18 +257,24 @@ namespace Beetle.Server.EntityFramework {
                 // data properties
                 foreach (var sp in er.SimpleProperties) {
                     var p = sp.Value;
-                    var dp = new DataProperty(p.Name);
-                    dp.ColumnName = sp.Key;
+                    var clrType = UnderlyingClrType(p.TypeUsage.EdmType);
+                    Func<string> displayNameGetter = null;
+                    if (er.ClrType != null) {
+                        var propertyInfo = clrType.GetMember(p.Name).FirstOrDefault();
+                        if (propertyInfo != null)
+                            displayNameGetter = Helper.GetDisplayNameGetter(propertyInfo);
+                    }
+
+                    var dp = new DataProperty(p.Name, displayNameGetter) { ColumnName = sp.Key };
 
                     var jsType = DataType.Binary;
-                    // convert CLR type to javascript type
                     var enumType = p.TypeUsage.EdmType as EnumType;
                     if (enumType != null) {
                         dp.IsEnum = true;
                         dp.EnumType = enumType.Name;
                     }
                     else {
-                        var clrType = UnderlyingClrType(p.TypeUsage.EdmType);
+                        // convert CLR type to javascript type
                         if (clrType == typeof(string))
                             jsType = DataType.String;
                         else if (clrType == typeof(Guid))
@@ -279,7 +299,7 @@ namespace Beetle.Server.EntityFramework {
                             jsType = DataType.Geometry;
                         else if (clrType == typeof(byte[]))
                             jsType = DataType.Binary;
-                        else throw new Exception(Resources.UnknownDataType + p.TypeUsage.EdmType.Name);
+                        else throw new BeetleException(Resources.UnknownDataType + p.TypeUsage.EdmType.Name);
                     }
                     dp.DataType = jsType;
                     var generated = p.MetadataProperties.FirstOrDefault(m => m.Name == StoreGeneratedPatternAttributeName);
@@ -312,20 +332,14 @@ namespace Beetle.Server.EntityFramework {
             }
 
             // enum types
-            foreach (var enumType in globalItems.OfType<SimpleType>().Where(e => e.GetType().Name == "EnumType")) {
+            foreach (var enumResource in enumResources) {
+                var enumType = enumResource.EnumType;
+                //var enumClrType = enumResource.ClrType;
                 var et = new Meta.EnumType(enumType.Name);
-                var enumClrType = enumType.GetType();
-                Helper.SetMetadataPartNames(et, enumClrType);
 
-                var membersProp = enumType.GetType().GetProperty("Members");
-                var members = (System.Collections.IEnumerable)membersProp.GetValue(enumType, null);
-                foreach (var member in members) {
-                    var name = member.GetType().GetProperty("Name").GetValue(member, null);
-                    var em = new Meta.EnumMember(name.ToString());
-                    var value = member.GetType().GetProperty("Value").GetValue(member, null);
-                    var memberType = member.GetType();
-                    Helper.SetMetadataPartNames(em, memberType);
-                    em.Value = value;
+                foreach (var member in enumType.Members) {
+                    //todo: enum member için display
+                    var em = new Meta.EnumMember(member.Name, null) {Value = member.Value};
 
                     et.Members.Add(em);
                 }
@@ -422,5 +436,10 @@ namespace Beetle.Server.EntityFramework {
         public IDictionary<EdmProperty, IEnumerable<ColumnMapping>> ComplexProperties { get; set; }
         public Type ClrType { get; set; }
         public string TableName { get; set; }
+    }
+
+    internal class EnumResource {
+        public EnumType EnumType { get; set; }
+        public Type ClrType { get; set; }
     }
 }

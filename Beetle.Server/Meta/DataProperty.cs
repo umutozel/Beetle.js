@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Beetle.Server.Meta {
@@ -8,7 +9,7 @@ namespace Beetle.Server.Meta {
     /// </summary>
     public class DataProperty : MetadataPart {
 
-        public DataProperty(string name): base(name) {
+        public DataProperty(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {
             ColumnName = name;
             Validators = new List<Validator>();
         }
@@ -39,7 +40,7 @@ namespace Beetle.Server.Meta {
             return new {
                 n = Name,
                 r = ResourceName,
-                l = DisplayName,
+                l = GetDisplayName(),
                 t = dt,
                 i = IsNullable,
                 p = Precision,

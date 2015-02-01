@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Beetle.Server.Meta {
@@ -11,7 +12,7 @@ namespace Beetle.Server.Meta {
         public Metadata(): this(string.Empty) {
         }
 
-        public Metadata(string name): base(name) {
+        public Metadata(string name, Func<string> displayNameGetter = null) : base(name, displayNameGetter) {
             Entities = new List<EntityType>();
             Enums = new List<EnumType>();
         }
@@ -63,7 +64,7 @@ namespace Beetle.Server.Meta {
             return new {
                            n = Name,
                            r = ResourceName,
-                           l = DisplayName,
+                           l = GetDisplayName(),
                            m = Entities.Select(e => e.ToMinified()).ToList(),
                            e = Enums.Select(e => e.ToMinified()).ToList()
                        };

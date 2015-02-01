@@ -94,20 +94,13 @@ namespace Beetle.Server.Mvc {
         internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
             // get beetle query parameters (supported parameters by default)
             var beetlePrms = Server.Helper.GetBeetleParameters(actionContext.QueryParameters);
+
             var contextHandler = service == null ? null : service.ContextHandler;
             // allow context handler to process the value
             if (contextHandler != null)
                 return contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, service);
 
-            var queryable = contentValue as IQueryable;
-            if (queryable != null)
-                return QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service);
-
-            var enumerable = contentValue as IEnumerable;
-            if (enumerable != null)
-                return EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service);
-
-            return new ProcessResult(actionContext) { Result = contentValue };
+            return Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service);
         }
 
         /// <summary>
@@ -139,6 +132,27 @@ namespace Beetle.Server.Mvc {
                 ContentType = "application/json",
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet
             };
+        }
+
+        /// <summary>
+        /// Checks the query hash.
+        /// </summary>
+        internal static void CheckQueryHash() {
+            var request = HttpContext.Current.Request;
+
+            var clientHash = request.Headers["x-beetle-query"];
+            var serverQuery = request.Url.Query;
+            if (serverQuery.Length > 0)
+                serverQuery = serverQuery.Substring(1);
+
+            if (!string.IsNullOrEmpty(clientHash)) {
+                var hashLenStr = request.Headers["x-beetle-query-len"];
+                if (!string.IsNullOrEmpty(hashLenStr)) {
+                    var queryLen = Convert.ToInt32(hashLenStr);
+                    serverQuery = serverQuery.Substring(0, queryLen);
+                    var serverHash = Server.Helper.CreateQueryHash(serverQuery);
+                }
+            }
         }
     }
 }

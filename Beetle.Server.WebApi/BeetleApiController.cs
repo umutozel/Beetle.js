@@ -102,7 +102,7 @@ namespace Beetle.Server.WebApi {
             var result = ContextHandler.HandleUnknownAction(action);
             // get beetle parameters
             var parameters = Helper.GetParameters();
-            var actionContext = new ActionContext(action, result, parameters);
+            var actionContext = new ActionContext(action, result, parameters, MaxResultCount, CheckQueryHash);
             var queryable = result as IQueryable;
             // if value is a query, first handle OData parameters
             if (queryable != null)
@@ -244,6 +244,14 @@ namespace Beetle.Server.WebApi {
         /// The maximum result count.
         /// </value>
         public int MaxResultCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CheckQueryHash { get; set; }
 
         /// <summary>
         /// Occurs when [before handle query].

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Beetle.Server.Meta {
 
@@ -7,7 +8,8 @@ namespace Beetle.Server.Meta {
     /// </summary>
     public class Validator: MetadataPart {
 
-        private Validator(string name, string shortName, string message, string messageResourceName, List<object> arguments = null): base(name) {
+        private Validator(string name, string shortName, string message, string messageResourceName, List<object> arguments = null, Func<string> displayNameGetter = null)
+                : base(name, displayNameGetter) {
             ShortName = shortName;
             Message = message;
             ResourceName = messageResourceName;
@@ -21,7 +23,7 @@ namespace Beetle.Server.Meta {
         public override object ToMinified() {
             return new {
                            t = ShortName,
-                           l = DisplayName,
+                           l = GetDisplayName(),
                            m = Message,
                            r = ResourceName,
                            a = Arguments

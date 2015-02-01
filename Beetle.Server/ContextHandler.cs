@@ -121,15 +121,7 @@ namespace Beetle.Server {
         /// <returns></returns>
         public virtual ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters,
                                                     ActionContext actionContext, IBeetleService service) {
-            var queryable = contentValue as IQueryable;
-            if (queryable != null)
-                return QueryableHandler.HandleContent(queryable, queryParameters, actionContext, service, this);
-
-            var enumerable = contentValue as IEnumerable;
-            if (enumerable != null)
-                return EnumerableHandler.HandleContent(enumerable, queryParameters, actionContext, service, this);
-
-            return new ProcessResult(actionContext) { Result = contentValue };
+            return Helper.DefaultRequestProcessor(contentValue, queryParameters, actionContext, service);
         }
 
         /// <summary>

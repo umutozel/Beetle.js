@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Beetle.Server.Meta {
@@ -8,7 +9,7 @@ namespace Beetle.Server.Meta {
     /// </summary>
     public class NavigationProperty: MetadataPart {
 
-        public NavigationProperty(string name): base(name) {
+        public NavigationProperty(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {
             ForeignKeys = new List<string>();
             Validators = new List<Validator>();
         }
@@ -26,7 +27,7 @@ namespace Beetle.Server.Meta {
             return new {
                            n = Name,
                            r = ResourceName,
-                           l = DisplayName,
+                           l = GetDisplayName(),
                            t = EntityTypeName,
                            s = IsScalar,
                            a = AssociationName,

@@ -9,7 +9,7 @@ namespace Beetle.Server.Meta {
     /// </summary>
     public class EntityType: MetadataPart {
 
-        public EntityType(string fullName, string shortName): base(fullName) {
+        public EntityType(string fullName, string shortName, Func<string> displayNameGetter = null): base(fullName, displayNameGetter) {
             ShortName = shortName;
             TableName = shortName;
             Keys = new List<string>();
@@ -38,11 +38,12 @@ namespace Beetle.Server.Meta {
         public List<ComplexProperty> AllComplexProperties { get; set; }
         public List<DataProperty> KeyProperties { get; set; }
         public Type ClrType { get; set; }
+
         public override object ToMinified() {
             return new {
                            n = Name,
                            rn = ResourceName,
-                           l = DisplayName,
+                           l = GetDisplayName(),
                            s = ShortName,
                            q = QueryName,
                            t = QueryType,

@@ -18,21 +18,24 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleController{TContextHandler}"/> class.
         /// </summary>
-        public BeetleController(): this(null, null) {
+        public BeetleController()
+            : this(null, null) {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleController{TContextHandler}"/> class.
         /// </summary>
         /// <param name="contextHandler">The context handler.</param>
-        public BeetleController(TContextHandler contextHandler): this(contextHandler, null) {
+        public BeetleController(TContextHandler contextHandler)
+            : this(contextHandler, null) {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleController{TContextHandler}"/> class.
         /// </summary>
         /// <param name="beetleConfig">The beetle config.</param>
-        public BeetleController(BeetleConfig beetleConfig): this(null, beetleConfig) {
+        public BeetleController(BeetleConfig beetleConfig)
+            : this(null, beetleConfig) {
         }
 
         /// <summary>
@@ -77,7 +80,7 @@ namespace Beetle.Server.Mvc {
                 object[] actionParameters;
                 Helper.GetParameters(out queryParams, out actionParameters, BeetleConfig);
                 var result = ContextHandler.HandleUnknownAction(action);
-                var actionContext = new ActionContext(action, result, queryParams);
+                var actionContext = new ActionContext(action, result, queryParams, MaxResultCount, CheckQueryHash);
                 var processResult = ProcessRequest(result, actionContext);
                 var response = Helper.HandleResponse(processResult, BeetleConfig);
                 response.ExecuteResult(ControllerContext);
@@ -206,6 +209,14 @@ namespace Beetle.Server.Mvc {
         /// The maximum result count.
         /// </value>
         public int MaxResultCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        /// </value>
+        public bool? CheckQueryHash { get; set; }
 
         /// <summary>
         /// Occurs when [before handle query].

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Beetle.Server.Meta {
 
@@ -7,16 +8,17 @@ namespace Beetle.Server.Meta {
     /// </summary>
     public class ComplexProperty: MetadataPart {
 
-        public ComplexProperty(string name): base(name) {
+        public ComplexProperty(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {
         }
 
         public string TypeName { get; set; }
         public IEnumerable<ColumnMapping> Mappings { get; set; }
         public EntityType ComplexType { get; set; }
+
         public override object ToMinified() {
             return new {
                            r = ResourceName,
-                           l = DisplayName,
+                           l = GetDisplayName(),
                            t = TypeName
                        };
         }

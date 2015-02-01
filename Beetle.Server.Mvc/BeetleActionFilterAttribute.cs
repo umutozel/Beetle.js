@@ -63,8 +63,9 @@ namespace Beetle.Server.Mvc {
 
             // execute the action method
             var contentValue = actionMethod.Invoke(controller, actionArgs);
+            // get client hash
             // process the request and return the result
-            var actionContext = new ActionContext(action.ActionName, contentValue, queryParams, MaxResultCount);
+            var actionContext = new ActionContext(action.ActionName, contentValue, queryParams, MaxResultCount, CheckQueryHash);
             var processResult = ProcessRequest(contentValue, actionContext, service);
             // handle response message
             filterContext.Result = HandleResponse(filterContext, processResult);
@@ -123,5 +124,13 @@ namespace Beetle.Server.Mvc {
         /// The maximum result count.
         /// </value>
         public int MaxResultCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CheckQueryHash { get; set; }
     }
 }

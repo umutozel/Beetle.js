@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using Beetle.Server.WebApi.Properties;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -68,21 +68,10 @@ namespace Beetle.Server.WebApi {
             }
 
             var contextHandler = service == null ? null : service.ContextHandler;
-            ProcessResult processResult;
             // allow context handler to process the value
-            if (contextHandler != null)
-                processResult = contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, service);
-            else {
-                var queryable = contentValue as IQueryable;
-                if (queryable != null)
-                    processResult = QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service);
-                else {
-                    var enumerable = contentValue as IEnumerable;
-                    processResult = enumerable != null
-                        ? EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service)
-                        : new ProcessResult(actionContext) { Result = contentValue };
-                }
-            }
+            var processResult = contextHandler != null 
+                ? contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, service) 
+                : Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service);
 
             if (processResult.InlineCount == null && inlineCountParam == "allpages") {
                 object inlineCount;

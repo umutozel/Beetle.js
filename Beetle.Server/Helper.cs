@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Globalization;
 using System.Linq;
+using System.Net.Cache;
 using System.Reflection;
 using Beetle.Server.Meta;
 using Newtonsoft.Json;
@@ -22,7 +23,7 @@ namespace Beetle.Server {
     /// Common helper methods.
     /// </summary>
     public static class Helper {
-        private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public;
+        private const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Public;
         private static readonly object _pluralizationServicesLocker = new object();
         private static readonly Dictionary<CultureInfo, PluralizationService> _pluralizationServices = new Dictionary<CultureInfo, PluralizationService>();
 
@@ -89,10 +90,10 @@ namespace Beetle.Server {
         /// propertyName</exception>
         /// <exception cref="BeetleException"></exception>
         public static Type GetPropertyType(Type type, string propertyName) {
-            var property = type.GetProperty(propertyName, _bindingFlags);
+            var property = type.GetProperty(propertyName, Binding);
             if (property != null) return property.PropertyType;
 
-            var field = type.GetField(propertyName, _bindingFlags);
+            var field = type.GetField(propertyName, Binding);
             if (field != null) return field.FieldType;
 
             return null;
@@ -110,10 +111,10 @@ namespace Beetle.Server {
 
             var type = obj.GetType();
 
-            var property = type.GetProperty(propertyName, _bindingFlags);
+            var property = type.GetProperty(propertyName, Binding);
             if (property != null) return property.GetValue(obj);
 
-            var field = type.GetField(propertyName, _bindingFlags);
+            var field = type.GetField(propertyName, Binding);
             if (field != null) return field.GetValue(obj);
 
             throw new BeetleException(string.Format(Resources.CannotFindPublicInstanceFieldOrProperty, propertyName));
@@ -136,7 +137,7 @@ namespace Beetle.Server {
 
             var type = obj.GetType();
 
-            var property = type.GetProperty(propertyName, _bindingFlags);
+            var property = type.GetProperty(propertyName, Binding);
             if (property != null) {
                 if (property.SetMethod == null)
                     throw new BeetleException(string.Format(Resources.CannotSetReadOnlyProperty, propertyName));
@@ -145,7 +146,7 @@ namespace Beetle.Server {
                 return;
             }
 
-            var field = type.GetField(propertyName, _bindingFlags);
+            var field = type.GetField(propertyName, Binding);
             if (field != null)
                 field.SetValue(obj, value);
             else
@@ -337,6 +338,28 @@ namespace Beetle.Server {
         }
 
         /// <summary>
+        /// Default implementation for request process.
+        /// </summary>
+        /// <param name="contentValue">The content value.</param>
+        /// <param name="beetlePrms">The beetle PRMS.</param>
+        /// <param name="actionContext">The action context.</param>
+        /// <param name="service">The service.</param>
+        /// <returns></returns>
+        public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext, IBeetleService service) {
+            var queryable = contentValue as IQueryable;
+            if (queryable != null)
+                return QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service);
+
+            if (!(contentValue is string)) {
+                var enumerable = contentValue as IEnumerable;
+                if (enumerable != null)
+                    return EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service);
+            }
+
+            return new ProcessResult(actionContext) { Result = contentValue };
+        }
+
+        /// <summary>
         /// Gets the metadata.
         /// </summary>
         /// <param name="connection">The connection.</param>
@@ -354,7 +377,7 @@ namespace Beetle.Server {
                 closeConnection = false;
 
             using (var tablesCommand = connection.CreateCommand()) {
-                const string SCHEMA_SQL =
+                const string schemaSql =
 @"
 select	distinct t.TABLE_NAME, c.COLUMN_NAME, c.COLUMN_DEFAULT, c.IS_NULLABLE, c.DATA_TYPE, 
 		c.CHARACTER_MAXIMUM_LENGTH, c.NUMERIC_PRECISION, c.NUMERIC_SCALE,
@@ -383,7 +406,7 @@ order by t.TABLE_NAME, c.COLUMN_NAME
                 else
                     generationPatternSql = "0";
 
-                tablesCommand.CommandText = string.Format(SCHEMA_SQL, generationPatternSql);
+                tablesCommand.CommandText = string.Format(schemaSql, generationPatternSql);
                 using (var tablesReader = tablesCommand.ExecuteReader()) {
                     EntityType entityType = null;
                     Type clrType = null;
@@ -412,9 +435,6 @@ order by t.TABLE_NAME, c.COLUMN_NAME
                             clrType = Type.GetType(entityType.Name);
                             entityType.ClrType = clrType;
 
-                            if (clrType != null)
-                                SetMetadataPartNames(entityType, clrType);
-
                             metadata.Entities.Add(entityType);
                         }
 
@@ -432,11 +452,17 @@ order by t.TABLE_NAME, c.COLUMN_NAME
                                 defaultValue = defaultStr == "1";
                         }
 
-                        var dataProperty = new DataProperty(columnName) {
+                        Func<string> displayNameGetter = null;
+                        if (clrType != null) {
+                            var propertyInfo = clrType.GetMember(columnName).FirstOrDefault();
+                            if (propertyInfo != null)
+                                displayNameGetter = GetDisplayNameGetter(propertyInfo);
+                        }
+
+                        var dataProperty = new DataProperty(columnName, displayNameGetter) {
                             ResourceName = columnName,
                             DataType = dataTypeEnum,
                             DefaultValue = defaultValue == DBNull.Value ? null : defaultValue,
-                            DisplayName = null,
                             EnumType = null,
                             GenerationPattern = (GenerationPattern)generationPattern, // we cannot read this from INFORMATION_SCHEMA
                             IsEnum = false,
@@ -480,7 +506,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                     while (navigationReader.Read()) {
                         var fkTable = navigationReader.GetString(0);
                         var fkColumn = navigationReader.GetString(1);
-                        var IsOneToOne = navigationReader.GetInt32(2) > 0;
+                        var isOneToOne = navigationReader.GetInt32(2) > 0;
                         var pkTable = navigationReader.GetString(3);
                         var constraintName = navigationReader.GetString(4);
                         var cascadeDelete = navigationReader.GetString(5) == "CASCADE";
@@ -488,7 +514,14 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                         var fkEntity = metadata.Entities.First(e => e.ShortName == fkTable);
                         var fkNavigation = fkEntity.NavigationProperties.FirstOrDefault(np => np.AssociationName == constraintName);
                         if (fkNavigation == null) {
-                            fkNavigation = new NavigationProperty(pkTable) {
+                            Func<string> displayNameGetter = null;
+                            if (fkEntity.ClrType != null) {
+                                var propertyInfo = fkEntity.ClrType.GetMember(fkNavigation.Name).FirstOrDefault();
+                                if (propertyInfo != null)
+                                    displayNameGetter = GetDisplayNameGetter(propertyInfo);
+                            }
+
+                            fkNavigation = new NavigationProperty(pkTable, displayNameGetter) {
                                 ResourceName = pkTable,
                                 AssociationName = constraintName,
                                 DoCascadeDelete = false,
@@ -498,28 +531,34 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                             fkEntity.NavigationProperties.Add(fkNavigation);
                         }
                         fkNavigation.ForeignKeys.Add(fkColumn);
-                        var fkClrType = Type.GetType(fkEntity.Name);
-                        if (fkClrType != null)
-                            PopulateNavigationPropertyValidations(fkClrType, fkNavigation);
+
+                        if (fkEntity.ClrType != null)
+                            PopulateNavigationPropertyValidations(fkEntity.ClrType, fkNavigation);
 
                         var pkEntity = metadata.Entities.First(e => e.ShortName == pkTable);
                         var pkNavigation = pkEntity.NavigationProperties.FirstOrDefault(np => np.AssociationName == constraintName);
                         if (pkNavigation == null) {
-                            var pkNavName = IsOneToOne ? fkTable : Pluralize(fkTable);
-                            pkNavigation = new NavigationProperty(pkNavName) {
+                            Func<string> displayNameGetter = null;
+                            if (pkEntity.ClrType != null) {
+                                var propertyInfo = pkEntity.ClrType.GetMember(pkNavigation.Name).FirstOrDefault();
+                                if (propertyInfo != null)
+                                    displayNameGetter = GetDisplayNameGetter(propertyInfo);
+                            }
+
+                            var pkNavName = isOneToOne ? fkTable : Pluralize(fkTable);
+                            pkNavigation = new NavigationProperty(pkNavName, displayNameGetter) {
                                 ResourceName = pkNavName,
                                 AssociationName = constraintName,
                                 DoCascadeDelete = cascadeDelete,
                                 EntityTypeName = fkTable,
-                                IsScalar = IsOneToOne
+                                IsScalar = isOneToOne
                             };
                             pkEntity.NavigationProperties.Add(pkNavigation);
                         }
                         else
-                            pkNavigation.IsScalar &= IsOneToOne;
-                        var pkClrType = Type.GetType(pkEntity.Name);
-                        if (pkClrType != null)
-                            PopulateNavigationPropertyValidations(pkClrType, pkNavigation);
+                            pkNavigation.IsScalar &= isOneToOne;
+                        if (pkEntity.ClrType != null)
+                            PopulateNavigationPropertyValidations(pkEntity.ClrType, pkNavigation);
                     }
                 }
             }
@@ -591,10 +630,8 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         public static void PopulateDataPropertyValidations(Type clrType, DataProperty dataProperty, int? maxLen = null) {
             var clrProperty = clrType.GetMember(dataProperty.Name).FirstOrDefault();
             var clrPropertyType = GetPropertyType(clrType, dataProperty.Name);
-            if (clrProperty != null)
-                SetMetadataPartNames(dataProperty, clrProperty);
 
-            var displayName = dataProperty.DisplayName ?? dataProperty.Name;
+            var displayName = dataProperty.GetDisplayName();
             var dataAnnotations = clrProperty.GetAttributes<ValidationAttribute>(true);
             foreach (var att in dataAnnotations) {
                 string msg;
@@ -676,10 +713,8 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// <param name="navigationProperty">The navigation property.</param>
         public static void PopulateNavigationPropertyValidations(Type clrType, NavigationProperty navigationProperty) {
             var clrProperty = clrType.GetMember(navigationProperty.Name).FirstOrDefault();
-            if (clrProperty != null)
-                SetMetadataPartNames(navigationProperty, clrProperty);
 
-            var displayName = navigationProperty.DisplayName ?? navigationProperty.Name;
+            var displayName = navigationProperty.GetDisplayName();
             var dataAnnotations = clrProperty.GetAttributes<ValidationAttribute>(true);
             foreach (var att in dataAnnotations) {
                 string msg;
@@ -703,32 +738,35 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         }
 
         /// <summary>
-        /// Sets the metadata part names.
+        /// Gets the display name getter.
         /// </summary>
-        /// <param name="clrObj">The CLR object.</param>
-        /// <param name="metadataPart">The metadata part.</param>
-        public static void SetMetadataPartNames(object clrObj, MetadataPart metadataPart) {
-            SetMetadataPartNames(metadataPart, clrObj.GetType());
+        /// <param name="member">The member.</param>
+        /// <returns></returns>
+        public static Func<string> GetDisplayNameGetter(MemberInfo member) {
+            if (member == null) return null;
+
+            var displayAttribute = member.GetAttributes<DisplayAttribute>(true).FirstOrDefault();
+            if (displayAttribute != null) return displayAttribute.GetName;
+
+            return null;
         }
 
         /// <summary>
-        /// Sets the metadata part names.
+        /// Creates the client hash for given string.
         /// </summary>
-        /// <param name="metadataPart">The metadata part.</param>
-        /// <param name="clrMember">The CLR member.</param>
-        public static void SetMetadataPartNames(MetadataPart metadataPart, MemberInfo clrMember) {
-            var displayNameAtt = clrMember.GetAttributes<DisplayAttribute>(true).FirstOrDefault();
-            if (displayNameAtt != null) {
-                if (displayNameAtt.ResourceType != null)
-                    metadataPart.ResourceName = displayNameAtt.Name;
+        /// <param name="saltStr">The salt string.</param>
+        /// <returns></returns>
+        public static int CreateQueryHash(string saltStr) {
+            var hash = 0;
+            var len = saltStr.Length;
+            if (saltStr.Length == 0) return hash;
 
-                try {
-                    metadataPart.DisplayName = displayNameAtt.GetName();
-                }
-                // ReSharper disable once EmptyGeneralCatchClause
-                catch {
-                }
+            for (var i = 0; i < len; i++) {
+                var chr = saltStr[i];
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0;
             }
+            return hash;
         }
     }
 }

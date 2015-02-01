@@ -10,6 +10,7 @@ namespace Beetle.Server {
         private readonly object _value;
         private readonly NameValueCollection _queryParameters;
         private readonly int _maxResultCount;
+        private readonly bool? _checkQueryHash;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionContext" /> struct.
@@ -18,11 +19,13 @@ namespace Beetle.Server {
         /// <param name="value">The value.</param>
         /// <param name="queryParameters">The query parameters.</param>
         /// <param name="maxResultCount">The maximum result count.</param>
-        public ActionContext(string name, object value, NameValueCollection queryParameters, int maxResultCount = 0) {
+        /// <param name="checkQueryHash">if set to <c>true</c> [check query hash].</param>
+        public ActionContext(string name, object value, NameValueCollection queryParameters, int maxResultCount, bool? checkQueryHash) {
             _name = name;
             _value = value;
             _queryParameters = queryParameters;
             _maxResultCount = maxResultCount;
+            _checkQueryHash = checkQueryHash;
         }
 
         /// <summary>
@@ -56,5 +59,15 @@ namespace Beetle.Server {
         /// The maximum result count.
         /// </value>
         public int MaxResultCount { get { return _maxResultCount; } }
+
+        /// <summary>
+        /// Gets a value indicating whether [check query hash].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        /// </value>
+        public bool? CheckQueryHash {
+            get { return _checkQueryHash; }
+        }
     }
 }

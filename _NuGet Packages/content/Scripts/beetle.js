@@ -317,6 +317,16 @@
                         tracker.setValue(fk.name, fk.getDefaultValue());
                 }
             },
+            createHash: function(str) {
+                var hash = 0, i, chr, len;
+                if (str.length == 0) return hash;
+                for (i = 0, len = str.length; i < len; i++) {
+                    chr   = str.charCodeAt(i);
+                    hash  = ((hash << 5) - hash) + chr;
+                    hash |= 0;
+                }
+                return hash;
+            },
             jsepToODataQuery: function (exp, queryContext) {
                 /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
                 /// <param name="exp">Jsep expression.</param>
@@ -2261,7 +2271,7 @@
                     return this.name;
                 };
 
-                proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, successCallback, errorCallback) {
+                proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
                     /// <summary>
                     /// Ajax operation virtual method.
                     /// </summary>
@@ -2273,6 +2283,7 @@
                     /// <param name="async">If set to false, request will be made synchronously.</param>
                     /// <param name="timeout">AJAX call timeout value. if call won't be completed after given time, exception will be thrown.</param>
                     /// <param name="extra">implementor specific arguments.</param>
+                    /// <param name="headers">custom HTTP headers.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
                     throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
@@ -2945,7 +2956,7 @@
                 helper.inherit(ctor, baseTypes.ajaxProviderBase);
                 var proto = ctor.prototype;
 
-                proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, successCallback, errorCallback) {
+                proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
                     var o = {
                         url: uri,
                         accepts: {
@@ -2961,6 +2972,7 @@
                         cache: false,
                         async: async,
                         timeout: timeout,
+                        headers: headers,
                         success: function (result, status, xhr) {
                             xhr.onreadystatechange = null;
                             xhr.abort = null;
@@ -9461,7 +9473,7 @@
                 var extra = options && options.extra;
                 this.ajaxProvider.doAjax(
                     this.uri + 'Metadata',
-                    'GET', this.dataType, this.contentType, null, async, timeout, extra,
+                    'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
                     function (data) {
                         // deserialize return value to object.
                         retVal = that.serializationService.deserialize(data); // parse string
@@ -9488,7 +9500,7 @@
                     uri += that.serializationService.serialize(initialValues);
                 this.ajaxProvider.doAjax(
                     uri,
-                    'GET', this.dataType, this.contentType, null, async, timeout, extra,
+                    'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
                     function (data) {
                         // deserialize return value to object.
                         data = that.serializationService.deserialize(data);
@@ -9521,26 +9533,31 @@
                 var uri = (options && options.uri) || this.uri || '';
                 if (uri && uri[uri.length - 1] != '/') uri += '/';
                 uri = uri + resource;
+                var queryString;
                 if (usePost === true) {
                     var prmsObj = {};
                     helper.forEach(queryParams, function (qp) {
                         prmsObj[qp.name] = qp.value;
                     });
                     d = this.serializationService.serialize(prmsObj);
+                    queryString = d;
                     type = 'POST';
                 } else {
                     var prmsArr = [];
                     helper.forEach(queryParams, function (qp) {
                         prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
                     });
-                    uri += '?' + prmsArr.join('&');
+                    queryString = prmsArr.join('&');
+                    uri += '?' + queryString;
                     type = 'GET';
                 }
+                var hash = helper.createHash(queryString);
+                var headers = { 'x-beetle-query': hash, 'x-beetle-query-len': queryString.length };
                 var that = this;
                 // execute query using ajax provider
                 this.ajaxProvider.doAjax(
                     uri,
-                    type, dataType, contentType, d, async, timeout, extra,
+                    type, dataType, contentType, d, async, timeout, extra, headers,
                     function (data, xhr) {
                         // deserialize returned data (if deserializable).
                         try {
@@ -9571,7 +9588,7 @@
                 uri = uri + saveAction;
                 this.ajaxProvider.doAjax(
                     uri,
-                    'POST', this.dataType, this.contentType, this.serializationService.serialize(savePackage), async, timeout, extra,
+                    'POST', this.dataType, this.contentType, this.serializationService.serialize(savePackage), async, timeout, extra, null,
                     function (result) {
                         // deserialize returned data (if deserializable).
                         try {

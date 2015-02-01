@@ -1,11 +1,13 @@
-﻿namespace Beetle.Server.Meta {
+﻿using System;
+
+namespace Beetle.Server.Meta {
 
     /// <summary>
     /// Enum Member metadata representation.
     /// </summary>
     public class EnumMember: MetadataPart {
 
-        public EnumMember(string name): base(name) {
+        public EnumMember(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {
         }
 
         public object Value { get; set; }
@@ -14,7 +16,7 @@
             return new {
                            n = Name,
                            r = ResourceName,
-                           l = DisplayName,
+                           l = GetDisplayName(),
                            v = Value
                        };
         }
