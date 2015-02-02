@@ -8,6 +8,7 @@ namespace Beetle.Server {
     public struct ActionContext {
         private readonly string _name;
         private readonly object _value;
+        private readonly string _queryString;
         private readonly NameValueCollection _queryParameters;
         private readonly int _maxResultCount;
         private readonly bool? _checkQueryHash;
@@ -17,12 +18,14 @@ namespace Beetle.Server {
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
+        /// <param name="queryString">The query string.</param>
         /// <param name="queryParameters">The query parameters.</param>
         /// <param name="maxResultCount">The maximum result count.</param>
         /// <param name="checkQueryHash">if set to <c>true</c> [check query hash].</param>
-        public ActionContext(string name, object value, NameValueCollection queryParameters, int maxResultCount, bool? checkQueryHash) {
+        public ActionContext(string name, object value, string queryString, NameValueCollection queryParameters, int maxResultCount, bool? checkQueryHash) {
             _name = name;
             _value = value;
+            _queryString = queryString;
             _queryParameters = queryParameters;
             _maxResultCount = maxResultCount;
             _checkQueryHash = checkQueryHash;
@@ -43,6 +46,16 @@ namespace Beetle.Server {
         /// The value.
         /// </value>
         public object Value { get { return _value; } }
+
+        /// <summary>
+        /// Gets the query string.
+        /// </summary>
+        /// <value>
+        /// The query string.
+        /// </value>
+        public string QueryString {
+            get { return _queryString; }
+        }
 
         /// <summary>
         /// Gets the query parameters.

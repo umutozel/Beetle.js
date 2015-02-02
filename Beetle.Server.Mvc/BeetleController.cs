@@ -76,11 +76,12 @@ namespace Beetle.Server.Mvc {
         /// <param name="action">The name of the attempted action.</param>
         protected override void HandleUnknownAction(string action) {
             if (AutoHandleUnknownActions) {
+                string queryString;
                 NameValueCollection queryParams;
                 object[] actionParameters;
-                Helper.GetParameters(out queryParams, out actionParameters, BeetleConfig);
+                Helper.GetParameters(out queryString, out queryParams, out actionParameters, BeetleConfig);
                 var result = ContextHandler.HandleUnknownAction(action);
-                var actionContext = new ActionContext(action, result, queryParams, MaxResultCount, CheckQueryHash);
+                var actionContext = new ActionContext(action, result, queryString, queryParams, MaxResultCount, CheckQueryHash);
                 var processResult = ProcessRequest(result, actionContext);
                 var response = Helper.HandleResponse(processResult, BeetleConfig);
                 response.ExecuteResult(ControllerContext);
@@ -216,7 +217,7 @@ namespace Beetle.Server.Mvc {
         /// <value>
         ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
         /// </value>
-        public bool? CheckQueryHash { get; set; }
+        public bool CheckQueryHash { get; set; }
 
         /// <summary>
         /// Occurs when [before handle query].

@@ -12,6 +12,7 @@ namespace Beetle.Server.Mvc {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
         private BeetleConfig _beetleConfig;
+        private bool? _checkQueryHash;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute" /> class.
@@ -56,16 +57,17 @@ namespace Beetle.Server.Mvc {
             if (_beetleConfig == null)
                 _beetleConfig = service != null ? service.BeetleConfig : BeetleConfig.Instance;
 
+            string queryString;
             NameValueCollection queryParams;
             object[] actionArgs;
             // handle request message
-            GetParameters(filterContext, out queryParams, out actionArgs);
+            GetParameters(filterContext, out queryString, out queryParams, out actionArgs);
 
             // execute the action method
             var contentValue = actionMethod.Invoke(controller, actionArgs);
             // get client hash
             // process the request and return the result
-            var actionContext = new ActionContext(action.ActionName, contentValue, queryParams, MaxResultCount, CheckQueryHash);
+            var actionContext = new ActionContext(action.ActionName, contentValue, queryString, queryParams, MaxResultCount, CheckQueryHashNullable);
             var processResult = ProcessRequest(contentValue, actionContext, service);
             // handle response message
             filterContext.Result = HandleResponse(filterContext, processResult);
@@ -75,13 +77,13 @@ namespace Beetle.Server.Mvc {
         /// Handles the request.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
+        /// <param name="queryString">The query string.</param>
         /// <param name="queryParams">The query params.</param>
         /// <param name="actionArgs">The action args.</param>
-        /// <returns>When request is a valid beetle call, return true, otherwise false. If returned false, beetle won't call action method.</returns>
-        protected virtual void GetParameters(ActionExecutingContext filterContext, out NameValueCollection queryParams, out object[] actionArgs) {
+        protected virtual void GetParameters(ActionExecutingContext filterContext, out string queryString, out NameValueCollection queryParams, out object[] actionArgs) {
             var request = HttpContext.Current.Request;
             var actionParameters = filterContext.ActionDescriptor.GetParameters();
-            Helper.GetParameters(out queryParams, out actionArgs, _beetleConfig, request, actionParameters, filterContext.ActionParameters);
+            Helper.GetParameters(out queryString, out queryParams, out actionArgs, _beetleConfig, request, actionParameters, filterContext.ActionParameters);
         }
 
         /// <summary>
@@ -131,6 +133,19 @@ namespace Beetle.Server.Mvc {
         /// <value>
         ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
         /// </value>
-        public bool CheckQueryHash { get; set; }
+        public bool CheckQueryHash {
+            get { return _checkQueryHash.GetValueOrDefault(); }
+            set { _checkQueryHash = value; }
+        }
+
+        /// <summary>
+        /// Gets the check query hash nullable.
+        /// </summary>
+        /// <value>
+        /// The check query hash nullable.
+        /// </value>
+        internal bool? CheckQueryHashNullable {
+            get { return _checkQueryHash; }
+        }
     }
 }

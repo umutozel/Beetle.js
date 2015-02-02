@@ -23,6 +23,7 @@ namespace Beetle.Server.WebApi {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
         private static readonly MethodInfo _dummyMethodInfo;
         private BeetleConfig _beetleConfig;
+        private bool? _checkQueryHash;
 
         /// <summary>
         /// Initializes the <see cref="BeetleApiController{TContextHandler}"/> class.
@@ -68,11 +69,12 @@ namespace Beetle.Server.WebApi {
             var service = controller as IBeetleService;
 
             // get query parameters
-            var queryParams = GetParameters(actionExecutedContext);
+            string queryString;
+            var queryParams = GetParameters(actionExecutedContext, out queryString);
             object contentValue;
             if (!response.TryGetContentValue(out contentValue)) return;
 
-            var actionContext = new ActionContext(action, contentValue, queryParams, MaxResultCount, CheckQueryHash);
+            var actionContext = new ActionContext(action, contentValue, queryString, queryParams, MaxResultCount, CheckQueryHashNullable);
 
             request.Properties["BeetleService"] = service;
             request.Properties["BeetleActionContext"] = actionContext;
@@ -217,12 +219,13 @@ namespace Beetle.Server.WebApi {
         /// <summary>
         /// Handles the request.
         /// </summary>
+        /// <param name="queryString">The query string.</param>
         /// <param name="actionExecutedContext">The action executed context.</param>
         /// <returns>
         /// The query parameters.
         /// </returns>
-        protected virtual NameValueCollection GetParameters(HttpActionExecutedContext actionExecutedContext) {
-            return Helper.GetParameters();
+        protected virtual NameValueCollection GetParameters(HttpActionExecutedContext actionExecutedContext, out string queryString) {
+            return Helper.GetParameters(out queryString);
         }
 
         /// <summary>
@@ -284,6 +287,19 @@ namespace Beetle.Server.WebApi {
         /// <value>
         ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
         /// </value>
-        public bool? CheckQueryHash { get; set; }
+        public bool CheckQueryHash {
+            get { return _checkQueryHash.GetValueOrDefault(); }
+            set { _checkQueryHash = value; }
+        }
+
+        /// <summary>
+        /// Gets the check query hash nullable.
+        /// </summary>
+        /// <value>
+        /// The check query hash nullable.
+        /// </value>
+        internal bool? CheckQueryHashNullable {
+            get { return _checkQueryHash; }
+        }
     }
 }

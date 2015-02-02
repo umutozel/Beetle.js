@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -21,6 +21,7 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Handles the request.
         /// </summary>
+        /// <param name="queryString">The query string.</param>
         /// <param name="queryParams">The query parameters.</param>
         /// <param name="actionArgs">The action arguments.</param>
         /// <param name="config">The beetle configuration.</param>
@@ -28,7 +29,7 @@ namespace Beetle.Server.Mvc {
         /// <param name="actionParameters">The action parameters.</param>
         /// <param name="parameters">The parameters.</param>
         /// <exception cref="BeetleException">Action must have only one parameter (JsonObject, object or dynamic) to be able called with POST.</exception>
-        internal static void GetParameters(out NameValueCollection queryParams, out object[] actionArgs,
+        internal static void GetParameters(out string queryString, out NameValueCollection queryParams, out object[] actionArgs,
                                            BeetleConfig config = null, HttpRequest request = null,
                                            ParameterDescriptor[] actionParameters = null, IDictionary<string, object> parameters = null) {
             if (config == null)
@@ -44,19 +45,19 @@ namespace Beetle.Server.Mvc {
                     object actionArg = null;
                     // read post data
                     request.InputStream.Position = 0;
-                    var postData = new StreamReader(request.InputStream).ReadToEnd();
+                    queryString = new StreamReader(request.InputStream).ReadToEnd();
                     if (request.ContentType.Contains("application/json")) {
                         if (hasPrm)
-                            actionArg = JsonConvert.DeserializeObject(postData, config.JsonSerializerSettings) as JObject;
+                            actionArg = JsonConvert.DeserializeObject(queryString, config.JsonSerializerSettings) as JObject;
                         // but now there is no query string parameters, we must populate them manually for beetle queries
                         // otherwise beetle cannot use query parameters when using post method
-                        var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(postData);
+                        var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
                         queryParams = new NameValueCollection();
                         foreach (var i in d)
                             queryParams.Add(i.Key, i.Value == null ? string.Empty : i.Value.ToString());
                     }
                     else {
-                        var prms = HttpContext.Current.Request.Params;
+                        var prms = request.Params;
                         queryParams = prms;
                         var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
                         if (hasPrm) {
@@ -67,11 +68,13 @@ namespace Beetle.Server.Mvc {
                     actionArgs = hasPrm ? new[] { actionArg } : new object[0];
                 }
                 else {
+                    queryString = string.Empty;
                     queryParams = null;
                     actionArgs = null;
                 }
             }
             else {
+                queryString = request.Url.Query;
                 queryParams = request.QueryString;
                 if (actionParameters != null && parameters != null) {
                     actionArgs = actionParameters
@@ -92,6 +95,17 @@ namespace Beetle.Server.Mvc {
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
+            if (actionContext.QueryParameters.HasKeys()) {
+                bool checkHash;
+                if (!actionContext.CheckQueryHash.HasValue)
+                    checkHash = service != null && service.CheckQueryHash;
+                else
+                    checkHash = actionContext.CheckQueryHash.Value;
+
+                if (checkHash)
+                    CheckQueryHash(actionContext.QueryString);
+            }
+
             // get beetle query parameters (supported parameters by default)
             var beetlePrms = Server.Helper.GetBeetleParameters(actionContext.QueryParameters);
 
@@ -137,22 +151,25 @@ namespace Beetle.Server.Mvc {
         /// <summary>
         /// Checks the query hash.
         /// </summary>
-        internal static void CheckQueryHash() {
+        internal static void CheckQueryHash(string queryString) {
             var request = HttpContext.Current.Request;
 
             var clientHash = request.Headers["x-beetle-query"];
-            var serverQuery = request.Url.Query;
-            if (serverQuery.Length > 0)
-                serverQuery = serverQuery.Substring(1);
+            if (queryString.Length > 0)
+                queryString = queryString.Substring(1);
 
             if (!string.IsNullOrEmpty(clientHash)) {
                 var hashLenStr = request.Headers["x-beetle-query-len"];
                 if (!string.IsNullOrEmpty(hashLenStr)) {
                     var queryLen = Convert.ToInt32(hashLenStr);
-                    serverQuery = serverQuery.Substring(0, queryLen);
-                    var serverHash = Server.Helper.CreateQueryHash(serverQuery);
+                    queryString = queryString.Substring(0, queryLen);
+                    var serverHash = Server.Helper.CreateQueryHash(queryString).ToString(CultureInfo.InvariantCulture);
+
+                    if (serverHash == clientHash)
+                        return;
                 }
             }
+            throw new BeetleException(Server.Properties.Resources.AlteredQueryException);
         }
     }
 }

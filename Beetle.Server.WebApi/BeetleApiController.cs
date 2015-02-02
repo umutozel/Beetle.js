@@ -101,8 +101,9 @@ namespace Beetle.Server.WebApi {
             // get value for action
             var result = ContextHandler.HandleUnknownAction(action);
             // get beetle parameters
-            var parameters = Helper.GetParameters();
-            var actionContext = new ActionContext(action, result, parameters, MaxResultCount, CheckQueryHash);
+            string queryString;
+            var parameters = Helper.GetParameters(out queryString);
+            var actionContext = new ActionContext(action, result, queryString, parameters, MaxResultCount, CheckQueryHash);
             var queryable = result as IQueryable;
             // if value is a query, first handle OData parameters
             if (queryable != null)

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Beetle.Server.WebApi.Properties;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -18,21 +19,22 @@ namespace Beetle.Server.WebApi {
         /// <summary>
         /// Handles the request.
         /// </summary>
+        /// <param name="queryString">The query string.</param>
         /// <param name="request">The request.</param>
         /// <returns>
         /// The query parameters.
         /// </returns>
-        internal static NameValueCollection GetParameters(HttpRequest request = null) {
+        internal static NameValueCollection GetParameters(out string queryString, HttpRequest request = null) {
             if (request == null)
                 request = HttpContext.Current.Request;
 
             // beetle also supports post http method
             if (request.HttpMethod == "POST") {
+                request.InputStream.Position = 0;
+                queryString = new StreamReader(request.InputStream).ReadToEnd();
                 // we read query options from input stream
                 if (request.ContentType.Contains("application/json")) {
-                    request.InputStream.Position = 0;
-                    var s = new StreamReader(request.InputStream).ReadToEnd();
-                    var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(s);
+                    var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
                     var queryParams = new NameValueCollection(request.Params);
                     foreach (var i in d)
                         queryParams.Add(i.Key, i.Value.ToString());
@@ -41,6 +43,7 @@ namespace Beetle.Server.WebApi {
                 return request.Params;
             }
 
+            queryString = request.Url.Query;
             return request.QueryString;
         }
 
@@ -56,6 +59,19 @@ namespace Beetle.Server.WebApi {
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
                                                      bool forbidBeetleQueryParams = false, IBeetleService service = null) {
+
+            // if has OData or Beetle query parameter
+            if (actionContext.Value != contentValue || actionContext.QueryParameters.HasKeys()) {
+                bool checkHash;
+                if (!actionContext.CheckQueryHash.HasValue)
+                    checkHash = service != null && service.CheckQueryHash;
+                else
+                    checkHash = actionContext.CheckQueryHash.Value;
+
+                if (checkHash)
+                    CheckQueryHash(actionContext.QueryString);
+            }
+
             var queryParams = actionContext.QueryParameters;
             var inlineCountParam = queryParams["$inlineCount"];
             // get beetle query parameters (supported parameters by default)
@@ -115,6 +131,30 @@ namespace Beetle.Server.WebApi {
             }
 
             return retVal;
+        }
+
+        /// <summary>
+        /// Checks the query hash.
+        /// </summary>
+        internal static void CheckQueryHash(string queryString) {
+            var request = HttpContext.Current.Request;
+
+            var clientHash = request.Headers["x-beetle-query"];
+            if (queryString.Length > 0)
+                queryString = queryString.Substring(1);
+
+            if (!string.IsNullOrEmpty(clientHash)) {
+                var hashLenStr = request.Headers["x-beetle-query-len"];
+                if (!string.IsNullOrEmpty(hashLenStr)) {
+                    var queryLen = Convert.ToInt32(hashLenStr);
+                    queryString = queryString.Substring(0, queryLen);
+                    var serverHash = Server.Helper.CreateQueryHash(queryString).ToString(CultureInfo.InvariantCulture);
+
+                    if (serverHash == clientHash)
+                        return;
+                }
+            }
+            throw new BeetleException(Server.Properties.Resources.AlteredQueryException);
         }
     }
 }
