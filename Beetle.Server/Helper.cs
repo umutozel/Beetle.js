@@ -345,20 +345,20 @@ namespace Beetle.Server {
         /// <param name="service">The service.</param>
         /// <returns></returns>
         public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext, IBeetleService service) {
-            return DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, QueryableHandler.Instance, EnumerableHandler.Instance);
+            return DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, QueryableHandler.Instance, EnumerableHandler.Instance);
         }
 
         public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
-                                                            IBeetleService service, IQueryHandler<IQueryable> queryableHandler, 
-                                                            IContentHandler<IEnumerable> enumerableHandler) {
+                                                            IBeetleService service, IContextHandler contextHandler,
+                                                            IQueryHandler<IQueryable> queryableHandler, IContentHandler<IEnumerable> enumerableHandler) {
             var queryable = contentValue as IQueryable;
             if (queryable != null)
-                return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service);
+                return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service, contextHandler);
 
             if (!(contentValue is string)) {
                 var enumerable = contentValue as IEnumerable;
                 if (enumerable != null)
-                    return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service);
+                    return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service, contextHandler);
             }
 
             return new ProcessResult(actionContext) { Result = contentValue };

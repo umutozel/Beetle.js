@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Beetle.Server.Meta;
 
@@ -77,6 +78,14 @@ namespace Beetle.Server {
         /// Save result.
         /// </returns>
         SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
+
+        /// <summary>
+        /// Gets the enumerable handler.
+        /// </summary>
+        /// <value>
+        /// The enumerable handler.
+        /// </value>
+        IContentHandler<IEnumerable> EnumerableHandler { get; }
 
         /// <summary>
         /// Gets query handler.
