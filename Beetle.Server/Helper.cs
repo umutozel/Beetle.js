@@ -7,7 +7,6 @@ using System.Data;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Globalization;
 using System.Linq;
-using System.Net.Cache;
 using System.Reflection;
 using Beetle.Server.Meta;
 using Newtonsoft.Json;
@@ -346,14 +345,20 @@ namespace Beetle.Server {
         /// <param name="service">The service.</param>
         /// <returns></returns>
         public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext, IBeetleService service) {
+            return DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, QueryableHandler.Instance, EnumerableHandler.Instance);
+        }
+
+        public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
+                                                            IBeetleService service, IQueryHandler<IQueryable> queryableHandler, 
+                                                            IContentHandler<IEnumerable> enumerableHandler) {
             var queryable = contentValue as IQueryable;
             if (queryable != null)
-                return QueryableHandler.Instance.HandleContent(queryable, beetlePrms, actionContext, service);
+                return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service);
 
             if (!(contentValue is string)) {
                 var enumerable = contentValue as IEnumerable;
                 if (enumerable != null)
-                    return EnumerableHandler.Instance.HandleContent(enumerable, beetlePrms, actionContext, service);
+                    return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service);
             }
 
             return new ProcessResult(actionContext) { Result = contentValue };
