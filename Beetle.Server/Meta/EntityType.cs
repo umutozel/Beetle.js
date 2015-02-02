@@ -39,6 +39,17 @@ namespace Beetle.Server.Meta {
         public List<DataProperty> KeyProperties { get; set; }
         public Type ClrType { get; set; }
 
+        public override string GetDisplayName() {
+            if (DisplayNameGetter == null) return ShortName;
+
+            try {
+                return DisplayNameGetter();
+            }
+            catch {
+                return ShortName;
+            }
+        }
+
         public override object ToMinified() {
             return new {
                            n = Name,

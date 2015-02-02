@@ -32,5 +32,15 @@ namespace Beetle.Server.Meta {
         /// </summary>
         /// <returns>Anonymous object.</returns>
         public abstract object ToMinified();
+
+        /// <summary>
+        /// Gets the display name getter.
+        /// </summary>
+        /// <value>
+        /// The display name getter.
+        /// </value>
+        protected Func<string> DisplayNameGetter {
+            get { return _displayNameGetter; }
+        }
     }
 }
