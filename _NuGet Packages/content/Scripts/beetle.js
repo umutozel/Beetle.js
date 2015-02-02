@@ -317,16 +317,6 @@
                         tracker.setValue(fk.name, fk.getDefaultValue());
                 }
             },
-            createHash: function(str) {
-                var hash = 0, i, chr, len;
-                if (str.length == 0) return hash;
-                for (i = 0, len = str.length; i < len; i++) {
-                    chr   = str.charCodeAt(i);
-                    hash  = ((hash << 5) - hash) + chr;
-                    hash |= 0;
-                }
-                return hash;
-            },
             jsepToODataQuery: function (exp, queryContext) {
                 /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
                 /// <param name="exp">Jsep expression.</param>
@@ -9548,10 +9538,11 @@
                         prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
                     });
                     queryString = prmsArr.join('&');
-                    uri += '?' + queryString;
+                    queryString = '?' + queryString;
+                    uri += queryString;
                     type = 'GET';
                 }
-                var hash = helper.createHash(queryString);
+                var hash = createHash(queryString);
                 var headers = { 'x-beetle-query': hash, 'x-beetle-query-len': queryString.length };
                 var that = this;
                 // execute query using ajax provider
@@ -9668,6 +9659,20 @@
                     }
                 }
             };
+
+            function createHash(str) {
+                /// <summary>
+                /// creates hash integer for given string
+                /// </summary>
+                var hash = 0, i, chr, len;
+                if (str.length == 0) return hash;
+                for (i = 0, len = str.length; i < len; i++) {
+                    chr   = str.charCodeAt(i);
+                    hash  = ((hash << 5) - hash) + chr;
+                    hash |= 0;
+                }
+                return hash;
+            }
 
             return ctor;
         })();

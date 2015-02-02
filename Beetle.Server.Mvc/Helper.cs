@@ -155,9 +155,6 @@ namespace Beetle.Server.Mvc {
             var request = HttpContext.Current.Request;
 
             var clientHash = request.Headers["x-beetle-query"];
-            if (queryString.Length > 0)
-                queryString = queryString.Substring(1);
-
             if (!string.IsNullOrEmpty(clientHash)) {
                 var hashLenStr = request.Headers["x-beetle-query-len"];
                 if (!string.IsNullOrEmpty(hashLenStr)) {
