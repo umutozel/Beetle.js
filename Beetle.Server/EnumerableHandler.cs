@@ -27,7 +27,7 @@ namespace Beetle.Server {
         public ProcessResult HandleContent(IEnumerable contentValue, IEnumerable<KeyValuePair<string, string>> parameters,
                                            ActionContext actionContext, IBeetleService service = null, IContextHandler contextHandler = null) {
             var maxResultCount = actionContext.MaxResultCount;
-            if (service != null && service.MaxResultCount > 0 && service.MaxResultCount < maxResultCount)
+            if (maxResultCount <= 0 && service != null && service.MaxResultCount > 0)
                 maxResultCount = service.MaxResultCount;
 
             if (maxResultCount > 0) {

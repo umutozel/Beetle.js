@@ -103,7 +103,7 @@ namespace Beetle.Server {
         /// <exception cref="Beetle.Server.BeetleException"></exception>
         protected virtual IQueryable ValidateQuery(ActionContext actionContext, IQueryable queryable, IBeetleService service, IContextHandler contextHandler) {
             var maxResultCount = actionContext.MaxResultCount;
-            if (service != null && service.MaxResultCount > 0 && service.MaxResultCount < maxResultCount)
+            if (maxResultCount <= 0 && service != null && service.MaxResultCount > 0)
                 maxResultCount = service.MaxResultCount;
 
             if (maxResultCount > 0) {
