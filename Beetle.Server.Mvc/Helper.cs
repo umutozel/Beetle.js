@@ -75,6 +75,9 @@ namespace Beetle.Server.Mvc {
             }
             else {
                 queryString = request.Url.Query;
+                if (queryString.StartsWith("?"))
+                    queryString = queryString.Substring(1);
+
                 queryParams = request.QueryString;
                 if (actionParameters != null && parameters != null) {
                     actionArgs = actionParameters
@@ -95,15 +98,15 @@ namespace Beetle.Server.Mvc {
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
-            if (actionContext.QueryParameters.HasKeys()) {
+            if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
-                if (!actionContext.CheckQueryHash.HasValue)
-                    checkHash = service != null && service.CheckQueryHash;
+                if (!actionContext.CheckRequestHash.HasValue)
+                    checkHash = service != null && service.CheckRequestHash;
                 else
-                    checkHash = actionContext.CheckQueryHash.Value;
+                    checkHash = actionContext.CheckRequestHash.Value;
 
                 if (checkHash)
-                    CheckQueryHash(actionContext.QueryString);
+                    CheckRequestHash(actionContext.QueryString);
             }
 
             // get beetle query parameters (supported parameters by default)
@@ -149,14 +152,16 @@ namespace Beetle.Server.Mvc {
         }
 
         /// <summary>
-        /// Checks the query hash.
+        /// Checks the request hash.
         /// </summary>
-        internal static void CheckQueryHash(string queryString) {
+        /// <param name="queryString">The query string.</param>
+        /// <exception cref="BeetleException"></exception>
+        internal static void CheckRequestHash(string queryString) {
             var request = HttpContext.Current.Request;
 
-            var clientHash = request.Headers["x-beetle-query"];
+            var clientHash = request.Headers["x-beetle-request"];
             if (!string.IsNullOrEmpty(clientHash)) {
-                var hashLenStr = request.Headers["x-beetle-query-len"];
+                var hashLenStr = request.Headers["x-beetle-request-len"];
                 if (!string.IsNullOrEmpty(hashLenStr)) {
                     var queryLen = Convert.ToInt32(hashLenStr);
                     queryString = queryString.Substring(0, queryLen);
@@ -166,7 +171,8 @@ namespace Beetle.Server.Mvc {
                         return;
                 }
             }
-            throw new BeetleException(Server.Properties.Resources.AlteredQueryException);
+
+            throw new BeetleException(Server.Properties.Resources.AlteredRequestException);
         }
     }
 }

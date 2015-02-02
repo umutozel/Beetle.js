@@ -82,12 +82,12 @@ namespace Beetle.Server {
         int MaxResultCount { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// Gets or sets a value indicating whether [check request hash].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [check request hash]; otherwise, <c>false</c>.
         /// </value>
-        bool CheckQueryHash { get; set; }
+        bool CheckRequestHash { get; set; }
 
         /// <summary>
         /// Occurs when [before handle query].

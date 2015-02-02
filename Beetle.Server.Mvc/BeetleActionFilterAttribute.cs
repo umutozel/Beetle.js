@@ -12,7 +12,7 @@ namespace Beetle.Server.Mvc {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
         private BeetleConfig _beetleConfig;
-        private bool? _checkQueryHash;
+        private bool? _checkRequestHash;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute" /> class.
@@ -67,7 +67,7 @@ namespace Beetle.Server.Mvc {
             var contentValue = actionMethod.Invoke(controller, actionArgs);
             // get client hash
             // process the request and return the result
-            var actionContext = new ActionContext(action.ActionName, contentValue, queryString, queryParams, MaxResultCount, CheckQueryHashNullable);
+            var actionContext = new ActionContext(action.ActionName, contentValue, queryString, queryParams, MaxResultCount, CheckRequestHashNullable);
             var processResult = ProcessRequest(contentValue, actionContext, service);
             // handle response message
             filterContext.Result = HandleResponse(filterContext, processResult);
@@ -128,24 +128,24 @@ namespace Beetle.Server.Mvc {
         public int MaxResultCount { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// Gets or sets a value indicating whether [check request hash].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [check request hash]; otherwise, <c>false</c>.
         /// </value>
-        public bool CheckQueryHash {
-            get { return _checkQueryHash.GetValueOrDefault(); }
-            set { _checkQueryHash = value; }
+        public bool CheckRequestHash {
+            get { return _checkRequestHash.GetValueOrDefault(); }
+            set { _checkRequestHash = value; }
         }
 
         /// <summary>
-        /// Gets the check query hash nullable.
+        /// Gets the check request hash nullable.
         /// </summary>
         /// <value>
-        /// The check query hash nullable.
+        /// The check request hash nullable.
         /// </value>
-        internal bool? CheckQueryHashNullable {
-            get { return _checkQueryHash; }
+        internal bool? CheckRequestHashNullable {
+            get { return _checkRequestHash; }
         }
     }
 }

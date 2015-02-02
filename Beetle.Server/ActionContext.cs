@@ -11,7 +11,7 @@ namespace Beetle.Server {
         private readonly string _queryString;
         private readonly NameValueCollection _queryParameters;
         private readonly int _maxResultCount;
-        private readonly bool? _checkQueryHash;
+        private readonly bool? _checkRequestHash;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionContext" /> struct.
@@ -21,14 +21,14 @@ namespace Beetle.Server {
         /// <param name="queryString">The query string.</param>
         /// <param name="queryParameters">The query parameters.</param>
         /// <param name="maxResultCount">The maximum result count.</param>
-        /// <param name="checkQueryHash">if set to <c>true</c> [check query hash].</param>
-        public ActionContext(string name, object value, string queryString, NameValueCollection queryParameters, int maxResultCount, bool? checkQueryHash) {
+        /// <param name="checkRequestHash">The check request hash.</param>
+        public ActionContext(string name, object value, string queryString, NameValueCollection queryParameters, int maxResultCount, bool? checkRequestHash) {
             _name = name;
             _value = value;
             _queryString = queryString;
             _queryParameters = queryParameters;
             _maxResultCount = maxResultCount;
-            _checkQueryHash = checkQueryHash;
+            _checkRequestHash = checkRequestHash;
         }
 
         /// <summary>
@@ -74,13 +74,13 @@ namespace Beetle.Server {
         public int MaxResultCount { get { return _maxResultCount; } }
 
         /// <summary>
-        /// Gets a value indicating whether [check query hash].
+        /// Gets the check request hash.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        /// The check request hash.
         /// </value>
-        public bool? CheckQueryHash {
-            get { return _checkQueryHash; }
+        public bool? CheckRequestHash {
+            get { return _checkRequestHash; }
         }
     }
 }

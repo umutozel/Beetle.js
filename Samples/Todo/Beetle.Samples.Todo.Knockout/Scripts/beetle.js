@@ -9538,12 +9538,11 @@
                         prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
                     });
                     queryString = prmsArr.join('&');
-                    queryString = '?' + queryString;
-                    uri += queryString;
+                    uri += '?' + queryString;
                     type = 'GET';
                 }
                 var hash = createHash(queryString);
-                var headers = { 'x-beetle-query': hash, 'x-beetle-query-len': queryString.length };
+                var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
                 var that = this;
                 // execute query using ajax provider
                 this.ajaxProvider.doAjax(
@@ -9577,9 +9576,12 @@
                 if (uri && uri[uri.length - 1] != '/') uri += '/';
                 var saveAction = (options && options.saveAction) || 'SaveChanges';
                 uri = uri + saveAction;
+                var saveData = this.serializationService.serialize(savePackage);
+                var hash = createHash(saveData);
+                var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': saveData.length };
                 this.ajaxProvider.doAjax(
                     uri,
-                    'POST', this.dataType, this.contentType, this.serializationService.serialize(savePackage), async, timeout, extra, null,
+                    'POST', this.dataType, this.contentType, saveData, async, timeout, extra, headers,
                     function (result) {
                         // deserialize returned data (if deserializable).
                         try {

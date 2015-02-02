@@ -61,11 +61,11 @@ namespace Beetle.Server.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot process request, query has been sent or modified from outside of Beetle..
+        ///   Looks up a localized string similar to Cannot process request, it has been sent or modified from outside of Beetle..
         /// </summary>
-        public static string AlteredQueryException {
+        public static string AlteredRequestException {
             get {
-                return ResourceManager.GetString("AlteredQueryException", resourceCulture);
+                return ResourceManager.GetString("AlteredRequestException", resourceCulture);
             }
         }
         

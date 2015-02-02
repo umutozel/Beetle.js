@@ -23,7 +23,7 @@ namespace Beetle.Server.WebApi {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
         private static readonly MethodInfo _dummyMethodInfo;
         private BeetleConfig _beetleConfig;
-        private bool? _checkQueryHash;
+        private bool? _checkRequestHash;
 
         /// <summary>
         /// Initializes the <see cref="BeetleApiController{TContextHandler}"/> class.
@@ -74,7 +74,7 @@ namespace Beetle.Server.WebApi {
             object contentValue;
             if (!response.TryGetContentValue(out contentValue)) return;
 
-            var actionContext = new ActionContext(action, contentValue, queryString, queryParams, MaxResultCount, CheckQueryHashNullable);
+            var actionContext = new ActionContext(action, contentValue, queryString, queryParams, MaxResultCount, CheckRequestHashNullable);
 
             request.Properties["BeetleService"] = service;
             request.Properties["BeetleActionContext"] = actionContext;
@@ -282,24 +282,24 @@ namespace Beetle.Server.WebApi {
         public int MaxResultCount { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// Gets or sets a value indicating whether [check request hash].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [check request hash]; otherwise, <c>false</c>.
         /// </value>
-        public bool CheckQueryHash {
-            get { return _checkQueryHash.GetValueOrDefault(); }
-            set { _checkQueryHash = value; }
+        public bool CheckRequestHash {
+            get { return _checkRequestHash.GetValueOrDefault(); }
+            set { _checkRequestHash = value; }
         }
 
         /// <summary>
-        /// Gets the check query hash nullable.
+        /// Gets the check request hash nullable.
         /// </summary>
         /// <value>
-        /// The check query hash nullable.
+        /// The check request hash nullable.
         /// </value>
-        internal bool? CheckQueryHashNullable {
-            get { return _checkQueryHash; }
+        internal bool? CheckRequestHashNullable {
+            get { return _checkRequestHash; }
         }
     }
 }

@@ -186,7 +186,7 @@
   <data name="RequiredError" xml:space="preserve">
     <value>%1 property is required.</value>
   </data>
-  <data name="AlteredQueryException" xml:space="preserve">
-    <value>Cannot process request, query has been sent or modified from outside of Beetle.</value>
+  <data name="AlteredRequestException" xml:space="preserve">
+    <value>Cannot process request, it has been sent or modified from outside of Beetle.</value>
   </data>
 </root>

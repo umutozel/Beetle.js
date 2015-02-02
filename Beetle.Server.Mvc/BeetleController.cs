@@ -81,7 +81,7 @@ namespace Beetle.Server.Mvc {
                 object[] actionParameters;
                 Helper.GetParameters(out queryString, out queryParams, out actionParameters, BeetleConfig);
                 var result = ContextHandler.HandleUnknownAction(action);
-                var actionContext = new ActionContext(action, result, queryString, queryParams, MaxResultCount, CheckQueryHash);
+                var actionContext = new ActionContext(action, result, queryString, queryParams, MaxResultCount, CheckRequestHash);
                 var processResult = ProcessRequest(result, actionContext);
                 var response = Helper.HandleResponse(processResult, BeetleConfig);
                 response.ExecuteResult(ControllerContext);
@@ -212,12 +212,12 @@ namespace Beetle.Server.Mvc {
         public int MaxResultCount { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether check beetle client generated query hash.
+        /// Gets or sets a value indicating whether [check request hash].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [check query hash]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [check request hash]; otherwise, <c>false</c>.
         /// </value>
-        public bool CheckQueryHash { get; set; }
+        public bool CheckRequestHash { get; set; }
 
         /// <summary>
         /// Occurs when [before handle query].
