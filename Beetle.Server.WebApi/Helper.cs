@@ -46,6 +46,7 @@ namespace Beetle.Server.WebApi {
             queryString = request.Url.Query;
             if (queryString.StartsWith("?"))
                 queryString = queryString.Substring(1);
+            queryString = queryString.Replace(":", "%3A");
 
             return request.QueryString;
         }

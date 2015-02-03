@@ -77,6 +77,7 @@ namespace Beetle.Server.Mvc {
                 queryString = request.Url.Query;
                 if (queryString.StartsWith("?"))
                     queryString = queryString.Substring(1);
+                queryString = queryString.Replace(":", "%3A");
 
                 queryParams = request.QueryString;
                 if (actionParameters != null && parameters != null) {
