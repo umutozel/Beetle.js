@@ -3132,6 +3132,9 @@
                     /// </summary>
                     /// <param name="value">Value to check.</param>
                     /// <returns type="">When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.</returns>
+                    if (this.dataType != core.dataTypes.string && value === "")
+                        value = null;
+
                     if (value == null) {
                         if (!this.isNullable)
                             throw helper.createError(i18N.notNullable, [this.displayName], { property: this });
@@ -7686,7 +7689,7 @@
                     /// <param name="newValue">New value.</param>
                     var tracker = entity.$tracker;
                     var oldValue = accessor();
-                    if (oldValue == newValue) return;
+                    if (oldValue === newValue) return;
 
                     if (settings.handleUnmappedProperties == true)
                         newValue = core.dataTypes.handle(newValue);
@@ -7723,7 +7726,7 @@
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
                     var oldValue = accessor();
-                    if (oldValue == newValue) return;
+                    if (oldValue === newValue) return;
 
                     var tracker = entity.$tracker;
                     // check new value's type and convert if necessary.
@@ -7819,7 +7822,7 @@
                     }
 
                     var oldValue = accessor();
-                    if (oldValue == newValue) return;
+                    if (oldValue === newValue) return;
 
                     // check if this navigation property can be set with newValue.
                     property.checkAssign(newValue);
