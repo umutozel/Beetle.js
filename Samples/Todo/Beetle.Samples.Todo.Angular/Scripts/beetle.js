@@ -9626,6 +9626,8 @@
                         fixSingle(result);
                     else if (assert.isArray(result))
                         that.fixResults(result, makeObservable, handleUnmappedProperties, flatList);
+                    else if (handleUnmappedProperties !== false)
+                        results[i] = core.dataTypes.handle(result);
                 });
                 return flatList;
 
