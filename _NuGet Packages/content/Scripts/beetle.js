@@ -6055,9 +6055,9 @@
                         if (assert.isInstanceOf(p, metadata.navigationProperty))
                             helper.forEach(added, function (a) { p.checkAssign(a); });
                         else if (assert.isInstanceOf(p, metadata.dataProperty))
-                            helper.forEach(added, function (a, i) { a[i] = p.handle(a); });
+                            helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
                         else if (settings.handleUnmappedProperties === true)
-                            helper.forEach(added, function (a, i) { a[i] = core.dataTypes.handle(a); });
+                            helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
                     }
                 }
 
