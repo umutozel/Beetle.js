@@ -8239,7 +8239,8 @@
                     ///  isCaseSensitive: When true string comparisons will be case sensitive
                     ///  ignoreWhiteSpaces: When true before comparison strings will be trimmed
                     ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
-                    ///  uri: Overrides dataService's uri.
+                    ///  uri: Overrides dataService's uri
+                    ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
                     ///  
                     ///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
                     ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
@@ -8329,7 +8330,9 @@
                                         if (query.inlineCountEnabled && inlineCount != null)
                                             newEntities.$inlineCount = inlineCount;
 
-                                        newEntities.$extra = { userData: xhr.getResponseHeader("X-UserData"), xhr: xhr };
+                                        newEntities.$extra = { userData: xhr.getResponseHeader("X-UserData") };
+                                        if (options && options.includeXhr === true)
+                                            newEntities.$extra.xhr = xhr;
                                     }
                                     newEntities = notifyExecuted(that, query, options, newEntities);
                                     onSuccess(successCallback, pp, d, newEntities);
