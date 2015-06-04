@@ -6038,7 +6038,7 @@
                     /// <param name="options">Query options.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    return this.entity.$tracker.loadNavigationProperty(this.propertyName, expands, resourceName, options, successCallback, errorCallback);
+                    return this.object.$tracker.loadNavigationProperty(this.propertyName, expands, resourceName, options, successCallback, errorCallback);
                 };
 
                 function initialize(initial, instance) {
