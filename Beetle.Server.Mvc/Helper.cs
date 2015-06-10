@@ -129,6 +129,8 @@ namespace Beetle.Server.Mvc {
         /// <param name="response">The response.</param>
         /// <returns></returns>
         internal static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
+            var result = processResult.Result;
+
             if (config == null)
                 config = BeetleConfig.Instance;
             if (response == null)
@@ -143,9 +145,12 @@ namespace Beetle.Server.Mvc {
                 response.Headers.Add("X-UserData", userDataStr);
             }
 
+            var actionResult = result as ActionResult;
+            if (actionResult != null) return actionResult;
+
             // write the result to response content
             return new BeetleJsonResult(config, processResult) {
-                Data = processResult.Result,
+                Data = result,
                 ContentEncoding = response.HeaderEncoding,
                 ContentType = "application/json",
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet

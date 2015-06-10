@@ -50,9 +50,6 @@ namespace Beetle.Server.Mvc {
                 ? reflectedAction.MethodInfo 
                 : controller.GetType().GetMethod(action.ActionName);
 
-            // do not do anything for action results
-            if (typeof(ActionResult).IsAssignableFrom(actionMethod.ReturnType)) return;
-
             var service = controller as IBeetleService;
             if (_beetleConfig == null)
                 _beetleConfig = service != null ? service.BeetleConfig : BeetleConfig.Instance;
