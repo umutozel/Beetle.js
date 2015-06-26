@@ -85,6 +85,12 @@
                     obj1 = helper.handleStrOptions(obj1, options);
                     obj2 = helper.handleStrOptions(obj2, options);
                 }
+
+                if (obj1 != null && obj2 != null && core.dataTypes.date.isValid(obj1) && core.dataTypes.date.isValid(obj2)) {
+                    obj1 = obj1.valueOf();
+                    obj2 = obj2.valueOf();
+                }
+
                 return isStrict ? obj1 === obj2 : obj1 == obj2;
             },
             formatString: function (string, params) {
@@ -7731,6 +7737,11 @@
                     var tracker = entity.$tracker;
                     // check new value's type and convert if necessary.
                     newValue = property.handle(newValue);
+
+                    if (property.dataType === core.dataTypes.date || property.dataType === core.dataTypes.dateTimeOffset) {
+                        if (oldValue != null && newValue != null && oldValue.valueOf() === newValue.valueOf())
+                            return;
+                    }
 
                     var oldKey = null, newKey = null;
                     if (property.isKeyPart) {
