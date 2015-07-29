@@ -276,7 +276,7 @@ test('detach and re-attach an entity', 1, function () {
     }
 });
 
-test('detech and add an unchanged entity', 1, function () {
+test('detach and add an unchanged entity', 1, function () {
     var manager = new beetle.EntityManager(service);
     var query = manager.createQuery('NamedEntities');
     stop();

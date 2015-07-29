@@ -7,13 +7,15 @@ namespace Beetle.Server {
     public struct HandledQuery {
         private readonly IQueryable _query;
         private readonly IQueryable _inlineCountQuery;
+        private readonly int? _takeCount;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HandledQuery"/> struct.
         /// </summary>
-        public HandledQuery(IQueryable query, IQueryable inlineCountQuery) {
+        public HandledQuery(IQueryable query, IQueryable inlineCountQuery, int? takeCount = null) {
             _query = query;
             _inlineCountQuery = inlineCountQuery;
+            _takeCount = takeCount;
         }
 
         /// <summary>
@@ -34,6 +36,16 @@ namespace Beetle.Server {
         /// </value>
         public IQueryable InlineCountQuery {
             get { return _inlineCountQuery; }
+        }
+
+        /// <summary>
+        /// Take value applied to query.
+        /// </summary>
+        /// <value>
+        /// The take value.
+        /// </value>
+        public int? TakeCount {
+            get { return _takeCount; }
         }
     }
 }
