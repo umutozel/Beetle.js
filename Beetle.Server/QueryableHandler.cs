@@ -107,7 +107,7 @@ namespace Beetle.Server {
             if (maxResultCount <= 0 && service != null && service.MaxResultCount > 0)
                 maxResultCount = service.MaxResultCount;
 
-            if ((takeCount == null && maxResultCount > 0) || (takeCount != null && takeCount > maxResultCount)) {
+            if (maxResultCount > 0 && (takeCount == null || takeCount > maxResultCount)) {
                 var count = Queryable.Count((dynamic)queryable);
                 if (count > maxResultCount)
                     throw new BeetleException(Resources.ResultCountExceeded);
