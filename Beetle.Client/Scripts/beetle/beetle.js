@@ -7966,7 +7966,7 @@
                                 toRemove.push(item);
                         });
                     }
-                    if (behaviour == enums.arraySetBehaviour.Append) {
+                    else if (behaviour == enums.arraySetBehaviour.Append) {
                         helper.forEach(newItems, function (item) {
                             if (helper.findInArray(items, item))
                                 helper.removeFromArray(toAdd, item);
