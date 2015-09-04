@@ -2184,6 +2184,21 @@ if (metadata !== true) {
             ok(false, 'could have set enum with enum member');
         }
     });
+
+    test('set data property without event fire', 2, function () {
+        var manager = new EntityManager(service);
+        var com = manager.createEntity('Company');
+
+        var expected = true;
+        com.$tracker.propertyChanged.subscribe(function() {
+            ok(expected, 'data property changed event fire is expected');
+        });
+
+        com.$tracker.setValue('UserNameCreate', 'Nikola');
+        expected = false;
+        com.$tracker.setValue('UserNameCreate', new beetle.core.valueNotifyWrapper('Tesla'));
+        equal(com.$tracker.getValue('UserNameCreate'), 'Tesla', 'data property changed with valueNotifyWrapper');
+    });
 }
 else
     test('Some tests could not be run without metadata.', 0, function () {

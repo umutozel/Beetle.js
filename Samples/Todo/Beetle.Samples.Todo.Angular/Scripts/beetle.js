@@ -5934,11 +5934,12 @@
 
         return {
             valueNotifyWrapper: (function () {
-                var ctor = function (value) {
+                var ctor = function (value, fromBeetle) {
                     /// <summary>
                     /// This class wraps given value to allow skipping callbacks.
                     /// </summary>
                     this.value = value;
+                    this.fromBeetle = fromBeetle === true;
                     helper.tryFreeze(this);
                 };
 
@@ -7693,7 +7694,12 @@
                     /// <param name="property">The property.</param>
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
-                    var tracker = entity.$tracker;
+                    var noCallbackExternal = false;
+                    if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
+                        noCallbackExternal = !newValue.fromBeetle;
+                        newValue = newValue.value;
+                    }
+
                     var oldValue = accessor();
                     if (oldValue === newValue) return;
 
@@ -7703,9 +7709,11 @@
                     accessor(newValue);
 
                     // mark this entity as modified.
+                    var tracker = entity.$tracker;
                     if (tracker.manager)
                         setModified(entity, property, oldValue, tracker);
-                    tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
+                    if (!noCallbackExternal)
+                        tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
                 }
 
                 function arrayChange(entity, property, items, removedItems, addedItems) {
@@ -7731,10 +7739,17 @@
                     /// <param name="property">The property.</param>
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
+                    var noCallback = false;
+                    var noCallbackExternal = false;
+                    if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
+                        noCallback = true;
+                        noCallbackExternal = !newValue.fromBeetle;
+                        newValue = newValue.value;
+                    }
+
                     var oldValue = accessor();
                     if (oldValue === newValue) return;
 
-                    var tracker = entity.$tracker;
                     // check new value's type and convert if necessary.
                     newValue = property.handle(newValue);
 
@@ -7743,6 +7758,7 @@
                             return;
                     }
 
+                    var tracker = entity.$tracker;
                     var oldKey = null, newKey = null;
                     if (property.isKeyPart) {
                         oldKey = tracker.key;
@@ -7770,7 +7786,8 @@
                     // validate data property.
                     if (settings.liveValidate === true)
                         mergeErrors(property.validate(entity), tracker, property);
-                    tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
+                    if (!noCallbackExternal)
+                        tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
 
                     // if this property is primary key fix index tables.
                     if (property.isKeyPart) {
@@ -7809,7 +7826,7 @@
                                     if (fkEntity)
                                         tracker.setValue(np.name, fkEntity); // if found set as new value.
                                     else if (oldFkEntity)
-                                        tracker.setValue(np.name, new core.valueNotifyWrapper(null)); // if not found set navigation to null but preserve foreign key.
+                                        tracker.setValue(np.name, new core.valueNotifyWrapper(null, true)); // if not found set navigation to null but preserve foreign key.
                                 } else
                                     tracker.setValue(np.name, null); // if foreign key is null set navigation to null.
                             }
@@ -7825,10 +7842,11 @@
                     /// <param name="property">The property.</param>
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
-                    var tracker = entity.$tracker;
                     var noCallback = false;
+                    var noCallbackExternal = false;
                     if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
                         noCallback = true;
+                        noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
                     }
 
@@ -7841,9 +7859,11 @@
                     accessor(newValue);
 
                     // validate navigation property.
+                    var tracker = entity.$tracker;
                     if (settings.liveValidate === true)
                         mergeErrors(property.validate(entity), tracker, property);
-                    tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
+                    if (!noCallbackExternal)
+                        tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
 
                     // Check if newValue is in the manager, if not attach it.
                     processEntity(newValue, tracker.manager);
@@ -9306,7 +9326,7 @@
                     /// <param name="preserveFK">When true, we can keep beetle from emptying related foreign key properties.</param>
                     var tracker = entity.$tracker;
                     var type = tracker.entityType;
-                    var nullValue = preserveFK ? new core.valueNotifyWrapper(null) : null;
+                    var nullValue = preserveFK ? new core.valueNotifyWrapper(null, true) : null;
                     if (type.hasMetadata) {
                         // If type has metadata clear all navigation properties.
                         helper.forEach(type.navigationProperties, function (np) {
