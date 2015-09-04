@@ -7741,10 +7741,10 @@
                     /// <param name="property">The property.</param>
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
-                    var noCallback = false;
+                    var noCallbackBeetle = false;
                     var noCallbackExternal = false;
                     if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
-                        noCallback = true;
+                        noCallbackBeetle = newValue.fromBeetle;
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
                     }
@@ -7845,10 +7845,10 @@
                     /// <param name="property">The property.</param>
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
-                    var noCallback = false;
+                    var noCallbackBeetle = false;
                     var noCallbackExternal = false;
                     if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
-                        noCallback = true;
+                        noCallbackBeetle = newValue.fromBeetle;
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
                     }
@@ -7886,7 +7886,7 @@
                         setModified(entity, property.name, newValue.$tracker.toRaw(), tracker);
                     } else {
                         // Set related foreign key properties (unless preserving fks wanted).
-                        if (!noCallback) {
+                        if (!noCallbackBeetle) {
                             if (property.triggerOwnerModify && property.foreignKeys.length == 0)
                                 setModified(entity, null, null, tracker);
                             helper.setForeignKeys(entity, property, newValue);
