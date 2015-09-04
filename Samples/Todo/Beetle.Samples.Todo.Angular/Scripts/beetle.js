@@ -7703,8 +7703,10 @@
                     var oldValue = accessor();
                     if (oldValue === newValue) return;
 
-                    if (settings.handleUnmappedProperties == true)
+                    if (settings.handleUnmappedProperties == true) {
                         newValue = core.dataTypes.handle(newValue);
+                        if (oldValue === newValue) return;
+                    }
 
                     accessor(newValue);
 
@@ -7753,6 +7755,7 @@
                     // check new value's type and convert if necessary.
                     newValue = property.handle(newValue);
 
+                    if (oldValue === newValue) return;
                     if (property.dataType === core.dataTypes.date || property.dataType === core.dataTypes.dateTimeOffset) {
                         if (oldValue != null && newValue != null && oldValue.valueOf() === newValue.valueOf())
                             return;
@@ -7951,6 +7954,8 @@
                     /// <param name="items">Current items.</param>
                     /// <param name="newItems">New array parameter.</param>
                     /// <param name="property">Name of the array property.</param>
+                    if (items === newItems) return;
+
                     var behaviour = settings.getArraySetBehaviour();
                     if (behaviour == enums.arraySetBehaviour.NotAllowed)
                         throw helper.createError(i18N.settingArrayNotAllowed,
