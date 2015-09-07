@@ -618,7 +618,7 @@
                             }
 
                             args = helper.mapArray(args, function () { return this(value); });
-                            retVal = func.apply(queryContext, args);
+                            retVal = func.apply(obj, args);
                         }
 
                         if (alias)
