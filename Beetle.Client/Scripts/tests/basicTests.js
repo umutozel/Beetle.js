@@ -276,7 +276,7 @@ test('detach and re-attach an entity', 1, function () {
     }
 });
 
-test('detech and add an unchanged entity', 1, function () {
+test('detach and add an unchanged entity', 1, function () {
     var manager = new beetle.EntityManager(service);
     var query = manager.createQuery('NamedEntities');
     stop();
@@ -2183,6 +2183,21 @@ if (metadata !== true) {
         } catch (e) {
             ok(false, 'could have set enum with enum member');
         }
+    });
+
+    test('set data property without event fire', 2, function () {
+        var manager = new EntityManager(service);
+        var com = manager.createEntity('Company');
+
+        var expected = true;
+        com.$tracker.propertyChanged.subscribe(function() {
+            ok(expected, 'data property changed event fire is expected');
+        });
+
+        com.$tracker.setValue('UserNameCreate', 'Nikola');
+        expected = false;
+        com.$tracker.setValue('UserNameCreate', new beetle.core.valueNotifyWrapper('Tesla'));
+        equal(com.$tracker.getValue('UserNameCreate'), 'Tesla', 'data property changed with valueNotifyWrapper');
     });
 }
 else

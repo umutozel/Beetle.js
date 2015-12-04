@@ -99,7 +99,8 @@ namespace Beetle.Server.Mvc {
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
-            if (!string.IsNullOrEmpty(actionContext.QueryString)) {
+            // beetle should be used for all content types except mvc actions results. so we check only if content is not an mvc action result
+            if (!(contentValue is ActionResult) && !string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
                 if (!actionContext.CheckRequestHash.HasValue)
                     checkHash = service != null && service.CheckRequestHash;
