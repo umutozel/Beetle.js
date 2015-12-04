@@ -1,6 +1,9 @@
 using Beetle.Server.WebApi.Properties;
 using System;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Web.Http.Filters;
 
 namespace Beetle.Server.WebApi {
@@ -9,7 +12,7 @@ namespace Beetle.Server.WebApi {
     /// Can be used to modify serialization before respond is sent.
     /// </summary>
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
-        private readonly BeetleConfig _beetleConfig;
+        private MediaTypeFormatter _formatter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute" /> class.
@@ -17,9 +20,11 @@ namespace Beetle.Server.WebApi {
         /// <param name="configType">Type of the config.</param>
         /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
         public BeetleActionFilterAttribute(Type configType) {
-            _beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
-            if (_beetleConfig == null)
+            var beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
+            if (beetleConfig == null)
                 throw new ArgumentException(Resources.CannotCreateConfigInstance);
+
+            CreateFormatter(beetleConfig);
         }
 
         /// <summary>
@@ -27,7 +32,13 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="config">The configuration.</param>
         public BeetleActionFilterAttribute(BeetleConfig config) {
-            _beetleConfig = config;
+            CreateFormatter(config);
+        }
+
+        private void CreateFormatter(BeetleConfig config) {
+            _formatter = new JsonMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
+            _formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
+            _formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
         }
 
         /// <summary>
@@ -42,9 +53,7 @@ namespace Beetle.Server.WebApi {
             if (!response.TryGetContentValue(out contentValue)) return;
 
             if (contentValue != null)
-                response.Content = new ObjectContent(
-                    contentValue.GetType(), contentValue, _beetleConfig.MediaTypeFormatter
-                );
+                response.Content = new ObjectContent(contentValue.GetType(), contentValue, _formatter);
         }
     }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
 using System.Runtime.Serialization.Formatters;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Beetle.Server.Json;
@@ -15,7 +12,6 @@ namespace Beetle.Server {
     public class BeetleConfig {
         private static readonly Lazy<BeetleConfig> _instance = new Lazy<BeetleConfig>();
         private readonly JsonSerializerSettings _settings;
-        private readonly MediaTypeFormatter _formatter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BeetleConfig"/> class.
@@ -37,18 +33,8 @@ namespace Beetle.Server {
         /// Initializes a new instance of the <see cref="BeetleConfig" /> class.
         /// </summary>
         /// <param name="jsonSerializerSettings">The json serializer settings.</param>
-        public BeetleConfig(JsonSerializerSettings jsonSerializerSettings)
-            : this(jsonSerializerSettings, CreateFormatter(jsonSerializerSettings)) {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleConfig" /> class.
-        /// </summary>
-        /// <param name="jsonSerializerSettings">The json serializer settings.</param>
-        /// <param name="formatter">The formatter.</param>
-        public BeetleConfig(JsonSerializerSettings jsonSerializerSettings, MediaTypeFormatter formatter) {
+        public BeetleConfig(JsonSerializerSettings jsonSerializerSettings) {
             _settings = jsonSerializerSettings;
-            _formatter = formatter;
         }
 
         /// <summary>
@@ -73,18 +59,6 @@ namespace Beetle.Server {
             jsonSerializerSettings.Converters.Add(new DbGeometryConverter());
             jsonSerializerSettings.Converters.Add(new DbGeographyConverter());
             return jsonSerializerSettings;
-        }
-
-        /// <summary>
-        /// Creates the formatter instance.
-        /// </summary>
-        /// <param name="serializerSettings">The serializer settings.</param>
-        /// <returns></returns>
-        private static MediaTypeFormatter CreateFormatter(JsonSerializerSettings serializerSettings) {
-            var formatter = new JsonMediaTypeFormatter { SerializerSettings = serializerSettings };
-            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
-            formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
-            return formatter;
         }
 
         /// <summary>
@@ -113,16 +87,6 @@ namespace Beetle.Server {
         /// </value>
         public JsonSerializerSettings JsonSerializerSettings {
             get { return _settings; }
-        }
-
-        /// <summary>
-        /// Gets the formatter.
-        /// </summary>
-        /// <value>
-        /// The formatter.
-        /// </value>
-        public virtual MediaTypeFormatter MediaTypeFormatter {
-            get { return _formatter; }
         }
     }
 }

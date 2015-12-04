@@ -1,6 +1,8 @@
 using Beetle.Server.WebApi.Properties;
 using System;
 using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Web.Http.OData.Query;
@@ -21,7 +23,8 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="configType">Type of the config.</param>
         /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
-        public BeetleApiControllerAttribute(Type configType = null): this(new BeetleQueryableAttribute(configType), configType) {
+        public BeetleApiControllerAttribute(Type configType = null)
+            : this(new BeetleQueryableAttribute(configType), configType) {
         }
 
         /// <summary>
@@ -54,7 +57,10 @@ namespace Beetle.Server.WebApi {
 
                 // add Json Formatter
                 settings.Formatters.Remove(settings.Formatters.JsonFormatter);
-                settings.Formatters.Add(GetJsonFormatter());
+                var formatter = new JsonMediaTypeFormatter { SerializerSettings = _beetleConfig.JsonSerializerSettings };
+                formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
+                formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
+                settings.Formatters.Add(formatter);
             }
         }
 
@@ -67,17 +73,6 @@ namespace Beetle.Server.WebApi {
         /// </remarks>
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {
             return new BeetleQueryableFilterProvider(defaultFilter);
-        }
-
-        /// <summary>
-        /// Return the Beetle-specific <see cref="MediaTypeFormatter"/> that formats
-        /// content to JSON. This formatter must be tailored to work with Beetle clients. 
-        /// </summary>
-        /// <remarks>
-        /// Override it to substitute a custom JSON formatter.
-        /// </remarks>
-        protected virtual MediaTypeFormatter GetJsonFormatter() {
-            return BeetleConfig.MediaTypeFormatter;
         }
 
         /// <summary>

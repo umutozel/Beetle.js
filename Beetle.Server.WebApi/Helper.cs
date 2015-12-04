@@ -6,6 +6,9 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 
@@ -121,7 +124,11 @@ namespace Beetle.Server.WebApi {
             var type = processResult.Result == null
                 ? typeof(object)
                 : processResult.Result.GetType();
-            var retVal = new ObjectContent(type, processResult.Result, config.MediaTypeFormatter);
+
+            var formatter = new JsonMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
+            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
+            formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
+            var retVal = new ObjectContent(type, processResult.Result, formatter);
 
             // set InlineCount header info if exists
             object inlineCount = processResult.InlineCount;
