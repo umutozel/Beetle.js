@@ -1,5 +1,6 @@
 using Beetle.Server.Mvc.Properties;
 using System;
+using System.Collections;
 using System.Web.Mvc;
 using Newtonsoft.Json;
 
@@ -49,8 +50,12 @@ namespace Beetle.Server.Mvc {
             if (ContentEncoding != null)
                 response.ContentEncoding = ContentEncoding;
 
-            if (Data != null)
-                response.Write(JsonConvert.SerializeObject(Data, _config.JsonSerializerSettings));
+            if (Data != null) {
+                var d = JsonConvert.SerializeObject(Data, _config.JsonSerializerSettings);
+                if (!(Data is string) && Data is IEnumerable)
+                    d = "{\"$d\" : " + d + "}";
+                response.Write(d);
+            }
         }
     }
 }

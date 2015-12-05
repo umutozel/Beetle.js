@@ -18,7 +18,7 @@ namespace Beetle.Server.WebApi {
     /// <summary>
     /// Interpret OData behavior on top of WebApi.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleQueryableAttribute : QueryableAttribute {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
         private static readonly MethodInfo _dummyMethodInfo;

@@ -125,7 +125,7 @@ namespace Beetle.Server.WebApi {
                 ? typeof(object)
                 : processResult.Result.GetType();
 
-            var formatter = new JsonMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
+            var formatter = new BeetleMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
             formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
             formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
             var retVal = new ObjectContent(type, processResult.Result, formatter);

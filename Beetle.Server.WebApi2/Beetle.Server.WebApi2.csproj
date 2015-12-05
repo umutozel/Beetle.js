@@ -85,6 +85,9 @@
     <Compile Include="..\Beetle.Server.WebApi\BeetleApiControllerAttribute.cs">
       <Link>BeetleApiControllerAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\Beetle.Server.WebApi\BeetleMediaTypeFormatter.cs">
+      <Link>BeetleMediaTypeFormatter.cs</Link>
+    </Compile>
     <Compile Include="..\Beetle.Server.WebApi\BeetleQueryableAttribute.cs">
       <Link>BeetleQueryableAttribute.cs</Link>
     </Compile>

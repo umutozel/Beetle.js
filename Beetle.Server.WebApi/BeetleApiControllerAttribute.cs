@@ -57,7 +57,7 @@ namespace Beetle.Server.WebApi {
 
                 // add Json Formatter
                 settings.Formatters.Remove(settings.Formatters.JsonFormatter);
-                var formatter = new JsonMediaTypeFormatter { SerializerSettings = _beetleConfig.JsonSerializerSettings };
+                var formatter = new BeetleMediaTypeFormatter { SerializerSettings = _beetleConfig.JsonSerializerSettings };
                 formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
                 formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
                 settings.Formatters.Add(formatter);

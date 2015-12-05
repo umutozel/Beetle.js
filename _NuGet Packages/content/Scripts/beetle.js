@@ -9052,6 +9052,8 @@
                     var count = instance.entities.count();
                     var that = instance;
                     helper.forEach(flatList, function (e) {
+                        if (e == null) return;
+
                         var tracker = e.$tracker;
                         // if entity is not made observable yet, convert it
                         if (!tracker && e.$type)
@@ -9596,6 +9598,8 @@
                             data = that.serializationService.deserialize(data);
                         } catch (e) {
                         }
+                        if (data != null && data.$d != null)
+                            data = data.$d;
                         // fix relations and convert to entities.
                         var allEntities = null;
                         if (data)

@@ -36,7 +36,7 @@ namespace Beetle.Server.WebApi {
         }
 
         private void CreateFormatter(BeetleConfig config) {
-            _formatter = new JsonMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
+            _formatter = new BeetleMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
             _formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
             _formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
         }

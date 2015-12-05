@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="BeetleActionFilterAttribute.cs" />
     <Compile Include="BeetleApiControllerAttribute.cs" />
+    <Compile Include="BeetleMediaTypeFormatter.cs" />
     <Compile Include="BeetleQueryableAttribute.cs" />
     <Compile Include="BeetleQueryableFilterProvider.cs" />
     <Compile Include="BeetleApiController.cs" />
