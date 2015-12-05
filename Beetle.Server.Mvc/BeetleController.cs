@@ -78,8 +78,7 @@ namespace Beetle.Server.Mvc {
             if (AutoHandleUnknownActions) {
                 string queryString;
                 NameValueCollection queryParams;
-                object[] actionParameters;
-                Helper.GetParameters(out queryString, out queryParams, out actionParameters, BeetleConfig);
+                Helper.GetParameters(out queryString, out queryParams, BeetleConfig);
                 var result = ContextHandler.HandleUnknownAction(action);
                 var actionContext = new ActionContext(action, result, queryString, queryParams, MaxResultCount, CheckRequestHash);
                 var processResult = ProcessRequest(result, actionContext);

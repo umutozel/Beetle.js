@@ -61,7 +61,7 @@ namespace Beetle.Client.Controllers {
         }
 
         [HttpPost]
-        public IQueryable<NamedEntity> TestPost(dynamic prms) {
+        public IQueryable<NamedEntity> TestPost(dynamic prms, string name) {
             int shortId = Convert.ToInt32(prms.shortId.ToString());
             string personName = Convert.ToString(prms.person.Name).ToString();
             var ids = ((IEnumerable)prms.ids).OfType<object>().Select(x => Convert.ToInt32(x.ToString()));

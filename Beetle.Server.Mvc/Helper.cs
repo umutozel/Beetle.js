@@ -23,54 +23,50 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <param name="queryParams">The query parameters.</param>
-        /// <param name="actionArgs">The action arguments.</param>
         /// <param name="config">The beetle configuration.</param>
+        /// <param name="parameterDescriptors">The action parameter descriptors.</param>
+        /// <param name="parameters">The action parameters.</param>
         /// <param name="request">The request.</param>
-        /// <param name="actionParameters">The action parameters.</param>
-        /// <param name="parameters">The parameters.</param>
         /// <exception cref="BeetleException">Action must have only one parameter (JsonObject, object or dynamic) to be able called with POST.</exception>
-        internal static void GetParameters(out string queryString, out NameValueCollection queryParams, out object[] actionArgs,
-                                           BeetleConfig config = null, HttpRequest request = null,
-                                           ParameterDescriptor[] actionParameters = null, IDictionary<string, object> parameters = null) {
+        internal static void GetParameters(out string queryString, out NameValueCollection queryParams,
+                                           BeetleConfig config = null, 
+                                           ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
+                                           HttpRequest request = null) {
             if (config == null)
                 config = BeetleConfig.Instance;
             if (request == null)
                 request = HttpContext.Current.Request;
 
             if (request.HttpMethod == "POST") {
-                // supported methods can only have one parameter 
-                // (MVC behavior for beetle must be same as WebApi and WebApi cannot have more than one parameters for POST)
-                if (actionParameters == null || actionParameters.Length <= 1) {
-                    var hasPrm = actionParameters != null && actionParameters.Length == 1;
-                    object actionArg = null;
-                    // read post data
-                    request.InputStream.Position = 0;
-                    queryString = new StreamReader(request.InputStream).ReadToEnd();
-                    if (request.ContentType.Contains("application/json")) {
-                        if (hasPrm)
-                            actionArg = JsonConvert.DeserializeObject(queryString, config.JsonSerializerSettings) as JObject;
-                        // but now there is no query string parameters, we must populate them manually for beetle queries
-                        // otherwise beetle cannot use query parameters when using post method
-                        var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
-                        queryParams = new NameValueCollection();
-                        foreach (var i in d)
-                            queryParams.Add(i.Key, i.Value == null ? string.Empty : i.Value.ToString());
-                    }
-                    else {
-                        var prms = request.Params;
-                        queryParams = prms;
-                        var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
-                        if (hasPrm) {
-                            var jsonStr = _javaScriptSerializer.Value.Serialize(d);
-                            actionArg = JsonConvert.DeserializeObject(jsonStr, config.JsonSerializerSettings);
-                        }
-                    }
-                    actionArgs = hasPrm ? new[] { actionArg } : new object[0];
+                object postData;
+                // read post data
+                request.InputStream.Position = 0;
+                queryString = new StreamReader(request.InputStream).ReadToEnd();
+                if (request.ContentType.Contains("application/json")) {
+                    postData = JsonConvert.DeserializeObject(queryString, config.JsonSerializerSettings) as JObject;
+                    // now there is no query string parameters, we must populate them manually for beetle queries
+                    // otherwise beetle cannot use query parameters when using post method
+                    var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
+                    queryParams = new NameValueCollection();
+                    foreach (var i in d)
+                        queryParams.Add(i.Key, i.Value == null ? string.Empty : i.Value.ToString());
                 }
                 else {
-                    queryString = string.Empty;
-                    queryParams = null;
-                    actionArgs = null;
+                    var prms = request.Params;
+                    queryParams = prms;
+                    var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
+                    var jsonStr = _javaScriptSerializer.Value.Serialize(d);
+                    postData = JsonConvert.DeserializeObject(jsonStr, config.JsonSerializerSettings);
+                }
+
+                // modify the action parameters to allow model binding to object, dynamic and json.net parameters 
+                if (parameterDescriptors != null && parameters != null) {
+                    foreach (var parameterDescriptor in parameterDescriptors) {
+                        var t = parameterDescriptor.ParameterType;
+                        if (t.IsAssignableFrom(typeof(object)) || typeof(JToken).IsAssignableFrom(t)) {
+                            parameters[parameterDescriptor.ParameterName] = postData;
+                        }
+                    }
                 }
             }
             else {
@@ -80,13 +76,6 @@ namespace Beetle.Server.Mvc {
                 queryString = queryString.Replace(":", "%3A");
 
                 queryParams = request.QueryString;
-                if (actionParameters != null && parameters != null) {
-                    actionArgs = actionParameters
-                        .Select(pd => parameters[pd.ParameterName])
-                        .ToArray();
-                }
-                else
-                    actionArgs = null;
             }
         }
 

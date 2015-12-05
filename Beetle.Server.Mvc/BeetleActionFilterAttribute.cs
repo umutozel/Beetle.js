@@ -45,10 +45,7 @@ namespace Beetle.Server.Mvc {
 
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
-            var reflectedAction = action as ReflectedActionDescriptor;
-            var actionMethod = reflectedAction != null 
-                ? reflectedAction.MethodInfo 
-                : controller.GetType().GetMethod(action.ActionName);
+            var parameters = filterContext.ActionParameters;
 
             var service = controller as IBeetleService;
             if (_beetleConfig == null)
@@ -56,12 +53,11 @@ namespace Beetle.Server.Mvc {
 
             string queryString;
             NameValueCollection queryParams;
-            object[] actionArgs;
             // handle request message
-            GetParameters(filterContext, out queryString, out queryParams, out actionArgs);
+            GetParameters(filterContext, out queryString, out queryParams);
 
             // execute the action method
-            var contentValue = actionMethod.Invoke(controller, actionArgs);
+            var contentValue = action.Execute(filterContext.Controller.ControllerContext, parameters);
             // get client hash
             // process the request and return the result
             var actionContext = new ActionContext(action.ActionName, contentValue, queryString, queryParams, MaxResultCount, CheckRequestHashNullable);
@@ -75,12 +71,9 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
         /// <param name="queryString">The query string.</param>
-        /// <param name="queryParams">The query params.</param>
-        /// <param name="actionArgs">The action args.</param>
-        protected virtual void GetParameters(ActionExecutingContext filterContext, out string queryString, out NameValueCollection queryParams, out object[] actionArgs) {
-            var request = HttpContext.Current.Request;
-            var actionParameters = filterContext.ActionDescriptor.GetParameters();
-            Helper.GetParameters(out queryString, out queryParams, out actionArgs, _beetleConfig, request, actionParameters, filterContext.ActionParameters);
+        /// <param name="queryParams">The query parameters.</param>
+        protected virtual void GetParameters(ActionExecutingContext filterContext, out string queryString, out NameValueCollection queryParams) {
+            Helper.GetParameters(out queryString, out queryParams, _beetleConfig, filterContext.ActionDescriptor.GetParameters(), filterContext.ActionParameters);
         }
 
         /// <summary>

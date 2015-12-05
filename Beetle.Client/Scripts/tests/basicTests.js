@@ -376,6 +376,7 @@ test('test query with POST', 1, function () {
     query = query.setParameter('person', { Name: 'Alan', Surname: 'Turing', BirthDate: new Date(Date.parse('1912-06-23')) });
     var ids = [1, 2, 3, 4, 5, 6, 7];
     query = query.setParameter('ids', ids);
+    query = query.setParameter('name', "umut");
     stop();
     manager.executeQuery(query, { usePost: true })
         .then(firstQuerySucceeded)
