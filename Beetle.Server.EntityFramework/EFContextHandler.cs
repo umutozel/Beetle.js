@@ -33,73 +33,72 @@ namespace Beetle.Server.EntityFramework {
 
         private DbContext _dbContext;
         private IObjectContextAdapter _objectContextAdapter;
-        private static readonly object _objectContextLocker = new object();
-        private ObjectContext __objectContext;
-        private ObjectContext _objectContext {
+        private ObjectContext _objectContext;
+        protected ObjectContext ObjectContext {
             get {
-                if (__objectContext != null) return __objectContext;
-                lock (_objectContextLocker) {
-                    return __objectContext ?? (__objectContext = _objectContextAdapter.ObjectContext);
+                if (_objectContext != null) return _objectContext;
+                lock (Lockers.ObjectContextLocker) {
+                    return _objectContext ?? (_objectContext = _objectContextAdapter.ObjectContext);
                 }
             }
         }
-        private static readonly object _itemCollectionLocker = new object();
-        private ItemCollection __itemCollection;
-        private ItemCollection _itemCollection {
+        // ReSharper disable once StaticMemberInGenericType
+        private static ItemCollection _itemCollection;
+        protected ItemCollection ItemCollection {
             get {
-                if (__itemCollection != null) return __itemCollection;
-                lock (_itemCollectionLocker) {
-                    return __itemCollection ?? (__itemCollection = _objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace));
+                if (_itemCollection != null) return _itemCollection;
+                lock (Lockers.ItemCollectionLocker) {
+                    return _itemCollection ?? (_itemCollection = ObjectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace));
                 }
             }
         }
-        private IEnumerable<EntityType> __entityTypes;
-        private IEnumerable<EntityType> _entityTypes {
+        // ReSharper disable once StaticMemberInGenericType
+        private static IEnumerable<EntityType> _entityTypes;
+        protected IEnumerable<EntityType> EntityTypes {
             get {
-                if (__entityTypes != null) return __entityTypes;
-                lock (_itemCollection) {
-                    return __entityTypes ?? (__entityTypes = _itemCollection.OfType<EntityType>().ToList());
+                if (_entityTypes != null) return _entityTypes;
+                lock (ItemCollection) {
+                    return _entityTypes ?? (_entityTypes = ItemCollection.OfType<EntityType>().ToList());
                 }
             }
         }
-        private IEnumerable<EntitySetBase> __entitySets;
-        private IEnumerable<EntitySetBase> _entitySets {
+        // ReSharper disable once StaticMemberInGenericType
+        private static IEnumerable<EntitySetBase> _entitySets;
+        protected IEnumerable<EntitySetBase> EntitySets {
             get {
-                if (__entitySets != null) return __entitySets;
-                lock (_itemCollection) {
-                    return __entitySets ?? (__entitySets = _itemCollection.OfType<EntityContainer>().SelectMany(ec => ec.BaseEntitySets).ToList());
+                if (_entitySets != null) return _entitySets;
+                lock (ItemCollection) {
+                    return _entitySets ?? (_entitySets = ItemCollection.OfType<EntityContainer>().SelectMany(ec => ec.BaseEntitySets).ToList());
                 }
             }
         }
-        private static readonly object _objectOtemCollectionLocker = new object();
-        private ObjectItemCollection __objectItemCollection;
-        private ObjectItemCollection _objectItemCollection {
+        // ReSharper disable once StaticMemberInGenericType
+        private static ObjectItemCollection _objectItemCollection;
+        protected ObjectItemCollection ObjectItemCollection {
             get {
-                if (__objectItemCollection != null) return __objectItemCollection;
-                lock (_objectOtemCollectionLocker) {
+                if (_objectItemCollection != null) return _objectItemCollection;
+                lock (Lockers.ObjectItemCollectionLocker) {
                     if (typeof(ObjectContext).IsAssignableFrom(typeof(TContext)))
-                        _objectContext.MetadataWorkspace.LoadFromAssembly(_objectContext.GetType().Assembly);
-                    return __objectItemCollection ??
-                        (__objectItemCollection = (ObjectItemCollection)_objectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace));
+                        ObjectContext.MetadataWorkspace.LoadFromAssembly(ObjectContext.GetType().Assembly);
+                    return _objectItemCollection ??
+                        (_objectItemCollection = (ObjectItemCollection)ObjectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace));
                 }
             }
         }
-        private List<EntityType> __objectEntityTypes;
-        private List<EntityType> _objectEntityTypes {
+        // ReSharper disable once StaticMemberInGenericType
+        private static List<EntityType> _objectEntityTypes;
+        protected List<EntityType> ObjectEntityTypes {
             get {
-                if (__objectEntityTypes != null) return __objectEntityTypes;
-                lock (_objectItemCollection) {
-                    if (__objectEntityTypes == null) {
-                        var objectEntityTypes = __objectItemCollection.GetItems<EntityType>();
-                        __objectEntityTypes = objectEntityTypes != null ? objectEntityTypes.ToList() : new List<EntityType>();
+                if (_objectEntityTypes != null) return _objectEntityTypes;
+                lock (ObjectItemCollection) {
+                    if (_objectEntityTypes == null) {
+                        var objectEntityTypes = _objectItemCollection.GetItems<EntityType>();
+                        _objectEntityTypes = objectEntityTypes != null ? objectEntityTypes.ToList() : new List<EntityType>();
                     }
-                    return __objectEntityTypes;
+                    return _objectEntityTypes;
                 }
             }
         }
-
-        private static readonly object _metadataLocker = new object();
-        private static Metadata _metadata;
 
         #endregion
 
@@ -141,18 +140,18 @@ namespace Beetle.Server.EntityFramework {
         public override void Initialize() {
             base.Initialize();
 
-            __objectContext = Context as ObjectContext;
-            if (__objectContext == null) {
+            _objectContext = Context as ObjectContext;
+            if (_objectContext == null) {
                 _objectContextAdapter = Context as IObjectContextAdapter;
                 _dbContext = Context as DbContext;
             }
-            if (__objectContext == null && _objectContextAdapter == null)
+            if (_objectContext == null && _objectContextAdapter == null)
                 throw new InvalidOperationException("Type parameter must inherit from ObjectContext or implement IObjectContextAdapter.");
 
             ValidateOnSaveEnabled = _dbContext == null;
-            if (__objectContext != null) {
-                __objectContext.ContextOptions.LazyLoadingEnabled = false;
-                __objectContext.ContextOptions.ProxyCreationEnabled = false;
+            if (_objectContext != null) {
+                _objectContext.ContextOptions.LazyLoadingEnabled = false;
+                _objectContext.ContextOptions.ProxyCreationEnabled = false;
             }
             else if (_dbContext != null) {
                 _dbContext.Configuration.ProxyCreationEnabled = false;
@@ -160,18 +159,19 @@ namespace Beetle.Server.EntityFramework {
             }
         }
 
+        // ReSharper disable once StaticMemberInGenericType
+        private static Metadata _metadata;
         /// <summary>
-        /// Return metadata about data structure.
+        /// Return meta-data about data structure.
         /// </summary>
         /// <returns>
-        /// Metadata object.
+        /// Meta-data object.
         /// </returns>
         public override Metadata Metadata() {
             if (_metadata != null) return _metadata;
-            lock (_metadataLocker) {
+            lock (Lockers.MetadataLocker) {
                 var a = typeof(TContext).Assembly;
-                var c = _objectContext.Connection.ConnectionString;
-                return _metadata ?? (_metadata = MetadataGenerator.Generate(_objectContext.MetadataWorkspace, _itemCollection, _objectItemCollection, a, c));
+                return _metadata ?? (_metadata = MetadataGenerator.Generate(ObjectContext.MetadataWorkspace, ItemCollection, ObjectItemCollection, a));
             }
         }
 
@@ -181,10 +181,10 @@ namespace Beetle.Server.EntityFramework {
         /// <param name="typeName">Name of the type.</param>
         /// <returns></returns>
         public override object CreateType(string typeName) {
-            if (_objectEntityTypes != null) {
-                var oType = _objectEntityTypes.FirstOrDefault(x => x.Name == typeName);
+            if (ObjectEntityTypes != null) {
+                var oType = ObjectEntityTypes.FirstOrDefault(x => x.Name == typeName);
                 if (oType != null) {
-                    var clrType = _objectItemCollection.GetClrType(oType);
+                    var clrType = ObjectItemCollection.GetClrType(oType);
                     return Activator.CreateInstance(clrType);
                 }
             }
@@ -202,7 +202,7 @@ namespace Beetle.Server.EntityFramework {
                 return _dbContext.Set<TEntity>();
 
             var setName = FindEntitySet(typeof(TEntity));
-            IQueryable<TEntity> query = _objectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
+            IQueryable<TEntity> query = ObjectContext.CreateQuery<TEntity>(string.Format("[{0}]", setName));
             return query.OfType<TEntity>();
         }
 
@@ -222,7 +222,7 @@ namespace Beetle.Server.EntityFramework {
 
             foreach (var entityBag in entityList) {
                 var entity = entityBag.Entity;
-                var entityType = _entityTypes.FirstOrDefault(et => et.Name == entity.GetType().Name);
+                var entityType = EntityTypes.FirstOrDefault(et => et.Name == entity.GetType().Name);
                 EntitySetBase set = null;
                 if (entityType != null)
                     set = FindEntitySet(entityType);
@@ -231,8 +231,8 @@ namespace Beetle.Server.EntityFramework {
                     var state = entityBag.EntityState;
 
                     // attach entity to entity set
-                    _objectContext.AddObject(set.Name, entity);
-                    var entry = _objectContext.ObjectStateManager.GetObjectStateEntry(entity);
+                    ObjectContext.AddObject(set.Name, entity);
+                    var entry = ObjectContext.ObjectStateManager.GetObjectStateEntry(entity);
                     entry.ChangeState(EFState.Unchanged);
                     mergeList.Add(entry, entityBag);
 
@@ -255,8 +255,8 @@ namespace Beetle.Server.EntityFramework {
                                     if (property == null) break;
 
                                     var ordinal = loopOriginalValues.GetOrdinal(propertyName);
-                                    loopOriginalValues = loopOriginalValues.GetValue(ordinal) as OriginalValueRecord;
-                                    loopType = property.TypeUsage.EdmType as StructuralType;
+                                    loopOriginalValues = (OriginalValueRecord) loopOriginalValues.GetValue(ordinal);
+                                    loopType = (StructuralType) property.TypeUsage.EdmType;
                                 }
                                 if (property == null) continue;
 
@@ -304,7 +304,7 @@ namespace Beetle.Server.EntityFramework {
         /// <param name="complexType">ComplexType.</param>
         private static void PopulateComplexType(OriginalValueRecord originalValues, string propertyName, object originalValue, ComplexType complexType) {
             var ordinal = originalValues.GetOrdinal(propertyName);
-            originalValues = originalValues.GetValue(ordinal) as OriginalValueRecord;
+            originalValues = (OriginalValueRecord) originalValues.GetValue(ordinal);
             foreach (var cp in complexType.Properties) {
                 var value = Helper.GetPropertyValue(originalValue, cp.Name);
 
@@ -352,7 +352,7 @@ namespace Beetle.Server.EntityFramework {
                 if (validationResults.Any())
                     throw new EntityValidationException(validationResults);
             }
-            var affectedCount = _dbContext != null ? _dbContext.SaveChanges() : _objectContext.SaveChanges();
+            var affectedCount = _dbContext != null ? _dbContext.SaveChanges() : ObjectContext.SaveChanges();
 
             var generatedValues = GetGeneratedValues(mergeList);
             if (handledUnmappedList != null && handledUnmappedList.Any()) {
@@ -376,7 +376,7 @@ namespace Beetle.Server.EntityFramework {
         /// <returns></returns>
         private EntitySetBase FindEntitySet(EdmType entityType) {
             while (entityType != null) {
-                var set = _entitySets.FirstOrDefault(es => es.ElementType == entityType);
+                var set = EntitySets.FirstOrDefault(es => es.ElementType == entityType);
                 if (set != null) return set;
                 entityType = entityType.BaseType;
             }
@@ -390,7 +390,7 @@ namespace Beetle.Server.EntityFramework {
         /// <returns></returns>
         private EntitySetBase FindEntitySet(Type entityType) {
             while (entityType != null) {
-                var set = _entitySets.FirstOrDefault(es => es.ElementType.Name == entityType.Name);
+                var set = EntitySets.FirstOrDefault(es => es.ElementType.Name == entityType.Name);
                 if (set != null) return set;
                 entityType = entityType.BaseType;
             }
@@ -405,7 +405,7 @@ namespace Beetle.Server.EntityFramework {
         /// </value>
         public override IDbConnection Connection {
             get {
-                return ((EntityConnection)_objectContext.Connection).StoreConnection;
+                return ((EntityConnection)ObjectContext.Connection).StoreConnection;
             }
         }
 
@@ -428,5 +428,12 @@ namespace Beetle.Server.EntityFramework {
         public override string ModelAssembly {
             get { return typeof(TContext).Assembly.GetName().Name; }
         }
+    }
+
+    internal static class Lockers {
+        internal static readonly object ObjectContextLocker = new object();
+        internal static readonly object ItemCollectionLocker = new object();
+        internal static readonly object ObjectItemCollectionLocker = new object();
+        internal static readonly object MetadataLocker = new object();
     }
 }

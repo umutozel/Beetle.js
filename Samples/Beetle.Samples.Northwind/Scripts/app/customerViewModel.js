@@ -67,7 +67,7 @@
         var m = new beetle.EntityManager('svc/NorthwindService/');
         var query = m.createQuery('OrderDetails').expand('Order').top(vm.count());
         var mergeStr = vm.mergeStrategy();
-        var merge = beetle.MergeStrategy.symbols().q().first('name == "' + mergeStr + '"').execute();
+        var merge = beetle.MergeStrategy.symbols().q().first('name == "' + mergeStr + '"');
         var dt1 = new Date().getTime();
         m.executeQuery(query, { merge: merge, autoFixScalar: vm.autoFixScalar(), autoFixPlural: vm.autoFixPlural() })
             .then(function (data) {

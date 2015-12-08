@@ -43,13 +43,11 @@ namespace Beetle.Server {
         /// <param name="culture">The culture.</param>
         /// <returns></returns>
         public static string Pluralize(string word, CultureInfo culture) {
-            if (!_pluralizationServices.ContainsKey(culture)) {
-                lock (_pluralizationServicesLocker) {
-                    if (!_pluralizationServices.ContainsKey(culture))
-                        _pluralizationServices.Add(culture, PluralizationService.CreateService(culture));
-                }
+            lock (_pluralizationServicesLocker) {
+                if (!_pluralizationServices.ContainsKey(culture))
+                    _pluralizationServices.Add(culture, PluralizationService.CreateService(culture));
+                return _pluralizationServices[culture].Pluralize(word);
             }
-            return _pluralizationServices[culture].Pluralize(word);
         }
 
         /// <summary>
@@ -69,13 +67,11 @@ namespace Beetle.Server {
         /// <param name="culture">The culture.</param>
         /// <returns></returns>
         public static string Singularize(string word, CultureInfo culture) {
-            if (!_pluralizationServices.ContainsKey(culture)) {
-                lock (_pluralizationServicesLocker) {
-                    if (!_pluralizationServices.ContainsKey(culture))
-                        _pluralizationServices.Add(culture, PluralizationService.CreateService(culture));
-                }
+            lock (_pluralizationServicesLocker) {
+                if (!_pluralizationServices.ContainsKey(culture))
+                    _pluralizationServices.Add(culture, PluralizationService.CreateService(culture));
+                return _pluralizationServices[culture].Singularize(word);
             }
-            return _pluralizationServices[culture].Singularize(word);
         }
 
         /// <summary>
@@ -458,14 +454,11 @@ order by t.TABLE_NAME, c.COLUMN_NAME
                         }
 
                         Func<string> displayNameGetter = null;
-                        if (clrType != null) {
-                            var propertyInfo = clrType.GetMember(columnName).FirstOrDefault();
-                            if (propertyInfo != null)
-                                displayNameGetter = GetDisplayNameGetter(propertyInfo);
-                        }
+                        string resourceName = null;
+                        GetDisplayInfo(clrType, columnName, ref resourceName, ref displayNameGetter);
 
                         var dataProperty = new DataProperty(columnName, displayNameGetter) {
-                            ResourceName = columnName,
+                            ResourceName = resourceName,
                             DataType = dataTypeEnum,
                             DefaultValue = defaultValue == DBNull.Value ? null : defaultValue,
                             EnumType = null,
@@ -520,14 +513,11 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                         var fkNavigation = fkEntity.NavigationProperties.FirstOrDefault(np => np.AssociationName == constraintName);
                         if (fkNavigation == null) {
                             Func<string> displayNameGetter = null;
-                            if (fkEntity.ClrType != null) {
-                                var propertyInfo = fkEntity.ClrType.GetMember(fkNavigation.Name).FirstOrDefault();
-                                if (propertyInfo != null)
-                                    displayNameGetter = GetDisplayNameGetter(propertyInfo);
-                            }
+                            string resourceName = null;
+                            GetDisplayInfo(fkEntity.ClrType, fkNavigation.Name, ref resourceName, ref displayNameGetter);
 
                             fkNavigation = new NavigationProperty(pkTable, displayNameGetter) {
-                                ResourceName = pkTable,
+                                ResourceName = resourceName,
                                 AssociationName = constraintName,
                                 DoCascadeDelete = false,
                                 EntityTypeName = pkTable,
@@ -544,15 +534,12 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                         var pkNavigation = pkEntity.NavigationProperties.FirstOrDefault(np => np.AssociationName == constraintName);
                         if (pkNavigation == null) {
                             Func<string> displayNameGetter = null;
-                            if (pkEntity.ClrType != null) {
-                                var propertyInfo = pkEntity.ClrType.GetMember(pkNavigation.Name).FirstOrDefault();
-                                if (propertyInfo != null)
-                                    displayNameGetter = GetDisplayNameGetter(propertyInfo);
-                            }
+                            string resourceName = null;
+                            GetDisplayInfo(pkEntity.ClrType, pkNavigation.Name, ref resourceName, ref displayNameGetter);
 
                             var pkNavName = isOneToOne ? fkTable : Pluralize(fkTable);
                             pkNavigation = new NavigationProperty(pkNavName, displayNameGetter) {
-                                ResourceName = pkNavName,
+                                ResourceName = resourceName,
                                 AssociationName = constraintName,
                                 DoCascadeDelete = cascadeDelete,
                                 EntityTypeName = fkTable,
@@ -743,17 +730,19 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         }
 
         /// <summary>
-        /// Gets the display name getter.
+        /// Creates the client hash for given string.
         /// </summary>
-        /// <param name="member">The member.</param>
-        /// <returns></returns>
-        public static Func<string> GetDisplayNameGetter(MemberInfo member) {
-            if (member == null) return null;
-
-            var displayAttribute = member.GetAttributes<DisplayAttribute>(true).FirstOrDefault();
-            if (displayAttribute != null) return displayAttribute.GetName;
-
-            return null;
+        public static void GetDisplayInfo(Type type, string memberName, ref string resourceName, ref Func<string> displayNameGetter) {
+            if (type != null) {
+                var propertyInfo = type.GetMember(memberName).FirstOrDefault();
+                if (propertyInfo != null) {
+                    var displayAttribute = propertyInfo.GetAttributes<DisplayAttribute>(true).FirstOrDefault();
+                    if (displayAttribute != null) {
+                        displayNameGetter = displayAttribute.GetName;
+                        resourceName = displayAttribute.Name;
+                    }
+                }
+            }
         }
 
         /// <summary>

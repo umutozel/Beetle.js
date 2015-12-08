@@ -17,14 +17,15 @@ namespace Beetle.Server.Meta {
         public string ResourceName { get; set; }
 
         public virtual string GetDisplayName() {
-            if (_displayNameGetter == null) return Name;
-
-            try {
-                return _displayNameGetter();
+            if (_displayNameGetter != null) {
+                try {
+                    return _displayNameGetter();
+                }
+                catch {
+                    // ignored
+                }
             }
-            catch {
-                return Name;
-            }
+            return null;
         }
 
         /// <summary>

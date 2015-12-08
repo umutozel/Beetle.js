@@ -1,12 +1,15 @@
-using Beetle.Server.EntityFramework.Properties;
+using System.Text.RegularExpressions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
+using Beetle.Server.EntityFramework.Properties;
 using Beetle.Server.Meta;
+using DataType = Beetle.Server.Meta.DataType;
 #if EF6
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Spatial;
@@ -24,60 +27,68 @@ using NavigationProperty = System.Data.Metadata.Edm.NavigationProperty;
 namespace Beetle.Server.EntityFramework {
 
     /// <summary>
-    /// Generates metadata using .edmx information.
+    /// Generates meta-data using .edmx information.
     /// </summary>
     public static class MetadataGenerator {
         private const string StoreGeneratedPatternAttributeName = @"http://schemas.microsoft.com/ado/2009/02/edm/annotation:StoreGeneratedPattern";
 
         /// <summary>
-        /// Generates metadata for given item collection.
+        /// Generates meta-data for given item collection.
         /// Fetches CLR models from given assembly.
         /// </summary>
-        /// <param name="metadataWorkspace">The metadata workspace.</param>
         /// <param name="modelAssembly">The model assembly.</param>
-        /// <param name="connectionString">The connection string.</param>
+        /// <param name="modelName">The model name.</param>
         /// <returns></returns>
-        public static Metadata Generate(MetadataWorkspace metadataWorkspace, Assembly modelAssembly, string connectionString) {
-            metadataWorkspace.RegisterItemCollection(new ObjectItemCollection());
+        public static Metadata Generate(Assembly modelAssembly, string modelName) {
+            var conceptualResource = modelAssembly.GetManifestResourceStream(modelName + ".csdl");
+            Debug.Assert(conceptualResource != null, "conceptualResource != null");
+            var conceptualReader = XmlReader.Create(conceptualResource);
+            var itemCollection = new EdmItemCollection(new[] { conceptualReader });
+            var objectItemCollection = new ObjectItemCollection();
+#if EF6
+            var metadataWorkspace = new MetadataWorkspace(
+                () => itemCollection,
+                () => null,
+                () => null,
+                () => objectItemCollection
+            );
+#else
+            var metadataWorkspace = new MetadataWorkspace();
+            metadataWorkspace.RegisterItemCollection(itemCollection);
+            metadataWorkspace.RegisterItemCollection(objectItemCollection);
+#endif
             metadataWorkspace.LoadFromAssembly(modelAssembly);
 
-            var itemCollection = metadataWorkspace.GetItemCollection(DataSpace.CSpace);
-            var objectItemCollection = (ObjectItemCollection)metadataWorkspace.GetItemCollection(DataSpace.OSpace);
-
-            return Generate(metadataWorkspace, itemCollection, objectItemCollection, modelAssembly, connectionString);
+            return Generate(metadataWorkspace, itemCollection, objectItemCollection, modelAssembly, modelName);
         }
 
         /// <summary>
-        /// Generates metadata for given item collection.
+        /// Generates meta-data for given item collection.
         /// Fetches CLR models from object item collection.
         /// </summary>
-        /// <param name="metadataWorkspace">The metadata workspace.</param>
+        /// <param name="metadataWorkspace">The meta-data workspace.</param>
         /// <param name="itemCollection">The item collection.</param>
         /// <param name="objectItemCollection">The object item collection.</param>
         /// <param name="assembly">The assembly.</param>
-        /// <param name="connectionString">The connection string.</param>
+        /// <param name="modelName">The model name.</param>
         /// <returns></returns>
-        /// <exception cref="BeetleException">Cannot load mapping information.</exception>
         public static Metadata Generate(MetadataWorkspace metadataWorkspace, ItemCollection itemCollection,
-                                        ObjectItemCollection objectItemCollection, Assembly assembly, string connectionString) {
+                                        ObjectItemCollection objectItemCollection, Assembly assembly, string modelName = null) {
+            var container = itemCollection.OfType<EntityContainer>().First();
+            if (modelName == null) {
+                var schemaSource = container.MetadataProperties["SchemaSource"].Value.ToString();
+                modelName = Regex.Match(schemaSource, @"res://.*/(.*?)\.csdl").Groups[1].Value;
+            }
+
             XDocument mappingXml = null;
             XNamespace mappingNs = null;
             try {
-                var csResourceMatch = Regex.Match(connectionString, @"res:*/(.*?\.msl)");
-                if (csResourceMatch.Success) {
-                    var csResourceIndex = csResourceMatch.Value.LastIndexOf('/');
-                    if (csResourceIndex >= 0) {
-                        var csResource = csResourceMatch.Value.Substring(csResourceIndex + 1);
-                        if (!string.IsNullOrEmpty(csResource)) {
-                            using (var stream = assembly.GetManifestResourceStream(csResource)) {
-                                if (stream != null) {
-                                    using (var reader = new StreamReader(stream)) {
-                                        mappingXml = XDocument.Load(reader);
-                                        // ReSharper disable once PossibleNullReferenceException
-                                        mappingNs = mappingXml.Root.GetDefaultNamespace();
-                                    }
-                                }
-                            }
+                using (var stream = assembly.GetManifestResourceStream(modelName + ".msl")) {
+                    if (stream != null) {
+                        using (var reader = new StreamReader(stream)) {
+                            mappingXml = XDocument.Load(reader);
+                            // ReSharper disable once PossibleNullReferenceException
+                            mappingNs = mappingXml.Root.GetDefaultNamespace();
                         }
                     }
                 }
@@ -86,7 +97,6 @@ namespace Beetle.Server.EntityFramework {
                 mappingXml = null;
             }
 
-            var container = itemCollection.OfType<EntityContainer>().FirstOrDefault();
             // collect necessary entity information in one collection.
             var entityResources = new List<EntityResource>();
             foreach (var entityType in itemCollection.OfType<EntityType>().OrderBy(et => et.Name)) {
@@ -175,7 +185,7 @@ namespace Beetle.Server.EntityFramework {
         /// <param name="container">The entity container.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">itemCollection</exception>
-        /// <exception cref="System.Exception">Unknown data type:  + p.TypeUsage.EdmType.Name</exception>
+        /// <exception cref="BeetleException">Unknown data type</exception>
         private static Metadata Mapping(IEnumerable<EntityResource> entityResources, IEnumerable<EnumResource> enumResources, IEnumerable<GlobalItem> itemCollection, EntityContainer container) {
             if (itemCollection == null)
                 throw new ArgumentNullException("itemCollection");
@@ -186,7 +196,7 @@ namespace Beetle.Server.EntityFramework {
             // entity types
             foreach (var er in entityResources) {
                 var fullName = string.Format("{0}, {1}", er.ClrType.FullName, er.ClrType.Assembly.GetName().Name);
-                var et = new Meta.EntityType(fullName, er.Name) {TableName = er.TableName};
+                var et = new Meta.EntityType(fullName, er.Name) { TableName = er.TableName };
 
                 // entity informations
                 if (er.Entity != null) {
@@ -205,14 +215,13 @@ namespace Beetle.Server.EntityFramework {
                         foreach (var p in er.NavigationProperties) {
                             var ass = globalItems.OfType<AssociationType>().First(a => a.Name == p.RelationshipType.Name);
                             Func<string> displayNameGetter = null;
-                            if (er.ClrType != null) {
-                                var propertyInfo = er.ClrType.GetMember(p.Name).FirstOrDefault();
-                                if (propertyInfo != null)
-                                    displayNameGetter = Helper.GetDisplayNameGetter(propertyInfo);
-                            }
+                            string resourceName = null;
+                            Helper.GetDisplayInfo(er.ClrType, p.Name, ref resourceName, ref displayNameGetter);
 
-                            var np = new Meta.NavigationProperty(p.Name, displayNameGetter);
-                            np.EntityTypeName = (((RefType)p.ToEndMember.TypeUsage.EdmType).ElementType).Name;
+                            var np = new Meta.NavigationProperty(p.Name, displayNameGetter) {
+                                ResourceName = resourceName,
+                                EntityTypeName = (((RefType)p.ToEndMember.TypeUsage.EdmType).ElementType).Name
+                            };
 
                             var isScalar = p.ToEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many;
                             if (isScalar) {
@@ -236,14 +245,12 @@ namespace Beetle.Server.EntityFramework {
                     if (er.ComplexProperties != null) {
                         foreach (var p in er.ComplexProperties) {
                             Func<string> displayNameGetter = null;
-                            if (er.ClrType != null) {
-                                var propertyInfo = er.ClrType.GetMember(p.Key.Name).FirstOrDefault();
-                                if (propertyInfo != null)
-                                    displayNameGetter = Helper.GetDisplayNameGetter(propertyInfo);
-                            }
+                            string resourceName = null;
+                            Helper.GetDisplayInfo(er.ClrType, p.Key.Name, ref resourceName, ref displayNameGetter);
 
                             var cp = new ComplexProperty(p.Key.Name, displayNameGetter) {
                                 TypeName = p.Key.TypeUsage.EdmType.Name,
+                                ResourceName = resourceName,
                                 Mappings = p.Value
                             };
 
@@ -259,13 +266,13 @@ namespace Beetle.Server.EntityFramework {
                     var p = sp.Value;
                     var clrType = UnderlyingClrType(p.TypeUsage.EdmType);
                     Func<string> displayNameGetter = null;
-                    if (er.ClrType != null) {
-                        var propertyInfo = clrType.GetMember(p.Name).FirstOrDefault();
-                        if (propertyInfo != null)
-                            displayNameGetter = Helper.GetDisplayNameGetter(propertyInfo);
-                    }
+                    string resourceName = null;
+                    Helper.GetDisplayInfo(er.ClrType, p.Name, ref resourceName, ref displayNameGetter);
 
-                    var dp = new DataProperty(p.Name, displayNameGetter) { ColumnName = sp.Key };
+                    var dp = new DataProperty(p.Name, displayNameGetter) {
+                        ColumnName = sp.Key,
+                        ResourceName = resourceName
+                    };
 
                     var jsType = DataType.Binary;
                     var enumType = p.TypeUsage.EdmType as EnumType;
@@ -339,7 +346,7 @@ namespace Beetle.Server.EntityFramework {
 
                 foreach (var member in enumType.Members) {
                     //todo: enum member için display
-                    var em = new Meta.EnumMember(member.Name, null) {Value = member.Value};
+                    var em = new Meta.EnumMember(member.Name, null) { Value = member.Value };
 
                     et.Members.Add(em);
                 }

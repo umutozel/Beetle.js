@@ -99,6 +99,7 @@ var testMetadata = {
         },
         {
           "n": "Extra",
+          "r": "Extra information",
           "l": "Extra information",
           "t": "string",
           "i": true,
@@ -141,6 +142,7 @@ var testMetadata = {
         },
         {
           "n": "Extra2",
+          "r": "Extra information 2",
           "l": "Extra information 2",
           "t": "string",
           "i": true,

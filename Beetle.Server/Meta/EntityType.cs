@@ -7,9 +7,10 @@ namespace Beetle.Server.Meta {
     /// <summary>
     /// Entity Type metadata representation.
     /// </summary>
-    public class EntityType: MetadataPart {
+    public class EntityType : MetadataPart {
 
-        public EntityType(string fullName, string shortName, Func<string> displayNameGetter = null): base(fullName, displayNameGetter) {
+        public EntityType(string fullName, string shortName, Func<string> displayNameGetter = null)
+            : base(fullName, displayNameGetter) {
             ShortName = shortName;
             TableName = shortName;
             Keys = new List<string>();
@@ -40,31 +41,32 @@ namespace Beetle.Server.Meta {
         public Type ClrType { get; set; }
 
         public override string GetDisplayName() {
-            if (DisplayNameGetter == null) return ShortName;
-
-            try {
-                return DisplayNameGetter();
+            if (DisplayNameGetter != null) {
+                try {
+                    return DisplayNameGetter();
+                }
+                catch {
+                    // ignored
+                }
             }
-            catch {
-                return ShortName;
-            }
+            return null;
         }
 
         public override object ToMinified() {
             return new {
-                           n = Name,
-                           rn = ResourceName,
-                           l = GetDisplayName(),
-                           s = ShortName,
-                           q = QueryName,
-                           t = QueryType,
-                           b = BaseTypeName,
-                           c = IsComplexType,
-                           k = Keys,
-                           d = DataProperties.Select(dp => dp.ToMinified()).ToList(),
-                           r = NavigationProperties.Select(np => np.ToMinified()).ToList(),
-                           x = ComplexProperties.Select(cp => cp.ToMinified()).ToList()
-                       };
+                n = Name,
+                rn = ResourceName,
+                l = GetDisplayName(),
+                s = ShortName,
+                q = QueryName,
+                t = QueryType,
+                b = BaseTypeName,
+                c = IsComplexType,
+                k = Keys,
+                d = DataProperties.Select(dp => dp.ToMinified()).ToList(),
+                r = NavigationProperties.Select(np => np.ToMinified()).ToList(),
+                x = ComplexProperties.Select(cp => cp.ToMinified()).ToList()
+            };
         }
     }
 }
