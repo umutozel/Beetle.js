@@ -58,19 +58,19 @@ var testMetadata = {
           "i": true,
           "v": [
             {
+              "t": "re",
+              "m": "Postal code is required, please fill.",
+              "a": [
+                false
+              ]
+            },
+            {
               "t": "sl",
               "m": "Postal code field must be at least 2 and at most 6 characters long.",
               "r": "StringLength",
               "a": [
                 2,
                 6
-              ]
-            },
-            {
-              "t": "re",
-              "m": "Postal code is required, please fill.",
-              "a": [
-                false
               ]
             },
             {
@@ -109,19 +109,20 @@ var testMetadata = {
               "m": "The Extra information field is not a valid e-mail address."
             },
             {
-              "t": "ti",
-              "m": "The field Extra information is invalid."
-            },
-            {
-              "t": "co",
-              "m": "Extra information value must be equal to Extra2.",
-              "a": [
-                "Extra2"
-              ]
-            },
-            {
               "t": "cc",
               "m": "The Extra information field is not a valid credit card number."
+            },
+            {
+              "t": "ur",
+              "m": "The Extra information field is not a valid fully-qualified http, https, or ftp URL."
+            },
+            {
+              "t": "ph",
+              "m": "The Extra information field is not a valid phone number."
+            },
+            {
+              "t": "ti",
+              "m": "The field Extra information is invalid."
             },
             {
               "t": "rx",
@@ -131,12 +132,11 @@ var testMetadata = {
               ]
             },
             {
-              "t": "ur",
-              "m": "The Extra information field is not a valid fully-qualified http, https, or ftp URL."
-            },
-            {
-              "t": "ph",
-              "m": "The Extra information field is not a valid phone number."
+              "t": "co",
+              "m": "Extra information value must be equal to Extra2.",
+              "a": [
+                "Extra2"
+              ]
             }
           ]
         },

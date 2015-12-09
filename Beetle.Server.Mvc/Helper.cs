@@ -43,7 +43,7 @@ namespace Beetle.Server.Mvc {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 if (request.ContentType.Contains("application/json")) {
-                    postData = JsonConvert.DeserializeObject(queryString, config.JsonSerializerSettings) as JObject;
+                    postData = JsonConvert.DeserializeObject<JObject>(queryString, config.JsonSerializerSettings);
                     // now there is no query string parameters, we must populate them manually for beetle queries
                     // otherwise beetle cannot use query parameters when using post method
                     var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
@@ -56,7 +56,7 @@ namespace Beetle.Server.Mvc {
                     queryParams = prms;
                     var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
                     var jsonStr = _javaScriptSerializer.Value.Serialize(d);
-                    postData = JsonConvert.DeserializeObject(jsonStr, config.JsonSerializerSettings);
+                    postData = JsonConvert.DeserializeObject<JObject>(jsonStr, config.JsonSerializerSettings);
                 }
 
                 // modify the action parameters to allow model binding to object, dynamic and json.net parameters 
@@ -131,7 +131,7 @@ namespace Beetle.Server.Mvc {
             if (inlineCount != null && response.Headers["X-InlineCount"] == null)
                 response.Headers.Add("X-InlineCount", inlineCount.ToString());
             if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
-                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, config.JsonSerializerSettings);
+                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, Formatting.None, config.JsonSerializerSettings);
                 response.Headers.Add("X-UserData", userDataStr);
             }
 
