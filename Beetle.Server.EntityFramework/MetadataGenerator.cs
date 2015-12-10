@@ -75,14 +75,15 @@ namespace Beetle.Server.EntityFramework {
         public static Metadata Generate(MetadataWorkspace metadataWorkspace, ItemCollection itemCollection,
                                         ObjectItemCollection objectItemCollection, Assembly assembly, string modelName = null) {
             var container = itemCollection.OfType<EntityContainer>().First();
-            if (modelName == null) {
-                var schemaSource = container.MetadataProperties["SchemaSource"].Value.ToString();
-                modelName = Regex.Match(schemaSource, @"res://.*/(.*?)\.csdl").Groups[1].Value;
-            }
 
             XDocument mappingXml = null;
             XNamespace mappingNs = null;
             try {
+                if (modelName == null) {
+                    var schemaSource = container.MetadataProperties["SchemaSource"].Value.ToString();
+                    modelName = Regex.Match(schemaSource, @"res://.*/(.*?)\.csdl").Groups[1].Value;
+                }
+
                 using (var stream = assembly.GetManifestResourceStream(modelName + ".msl")) {
                     if (stream != null) {
                         using (var reader = new StreamReader(stream)) {
