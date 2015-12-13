@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Shared", "_Shared", "{C70CF31F-C02A-4A6B-A0ED-14B600674D45}"
 	ProjectSection(SolutionItems) = preProject
@@ -16,6 +16,22 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Todo", "Todo", "{A5A9F3F5-1C10-47BA-A4B2-11897AA2D93E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_NuGet Packages", "_NuGet Packages", "{FC020D39-AB65-4394-B3F8-BF1602C68A65}"
+	ProjectSection(SolutionItems) = preProject
+		_NuGet Packages\Beetlejs.Client.1.0.3.nupkg = _NuGet Packages\Beetlejs.Client.1.0.3.nupkg
+		_NuGet Packages\Beetlejs.Client.1.0.3.nuspec = _NuGet Packages\Beetlejs.Client.1.0.3.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.1.0.3.nupkg = _NuGet Packages\Beetlejs.Mvc5.1.0.3.nupkg
+		_NuGet Packages\Beetlejs.Mvc5.1.0.3.nuspec = _NuGet Packages\Beetlejs.Mvc5.1.0.3.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.EF6.1.0.3.nupkg = _NuGet Packages\Beetlejs.Mvc5.EF6.1.0.3.nupkg
+		_NuGet Packages\Beetlejs.Mvc5.EF6.1.0.3.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.1.0.3.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.0.2.nupkg = _NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.0.2.nupkg
+		_NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.0.2.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.0.2.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.1.0.6.nupkg = _NuGet Packages\Beetlejs.WebApi2.1.0.6.nupkg
+		_NuGet Packages\Beetlejs.WebApi2.1.0.6.nuspec = _NuGet Packages\Beetlejs.WebApi2.1.0.6.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.EF6.1.0.4.nupkg = _NuGet Packages\Beetlejs.WebApi2.EF6.1.0.4.nupkg
+		_NuGet Packages\Beetlejs.WebApi2.EF6.1.0.4.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.1.0.4.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.0.2.nupkg = _NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.0.2.nupkg
+		_NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.0.2.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.0.2.nuspec
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{EECD6D87-AB15-4624-B0C5-CB43288023D2}"
 EndProject
