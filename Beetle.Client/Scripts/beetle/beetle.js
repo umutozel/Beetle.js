@@ -32,6 +32,14 @@
                 }
                 return obj;
             },
+            extend: function(objMain, objExt) {
+                if (objMain != null && objExt != null) {
+                    for (var p in objExt) {
+                        if (!objMain.hasOwnProperty(p))
+                            objMain[p] = objExt[p];
+                    }
+                }
+            },
             objEquals: function (obj1, obj2) {
                 /// <summary>Checks if two objects are equal. if parameters are both objects, recursively controls their properties too.</summary>
                 /// <param name="obj1">First object.</param>
@@ -2571,6 +2579,7 @@
                     ///  ignoreWhiteSpaces: When true before comparison strings will be trimmed
                     ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
                     ///  uri: Overrides dataService's uri.
+                    ///  headers: Extra http headers
                     ///  
                     ///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
                     ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
@@ -2603,6 +2612,7 @@
                     ///  async: When false, ajax call will be made synchronously (default: true).
                     ///  uri: Overrides dataService's uri.
                     ///  saveAction: Custom save action on server side (default is SaveChanges).
+                    ///  headers: Extra http headers
                     /// </summary>
                     /// <param name="savePackage">Save package to send to server.</param>
                     /// <param name="options">Save options, for details read summary.</param>
@@ -9587,6 +9597,7 @@
                 }
                 var hash = createHash(queryString);
                 var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
+                helper.extend(headers, options && options.headers);
                 var that = this;
                 // execute query using ajax provider
                 this.ajaxProvider.doAjax(
@@ -9625,6 +9636,7 @@
                 var saveData = this.serializationService.serialize(savePackage);
                 var hash = createHash(saveData);
                 var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': saveData.length };
+                helper.extend(headers, options && options.headers);
                 this.ajaxProvider.doAjax(
                     uri,
                     'POST', this.dataType, this.contentType, saveData, async, timeout, extra, headers,

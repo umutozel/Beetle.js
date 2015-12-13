@@ -202,7 +202,7 @@ namespace Beetle.Server.WebApi {
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
         [HttpPost]
-        [BeetleActionFilterAttribute(typeof(SimpleResultConfig))]
+        [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual SaveResult SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);

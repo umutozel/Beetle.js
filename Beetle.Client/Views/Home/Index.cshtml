@@ -19,6 +19,7 @@
     <script src="~/Scripts/tests/basicTests.js"></script>
 </head>
 <body>
+    @Html.AntiForgeryToken()
     <div class="beetle-toolbar">
         <span>
             <input type="radio" name="metadataGroup" value="MM" data-bind="checked: metadataType" checked="true" />

@@ -376,7 +376,7 @@ test('test query with POST', 1, function () {
     query = query.setParameter('person', { Name: 'Alan', Surname: 'Turing', BirthDate: new Date(Date.parse('1912-06-23')) });
     var ids = [1, 2, 3, 4, 5, 6, 7];
     query = query.setParameter('ids', ids);
-    query = query.setParameter('name', "umut");
+    query = query.setParameter('name', "Knuth");
     stop();
     manager.executeQuery(query, { usePost: true })
         .then(firstQuerySucceeded)
@@ -1431,7 +1431,11 @@ test('update an entity', 1, function () {
         var ne = data[0];
         var userName = 'Test Name ' + Math.floor((Math.random() * 100) + 1);
         ne.$tracker.setValue('UserNameCreate', userName);
-        manager.saveChanges()
+        var options = {
+            headers: { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+            saveAction: 'UpdateEntity'
+        };
+        manager.saveChanges(options)
             .then(saveSucceeded)
             .fail(handleFail)
             .fin(start);

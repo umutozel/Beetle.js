@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Web.Http;
 using Beetle.Client.Models;
+using Beetle.Server;
 using Beetle.Server.EntityFramework;
 using Beetle.Server.WebApi;
 
@@ -63,6 +64,11 @@ namespace Beetle.Client.Controllers {
                 .Where(ne => ne.ShortId != shortId)
                 .Where(ne => ne.Name != personName)
                 .Where(ne => !ids.Contains(ne.ShortId));
+        }
+
+        [HttpPost]
+        public SaveResult UpdateEntity(object saveBundle) {
+            return SaveChanges(saveBundle);
         }
 
         /// <summary>

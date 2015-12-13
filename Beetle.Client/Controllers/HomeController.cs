@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Web.Mvc;
 using Beetle.Client.Models;
+using Beetle.Server;
 using Beetle.Server.EntityFramework;
 using Beetle.Server.Mvc;
 
@@ -62,6 +63,8 @@ namespace Beetle.Client.Controllers {
 
         [HttpPost]
         public IQueryable<NamedEntity> TestPost(dynamic prms, string name) {
+            if (name != "Knuth") throw new ArgumentException("name is missing");
+
             int shortId = Convert.ToInt32(prms.shortId.ToString());
             string personName = Convert.ToString(prms.person.Name).ToString();
             var ids = ((IEnumerable)prms.ids).OfType<object>().Select(x => Convert.ToInt32(x.ToString()));
@@ -69,6 +72,11 @@ namespace Beetle.Client.Controllers {
                 .Where(ne => ne.ShortId != shortId)
                 .Where(ne => ne.Name != personName)
                 .Where(ne => !ids.Contains(ne.ShortId));
+        }
+
+        [HttpPost]
+        public SaveResult UpdateEntity(object saveBundle) {
+            return SaveChanges(saveBundle);
         }
 
         /// <summary>
