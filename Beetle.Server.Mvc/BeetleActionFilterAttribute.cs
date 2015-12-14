@@ -1,8 +1,7 @@
-using Beetle.Server.Mvc.Properties;
 using System;
 using System.Collections.Specialized;
-using System.Web;
 using System.Web.Mvc;
+using Beetle.Server.Mvc.Properties;
 
 namespace Beetle.Server.Mvc {
 
@@ -41,8 +40,6 @@ namespace Beetle.Server.Mvc {
         /// <param name="filterContext">The filter context.</param>
         /// <exception cref="BeetleException">BeetleActionFilterAttribute should only be applied to Queryable actions.</exception>
         public override void OnActionExecuting(ActionExecutingContext filterContext) {
-            base.OnActionExecuting(filterContext);
-
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
             var parameters = filterContext.ActionParameters;
@@ -55,6 +52,8 @@ namespace Beetle.Server.Mvc {
             NameValueCollection queryParams;
             // handle request message
             GetParameters(filterContext, out queryString, out queryParams);
+
+            base.OnActionExecuting(filterContext);
 
             // execute the action method
             var contentValue = action.Execute(filterContext.Controller.ControllerContext, parameters);

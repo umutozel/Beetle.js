@@ -90,6 +90,10 @@ function populateVars() {
 }
 populateVars();
 
+beetle.events.saving.subscribe(function (args) {
+    args.options.headers = args.options.headers || {};
+    args.options.headers.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
+});
 var EntityManager = beetle.EntityManager;
 var entityStates = beetle.EntityStates;
 var op = beetle.FilterOps;
@@ -1431,11 +1435,7 @@ test('update an entity', 1, function () {
         var ne = data[0];
         var userName = 'Test Name ' + Math.floor((Math.random() * 100) + 1);
         ne.$tracker.setValue('UserNameCreate', userName);
-        var options = {
-            headers: { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
-            saveAction: 'UpdateEntity'
-        };
-        manager.saveChanges(options)
+        manager.saveChanges({ saveAction: 'UpdateEntity' })
             .then(saveSucceeded)
             .fail(handleFail)
             .fin(start);

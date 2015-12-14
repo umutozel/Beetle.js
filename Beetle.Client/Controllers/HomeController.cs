@@ -75,6 +75,7 @@ namespace Beetle.Client.Controllers {
         }
 
         [HttpPost]
+        [ValidateJsonAntiForgeryToken]
         public SaveResult UpdateEntity(object saveBundle) {
             return SaveChanges(saveBundle);
         }

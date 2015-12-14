@@ -8800,7 +8800,8 @@
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
                     /// <returns type="">Returns promise if supported.</returns>
-                    var changes = (options && options.entities) || this.getChanges();
+                    options = options || {};
+                    var changes = options.entities || this.getChanges();
                     options = notifySaving(this, changes, options);
 
                     // Create promise if possible.
