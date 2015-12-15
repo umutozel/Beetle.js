@@ -2655,16 +2655,21 @@
                             if (cached)
                                 instance.metadataManager = cached.data;
                             else {
+                                var ajax = true;
                                 instance.fetchMetadata(
                                     null,
                                     function (metadataObject) {
+                                        ajax = false;
                                         instance.metadataManager = new metadata.metadataManager(metadataObject);
                                         // cache retrieved and parsed metadata
                                         _metadataCache.push({ uri: uri, data: instance.metadataManager });
                                     },
                                     function (e) {
+                                        ajax = false;
                                         throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
                                     });
+                                // we must wait for meta-data, most of the functionality won't work otherwise
+                                while(ajax){}
                             }
                         } else if (assert.isInstanceOf(metadataPrm, metadata.metadataManager))
                             instance.metadataManager = metadataPrm;
