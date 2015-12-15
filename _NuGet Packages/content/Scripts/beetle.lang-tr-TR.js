@@ -17,6 +17,7 @@
         cannotDetachComplexTypeWithOwners: 'Sahibi olan karışık tipli varlıklar çıkarılamaz.',
         compareError: '%0 alanının değeri %1 ile eşit olmalıdır.',
         complexCannotBeNull: '%0 kompleks alanına boş değer atanamaz.',
+        couldNotLoadMetadata: 'Metadata yüklenemedi.',
         couldNotLocateNavFixer: 'Observable provider bulunamadı.',
         couldNotLocatePromiseProvider: 'Promise provider bulunamadı.',
         couldNotParseToken: '%0 yorumlanamadı.',

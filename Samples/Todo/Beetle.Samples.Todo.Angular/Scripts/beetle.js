@@ -2549,6 +2549,8 @@
                     ///  async: When false, ajax call will be made synchronously (default: true).
                     /// </summary>
                     /// <param name="options">Fetch metadata options, for details read summary.</param>
+                    /// <param name="successCallback">Function to call after operation succeeded.</param>
+                    /// <param name="errorCallback">Function to call when operation fails.</param>
                     throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'fetchMetadata']);
                 };
                 proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
@@ -2653,10 +2655,16 @@
                             if (cached)
                                 instance.metadataManager = cached.data;
                             else {
-                                var metadataObject = instance.fetchMetadata();
-                                instance.metadataManager = new metadata.metadataManager(metadataObject);
-                                // cache retrieved and parsed metadata
-                                _metadataCache.push({ uri: uri, data: instance.metadataManager });
+                                instance.fetchMetadata(
+                                    null,
+                                    function (metadataObject) {
+                                        instance.metadataManager = new metadata.metadataManager(metadataObject);
+                                        // cache retrieved and parsed metadata
+                                        _metadataCache.push({ uri: uri, data: instance.metadataManager });
+                                    },
+                                    function (e) {
+                                        throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
+                                    });
                             }
                         } else if (assert.isInstanceOf(metadataPrm, metadata.metadataManager))
                             instance.metadataManager = metadataPrm;
@@ -9510,7 +9518,7 @@
             helper.inherit(ctor, baseTypes.dataServiceBase);
             var proto = ctor.prototype;
 
-            proto.fetchMetadata = function (options) {
+            proto.fetchMetadata = function (options, successCallback, errorCallback) {
                 var retVal = null;
                 var that = this;
                 var async = (options && options.async) || false;
@@ -9522,11 +9530,9 @@
                     function (data) {
                         // deserialize return value to object.
                         retVal = that.serializationService.deserialize(data); // parse string
+                        successCallback(retVal);
                     },
-                    function (error) {
-                        error.service = that;
-                        throw new error;
-                    }
+                    errorCallback
                 );
                 return retVal;
             };
@@ -10129,6 +10135,7 @@
                 cannotDetachComplexTypeWithOwners: 'Complex types with owners cannot be detached.',
                 compareError: '%0 property value must be equal with %1.',
                 complexCannotBeNull: '%0 complex property can not be null.',
+                couldNotLoadMetadata: 'Could not load metadata.',
                 couldNotLocateNavFixer: 'Could not locate any observable provider.',
                 couldNotLocatePromiseProvider: 'Could not locate any promise provider.',
                 couldNotParseToken: 'Could not parse %0.',
