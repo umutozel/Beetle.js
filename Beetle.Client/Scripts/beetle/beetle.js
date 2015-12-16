@@ -2381,6 +2381,7 @@
             dataServiceBase: (function () {
                 // cache metadata to reduce network traffic.
                 var _metadataCache = [];
+
                 var ctor = function (uri, metadataPrm, injections) {
                     /// <summary>
                     /// Data service base class.
@@ -2400,6 +2401,22 @@
                     /// String representation of the object.
                     /// </summary>
                     return this.uri;
+                };
+
+                proto.isReady = function () {
+                    /// <summary>
+                    /// Checks if service is ready.
+                    /// </summary>
+                    return !this._awaitingMetadata;
+                };
+
+                proto.ready = function (callback) {
+                    /// <summary>
+                    /// Subscribe ready callback.
+                    /// </summary>
+                    this._readyCallbacks.push(callback);
+
+                    checkReady(this);
                 };
 
                 proto.getEntityType = function (shortName) {
@@ -2624,6 +2641,9 @@
                 };
 
                 function initialize(uri, metadataPrm, injections, instance) {
+                    instance._awaitingMetadata = false;
+                    instance._readyCallbacks = [];
+
                     if (uri == null) uri = '';
                     else if (uri[uri.length - 1] != '/') uri += '/';
                     instance.uri = uri;
@@ -2646,23 +2666,30 @@
                     else
                         instance.serializationService = impls.jsonSerializationServiceInstance;
 
-                    // If metadata parameter is false, it means do not use metadata
-                    if (!(metadataPrm === false)) {
+                    // If metadata parameter is false or undefined, it means do not use metadata
+                    if (metadataPrm !== false || metadataPrm === undefined) {
                         // When there is no metadata or metadata is true fetch metadata from server.
                         if (metadataPrm == null) {
                             // try to get metadata from cache
-                            var cached = helper.findInArray(_metadataCache, uri, 'uri');
+                            var cached = null;
+                            if (settings.cacheMetadata === true)
+                                cached = helper.findInArray(_metadataCache, uri, 'uri');
                             if (cached)
                                 instance.metadataManager = cached.data;
                             else {
+                                instance._awaitingMetadata = true;
                                 instance.fetchMetadata(
                                     null,
                                     function (metadataObject) {
+                                        instance._awaitingMetadata = false;
                                         instance.metadataManager = new metadata.metadataManager(metadataObject);
                                         // cache retrieved and parsed metadata
-                                        _metadataCache.push({ uri: uri, data: instance.metadataManager });
+                                        if (settings.cacheMetadata === true)
+                                            _metadataCache.push({ uri: uri, data: instance.metadataManager });
+                                        checkReady(instance);
                                     },
                                     function (e) {
+                                        instance._awaitingMetadata = false;
                                         throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
                                     });
                             }
@@ -2678,6 +2705,17 @@
                     }
                     instance.dataType = dataType || 'json';
                     instance.contentType = contentType || 'application/json; charset=utf-8';
+                }
+
+                function checkReady(instance) {
+                    if (instance.isReady()) {
+                        var cs = instance._readyCallbacks.slice(0);
+                        instance._readyCallbacks = [];
+                        for (var i = 0; i < cs.length; i++) {
+                            var c = cs[i];
+                            if (c) c.call(instance);
+                        }
+                    }
                 }
 
                 return ctor;
@@ -8147,6 +8185,34 @@
                         i18N.validationErrors + ': ' + this.validationErrors.length;
                 };
 
+                proto.isReady = function () {
+                    /// <summary>
+                    /// Checks if manager is ready.
+                    /// </summary>
+                    return this.dataService.isReady();
+                };
+
+                proto.ready = function (callback) {
+                    /// <summary>
+                    /// Subscribe ready callback, returns promise when available.
+                    /// </summary>
+                    this._readyCallbacks.push(callback);
+
+                    var pp = settings.getPromiseProvider();
+                    var p = null;
+                    if (pp) {
+                        var d = pp.deferred();
+                        this._readyPromises.push(d);
+                        p = pp.getPromise(d);
+                    }
+
+                    var that = this;
+                    setTimeout(function() {
+                        checkReady(that);
+                    }, 10);
+                    return p;
+                };
+
                 proto.getEntityType = function (shortName) {
                     /// <summary>
                     /// Gets entity type by its short name from data service.
@@ -9018,6 +9084,9 @@
                     ///  (optional) [Metadata Instance] or [Metadata String] or [true - false (default) - when true no metadata will be used, no auto relation fix]
                     /// </param>
                     /// <param name="instance">Entity manager instance.</param>
+                    instance._readyCallbacks = [];
+                    instance._readyPromises = [];
+
                     // Entity manager can take 1 or 2 arguments.
                     if (args.length < 1 || args.length > 2)
                         throw helper.createError(i18N.managerInvalidArgs, { entityManager: instance });
@@ -9032,6 +9101,10 @@
                         else instance.dataService = new services.webApiService(service, false);
                     } else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this });
 
+                    instance.dataService.ready(function() {
+                        checkReady(instance);
+                    });
+
                     // Create a integer value to hold change count. This value will be updated after every entity state change.
                     instance.pendingChangeCount = 0;
                     // Create the entity container.
@@ -9045,6 +9118,26 @@
                     instance.queryExecuted = new core.event('queryExecuted', instance);
                     instance.saving = new core.event('saving', instance);
                     instance.saved = new core.event('saved', instance);
+                }
+                
+                function checkReady(instance) {
+                    if (instance.isReady()) {
+                        var cs = instance._readyCallbacks.slice(0);
+                        var ps = instance._readyPromises.slice(0);
+                        instance._readyCallbacks = [];
+                        instance._readyPromises = [];
+
+                        for (var i = 0; i < cs.length; i++) {
+                            var c = cs[i];
+                            if (c) c.call(instance);
+
+                            var d = ps[i];
+                            if (d) {
+                                var pp = settings.getPromiseProvider();
+                                if (pp) pp.resolve(d);
+                            }
+                        }
+                    }
                 }
 
                 function mergeEntities(newEntities, flatList, merge, state, instance, autoFixScalar, autoFixPlural) {
@@ -9988,6 +10081,8 @@
         expose.ignoreWhiteSpaces = false;
         /// <field>when true, each entity will be updated -even there is no modified property.</field>
         expose.forceUpdate = false;
+        /// <field>when true, loaded meta-data will be cached for url.</field>
+        expose.cacheMetadata = true;
         /// <field>
         /// when not equals to false all Ajax calls will be made asynchronously, 
         /// when false createEntityAsync, executeQuery, saveChanges will returns results immediately.</field>
