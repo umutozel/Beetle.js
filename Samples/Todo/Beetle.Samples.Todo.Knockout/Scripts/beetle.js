@@ -2646,30 +2646,25 @@
                     else
                         instance.serializationService = impls.jsonSerializationServiceInstance;
 
-                    // If metadata parameter is true, it means DoNotUseMetadata = true.
-                    if (!(metadataPrm === true)) {
+                    // If metadata parameter is false, it means do not use metadata
+                    if (!(metadataPrm === false)) {
                         // When there is no metadata or metadata is true fetch metadata from server.
-                        if (!metadataPrm) {
+                        if (metadataPrm == null) {
                             // try to get metadata from cache
                             var cached = helper.findInArray(_metadataCache, uri, 'uri');
                             if (cached)
                                 instance.metadataManager = cached.data;
                             else {
-                                var ajax = true;
                                 instance.fetchMetadata(
                                     null,
                                     function (metadataObject) {
-                                        ajax = false;
                                         instance.metadataManager = new metadata.metadataManager(metadataObject);
                                         // cache retrieved and parsed metadata
                                         _metadataCache.push({ uri: uri, data: instance.metadataManager });
                                     },
                                     function (e) {
-                                        ajax = false;
                                         throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
                                     });
-                                // we must wait for meta-data, most of the functionality won't work otherwise
-                                while(ajax){}
                             }
                         } else if (assert.isInstanceOf(metadataPrm, metadata.metadataManager))
                             instance.metadataManager = metadataPrm;

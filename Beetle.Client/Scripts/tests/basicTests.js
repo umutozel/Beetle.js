@@ -60,9 +60,9 @@ function populateVars() {
     if (metadataType == 'MS')
         metadata = testMetadata;
     else if (metadataType == 'SM')
-        metadata = false;
+        metadata = null;
     else if (metadataType == 'NM')
-        metadata = true;
+        metadata = false;
     else {
         metadataType = 'MM';
         metadata = new beetle.metadata.metadataManager(testMetadata);
@@ -1510,7 +1510,7 @@ test('can update and delete in one batch', 2, function () {
     }
 });
 
-if (metadata !== true) {
+if (metadata !== false) {
     module('validation tests');
 
     test('check required', 2, function () {
