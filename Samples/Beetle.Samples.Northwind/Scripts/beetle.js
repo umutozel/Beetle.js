@@ -2657,6 +2657,8 @@
                     // If ajax provider injected via constructor use it
                     if (ajaxProvider && assert.isInstanceOf(ajaxProvider, baseTypes.ajaxProviderBase))
                         instance.ajaxProvider = ajaxProvider;
+                    else if (exports.angular)
+                        instance.ajaxProvider = impls.angularAjaxProviderInstance;
                     else
                         instance.ajaxProvider = impls.jQueryAjaxProviderInstance;
 
@@ -3012,7 +3014,6 @@
                         contentType: contentType,
                         traditional: false,
                         data: data,
-                        cache: false,
                         async: async,
                         timeout: timeout,
                         headers: headers,
@@ -3023,7 +3024,7 @@
                                 var err = createError(xhr);
                                 err.message = result.Error;
                                 errorCallback(err);
-                            } else successCallback(result, xhr);
+                            } else successCallback(result, getHeaderGetter(xhr), xhr);
                         },
                         error: function (xhr) {
                             xhr.onreadystatechange = null;
@@ -3033,6 +3034,7 @@
                     };
                     if (extra != null)
                         jQuery.extend(o, extra);
+                    if (o.cache == null) o.cache = false;
                     return jQuery.ajax(o);
                 };
 
@@ -3051,8 +3053,73 @@
                     return helper.createError(xhr.statusText, obj);
                 }
 
+                function getHeaderGetter(xhr) {
+                    return function(header) {
+                        return xhr.getResponseHeader(header);
+                    };
+                }
+
                 return new ctor();
             })(exports.$),
+            /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
+            angularAjaxProviderInstance: (function (angular) {
+                var ctor = function () {
+                    baseTypes.ajaxProviderBase.call(this, 'Angular Ajax Provider');
+                    helper.tryFreeze(this);
+                };
+                helper.inherit(ctor, baseTypes.ajaxProviderBase);
+                var proto = ctor.prototype;
+
+                var $http;
+                if (angular)
+                    $http = angular.injector(["ng"]).get('$http');
+
+                proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                    var o = {
+                        method: type,
+                        url: uri,
+                        contentType: contentType,
+                        data: data,
+                        timeout: timeout,
+                        headers: headers,
+                        responseType: dataType
+                    };
+                    if (extra != null)
+                        helper.extend(o, extra);
+                    if (o.cache == null) o.cache = false;
+                    return $http(o)
+                        .success(function (result, status, headers, config, statusText) {
+                            successCallback(result, getHeaderGetter(headers));
+                        })
+                        .error(function (error, status, headers, config, statusText) {
+                            errorCallback(createError(error, status, statusText));
+                        });
+                };
+
+                function createError(error, status, statusText) {
+                    /// <summary>
+                    /// Creates an error object by parsing XHR result.
+                    /// </summary>
+                    /// <param name="xhr">XML Http Request object.</param>
+                    var obj = { status: status };
+                    if (error) {
+                        try {
+                            obj.detail = JSON.parse(error);
+                        } catch (e) {
+                            obj.detail = error;
+                        }
+                    }
+                    return helper.createError(statusText, obj);
+                }
+
+                function getHeaderGetter(headers) {
+                    return function(header) {
+                        return headers[header];
+                    }
+                }
+
+                return new ctor();
+            })(exports.angular),
             /// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
             jsonSerializationServiceInstance: (function () {
                 var ctor = function () {
@@ -3087,23 +3154,21 @@
                     return this.name;
                 };
 
-                if (q) {
-                    proto.deferred = function () {
-                        return q.defer();
-                    };
+                proto.deferred = function () {
+                    return q.defer();
+                };
 
-                    proto.getPromise = function (deferred) {
-                        return deferred.promise;
-                    };
+                proto.getPromise = function (deferred) {
+                    return deferred.promise;
+                };
 
-                    proto.resolve = function (deferred, data) {
-                        deferred.resolve(data);
-                    };
+                proto.resolve = function (deferred, data) {
+                    deferred.resolve(data);
+                };
 
-                    proto.reject = function (deferred, error) {
-                        deferred.reject(error);
-                    };
-                }
+                proto.reject = function (deferred, error) {
+                    deferred.reject(error);
+                };
 
                 return new ctor();
             })(exports.Q),
@@ -3120,28 +3185,29 @@
                     return this.name;
                 };
 
+                var ng, $q;
                 if (angular) {
-                    var ng = angular.injector(['ng']);
-                    var q = ng.get('$q');
-
-                    proto.deferred = function () {
-                        return q.defer();
-                    };
-
-                    proto.getPromise = function (deferred) {
-                        return  deferred.promise;
-                    };
-
-                    proto.resolve = function (deferred, data) {
-                        deferred.resolve(data);
-                        ng.get('$rootScope').$apply();
-                    };
-
-                    proto.reject = function (deferred, error) {
-                        deferred.reject(error);
-                        ng.get('$rootScope').$apply();
-                    };
+                    ng = angular.injector(['ng']);
+                    $q = ng.get('$q');
                 }
+
+                proto.deferred = function () {
+                    return $q.defer();
+                };
+
+                proto.getPromise = function (deferred) {
+                    return deferred.promise;
+                };
+
+                proto.resolve = function (deferred, data) {
+                    deferred.resolve(data);
+                    ng.get('$rootScope').$apply();
+                };
+
+                proto.reject = function (deferred, error) {
+                    deferred.reject(error);
+                    ng.get('$rootScope').$apply();
+                };
 
                 return new ctor();
             })(exports.angular),
@@ -3158,23 +3224,21 @@
                     return this.name;
                 };
 
-                if (jQuery) {
-                    proto.deferred = function () {
-                        return jQuery.Deferred();
-                    };
+                proto.deferred = function () {
+                    return jQuery.Deferred();
+                };
 
-                    proto.getPromise = function (deferred) {
-                        return deferred.promise();
-                    };
+                proto.getPromise = function (deferred) {
+                    return deferred.promise();
+                };
 
-                    proto.resolve = function (deferred, data) {
-                        deferred.resolve(data);
-                    };
+                proto.resolve = function (deferred, data) {
+                    deferred.resolve(data);
+                };
 
-                    proto.reject = function (deferred, error) {
-                        deferred.reject(error);
-                    };
-                }
+                proto.reject = function (deferred, error) {
+                    deferred.reject(error);
+                };
 
                 return new ctor();
             })(exports.$)
@@ -8450,12 +8514,12 @@
                         var that = this;
                         this.dataService.executeQuery(
                             query, options,
-                            function (newEntities, allEntities, xhr) {
+                            function (newEntities, allEntities, headerGetter, xhr) {
                                 try {
                                     // merge results.
                                     var isSingle = false;
                                     // read inline count header.
-                                    var inlineCount = xhr.getResponseHeader("X-InlineCount");
+                                    var inlineCount = headerGetter("X-InlineCount");
                                     if (inlineCount != null) inlineCount = Number(inlineCount);
 
                                     if (newEntities) {
@@ -8483,7 +8547,7 @@
                                         if (query.inlineCountEnabled && inlineCount != null)
                                             newEntities.$inlineCount = inlineCount;
 
-                                        newEntities.$extra = { userData: xhr.getResponseHeader("X-UserData") };
+                                        newEntities.$extra = { userData: headerGetter("X-UserData") };
                                         if (options && options.includeXhr === true)
                                             newEntities.$extra.xhr = xhr;
                                     }
