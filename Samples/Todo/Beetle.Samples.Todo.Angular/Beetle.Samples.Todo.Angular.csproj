@@ -138,7 +138,6 @@
     <Content Include="Scripts\directives\todoFocus.js" />
     <Content Include="Scripts\jquery-1.8.3.min.js" />
     <Content Include="Scripts\json2.js" />
-    <Content Include="Scripts\q.min.js" />
     <Content Include="Scripts\toastr.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

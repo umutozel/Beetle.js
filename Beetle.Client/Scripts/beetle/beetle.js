@@ -32,7 +32,7 @@
                 }
                 return obj;
             },
-            extend: function(objMain, objExt) {
+            extend: function (objMain, objExt) {
                 if (objMain != null && objExt != null) {
                     for (var p in objExt) {
                         if (!objMain.hasOwnProperty(p))
@@ -2990,15 +2990,6 @@
 
                 return new ctor();
             })(),
-            backboneObservableProviderInstance: (function () {
-                // not implemented yet
-                var ctor = function () {
-                    baseTypes.observableProviderBase.call(this, 'Backbone Observable Provider');
-                    helper.tryFreeze(this);
-                };
-                helper.inherit(ctor, baseTypes.observableProviderBase);
-                return new ctor();
-            })(),
             /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
             jQueryAjaxProviderInstance: (function (jQuery) {
                 var ctor = function () {
@@ -3096,24 +3087,64 @@
                     return this.name;
                 };
 
-                proto.deferred = function () {
-                    return q.defer();
-                };
+                if (q) {
+                    proto.deferred = function () {
+                        return q.defer();
+                    };
 
-                proto.getPromise = function (deferred) {
-                    return deferred.promise;
-                };
+                    proto.getPromise = function (deferred) {
+                        return deferred.promise;
+                    };
 
-                proto.resolve = function (deferred, data) {
-                    deferred.resolve(data);
-                };
+                    proto.resolve = function (deferred, data) {
+                        deferred.resolve(data);
+                    };
 
-                proto.reject = function (deferred, error) {
-                    deferred.reject(error);
-                };
+                    proto.reject = function (deferred, error) {
+                        deferred.reject(error);
+                    };
+                }
 
                 return new ctor();
             })(exports.Q),
+            /// <field>Angular promise provider instance.</field>
+            angularPromiseProviderInstance: (function (angular) {
+                var ctor = function () {
+                    baseTypes.promiseProviderBase.call(this, 'Angular Promise Provider');
+                    helper.tryFreeze(this);
+                };
+                helper.inherit(ctor, baseTypes.promiseProviderBase);
+                var proto = ctor.prototype;
+
+                proto.toString = function () {
+                    return this.name;
+                };
+
+                if (angular) {
+                    var ng = angular.injector(['ng']);
+                    var q = ng.get('$q');
+
+                    proto.deferred = function () {
+                        return q.defer();
+                    };
+
+                    proto.getPromise = function (deferred) {
+                        return  deferred.promise;
+                    };
+
+                    proto.resolve = function (deferred, data) {
+                        deferred.resolve(data);
+                        ng.get('$rootScope').$apply();
+                    };
+
+                    proto.reject = function (deferred, error) {
+                        deferred.reject(error);
+                        ng.get('$rootScope').$apply();
+                    };
+                }
+
+                return new ctor();
+            })(exports.angular),
             /// <field>jQuery promise provider instance.</field>
             jQueryPromiseProviderInstance: (function (jQuery) {
                 var ctor = function () {
@@ -3127,21 +3158,23 @@
                     return this.name;
                 };
 
-                proto.deferred = function () {
-                    return jQuery.Deferred();
-                };
+                if (jQuery) {
+                    proto.deferred = function () {
+                        return jQuery.Deferred();
+                    };
 
-                proto.getPromise = function (deferred) {
-                    return deferred.promise();
-                };
+                    proto.getPromise = function (deferred) {
+                        return deferred.promise();
+                    };
 
-                proto.resolve = function (deferred, data) {
-                    deferred.resolve(data);
-                };
+                    proto.resolve = function (deferred, data) {
+                        deferred.resolve(data);
+                    };
 
-                proto.reject = function (deferred, error) {
-                    deferred.reject(error);
-                };
+                    proto.reject = function (deferred, error) {
+                        deferred.reject(error);
+                    };
+                }
 
                 return new ctor();
             })(exports.$)
@@ -5286,7 +5319,7 @@
                             source = value;
                         } else source = source(value);
                         find = find(value);
-                        
+
                         if (helper.ignoreWhiteSpaces(this.varContext))
                             find = find.trim();
                         if (!helper.isCaseSensitive(this.varContext))
@@ -7475,7 +7508,7 @@
                     this.observableProvider.setValue(this.entity, property, value);
                 };
 
-                proto.getOriginalValue = function(property) {
+                proto.getOriginalValue = function (property) {
                     /// <summary>
                     /// Gets original value for property.
                     /// </summary>
@@ -8207,7 +8240,7 @@
                     }
 
                     var that = this;
-                    setTimeout(function() {
+                    setTimeout(function () {
                         checkReady(that);
                     }, 10);
                     return p;
@@ -9101,7 +9134,7 @@
                         else instance.dataService = new services.webApiService(service, false);
                     } else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this });
 
-                    instance.dataService.ready(function() {
+                    instance.dataService.ready(function () {
                         checkReady(instance);
                     });
 
@@ -9119,7 +9152,7 @@
                     instance.saving = new core.event('saving', instance);
                     instance.saved = new core.event('saved', instance);
                 }
-                
+
                 function checkReady(instance) {
                     if (instance.isReady()) {
                         var cs = instance._readyCallbacks.slice(0);
@@ -9829,8 +9862,8 @@
                 var hash = 0, i, chr, len;
                 if (str.length == 0) return hash;
                 for (i = 0, len = str.length; i < len; i++) {
-                    chr   = str.charCodeAt(i);
-                    hash  = ((hash << 5) - hash) + chr;
+                    chr = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + chr;
                     hash |= 0;
                 }
                 return hash;
@@ -9888,12 +9921,11 @@
         return {
             /// <field>
             /// Observable providers. Possible values;
-            ///  ko, prop, backbone
+            ///  ko, prop
             /// </field>
             observableProviders: new libs.enums({
                 Knockout: { code: 'ko', instance: impls.koObservableProviderInstance },
-                Property: { code: 'prop', instance: impls.propertyObservableProviderInstance },
-                Backbone: { code: 'backbone', instance: impls.backboneObservableProviderInstance }
+                Property: { code: 'prop', instance: impls.propertyObservableProviderInstance }
             }),
             /// <field>
             /// Promise providers. Possible values;
@@ -10041,14 +10073,14 @@
         var _observableProvider;
         if (exports.ko)
             _observableProvider = impls.koObservableProviderInstance;
-        else if (exports.Backbone)
-            _observableProvider = impls.backboneObservableProviderInstance;
         else
             _observableProvider = impls.propertyObservableProviderInstance;
 
         var _promiseProvider;
         if (exports.Q)
             _promiseProvider = impls.qPromiseProviderInstance;
+        else if (exports.angular)
+            _promiseProvider = impls.angularPromiseProviderInstance;
         else if (exports.jQuery)
             _promiseProvider = impls.jQueryPromiseProviderInstance;
 
