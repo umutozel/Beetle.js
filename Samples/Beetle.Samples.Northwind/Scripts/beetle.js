@@ -2387,7 +2387,7 @@
                     /// Data service base class.
                     /// </summary>
                     /// <param name="uri">Service URI.</param>
-                    /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (true means do not use any metadata).</param>
+                    /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
                     /// <param name="injections">
                     /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService, dataType, contentType. 
                     ///  When not given, defaults will be used.
@@ -2657,7 +2657,7 @@
                     // If ajax provider injected via constructor use it
                     if (ajaxProvider && assert.isInstanceOf(ajaxProvider, baseTypes.ajaxProviderBase))
                         instance.ajaxProvider = ajaxProvider;
-                    else if (exports.angular)
+                    else if (!exports.$ && exports.angular)
                         instance.ajaxProvider = impls.angularAjaxProviderInstance;
                     else
                         instance.ajaxProvider = impls.jQueryAjaxProviderInstance;
@@ -2667,6 +2667,9 @@
                         instance.serializationService = serializationService;
                     else
                         instance.serializationService = impls.jsonSerializationServiceInstance;
+
+                    instance.dataType = dataType || 'json';
+                    instance.contentType = contentType || 'application/json; charset=utf-8';
 
                     // If metadata parameter is false or undefined, it means do not use metadata
                     if (metadataPrm !== false || metadataPrm === undefined) {
@@ -2705,8 +2708,6 @@
                             }
                         }
                     }
-                    instance.dataType = dataType || 'json';
-                    instance.contentType = contentType || 'application/json; charset=utf-8';
                 }
 
                 function checkReady(instance) {
@@ -8260,14 +8261,15 @@
             })(),
             entityManager: (function () {
                 // static error message.
-                var ctor = function (args) {
+                var ctor = function (service, metadataPrm, injections) {
                     /// <summary>
-                    /// Entity manager class. All operations must be made using manager to properly tracked.
+                    /// Entity manager class. All operations must be made using manager to be properly tracked.
                     /// </summary>
-                    /// <param name="args">
-                    /// Possible usages:
-                    ///  [Service Uri - WebApi will be used] or [Service Instance];
-                    ///  (optional) [Metadata Instance] or [Metadata String] or [true - false (default) - when true no metadata will be used, no auto relation fix]
+                    /// <param name="service">[Service Uri - settings default service will be used] or [Service Instance]</param>
+                    /// <param name="metadataPrm">(optional) [Metadata Manager] or [string] or [true - false (default) - when false no metadata will be used, no auto relation fix]</param>
+                    /// <param name="injections">
+                    ///  (optional) Injection object to change behavior of the manager, can include these properties: promiseProvider.
+                    ///  When not provided, defaults will be used.
                     /// </param>
                     initialize(arguments, this);
                 };
@@ -8295,7 +8297,7 @@
                     /// </summary>
                     this._readyCallbacks.push(callback);
 
-                    var pp = settings.getPromiseProvider();
+                    var pp = this.promiseProvider;
                     var p = null;
                     if (pp) {
                         var d = pp.deferred();
@@ -8406,7 +8408,8 @@
 
                 function createAsync(typeName, initialValues, options, successCallback, errorCallback, instance) {
                     // Create promise if possible.
-                    var pp = (options && options.async == false) ? null : settings.getPromiseProvider();
+                    var async = !options || options.async !== false;
+                    var pp = !async ? null : instance.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
 
@@ -8477,7 +8480,8 @@
                     options = modifiedArgs.options;
 
                     // Create promise if possible.
-                    var pp = (options && options.async == false) ? null : settings.getPromiseProvider();
+                    var async = !options || options.async !== false;
+                    var pp = !async ? null : this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
 
@@ -8976,7 +8980,8 @@
                     options = notifySaving(this, changes, options);
 
                     // Create promise if possible.
-                    var pp = (options && options.async == false) ? null : settings.getPromiseProvider();
+                    var async = !options || options.async !== false;
+                    var pp = !async ? null : this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
 
@@ -9172,35 +9177,34 @@
                 };
 
                 function initialize(args, instance) {
-                    /// <summary>
-                    /// Initializes the instance with given arguments.
-                    /// </summary>
-                    /// <param name="args">
-                    /// Possible usages:
-                    ///  [Service Uri - WebApi will be used] or [Service Instance];
-                    ///  (optional) [Metadata Instance] or [Metadata String] or [true - false (default) - when true no metadata will be used, no auto relation fix]
-                    /// </param>
-                    /// <param name="instance">Entity manager instance.</param>
                     instance._readyCallbacks = [];
                     instance._readyPromises = [];
 
-                    // Entity manager can take 1 or 2 arguments.
-                    if (args.length < 1 || args.length > 2)
+                    // Entity manager can take 1 to 3 arguments.
+                    if (args.length < 1 || args.length > 3)
                         throw helper.createError(i18N.managerInvalidArgs, { entityManager: instance });
-                    var service = args[0], metadataPrm = args[1];
+                    var service = args[0], metadataPrm = args[1], injections = args[2];
                     // If first parameter is data service instance use it
-                    if (assert.isInstanceOf(service, baseTypes.dataServiceBase))
+                    if (assert.isInstanceOf(service, baseTypes.dataServiceBase)) {
                         instance.dataService = service;
-                        // If first parameter is string, use it as an Uri and create the default service (webApiService).
+                        injections = args[1];
+                    }
                     else if (assert.isTypeOf(service, 'string')) {
-                        if (metadataPrm)
-                            instance.dataService = new services.webApiService(service, metadataPrm);
-                        else instance.dataService = new services.webApiService(service, false);
-                    } else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this });
+                        if (args.length === 2) {
+                            if (assert.isObject(metadataPrm) && !assert.isInstanceOf(metadataPrm, core.metadataManager)) {
+                                injections = metadataPrm;
+                                metadataPrm = undefined;
+                            }
+                        }
+                        
+                        // If first parameter is string, use it as an Uri and create the default service.
+                        var dst = settings.getDefaultServiceType();
+                        var serviceType = dst === enums.serviceTypes.WebApi ? services.webApiService : services.mvcService;
+                        instance.dataService = new serviceType(service, metadataPrm, injections);
+                    } 
+                    else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this, arguments: args });
 
-                    instance.dataService.ready(function () {
-                        checkReady(instance);
-                    });
+                    instance.promiseProvider = (injections && injections.promiseProvider) || settings.getPromiseProvider();
 
                     // Create a integer value to hold change count. This value will be updated after every entity state change.
                     instance.pendingChangeCount = 0;
@@ -9215,6 +9219,10 @@
                     instance.queryExecuted = new core.event('queryExecuted', instance);
                     instance.saving = new core.event('saving', instance);
                     instance.saved = new core.event('saved', instance);
+
+                    instance.dataService.ready(function () {
+                        checkReady(instance);
+                    });
                 }
 
                 function checkReady(instance) {
@@ -9230,7 +9238,7 @@
 
                             var d = ps[i];
                             if (d) {
-                                var pp = settings.getPromiseProvider();
+                                var pp = instance.promiseProvider;
                                 if (pp) pp.resolve(d);
                             }
                         }
@@ -9698,7 +9706,7 @@
                 /// MVC Controller Service class.
                 /// </summary>
                 /// <param name="uri">Service URI.</param>
-                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (true means do not use any metadata).</param>
+                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
                 /// <param name="injections">
                 /// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
                 ///  When not given, defaults will be used.
@@ -9943,7 +9951,7 @@
                 /// Web API Service class.
                 /// </summary>
                 /// <param name="uri">Service URI.</param>
-                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (true means do not use any metadata).</param>
+                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
                 /// <param name="injections">
                 /// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
                 ///  When not given, defaults will be used.
@@ -10008,54 +10016,54 @@
             /// Language operators. Possible values;
             ///  !, - (unary), &&, ||, ==, ===, !=, !==, >, <, >=, <=, +, -, *, /, %, &, |, <<, >>
             /// </field>
-            langOperators: (function () {
-                var ctor = function (name, code, func, oData, js) {
+            langOperators: (function() {
+                var ctor = function(name, code, func, oData, js) {
                     this.name = name;
                     this.code = code;
                     this.asFunc = func;
                     this.oData = oData,
-                    this.js = js || code;
+                        this.js = js || code;
                 };
 
                 var ops = [];
                 // unary
-                ops.push(new ctor('Not', '!', function (obj) { return !obj(); }, 'not '));
-                ops.push(new ctor('Negative', '-', function (obj) { return -1 * obj(); }));
+                ops.push(new ctor('Not', '!', function(obj) { return !obj(); }, 'not '));
+                ops.push(new ctor('Negative', '-', function(obj) { return -1 * obj(); }));
                 // logical
-                ops.push(new ctor('And', '&&', function (obj1, obj2) { return obj1() && obj2(); }, 'and'));
-                ops.push(new ctor('Or', '||', function (obj1, obj2) { return obj1() || obj2(); }, 'or'));
-                ops.push(new ctor('Equals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), false, this); }, 'eq'));
-                ops.push(new ctor('StrictEquals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), true, this); }, 'eq', '==='));
-                ops.push(new ctor('NotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
-                ops.push(new ctor('StrictNotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
-                ops.push(new ctor('Greater', '>', function (obj1, obj2) {
+                ops.push(new ctor('And', '&&', function(obj1, obj2) { return obj1() && obj2(); }, 'and'));
+                ops.push(new ctor('Or', '||', function(obj1, obj2) { return obj1() || obj2(); }, 'or'));
+                ops.push(new ctor('Equals', '==', function(obj1, obj2) { return helper.equals(obj1(), obj2(), false, this); }, 'eq'));
+                ops.push(new ctor('StrictEquals', '==', function(obj1, obj2) { return helper.equals(obj1(), obj2(), true, this); }, 'eq', '==='));
+                ops.push(new ctor('NotEqual', '!=', function(obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
+                ops.push(new ctor('StrictNotEqual', '!=', function(obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
+                ops.push(new ctor('Greater', '>', function(obj1, obj2) {
                     return obj1() > obj2();
                 }, 'gt'));
-                ops.push(new ctor('Lesser', '<', function (obj1, obj2) {
+                ops.push(new ctor('Lesser', '<', function(obj1, obj2) {
                     return obj1() < obj2();
                 }, 'lt'));
-                ops.push(new ctor('GreaterEqual', '>=', function (obj1, obj2) {
+                ops.push(new ctor('GreaterEqual', '>=', function(obj1, obj2) {
                     var o1 = obj1(), o2 = obj2();
                     return o1 == o2 || o1 > o2;
                 }, 'ge'));
-                ops.push(new ctor('LesserEqual', '<=', function (obj1, obj2) {
+                ops.push(new ctor('LesserEqual', '<=', function(obj1, obj2) {
                     var o1 = obj1(), o2 = obj2();
                     return o1 == o2 || o1 < o2;
                 }, 'le'));
                 // arithmetic
-                ops.push(new ctor('Sum', '+', function (obj1, obj2) { return obj1() + obj2(); }, 'add'));
-                ops.push(new ctor('Subtract', '-', function (obj1, obj2) { return obj1() - obj2(); }, 'sub'));
-                ops.push(new ctor('Multiply', '*', function (obj1, obj2) { return obj1() * obj2(); }, 'mul'));
-                ops.push(new ctor('Divide', '/', function (obj1, obj2) { return obj1() / obj2(); }, 'div'));
-                ops.push(new ctor('Modulo', '%', function (obj1, obj2) { return obj1() % obj2(); }, 'mod'));
+                ops.push(new ctor('Sum', '+', function(obj1, obj2) { return obj1() + obj2(); }, 'add'));
+                ops.push(new ctor('Subtract', '-', function(obj1, obj2) { return obj1() - obj2(); }, 'sub'));
+                ops.push(new ctor('Multiply', '*', function(obj1, obj2) { return obj1() * obj2(); }, 'mul'));
+                ops.push(new ctor('Divide', '/', function(obj1, obj2) { return obj1() / obj2(); }, 'div'));
+                ops.push(new ctor('Modulo', '%', function(obj1, obj2) { return obj1() % obj2(); }, 'mod'));
                 // bitwise
-                ops.push(new ctor('BitAnd', '&', function (obj1, obj2) { return obj1() & obj2(); }));
-                ops.push(new ctor('BitOr', '|', function (obj1, obj2) { return obj1() | obj2(); }));
-                ops.push(new ctor('BitShiftLeft', '<<', function (obj1, obj2) { return obj1() << obj2(); }));
-                ops.push(new ctor('BitShiftRight', '>>', function (obj1, obj2) { return obj1() >> obj2(); }));
+                ops.push(new ctor('BitAnd', '&', function(obj1, obj2) { return obj1() & obj2(); }));
+                ops.push(new ctor('BitOr', '|', function(obj1, obj2) { return obj1() | obj2(); }));
+                ops.push(new ctor('BitShiftLeft', '<<', function(obj1, obj2) { return obj1() << obj2(); }));
+                ops.push(new ctor('BitShiftRight', '>>', function(obj1, obj2) { return obj1() >> obj2(); }));
 
-                ctor.find = function (code) {
-                    var a = helper.filterArray(ops, function (op) {
+                ctor.find = function(code) {
+                    var a = helper.filterArray(ops, function(op) {
                         return op.code == code || op.oData == code || op.js == code;
                     });
                     return a.length > 0 ? a[0] : null;
@@ -10107,8 +10115,14 @@
             ///  Replace: Old items will be replaced with next array items.
             ///  Append: New array items will be appended to existing array.
             /// </field>
-            arraySetBehaviour: new libs.enums('NotAllowed', 'Replace', 'Append')
-        };
+            arraySetBehaviour: new libs.enums('NotAllowed', 'Replace', 'Append'),
+            /// <field>
+            /// Supported service types.
+            ///  WebApi: Web Api service.
+            ///  Mvc: Mvc service.
+            /// </field>
+            serviceTypes: new libs.enums('WebApi', 'Mvc')
+    };
     })();
     var events = (function () {
         /// <summary>Manager independent static events.</summary>
@@ -10149,6 +10163,7 @@
             _promiseProvider = impls.jQueryPromiseProviderInstance;
 
         var _arraySetBehaviour = enums.arraySetBehaviour.NotAllowed;
+        var _defaultServiceType = enums.serviceTypes.WebApi;
         var _dateConverter = impls.defaultDateConverterInstance;
 
         var _localizeFunction;
@@ -10267,9 +10282,24 @@
             /// Sets array set behaviour.
             /// </summary>
             /// <param name="provider">Array set behaviour.</param>
-            // check if parameter is arraySetBehaviour.
             helper.assertPrm(behaviour, 'behaviour').isEnum(enums.arraySetBehaviour).check();
             _arraySetBehaviour = behaviour;
+        };
+
+        expose.getDefaultServiceType = function () {
+            /// <summary>
+            /// Gets default service type.
+            /// </summary>
+            return _defaultServiceType;
+        };
+
+        expose.setDefaultServiceType = function (serviceType) {
+            /// <summary>
+            /// Sets default service type.
+            /// </summary>
+            /// <param name="serviceType">Service type enum value.</param>
+            helper.assertPrm(serviceType, 'serviceType').isEnum(enums.serviceTypes).check();
+            _defaultServiceType = serviceType;
         };
 
         expose.getDateConverter = function () {
