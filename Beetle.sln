@@ -89,7 +89,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B0B37508-2AF4-4483-9741-B58819857267}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server", "Beetle.Server\Beetle.Server.csproj", "{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}"
@@ -187,3 +186,4 @@ Global
 		{37B6CA98-7F3A-4808-BF72-658DF253B26B} = {A5A9F3F5-1C10-47BA-A4B2-11897AA2D93E}
 	EndGlobalSection
 EndGlobal
+

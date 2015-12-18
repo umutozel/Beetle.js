@@ -2265,6 +2265,7 @@
                     /// </summary>
                     /// <param name="name">Name of the provider.</param>
                     this.name = name || 'ajaxProviderBase';
+                    this.syncSupported = true;
                 };
                 var proto = ctor.prototype;
 
@@ -3066,6 +3067,7 @@
             angularAjaxProviderInstance: (function (angular) {
                 var ctor = function () {
                     baseTypes.ajaxProviderBase.call(this, 'Angular Ajax Provider');
+                    this.syncSupported = false;
                     helper.tryFreeze(this);
                 };
                 helper.inherit(ctor, baseTypes.ajaxProviderBase);
@@ -3076,6 +3078,9 @@
                     $http = angular.injector(["ng"]).get('$http');
 
                 proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                    if (async === false)
+                        throw helper.createError(i18N.syncNotSupported, [this.name]);
+
                     var o = {
                         method: type,
                         url: uri,
@@ -8408,7 +8413,8 @@
 
                 function createAsync(typeName, initialValues, options, successCallback, errorCallback, instance) {
                     // Create promise if possible.
-                    var async = !options || options.async !== false;
+                    var async = options && options.async;
+                    if (async == null) async = settings.workAsync;
                     var pp = !async ? null : instance.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
@@ -8480,7 +8486,8 @@
                     options = modifiedArgs.options;
 
                     // Create promise if possible.
-                    var async = !options || options.async !== false;
+                    var async = options && options.async;
+                    if (async == null) async = settings.workAsync;
                     var pp = !async ? null : this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
@@ -8980,7 +8987,8 @@
                     options = notifySaving(this, changes, options);
 
                     // Create promise if possible.
-                    var async = !options || options.async !== false;
+                    var async = options && options.async;
+                    if (async == null) async = settings.workAsync;
                     var pp = !async ? null : this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
@@ -9719,7 +9727,8 @@
             proto.fetchMetadata = function (options, successCallback, errorCallback) {
                 var retVal = null;
                 var that = this;
-                var async = (options && options.async) || false;
+                var async = (options && options.async);
+                if (async == null) async = !this.ajaxProvider.syncSupported;
                 var timeout = (options && options.timeout) || settings.ajaxTimeout;
                 var extra = options && options.extra;
                 this.ajaxProvider.doAjax(
@@ -10376,7 +10385,7 @@
                 invalidPropertyAlias: 'Invalid property alias.',
                 invalidStatement: 'Invalid statement.',
                 invalidValue: 'Invalid value for %0 property.',
-                managerInvalidArgs: 'Invalid arguments. Valid args are: {DataService} or {Uri, [MetadataManager]} or {Uri, [metadataString (string)]} or {Uri, [doNotUseMetadata (bool)]}.',
+                managerInvalidArgs: 'Invalid arguments. Valid args are: {DataService, [Injections]} or {Uri, [Metadata], [Injections]}.',
                 maxLenError: '%0 property length cannot exceed %1.',
                 maxPrecisionError: 'Value %0 exceeded maximum precision of %1.',
                 mergeStateError: 'Cannot merge entities with %0 state.',
@@ -10402,6 +10411,7 @@
                 sameKeyOnDifferentTypesError: 'Two different types of entities cannot have same keys when they are from same inheritance root (%0, %1).',
                 settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behavior).',
                 stringLengthError: '%0 property length must be between %1 and %2.',
+                syncNotSupported: '%0 does not support sync ajax calls.',
                 twoEndCascadeDeleteNotAllowed: 'Two-end cascade deletes are not supported.',
                 typeError: '%0 type is not %1.',
                 typeMismatch: '%0 value type mismatch. expected type: %1, given type: %2, value: %3',
