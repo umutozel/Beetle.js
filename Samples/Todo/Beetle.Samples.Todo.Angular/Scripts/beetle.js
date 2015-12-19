@@ -5976,6 +5976,7 @@
                     this.resource = resource;
                     this.entityType = handleEntityType(type, manager);
                     this.manager = manager;
+                    this.liveValidate = manager && manager.liveValidate;
                     this.parameters = [];
 
                     baseTypes.queryBase.call(this);
@@ -6216,13 +6217,19 @@
                 }
 
                 function beforeAdd(added, instance) {
+                    var o = instance.object;
                     var p = instance.property;
                     if (p) {
+                        var handleUnmappedProperties;
+                        if (o.$tracker && o.$tracker.manager)
+                            handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
+                        if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
+
                         if (assert.isInstanceOf(p, metadata.navigationProperty))
                             helper.forEach(added, function (a) { p.checkAssign(a); });
                         else if (assert.isInstanceOf(p, metadata.dataProperty))
                             helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
-                        else if (settings.handleUnmappedProperties === true)
+                        else if (handleUnmappedProperties === true)
                             helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
                     }
                 }
@@ -7862,7 +7869,11 @@
                     var oldValue = accessor();
                     if (oldValue === newValue) return;
 
-                    if (settings.handleUnmappedProperties == true) {
+                    var tracker = entity.$tracker;
+                    var handleUnmappedProperties;
+                    if (tracker.manager) handleUnmappedProperties = tracker.manager.handleUnmappedProperties;
+                    if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
+                    if (handleUnmappedProperties === true) {
                         newValue = core.dataTypes.handle(newValue);
                         if (oldValue === newValue) return;
                     }
@@ -7870,7 +7881,6 @@
                     accessor(newValue);
 
                     // mark this entity as modified.
-                    var tracker = entity.$tracker;
                     if (tracker.manager)
                         setModified(entity, property, oldValue, tracker);
                     if (!noCallbackExternal)
@@ -7934,9 +7944,12 @@
                         tracker.key = newKey;
                     }
 
+                    var liveValidate = tracker.liveValidate;
                     // mark this entity as modified.
-                    if (tracker.manager)
+                    if (tracker.manager) {
                         setModified(entity, property.name, property.dataType.getRawValue(oldValue), tracker);
+                        if (liveValidate == null) liveValidate = tracker.manager.liveValidate;
+                    }
                     else if (tracker.entityType.isComplexType)
                         helper.forEach(tracker.owners, function (owner) {
                             setModified(owner.entity, owner.property.name + '.' + property.name, newValue, owner.entity.$tracker);
@@ -7945,8 +7958,9 @@
                     // set new value
                     accessor(newValue);
 
+                    if (liveValidate == null) liveValidate = settings.liveValidate;
                     // validate data property.
-                    if (settings.liveValidate === true)
+                    if (liveValidate === true)
                         mergeErrors(property.validate(entity), tracker, property);
                     if (!noCallbackExternal)
                         tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
@@ -7970,7 +7984,8 @@
                         newValue.$tracker.owners.push({ entity: entity, property: property });
                     }
                     if (tracker.manager) {
-                        var autoFixScalar = settings.autoFixScalar;
+                        var autoFixScalar = tracker.manager.autoFixScalar;
+                        if (autoFixScalar == null) autoFixScalar = settings.autoFixScalar;
                         // if this property is foreign key fix related navigation properties.
                         helper.forEach(property.relatedNavigationProperties, function (np) {
                             if (np.isScalar === true) {
@@ -7982,7 +7997,7 @@
                                     if (oldFkEntity && oldFkEntity.$tracker.key === fk) return;
                                     // find new entity from cache.
                                     var fkEntity = null;
-                                    if (tracker.manager && autoFixScalar)
+                                    if (autoFixScalar)
                                         fkEntity = tracker.manager.getEntityByKey(fk, np.entityType);
 
                                     if (fkEntity)
@@ -8022,7 +8037,11 @@
 
                     // validate navigation property.
                     var tracker = entity.$tracker;
-                    if (settings.liveValidate === true)
+                    var liveValidate = tracker.liveValidate;
+                    if (liveValidate == null && tracker.manager)
+                        liveValidate = tracker.manager.liveValidate;
+                    if (liveValidate == null) liveValidate = settings.liveValidate;
+                    if (liveValidate === true)
                         mergeErrors(property.validate(entity), tracker, property);
                     if (!noCallbackExternal)
                         tracker.propertyChanged.notify({ entity: entity, property: property, oldValue: oldValue, newValue: newValue });
@@ -8082,7 +8101,11 @@
                     /// <param name="addedItems">Added items.</param>
                     var tracker = entity.$tracker;
                     // validate navigation property.
-                    if (settings.liveValidate === true)
+                    var liveValidate = tracker.liveValidate;
+                    if (liveValidate == null && tracker.manager)
+                        liveValidate = tracker.manager.liveValidate;
+                    if (liveValidate == null) liveValidate = settings.liveValidate;
+                    if (liveValidate === true)
                         mergeErrors(property.validate(entity), tracker, property);
                     if (property.triggerOwnerModify)
                         setModified(entity, null, null, tracker);
@@ -8273,7 +8296,8 @@
                     /// <param name="service">[Service Uri - settings default service will be used] or [Service Instance]</param>
                     /// <param name="metadataPrm">(optional) [Metadata Manager] or [string] or [true - false (default) - when false no metadata will be used, no auto relation fix]</param>
                     /// <param name="injections">
-                    ///  (optional) Injection object to change behavior of the manager, can include these properties: promiseProvider.
+                    ///  (optional) Injection object to change behavior of the manager, can include these properties: 
+                    ///    promiseProvider, autoFixScalar, autoFixPlural, validateOnMerge, validateOnSave, liveValidate, handleUnmappedProperties, forceUpdate, workAsync.
                     ///  When not provided, defaults will be used.
                     /// </param>
                     initialize(arguments, this);
@@ -8413,13 +8437,16 @@
 
                 function createAsync(typeName, initialValues, options, successCallback, errorCallback, instance) {
                     // Create promise if possible.
-                    var async = options && options.async;
+                    options = options || {};
+                    var async = options.async;
+                    if (async == null) async = instance.workAsync;
                     if (async == null) async = settings.workAsync;
+                    options.async = async;
                     var pp = !async ? null : instance.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
 
-                    var makeObservable = options && options.makeObservable;
+                    var makeObservable = options.makeObservable;
                     if (makeObservable == null) makeObservable = true;
                     var retVal = null;
                     instance.dataService.createEntityAsync(
@@ -8484,27 +8511,29 @@
                     var modifiedArgs = notifyExecuting(this, query, options);
                     query = modifiedArgs.query;
                     options = modifiedArgs.options;
+                    options = options || {};
 
                     // Create promise if possible.
-                    var async = options && options.async;
+                    var async = options.async;
+                    if (async == null) async = this.workAsync;
                     if (async == null) async = settings.workAsync;
                     var pp = !async ? null : this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
 
                     // get execute options from parameters.
-                    var merge = enums.mergeStrategy.Preserve, execution = enums.executionStrategy.Server, locals = null, autoFixScalar, autoFixPlural;
+                    var merge = enums.mergeStrategy.Preserve, execution = enums.executionStrategy.Server, locals = null;
                     if (assert.isEnum(options, enums.mergeStrategy)) {
                         merge = options;
                         options = { makeObservable: merge != enums.mergeStrategy.NoTrackingRaw };
                     } else if (assert.isEnum(options, enums.executionStrategy))
                         execution = options;
-                    else if (options) {
+                    else {
                         if (options.merge) merge = options.merge;
                         if (options.execution) execution = options.execution;
-                        if (options.autoFixScalar != null) autoFixScalar = options.autoFixScalar;
-                        if (options.autoFixPlural != null) autoFixPlural = options.autoFixPlural;
+                        options.async = async;
                         options.makeObservable = merge != enums.mergeStrategy.NoTrackingRaw;
+                        if (options.handleUnmappedProperties == null) options.handleUnmappedProperties = this.handleUnmappedProperties;
                     }
 
                     var noTracking = merge == enums.mergeStrategy.NoTracking || merge == enums.mergeStrategy.NoTrackingRaw;
@@ -8514,7 +8543,7 @@
 
                     // execute locally if needed.
                     if (execution == enums.executionStrategy.Local || execution == enums.executionStrategy.LocalIfEmptyServer)
-                        locals = this.executeQueryLocally(query, options && options.varContext);
+                        locals = this.executeQueryLocally(query, options.varContext);
 
                     var retVal = null;
                     // if there is no need for server query, return
@@ -8540,14 +8569,14 @@
                                                 newEntities = [newEntities];
                                                 isSingle = true;
                                             }
-                                            mergeEntities(newEntities, allEntities, merge, enums.entityStates.Unchanged, that, autoFixScalar, autoFixPlural);
+                                            mergeEntities(newEntities, allEntities, merge, enums.entityStates.Unchanged, that, options.autoFixScalar, options.autoFixPlural);
                                             if (isSingle)
                                                 newEntities = newEntities[0];
                                         }
                                     }
                                     // if option need local and server results both, after server query re-run same query on local.
                                     if (execution == enums.executionStrategy.Both) {
-                                        newEntities = that.executeQueryLocally(query, options && options.varContext, true);
+                                        newEntities = that.executeQueryLocally(query, options.varContext, true);
                                         if (newEntities.$inlineCountDiff != null) {
                                             if (inlineCount != null)
                                                 inlineCount += newEntities.$inlineCountDiff;
@@ -8559,7 +8588,7 @@
                                             newEntities.$inlineCount = inlineCount;
 
                                         newEntities.$extra = { userData: headerGetter("X-UserData") };
-                                        if (options && options.includeXhr === true)
+                                        if (options.includeXhr === true)
                                             newEntities.$extra.xhr = xhr;
                                     }
                                     newEntities = notifyExecuted(that, query, options, newEntities);
@@ -8718,15 +8747,14 @@
 
                 function mergeEntity(detachedEntity, options, defaultState, instance) {
                     // get merge options
-                    var merge = enums.mergeStrategy.ThrowError, state = defaultState, autoFixScalar = null, autoFixPlural = null;
+                    var merge = enums.mergeStrategy.ThrowError, state = defaultState;
                     if (options) {
                         if (options.merge != null) merge = options.merge;
                         if (options.state != null) state = options.state;
-                        if (options.autoFixScalar != null) autoFixScalar = options.autoFixScalar;
-                        if (options.autoFixPlural != null) autoFixPlural = options.autoFixPlural;
-                    }
+                    } 
+                    else options = {};
                     // Merge entities to cache.
-                    mergeEntities([detachedEntity], null, merge, state, instance, autoFixScalar, autoFixPlural);
+                    mergeEntities([detachedEntity], null, merge, state, instance, options.autoFixScalar, options.autoFixPlural);
                 }
 
                 proto.detachEntity = function (entity) {
@@ -8755,11 +8783,13 @@
                     /// Creates save package with entity raw values and user data.
                     ///  Options,
                     ///  userData: Custom user data to post
-                    ///  forceUpdate: When true, each entity will be updated -even there is no modified property
+                    ///  forceUpdate: When true, each entity with modified state will be updated -even there is no modified property
                     ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
                     /// </summary>
-                    var userData = (options && options.userData) || null;
-                    var forceUpdate = options && options.forceUpdate;
+                    options = options || {};
+                    var userData = options.userData || null;
+                    var forceUpdate = options.forceUpdate;
+                    if (forceUpdate == null) forceUpdate = this.forceUpdate;
                     if (forceUpdate == null) forceUpdate = settings.forceUpdate;
                     var data = { userData: userData, forceUpdate: forceUpdate };
 
@@ -8822,11 +8852,10 @@
                     ///  forceUpdate: When true, each entity will be updated -even there is no modified property
                     ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
                     /// </summary>
+                    options = options || {};
                     var entityList = [];
                     entities = entities || this.entities.getEntities();
-                    var forceUpdate = options && options.forceUpdate;
-                    if (forceUpdate == null) forceUpdate = settings.forceUpdate;
-                    var minimizePackage = options && options.minimizePackage;
+                    var minimizePackage = options.minimizePackage;
                     if (minimizePackage == null) minimizePackage = settings.minimizePackage;
 
                     helper.forEach(entities, function (entity, id) {
@@ -8834,8 +8863,7 @@
                         var tracker = entity.$tracker;
                         var type = tracker.entityType;
                         var state = tracker.entityState;
-                        if (forceUpdate === false)
-                            forceUpdate = tracker.forceUpdate;
+                        var fu = tracker.forceUpdate;
                         var originalValues = {};
                         var e;
 
@@ -8868,7 +8896,7 @@
                                         if (dp.isKeyPart === true || dp.useForConcurrency === true)
                                             e[dp.name] = tracker.getValue(dp.name);
                                     });
-                                } else if (forceUpdate === true)
+                                } else if (fu === true)
                                     e = tracker.toRaw(entity);
                                 else return;
                             } else if (state == enums.entityStates.Deleted) {
@@ -8900,7 +8928,7 @@
                             s: state.toString(),
                             o: originalValues,
                             i: id,
-                            f: forceUpdate
+                            f: fu
                         };
 
                         // set entity index in array to use after save.
@@ -8987,20 +9015,22 @@
                     options = notifySaving(this, changes, options);
 
                     // Create promise if possible.
-                    var async = options && options.async;
+                    var async = options.async;
+                    if (async == null) async = this.workAsync;
                     if (async == null) async = settings.workAsync;
-                    var pp = !async ? null : this.promiseProvider;
+                    options.async = async;
+                    var pp = !async ? null: this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
-
-                    var autoFixScalar = options && options.autoFixScalar;
-                    var autoFixPlural = options && options.autoFixPlural;
 
                     var retVal = null;
                     if (!assert.isArray(changes)) changes = [changes];
                     if (changes && changes.length > 0) {
                         var validationErrors = [];
-                        if (settings.validateOnSave === true)
+                        var validateOnSave = options.validateOnSave;
+                        if (validateOnSave == null) validateOnSave = this.validateOnSave;
+                        if (validateOnSave == null) validateOnSave = settings.validateOnSave;
+                        if (validateOnSave === true)
                             helper.forEach(changes, function (change) {
                                 if (change.$tracker.entityState != enums.entityStates.Deleted) {
                                     var result = change.$tracker.validate();
@@ -9022,7 +9052,7 @@
                                     try {
                                         // merge generated entities
                                         if (result.GeneratedEntities != null && result.GeneratedEntities.length > 0)
-                                            mergeEntities(result.GeneratedEntities, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, autoFixScalar, autoFixPlural);
+                                            mergeEntities(result.GeneratedEntities, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, options.autoFixScalar, options.autoFixPlural);
 
                                         // set returned generated value to existing entity.
                                         if (result.GeneratedValues) {
@@ -9039,7 +9069,7 @@
                                                 var tracker = entity.$tracker;
                                                 if (g.Value != null && g.Value.$type) {
                                                     var value = [g.Value];
-                                                    mergeEntities(value, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, autoFixScalar, autoFixPlural);
+                                                    mergeEntities(value, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, options.autoFixScalar, options.autoFixPlural);
                                                     // with this hack, when value is entity and another entity with same key is already in cache, we get cache item
                                                     g.Value = value[0];
                                                 }
@@ -9212,7 +9242,16 @@
                     } 
                     else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this, arguments: args });
 
-                    instance.promiseProvider = (injections && injections.promiseProvider) || settings.getPromiseProvider();
+                    injections = injections || {};
+                    instance.promiseProvider = injections.promiseProvider || settings.getPromiseProvider();
+                    instance.autoFixScalar = injections.autoFixScalar;
+                    instance.autoFixPlural = injections.autoFixPlural;
+                    instance.validateOnMerge = injections.validateOnMerge;
+                    instance.validateOnSave = injections.validateOnSave;
+                    instance.liveValidate = injections.liveValidate;
+                    instance.handleUnmappedProperties = injections.handleUnmappedProperties;
+                    instance.forceUpdate = injections.forceUpdate;
+                    instance.workAsync = injections.workAsync;
 
                     // Create a integer value to hold change count. This value will be updated after every entity state change.
                     instance.pendingChangeCount = 0;
@@ -9268,8 +9307,13 @@
                     /// <param name="autoFixPlural">When true all plural navigations will be fixed after merge (optional, default value will be read from settings).</param>
                     if (!merge) merge = enums.mergeStrategy.Preserve;
                     if (!state || state === enums.entityStates.Detached) state = enums.entityStates.Added;
+                    if (autoFixScalar == null) autoFixScalar = instance.autoFixScalar;
                     if (autoFixScalar == null) autoFixScalar = settings.autoFixScalar;
+                    if (autoFixPlural == null) autoFixPlural = instance.autoFixPlural;
                     if (autoFixPlural == null) autoFixPlural = settings.autoFixPlural;
+                    var validateOnMerge = instance.validateOnMerge;
+                    if (validateOnMerge == null) validateOnMerge = settings.validateOnMerge;
+
                     // Flat list, means merge navigations also.
                     flatList = flatList || instance.flatEntities(assert.isArray(newEntities) ? newEntities : [newEntities]);
                     var added = [], toOverwrite = [], toReplace = [];
@@ -9324,7 +9368,7 @@
                         subscribeToEntity(a, that);
                         setEntityState(a, state);
                         // validate newly added entity.
-                        if (settings.validateOnMerge === true)
+                        if (validateOnMerge === true)
                             a.$tracker.validate();
                     });
                     // Overwrite all existing entities (If mergeStrategy said so).
@@ -9716,7 +9760,7 @@
                 /// <param name="uri">Service URI.</param>
                 /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
                 /// <param name="injections">
-                /// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
+                /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService.
                 ///  When not given, defaults will be used.
                 /// </param>
                 baseTypes.dataServiceBase.call(this, uri, metadataPrm, injections);
@@ -9727,10 +9771,11 @@
             proto.fetchMetadata = function (options, successCallback, errorCallback) {
                 var retVal = null;
                 var that = this;
-                var async = (options && options.async);
+                options = options || { };
+                var async = options.async;
                 if (async == null) async = !this.ajaxProvider.syncSupported;
-                var timeout = (options && options.timeout) || settings.ajaxTimeout;
-                var extra = options && options.extra;
+                var timeout = options.timeout || settings.ajaxTimeout;
+                var extra = options.extra;
                 this.ajaxProvider.doAjax(
                     this.uri + 'Metadata',
                     'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
@@ -9746,12 +9791,13 @@
 
             proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
                 var that = this;
-                var makeObservable = options && options.makeObservable;
+                options = options || {};
+                var makeObservable = options.makeObservable;
                 if (makeObservable == null) makeObservable = true;
-                var async = options && options.async;
+                var async = options.async;
                 if (async == null) async = settings.workAsync;
-                var timeout = (options && options.timeout) || settings.ajaxTimeout;
-                var extra = options && options.extra;
+                var timeout = options.timeout || settings.ajaxTimeout;
+                var extra = options.extra;
                 // if type could not be found in metadata request it from server.
                 var uri = that.uri + 'CreateType?typeName=' + typeName + "&initialValues=";
                 if (initialValues != null)
@@ -9778,17 +9824,18 @@
             };
 
             proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
-                var makeObservable = (options && options.makeObservable);
-                var handleUnmappedProperties = (options && options.handleUnmappedProperties);
-                var usePost = (options && options.usePost) || false;
-                var dataType = (options && options.dataType) || this.dataType;
-                var contentType = (options && options.contentType) || this.contentType;
-                var async = options && options.async;
+                options = options || { };
+                var makeObservable = options.makeObservable;
+                var handleUnmappedProperties = options.handleUnmappedProperties;
+                var usePost = options.usePost || false;
+                var dataType = options.dataType || this.dataType;
+                var contentType = options.contentType || this.contentType;
+                var async = options.async;
                 if (async == null) async = settings.workAsync;
-                var timeout = (options && options.timeout) || settings.ajaxTimeout;
-                var extra = options && options.extra;
+                var timeout = options.timeout || settings.ajaxTimeout;
+                var extra = options.extra;
                 var type, d = null;
-                var uri = (options && options.uri) || this.uri || '';
+                var uri = options.uri || this.uri || '';
                 if (uri && uri[uri.length - 1] != '/') uri += '/';
                 uri = uri + resource;
                 var queryString;
@@ -9811,7 +9858,7 @@
                 }
                 var hash = createHash(queryString);
                 var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
-                helper.extend(headers, options && options.headers);
+                helper.extend(headers, options.headers);
                 var that = this;
                 // execute query using ajax provider
                 this.ajaxProvider.doAjax(
@@ -9839,18 +9886,19 @@
 
             proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
                 var that = this;
-                var async = options && options.async;
+                options = options || {};
+                var async = options.async;
                 if (async == null) async = settings.workAsync;
-                var timeout = (options && options.timeout) || settings.ajaxTimeout;
-                var extra = options && options.extra;
-                var uri = (options && options.uri) || this.uri || '';
+                var timeout = options.timeout || settings.ajaxTimeout;
+                var extra = options.extra;
+                var uri = options.uri || this.uri || '';
                 if (uri && uri[uri.length - 1] != '/') uri += '/';
-                var saveAction = (options && options.saveAction) || 'SaveChanges';
+                var saveAction = options.saveAction || 'SaveChanges';
                 uri = uri + saveAction;
                 var saveData = this.serializationService.serialize(savePackage);
                 var hash = createHash(saveData);
                 var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': saveData.length };
-                helper.extend(headers, options && options.headers);
+                helper.extend(headers, options.headers);
                 this.ajaxProvider.doAjax(
                     uri,
                     'POST', this.dataType, this.contentType, saveData, async, timeout, extra, headers,
@@ -9973,9 +10021,10 @@
 
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp;
-                var varContext = options && options.varContext;
+                options = options || {};
+                var varContext = options.varContext;
                 var useBeetleQueryStrings;
-                if (options && options.useBeetleQueryStrings != null)
+                if (options.useBeetleQueryStrings != null)
                     useBeetleQueryStrings = options.useBeetleQueryStrings;
                 else useBeetleQueryStrings = this.useBeetleQueryStrings;
                 if (useBeetleQueryStrings === true)
@@ -9983,7 +10032,7 @@
                 else if (query.isMultiTyped === true) {
                     qp = this.toBeetleQueryParams(query, varContext);
                     events.warning.notify({ message: i18N.beetleQueryChosenMultiTyped, query: query, options: options });
-                } else if (options && options.usePost) {
+                } else if (options.usePost) {
                     qp = this.toBeetleQueryParams(query, varContext);
                     events.warning.notify({ message: i18N.beetleQueryChosenPost, query: query, options: options });
                 } else
