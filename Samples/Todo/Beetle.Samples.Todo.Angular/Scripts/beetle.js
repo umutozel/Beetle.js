@@ -2390,7 +2390,7 @@
                     /// <param name="uri">Service URI.</param>
                     /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
                     /// <param name="injections">
-                    /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService, dataType, contentType. 
+                    /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService, ajaxTimeout, dataType, contentType. 
                     ///  When not given, defaults will be used.
                     /// </param>
                     initialize(uri, metadataPrm, injections, this);
@@ -2646,31 +2646,16 @@
                     instance._readyCallbacks = [];
 
                     if (uri == null) uri = '';
-                    else if (uri[uri.length - 1] != '/') uri += '/';
+                    else if (uri[uri.length - 1] !== '/') uri += '/';
                     instance.uri = uri;
-                    var ajaxProvider = null, serializationService = null, dataType = null, contentType = null;
-                    if (injections) {
-                        ajaxProvider = injections.ajaxProvider;
-                        serializationService = injections.serializationService;
-                        dataType = injections.dataType;
-                        contentType = injections.dataType;
-                    }
-                    // If ajax provider injected via constructor use it
-                    if (ajaxProvider && assert.isInstanceOf(ajaxProvider, baseTypes.ajaxProviderBase))
-                        instance.ajaxProvider = ajaxProvider;
-                    else if (!exports.$ && exports.angular)
-                        instance.ajaxProvider = impls.angularAjaxProviderInstance;
-                    else
-                        instance.ajaxProvider = impls.jQueryAjaxProviderInstance;
 
-                    // If serialization service injected via constructor use it
-                    if (serializationService && assert.isInstanceOf(serializationService, baseTypes.SerializationService))
-                        instance.serializationService = serializationService;
-                    else
-                        instance.serializationService = impls.jsonSerializationServiceInstance;
+                    injections = injections || {};
+                    instance.ajaxProvider = injections.ajaxProvider || settings.getAjaxProvider();
+                    instance.serializationService = injections.serializationService || settings.getSerializationService();
 
-                    instance.dataType = dataType || 'json';
-                    instance.contentType = contentType || 'application/json; charset=utf-8';
+                    instance.ajaxTimeout = injections.ajaxTimeout;
+                    instance.dataType = injections.dataType || 'json';
+                    instance.contentType = injections.contentType || 'application/json; charset=utf-8';
 
                     // If metadata parameter is false or undefined, it means do not use metadata
                     if (metadataPrm !== false || metadataPrm === undefined) {
@@ -8297,7 +8282,8 @@
                     /// <param name="metadataPrm">(optional) [Metadata Manager] or [string] or [true - false (default) - when false no metadata will be used, no auto relation fix]</param>
                     /// <param name="injections">
                     ///  (optional) Injection object to change behavior of the manager, can include these properties: 
-                    ///    promiseProvider, autoFixScalar, autoFixPlural, validateOnMerge, validateOnSave, liveValidate, handleUnmappedProperties, forceUpdate, workAsync.
+                    ///    promiseProvider, autoFixScalar, autoFixPlural, validateOnMerge, validateOnSave, liveValidate, handleUnmappedProperties, forceUpdate, workAsync, minimizePackage.
+                    ///    for service: ajaxTimeout, dataType, contentType
                     ///  When not provided, defaults will be used.
                     /// </param>
                     initialize(arguments, this);
@@ -8856,6 +8842,7 @@
                     var entityList = [];
                     entities = entities || this.entities.getEntities();
                     var minimizePackage = options.minimizePackage;
+                    if (minimizePackage == null) minimizePackage = this.minimizePackage;
                     if (minimizePackage == null) minimizePackage = settings.minimizePackage;
 
                     helper.forEach(entities, function (entity, id) {
@@ -9252,6 +9239,7 @@
                     instance.handleUnmappedProperties = injections.handleUnmappedProperties;
                     instance.forceUpdate = injections.forceUpdate;
                     instance.workAsync = injections.workAsync;
+                    instance.minimizePackage = injections.minimizePackage;
 
                     // Create a integer value to hold change count. This value will be updated after every entity state change.
                     instance.pendingChangeCount = 0;
@@ -9774,7 +9762,7 @@
                 options = options || { };
                 var async = options.async;
                 if (async == null) async = !this.ajaxProvider.syncSupported;
-                var timeout = options.timeout || settings.ajaxTimeout;
+                var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
                 var extra = options.extra;
                 this.ajaxProvider.doAjax(
                     this.uri + 'Metadata',
@@ -9796,7 +9784,7 @@
                 if (makeObservable == null) makeObservable = true;
                 var async = options.async;
                 if (async == null) async = settings.workAsync;
-                var timeout = options.timeout || settings.ajaxTimeout;
+                var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
                 var extra = options.extra;
                 // if type could not be found in metadata request it from server.
                 var uri = that.uri + 'CreateType?typeName=' + typeName + "&initialValues=";
@@ -9832,7 +9820,7 @@
                 var contentType = options.contentType || this.contentType;
                 var async = options.async;
                 if (async == null) async = settings.workAsync;
-                var timeout = options.timeout || settings.ajaxTimeout;
+                var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
                 var extra = options.extra;
                 var type, d = null;
                 var uri = options.uri || this.uri || '';
@@ -9889,7 +9877,7 @@
                 options = options || {};
                 var async = options.async;
                 if (async == null) async = settings.workAsync;
-                var timeout = options.timeout || settings.ajaxTimeout;
+                var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
                 var extra = options.extra;
                 var uri = options.uri || this.uri || '';
                 if (uri && uri[uri.length - 1] != '/') uri += '/';
@@ -10066,6 +10054,14 @@
                 jQuery: { code: 'jQuery', instance: impls.jQueryPromiseProviderInstance }
             }),
             /// <field>
+            /// Ajax providers. Possible values;
+            ///  jQuery, Angular
+            /// </field>
+            ajaxProviders: new libs.enums({
+                jQuery: { code: 'jQuery', instance: impls.jQueryAjaxProviderInstance },
+                Angular: { code: 'Angular', instance: impls.angularAjaxProviderInstance }
+            }),
+            /// <field>
             /// Entity states. Possible values;
             ///  Detached, Unchanged, Added, Deleted, Modified
             /// </field>
@@ -10215,10 +10211,18 @@
         var _promiseProvider;
         if (exports.Q)
             _promiseProvider = impls.qPromiseProviderInstance;
-        else if (exports.angular)
+        else if (!exports.$ && exports.angular)
             _promiseProvider = impls.angularPromiseProviderInstance;
-        else if (exports.jQuery)
+        else
             _promiseProvider = impls.jQueryPromiseProviderInstance;
+
+        var _ajaxProvider;
+        if (!exports.$ && exports.angular)
+            _ajaxProvider = impls.angularAjaxProviderInstance;
+        else
+            _ajaxProvider = impls.jQueryAjaxProviderInstance;
+
+        var _serializationService = impls.jsonSerializationServiceInstance;
 
         var _arraySetBehaviour = enums.arraySetBehaviour.NotAllowed;
         var _defaultServiceType = enums.serviceTypes.WebApi;
@@ -10276,24 +10280,7 @@
             /// Sets static observable provider instance. All generated entities after this call will use given observable provider instance.
             /// </summary>
             /// <param name="provider">Observable provider parameter.</param>
-            // if parameter is observable provider instance use it.
-            if (assert.isInstanceOf(provider, baseTypes.observableProviderBase))
-                _observableProvider = provider;
-            else {
-                // if parameter is string parse it to observable provider enum.
-                if (assert.isNotEmptyString(provider)) {
-                    var symbols = enums.observableProviders.symbols();
-                    for (var i = 0; i < symbols.length; i++) {
-                        var sym = symbols[i];
-                        if (sym.name == provider || sym.code == provider) {
-                            provider = sym;
-                            break;
-                        }
-                    }
-                }
-                if (assert.isEnum(provider, enums.observableProviders)) _observableProvider = provider.instance;
-                else throw helper.createError(i18N.couldNotLocateNavFixer, { args: arguments });
-            }
+            _observableProvider = getValue(provider, baseTypes.observableProviderBase, enums.observableProviders);
         };
 
         expose.getPromiseProvider = function () {
@@ -10308,24 +10295,37 @@
             /// Sets static promise provider instance. All async operations after this call will use given promise provider instance.
             /// </summary>
             /// <param name="provider">Promise provider parameter.</param>
-            // if parameter is promise provider instance use it.
-            if (provider == null || assert.isInstanceOf(provider, baseTypes.promiseProviderBase))
-                _promiseProvider = provider;
-            else {
-                // if parameter is string parse it to provider provider enum.
-                if (assert.isNotEmptyString(provider)) {
-                    var symbols = enums.promiseProviders.symbols();
-                    for (var i = 0; i < symbols.length; i++) {
-                        var sym = symbols[i];
-                        if (sym.name == provider || sym.code == provider) {
-                            provider = sym;
-                            break;
-                        }
-                    }
-                }
-                if (assert.isEnum(provider, enums.promiseProviders)) _promiseProvider = provider.instance;
-                else throw helper.createError(i18N.couldNotLocatePromiseProvider, { args: arguments });
-            }
+            _promiseProvider = getValue(provider, baseTypes.promiseProviderBase, enums.promiseProviders);
+        };
+
+        expose.getAjaxProvider = function () {
+            /// <summary>
+            /// Gets static ajax provider instance.
+            /// </summary>
+            return _ajaxProvider;
+        };
+
+        expose.setAjaxProvider = function (provider) {
+            /// <summary>
+            /// Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
+            /// </summary>
+            /// <param name="provider">Ajax provider parameter.</param>
+            _ajaxProvider = getValue(provider, baseTypes.ajaxProviderBase, enums.ajaxProviders);
+        };
+
+        expose.getSerializationService = function () {
+            /// <summary>
+            /// Gets static serialization service instance.
+            /// </summary>
+            return _serializationService;
+        };
+
+        expose.setSerializationService = function (service) {
+            /// <summary>
+            /// Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
+            /// </summary>
+            /// <param name="provider">Serialization service parameter.</param>
+            _serializationService = getValue(service, baseTypes.serializationServiceBase);
         };
 
         expose.getArraySetBehaviour = function () {
@@ -10392,6 +10392,25 @@
             helper.assertPrm(func, 'func').isFunction().check();
             _localizeFunction = func;
         };
+
+        function getValue(value, type, typeEnum) {
+            if (assert.isInstanceOf(value, type))
+                return value;
+            else if (typeEnum != null) {
+                if (assert.isNotEmptyString(value)) {
+                    var symbols = typeEnum.symbols();
+                    for (var i = 0; i < symbols.length; i++) {
+                        var sym = symbols[i];
+                        if (helper.equals(sym.name, value, false, {isCaseSensitive: false, ignoreWhiteSpaces: false})) {
+                            value = sym;
+                            break;
+                        }
+                    }
+                }
+                if (assert.isEnum(value, typeEnum)) return value.instance;
+            }
+            throw helper.createError(i18N.invalidValue, [type.name], { args: arguments });
+        }
 
         return expose;
     })();
