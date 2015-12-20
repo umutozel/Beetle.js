@@ -7,7 +7,7 @@
  * - exposes the model to the template and provides event handlers
  */
 todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location) {
-    var manager = $scope.manager = new beetle.entityManager(new beetle.services.webApiService('Home'));
+    var manager = $scope.manager = new beetle.entityManager(new beetle.MvcService('Home'));
     manager.ready(function () {
         $scope.newTodo = '';
         $scope.editedTodo = null;

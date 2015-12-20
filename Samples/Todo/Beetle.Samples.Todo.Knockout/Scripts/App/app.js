@@ -47,7 +47,7 @@
 
 	// our main view model
 	var ViewModel = function () {
-	    var manager = new beetle.entityManager(new beetle.services.webApiService('Home'));
+	    var manager = new beetle.entityManager(new beetle.MvcService('Home'));
 	    manager.registerCtor('Todo', null, // null constructor
 	        function (todo) { // we want to intercept after entity properties converted to observables
 	            todo.editing = ko.observable(false);
