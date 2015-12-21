@@ -190,6 +190,7 @@
       <DependentUpon>testMetadata.tt</DependentUpon>
     </Content>
     <Content Include="Scripts\toastr.js" />
+    <None Include="bundleconfig.json" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -262,11 +263,6 @@
   <ItemGroup>
     <Content Include="Views\Web.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Scripts\beetle\beetle.min.js.map">
-      <DependentUpon>beetle.min.js</DependentUpon>
-    </Content>
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -324,4 +320,3 @@ copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.js" 	"$(ProjectDir)..\_
   <Target Name="AfterBuild">
   </Target> -->
 </Project>
-
