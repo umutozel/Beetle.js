@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Beetlejs.WebApi2</id>
-        <version>1.0.6</version>
+        <version>1.0.8</version>
         <title>Beetlejs WebApi 2 (v5) Controller (OData) Api</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
@@ -16,6 +16,7 @@
         <language>en-US</language>
         <tags>ASP.NET WebApi 2 OData Single Page Application SPA Unit of Work</tags>
         <dependencies>
+            <dependency id="Beetlejs.Server" version="1.0" />
             <dependency id="Beetlejs.Client" version="1.0" />
             <dependency id="Microsoft.AspNet.WebApi" version="5.0" />
             <dependency id="Microsoft.AspNet.WebApi.OData" version="5.0" />
@@ -24,7 +25,6 @@
     </metadata>
     <files>
         <file src="content\App_Start\BeetleWebApiConfig.cs.pp" target="content\App_Start\BeetleWebApiConfig.cs.pp" />
-        <file src="lib\Beetle.Server.dll" target="lib\Beetle.Server.dll" />
         <file src="lib\Beetle.Server.WebApi2.dll" target="lib\Beetle.Server.WebApi2.dll" />
     </files>
 </package>

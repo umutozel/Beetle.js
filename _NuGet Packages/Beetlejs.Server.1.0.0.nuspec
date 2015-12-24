@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Beetlejs.Server</id>
+        <version>1.0.0</version>
+        <title>Beetlejs Server Files</title>
+        <authors>Umut Özel</authors>
+        <owners>Umut Özel</owners>
+        <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
+        <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Beetle.js server files.</description>
+        <summary>Manage your data with Javascript easily.</summary>
+        <copyright>Copyright (c) 2015 Umut Özel</copyright>
+        <language>en-US</language>
+        <tags>Javascript Unit of Work</tags>
+    </metadata>
+    <files>
+        <file src="lib\Beetle.Server.dll" target="lib\Beetle.Server.dll" />
+    </files>
+</package>

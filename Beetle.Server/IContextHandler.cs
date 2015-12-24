@@ -5,7 +5,7 @@ using Beetle.Server.Meta;
 
 namespace Beetle.Server {
 
-    public interface IContextHandler<out TContext> {
+    public interface IContextHandler<out TContext>: IContextHandler {
 
         /// <summary>
         /// Creates the context.
