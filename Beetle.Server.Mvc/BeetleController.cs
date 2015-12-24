@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Web.Mvc;
@@ -12,7 +13,7 @@ namespace Beetle.Server.Mvc {
     /// <typeparam name="TContextHandler">The type of the context handler.</typeparam>
     [BeetleActionFilter]
     public class BeetleController<TContextHandler> : Controller, IBeetleService<TContextHandler>
-            where TContextHandler : class, IContextHandler, new() {
+            where TContextHandler : class, IContextHandler {
         private readonly BeetleConfig _beetleConfig;
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Beetle.Server.Mvc {
         /// <returns></returns>
         [NonAction]
         public virtual TContextHandler CreateContextHandler() {
-            return new TContextHandler();
+            return Activator.CreateInstance<TContextHandler>();
         }
 
         /// <summary>

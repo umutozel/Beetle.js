@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,7 +16,7 @@ namespace Beetle.Server.WebApi {
     /// <typeparam name="TContextHandler">The type of the context handler.</typeparam>
     [BeetleApiController]
     public class BeetleApiController<TContextHandler> : ApiController, IBeetleService<TContextHandler>, IODataService
-            where TContextHandler : class, IContextHandler, new() {
+            where TContextHandler : class, IContextHandler {
         private readonly BeetleConfig _beetleConfig;
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <returns></returns>
         public virtual TContextHandler CreateContextHandler() {
-            return new TContextHandler();
+            return Activator.CreateInstance<TContextHandler>();
         }
 
         /// <summary>
