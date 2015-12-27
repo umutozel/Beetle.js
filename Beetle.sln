@@ -19,11 +19,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_NuGet Packages", "_NuGet P
 	ProjectSection(SolutionItems) = preProject
 		_NuGet Packages\Beetlejs.Client.1.0.8.nuspec = _NuGet Packages\Beetlejs.Client.1.0.8.nuspec
 		_NuGet Packages\Beetlejs.EF6.1.0.0.nuspec = _NuGet Packages\Beetlejs.EF6.1.0.0.nuspec
-		_NuGet Packages\Beetlejs.Mvc5.1.0.8.nuspec = _NuGet Packages\Beetlejs.Mvc5.1.0.8.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.1.0.9.nuspec = _NuGet Packages\Beetlejs.Mvc5.1.0.9.nuspec
 		_NuGet Packages\Beetlejs.Mvc5.EF6.1.0.5.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.1.0.5.nuspec
 		_NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.0.3.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.0.3.nuspec
-		_NuGet Packages\Beetlejs.Server.1.0.2.nuspec = _NuGet Packages\Beetlejs.Server.1.0.2.nuspec
-		_NuGet Packages\Beetlejs.WebApi2.1.0.10.nuspec = _NuGet Packages\Beetlejs.WebApi2.1.0.10.nuspec
+		_NuGet Packages\Beetlejs.Server.1.0.3.nuspec = _NuGet Packages\Beetlejs.Server.1.0.3.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.1.0.11.nuspec = _NuGet Packages\Beetlejs.WebApi2.1.0.11.nuspec
 		_NuGet Packages\Beetlejs.WebApi2.EF6.1.0.6.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.1.0.6.nuspec
 		_NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.0.3.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.0.3.nuspec
 	EndProjectSection
