@@ -15,7 +15,7 @@ namespace Beetle.Server.Mvc {
     /// <summary>
     /// Common helper methods for WebApi.
     /// </summary>
-    internal static class Helper {
+    public static class Helper {
         private static readonly Lazy<JavaScriptSerializer> _javaScriptSerializer = new Lazy<JavaScriptSerializer>();
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Beetle.Server.Mvc {
         /// <param name="parameters">The action parameters.</param>
         /// <param name="request">The request.</param>
         /// <exception cref="BeetleException">Action must have only one parameter (JsonObject, object or dynamic) to be able called with POST.</exception>
-        internal static void GetParameters(out string queryString, out NameValueCollection queryParams,
+        public static void GetParameters(out string queryString, out NameValueCollection queryParams,
                                            BeetleConfig config = null, 
                                            ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
                                            HttpRequest request = null) {
@@ -87,7 +87,7 @@ namespace Beetle.Server.Mvc {
         /// <param name="service">The service.</param>
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
-        internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
+        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
             // beetle should be used for all content types except mvc actions results. so we check only if content is not an mvc action result
             if (!(contentValue is ActionResult) && !string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
@@ -118,7 +118,7 @@ namespace Beetle.Server.Mvc {
         /// <param name="config">The configuration.</param>
         /// <param name="response">The response.</param>
         /// <returns></returns>
-        internal static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
+        public static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
             var result = processResult.Result;
 
             if (config == null)
@@ -152,7 +152,7 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <exception cref="BeetleException"></exception>
-        internal static void CheckRequestHash(string queryString) {
+        public static void CheckRequestHash(string queryString) {
             var request = HttpContext.Current.Request;
 
             var clientHash = request.Headers["x-beetle-request"];

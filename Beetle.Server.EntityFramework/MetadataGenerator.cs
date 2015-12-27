@@ -1,3 +1,4 @@
+using System.Data.Entity.Infrastructure;
 using System.Text.RegularExpressions;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Xml.Linq;
 using Beetle.Server.EntityFramework.Properties;
 using Beetle.Server.Meta;
 using DataType = Beetle.Server.Meta.DataType;
+using System.Data.Entity;
 #if EF6
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Spatial;
@@ -34,6 +36,23 @@ namespace Beetle.Server.EntityFramework {
 
         /// <summary>
         /// Generates meta-data for given item collection.
+        /// Fetches CLR models from given assembly.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="modelAssembly">The model assembly.</param>
+        /// <param name="modelName">The model name.</param>
+        /// <returns></returns>
+        public static Metadata Generate(DbContext context, Assembly modelAssembly, string modelName = null) {
+            var objectContext = ((IObjectContextAdapter) context).ObjectContext;
+            var metadataWorkspace = objectContext.MetadataWorkspace;
+            var itemCollection = objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace);
+            var objectItemCollection = (ObjectItemCollection)objectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace);
+
+            return Generate(metadataWorkspace, itemCollection, objectItemCollection, modelAssembly, modelName);
+        }
+
+        /// <summary>
+        /// Generates meta-data for given assembly.
         /// Fetches CLR models from given assembly.
         /// </summary>
         /// <param name="modelAssembly">The model assembly.</param>

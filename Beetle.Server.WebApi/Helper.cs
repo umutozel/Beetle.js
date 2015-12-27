@@ -6,7 +6,6 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
@@ -17,7 +16,7 @@ namespace Beetle.Server.WebApi {
     /// <summary>
     /// Common helper methods for WebApi.
     /// </summary>
-    internal static class Helper {
+    public static class Helper {
 
         /// <summary>
         /// Handles the request.
@@ -27,7 +26,7 @@ namespace Beetle.Server.WebApi {
         /// <returns>
         /// The query parameters.
         /// </returns>
-        internal static NameValueCollection GetParameters(out string queryString, HttpRequest request = null) {
+        public static NameValueCollection GetParameters(out string queryString, HttpRequest request = null) {
             if (request == null)
                 request = HttpContext.Current.Request;
 
@@ -64,7 +63,7 @@ namespace Beetle.Server.WebApi {
         /// <param name="service">The service.</param>
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
-        internal static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
+        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
                                                      bool forbidBeetleQueryParams = false, IBeetleService service = null) {
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
@@ -115,7 +114,7 @@ namespace Beetle.Server.WebApi {
         /// <param name="config">The configuration.</param>
         /// <param name="response">The response.</param>
         /// <returns></returns>
-        internal static ObjectContent HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
+        public static ObjectContent HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
             if (config == null)
                 config = BeetleConfig.Instance;
             if (response == null)
@@ -147,7 +146,7 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <exception cref="BeetleException"></exception>
-        internal static void CheckRequestHash(string queryString) {
+        public static void CheckRequestHash(string queryString) {
             var request = HttpContext.Current.Request;
 
             var clientHash = request.Headers["x-beetle-request"];
