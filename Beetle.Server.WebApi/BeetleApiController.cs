@@ -123,7 +123,7 @@ namespace Beetle.Server.WebApi {
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
         public virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, out IEnumerable<EntityBag> unknownEntities) {
-            return Server.Helper.ResolveEntities(saveBundle, BeetleConfig, out unknownEntities);
+            return Server.Helper.ResolveEntities(saveBundle, BeetleConfig, ContextHandler.Metadata(), out unknownEntities);
         }
 
         /// <summary>

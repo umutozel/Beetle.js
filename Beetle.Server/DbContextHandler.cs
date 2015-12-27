@@ -104,9 +104,6 @@ namespace Beetle.Server {
         /// Metadata object.
         /// </returns>
         public override Metadata Metadata() {
-            if (_metadataCache.ContainsKey(Connection.ConnectionString))
-                return _metadataCache[Connection.ConnectionString];
-
             lock (_metadataLocker) {
                 if (_metadataCache.ContainsKey(Connection.ConnectionString))
                     return _metadataCache[Connection.ConnectionString];
@@ -147,7 +144,7 @@ namespace Beetle.Server {
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> CreateQueryable<T>() where T : class {
-            throw new NotImplementedException(); // todo: implement beetle queryable
+            throw new NotImplementedException(); // implement beetle queryable
         }
 
         /// <summary>
@@ -180,8 +177,9 @@ namespace Beetle.Server {
                 var entity = entityBag.Entity;
                 var type = entity.GetType();
                 var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
-                var entityType = metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
-                entityBag.EntityType = entityType;
+                if (entityBag.EntityType == null)
+                    entityBag.EntityType = entityBag.EntityType ?? metadata.Entities.First(e => e.Name == entityTypeName);
+                var entityType = entityBag.EntityType;
                 if (entityType == null) {
                     unmappedEntityList.Add(entityBag);
                     mergedBagList.Remove(entityBag);

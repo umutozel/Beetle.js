@@ -223,15 +223,16 @@ namespace Beetle.Server {
 			return retVal;
 		}
 
-		/// <summary>
-		/// Resolves the entities.
-		/// </summary>
-		/// <param name="bundle">The bundle.</param>
-		/// <param name="config">The config.</param>
-		/// <param name="unknownEntities">The unknown entities.</param>
-		/// <returns></returns>
-		/// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
-		public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, BeetleConfig config, out IEnumerable<EntityBag> unknownEntities) {
+        /// <summary>
+        /// Resolves the entities.
+        /// </summary>
+        /// <param name="bundle">The bundle.</param>
+        /// <param name="config">The config.</param>
+        /// <param name="metadata">The metadata.</param>
+        /// <param name="unknownEntities">The unknown entities.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
+        public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, BeetleConfig config, Metadata metadata, out IEnumerable<EntityBag> unknownEntities) {
 			var jsonSerializer = config.CreateSerializer();
 
 			var dynEntities = (JArray)bundle.entities;
@@ -261,11 +262,14 @@ namespace Beetle.Server {
 					}
 				}
 				var forceUpdate = forceUpdatePackage || (bool)(tracker.f ?? false);
-				// deserialize entity
-				if (type != null) {
+                // deserialize entity
+			    if (type != null) {
 					var clientEntity = jsonSerializer.Deserialize(new JTokenReader(dynEntity), type);
 					var entity = jsonSerializer.Deserialize(new JTokenReader(dynEntity), type);
-					entities.Add(new EntityBag(clientEntity, entity, state, originalValues, index, forceUpdate));
+                    EntityType entityType = null;
+                    if (metadata != null)
+                        entityType = metadata.Entities.FirstOrDefault(e => e.Name == typeName);
+                    entities.Add(new EntityBag(clientEntity, entity, state, originalValues, index, entityType, forceUpdate));
 				}
 				else
 					unknowns.Add(new EntityBag(dynEntity, dynEntity, state, originalValues, index, forceUpdate));

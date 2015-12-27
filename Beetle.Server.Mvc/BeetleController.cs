@@ -96,9 +96,9 @@ namespace Beetle.Server.Mvc {
         /// <param name="saveBundle">The save bundle.</param>
         /// <param name="unknownEntities">The unknown entities.</param>
         /// <returns></returns>
-        /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
+        /// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
         public virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, out IEnumerable<EntityBag> unknownEntities) {
-            return Beetle.Server.Helper.ResolveEntities(saveBundle, BeetleConfig, out unknownEntities);
+            return Beetle.Server.Helper.ResolveEntities(saveBundle, BeetleConfig, ContextHandler.Metadata(), out unknownEntities);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="saveBundle">The save bundle.</param>
         /// <returns></returns>
-        /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
+        /// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
         [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual SaveResult SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
