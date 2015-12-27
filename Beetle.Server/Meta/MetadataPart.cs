@@ -40,7 +40,7 @@ namespace Beetle.Server.Meta {
         /// <value>
         /// The display name getter.
         /// </value>
-        protected Func<string> DisplayNameGetter {
+        public Func<string> DisplayNameGetter {
             get { return _displayNameGetter; }
         }
     }
