@@ -78,16 +78,17 @@ namespace Beetle.Server.WebApi {
         /// <returns>
         /// The newly started task.
         /// </returns>
-        public override async Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken) {
+        public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken) {
             try {
-                return await base.ExecuteAsync(controllerContext, cancellationToken);
+                return base.ExecuteAsync(controllerContext, cancellationToken);
             }
             catch (HttpResponseException ex) {
                 if (ex.Response.StatusCode == HttpStatusCode.NotFound && AutoHandleUnknownActions) {
                     var action = controllerContext.Request.GetRouteData().Values["action"].ToString();
                     var content = HandleUnknownAction(action);
                     // execute response
-                    return new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = content };
+                    var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = content };
+                    return Task.FromResult(responseMessage);
                 }
                 throw;
             }
@@ -156,9 +157,9 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <returns>Metadata object.</returns>
         [HttpGet]
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual Task<object> Metadata() {
-            return Task.FromResult(ContextHandler.Metadata().ToMinified());
+        [BeetleActionFilterAttribute(typeof(SimpleResultConfig))]
+        public virtual object Metadata() {
+            return ContextHandler.Metadata().ToMinified();
         }
 
         /// <summary>
@@ -170,8 +171,8 @@ namespace Beetle.Server.WebApi {
         /// Created type.
         /// </returns>
         [HttpGet]
-        public virtual async Task<object> CreateType(string typeName, string initialValues) {
-            var retVal = await ContextHandler.CreateType(typeName);
+        public virtual object CreateType(string typeName, string initialValues) {
+            var retVal = ContextHandler.CreateType(typeName);
             Server.Helper.CopyValuesFromJson(initialValues, retVal, BeetleConfig);
             return retVal;
         }
@@ -203,7 +204,7 @@ namespace Beetle.Server.WebApi {
         /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
         [HttpPost]
         [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual async Task<SaveResult> SaveChanges(object saveBundle) {
+        public virtual SaveResult SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);
             var entityBagList = entityBags == null
@@ -216,7 +217,7 @@ namespace Beetle.Server.WebApi {
 
             var saveContext = new SaveContext();
             OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
-            var retVal = await ContextHandler.SaveChanges(entityBagList, saveContext);
+            var retVal = ContextHandler.SaveChanges(entityBagList, saveContext);
             OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
 
             return retVal;

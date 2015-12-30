@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Beetle.Server.Meta;
 
 namespace Beetle.Server {
@@ -45,7 +44,7 @@ namespace Beetle.Server {
         /// <param name="typeName">Name of the type.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentException"></exception>
-        Task<object> CreateType(string typeName);
+        object CreateType(string typeName);
 
         /// <summary>
         /// Handles the unknown action.
@@ -78,7 +77,7 @@ namespace Beetle.Server {
         /// <returns>
         /// Save result.
         /// </returns>
-        Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
+        SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
 
         /// <summary>
         /// Gets the enumerable handler.

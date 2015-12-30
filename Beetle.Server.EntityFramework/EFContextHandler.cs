@@ -1,12 +1,10 @@
-﻿using Beetle.Server.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using Beetle.Server.Meta;
-using System.Threading.Tasks;
 #if EF6
 using System.Data.Entity.Core.EntityClient;
 using System.Data.Entity.Core.Objects;
@@ -182,16 +180,16 @@ namespace Beetle.Server.EntityFramework {
         /// </summary>
         /// <param name="typeName">Name of the type.</param>
         /// <returns></returns>
-        public override Task<object> CreateType(string typeName) {
+        public override object CreateType(string typeName) {
             if (ObjectEntityTypes != null) {
                 var oType = ObjectEntityTypes.FirstOrDefault(x => x.Name == typeName);
                 if (oType != null) {
                     var clrType = ObjectItemCollection.GetClrType(oType);
-                    return Task.FromResult(Activator.CreateInstance(clrType));
+                    return Activator.CreateInstance(clrType);
                 }
             }
 
-            throw new NotImplementedException(string.Format(Resources.EntityTypeCannotBeFound, typeName));
+            return base.CreateType(typeName);
         }
 
         /// <summary>
@@ -329,11 +327,7 @@ namespace Beetle.Server.EntityFramework {
         /// Save result.
         /// </returns>
         /// <exception cref="EntityValidationException"></exception>
-#if EF6
-        public override async Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
-#else
-        public override Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
-#endif
+        public override SaveResult SaveChanges(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntities(entityBags, out unmappeds);
             var mergeList = merges == null
@@ -348,11 +342,7 @@ namespace Beetle.Server.EntityFramework {
                 MergeEntities(handledUnmappedList, out discarded);
                 saveList = saveList.Concat(handledUnmappedList).ToList();
             }
-#if EF6
             if (!saveList.Any()) return SaveResult.Empty;
-#else
-            if (!saveList.Any()) return Task.FromResult(SaveResult.Empty);
-#endif
 
             OnBeforeSaveChanges(new BeforeSaveEventArgs(saveList, saveContext));
             // do data annotation validations
@@ -362,11 +352,7 @@ namespace Beetle.Server.EntityFramework {
                 if (validationResults.Any())
                     throw new EntityValidationException(validationResults);
             }
-#if EF6
-            var affectedCount = _dbContext != null ? await _dbContext.SaveChangesAsync() : await ObjectContext.SaveChangesAsync();
-#else
             var affectedCount = _dbContext != null ? _dbContext.SaveChanges() : ObjectContext.SaveChanges();
-#endif
 
             var generatedValues = GetGeneratedValues(mergeList);
             if (handledUnmappedList != null && handledUnmappedList.Any()) {
@@ -380,11 +366,7 @@ namespace Beetle.Server.EntityFramework {
             var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
             OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
 
-#if EF6
             return saveResult;
-#else
-            return Task.FromResult(saveResult);
-#endif
         }
 
         /// <summary>

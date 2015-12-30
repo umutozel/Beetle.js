@@ -6,7 +6,6 @@ using System.Data;
 using System.Linq;
 using System.Linq.Dynamic;
 using Beetle.Server.Meta;
-using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
@@ -114,18 +113,6 @@ namespace Beetle.Server {
 
                 return metadata;
             }
-        }
-
-        /// <summary>
-        /// Creates the type by name.
-        /// </summary>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentException"></exception>
-        public override Task<object> CreateType(string typeName) {
-            var type = Type.GetType(string.Format("{0}.{1}, {2}", ModelNamespace, typeName, ModelAssembly));
-            if (type == null) throw new ArgumentException(string.Format(Resources.TypeCouldNotBeFound, typeName));
-            return Task.FromResult(Activator.CreateInstance(type));
         }
 
         /// <summary>
@@ -310,7 +297,7 @@ namespace Beetle.Server {
         /// <returns>
         /// Save result.
         /// </returns>
-        public override Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext) {
+        public override SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext) {
             return SaveChangesBase(entities, saveContext);
         }
 
@@ -321,8 +308,7 @@ namespace Beetle.Server {
         /// <param name="saveContext">The save context.</param>
         /// <returns></returns>
         /// <exception cref="EntityValidationException"></exception>
-        // ReSharper disable once FunctionComplexityOverflow
-        protected Task<SaveResult> SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
+        protected SaveResult SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntitiesBase(entityBags, out unmappeds);
             var mergeList = merges == null
@@ -337,7 +323,7 @@ namespace Beetle.Server {
                 MergeEntitiesBase(handledUnmappedList, out discarded);
                 saveList = saveList.Concat(handledUnmappedList).ToList();
             }
-            if (!saveList.Any()) return Task.FromResult(SaveResult.Empty);
+            if (!saveList.Any()) return SaveResult.Empty;
 
             OnBeforeSaveChanges(new BeforeSaveEventArgs(saveList, saveContext));
             // do data annotation validations
@@ -430,7 +416,7 @@ namespace Beetle.Server {
             var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
             OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
 
-            return Task.FromResult(saveResult);
+            return saveResult;
         }
 
         /// <summary>
@@ -544,7 +530,6 @@ namespace Beetle.Server {
         /// Affected count
         /// </returns>
         /// <exception cref="BeetleException">Update operation should not affect more than one record.</exception>
-        // ReSharper disable once FunctionComplexityOverflow
         protected virtual int UpdateEntity(object entity, IEnumerable<string> modifiedProperties = null, bool forceUpdate = false,
                                            EntityType entityType = null, IDbTransaction transaction = null) {
             var affectedCount = 0;

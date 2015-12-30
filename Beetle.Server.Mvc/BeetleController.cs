@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Routing;
 
@@ -125,8 +124,8 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <returns>Metadata object.</returns>
         [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual Task<object> Metadata() {
-            return Task.FromResult(ContextHandler.Metadata().ToMinified());
+        public virtual object Metadata() {
+            return ContextHandler.Metadata().ToMinified();
         }
 
         /// <summary>
@@ -137,8 +136,8 @@ namespace Beetle.Server.Mvc {
         /// <returns>
         /// Created type.
         /// </returns>
-        public virtual async Task<object> CreateType(string typeName, string initialValues) {
-            var retVal = await ContextHandler.CreateType(typeName);
+        public virtual object CreateType(string typeName, string initialValues) {
+            var retVal = ContextHandler.CreateType(typeName);
             Beetle.Server.Helper.CopyValuesFromJson(initialValues, retVal, BeetleConfig);
             return retVal;
         }
@@ -169,7 +168,7 @@ namespace Beetle.Server.Mvc {
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
         [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual async Task<SaveResult> SaveChanges(object saveBundle) {
+        public virtual SaveResult SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);
             var entityBagList = entityBags == null
@@ -182,7 +181,7 @@ namespace Beetle.Server.Mvc {
 
             var saveContext = new SaveContext();
             OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
-            var retVal = await ContextHandler.SaveChanges(entityBagList, saveContext);
+            var retVal = ContextHandler.SaveChanges(entityBagList, saveContext);
             OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
 
             return retVal;
