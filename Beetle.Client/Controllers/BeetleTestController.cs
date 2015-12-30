@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Http;
 using Beetle.Client.Models;
 using Beetle.Server;
@@ -67,7 +68,7 @@ namespace Beetle.Client.Controllers {
         }
 
         [HttpPost]
-        public SaveResult UpdateEntity(object saveBundle) {
+        public Task<SaveResult> UpdateEntity(object saveBundle) {
             return SaveChanges(saveBundle);
         }
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Beetle.Server.Meta;
+using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
@@ -95,10 +96,10 @@ namespace Beetle.Server {
         /// <param name="typeName">Name of the type.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentException"></exception>
-        public virtual object CreateType(string typeName) {
+        public virtual Task<object> CreateType(string typeName) {
             var type = Type.GetType(typeName);
             if (type == null) throw new ArgumentException(string.Format(Resources.TypeCouldNotBeFound, typeName));
-            return Activator.CreateInstance(type);
+            return Task.FromResult(Activator.CreateInstance(type));
         }
 
         /// <summary>
@@ -179,7 +180,7 @@ namespace Beetle.Server {
         /// <returns>
         /// Save result.
         /// </returns>
-        public abstract SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
+        public abstract Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
 
         /// <summary>
         /// Gets the enumerable handler.

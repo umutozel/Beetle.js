@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
@@ -29,7 +30,7 @@ namespace Beetle.Server {
         /// Gets metadata for the service.
         /// </summary>
         /// <returns></returns>
-        object Metadata();
+        Task<object> Metadata();
 
         /// <summary>
         /// Creates the type by given name.
@@ -37,7 +38,7 @@ namespace Beetle.Server {
         /// <param name="typeName">Name of the type.</param>
         /// <param name="initialValues">The initial values (serialized).</param>
         /// <returns></returns>
-        object CreateType(string typeName, string initialValues);
+        Task<object> CreateType(string typeName, string initialValues);
 
         /// <summary>
         /// Processes the request.
@@ -58,7 +59,7 @@ namespace Beetle.Server {
         /// </summary>
         /// <param name="saveBundle">The save bundle.</param>
         /// <returns></returns>
-        SaveResult SaveChanges(object saveBundle);
+        Task<SaveResult> SaveChanges(object saveBundle);
 
         /// <summary>
         /// The beetle configuration

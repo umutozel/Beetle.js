@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using Beetle.Server.Mvc.Properties;
 
@@ -56,7 +58,15 @@ namespace Beetle.Server.Mvc {
             base.OnActionExecuting(filterContext);
 
             // execute the action method
-            var contentValue = action.Execute(filterContext.Controller.ControllerContext, parameters);
+            var actionMethod = controller.GetType().GetMethod(action.ActionName);
+            var contentValue = actionMethod.Invoke(controller, parameters.Values.ToArray());
+            var contentTaskValue = contentValue as Task;
+            if (contentTaskValue != null) {
+                contentTaskValue.Wait();
+                var taskType = contentTaskValue.GetType();
+                var resultProperty = taskType.GetProperty("Result");
+                contentValue = resultProperty == null ? null : resultProperty.GetValue(contentTaskValue);
+            }
             // get client hash
             // process the request and return the result
             var actionContext = new ActionContext(action.ActionName, contentValue, queryString, queryParams, MaxResultCount, CheckRequestHashNullable);
