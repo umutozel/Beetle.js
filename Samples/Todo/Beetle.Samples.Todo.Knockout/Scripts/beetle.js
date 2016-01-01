@@ -3041,7 +3041,7 @@
                 }
 
                 function getHeaderGetter(xhr) {
-                    return function(header) {
+                    return function (header) {
                         return xhr.getResponseHeader(header);
                     };
                 }
@@ -3104,7 +3104,7 @@
                 }
 
                 function getHeaderGetter(headers) {
-                    return function(header) {
+                    return function (header) {
                         return headers[header];
                     }
                 }
@@ -8737,7 +8737,7 @@
                     if (options) {
                         if (options.merge != null) merge = options.merge;
                         if (options.state != null) state = options.state;
-                    } 
+                    }
                     else options = {};
                     // Merge entities to cache.
                     mergeEntities([detachedEntity], null, merge, state, instance, options.autoFixScalar, options.autoFixPlural);
@@ -9006,7 +9006,7 @@
                     if (async == null) async = this.workAsync;
                     if (async == null) async = settings.workAsync;
                     options.async = async;
-                    var pp = !async ? null: this.promiseProvider;
+                    var pp = !async ? null : this.promiseProvider;
                     var d = null;
                     if (pp) d = pp.deferred();
 
@@ -9221,12 +9221,12 @@
                                 metadataPrm = undefined;
                             }
                         }
-                        
+
                         // If first parameter is string, use it as an Uri and create the default service.
                         var dst = settings.getDefaultServiceType();
                         var serviceType = dst === enums.serviceTypes.WebApi ? services.webApiService : services.mvcService;
                         instance.dataService = new serviceType(service, metadataPrm, injections);
-                    } 
+                    }
                     else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this, arguments: args });
 
                     injections = injections || {};
@@ -9759,7 +9759,7 @@
             proto.fetchMetadata = function (options, successCallback, errorCallback) {
                 var retVal = null;
                 var that = this;
-                options = options || { };
+                options = options || {};
                 var async = options.async;
                 if (async == null) async = !this.ajaxProvider.syncSupported;
                 var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
@@ -9812,7 +9812,7 @@
             };
 
             proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
-                options = options || { };
+                options = options || {};
                 var makeObservable = options.makeObservable;
                 var handleUnmappedProperties = options.handleUnmappedProperties;
                 var usePost = options.usePost || false;
@@ -10070,8 +10070,8 @@
             /// Language operators. Possible values;
             ///  !, - (unary), &&, ||, ==, ===, !=, !==, >, <, >=, <=, +, -, *, /, %, &, |, <<, >>
             /// </field>
-            langOperators: (function() {
-                var ctor = function(name, code, func, oData, js) {
+            langOperators: (function () {
+                var ctor = function (name, code, func, oData, js) {
                     this.name = name;
                     this.code = code;
                     this.asFunc = func;
@@ -10081,43 +10081,43 @@
 
                 var ops = [];
                 // unary
-                ops.push(new ctor('Not', '!', function(obj) { return !obj(); }, 'not '));
-                ops.push(new ctor('Negative', '-', function(obj) { return -1 * obj(); }));
+                ops.push(new ctor('Not', '!', function (obj) { return !obj(); }, 'not '));
+                ops.push(new ctor('Negative', '-', function (obj) { return -1 * obj(); }));
                 // logical
-                ops.push(new ctor('And', '&&', function(obj1, obj2) { return obj1() && obj2(); }, 'and'));
-                ops.push(new ctor('Or', '||', function(obj1, obj2) { return obj1() || obj2(); }, 'or'));
-                ops.push(new ctor('Equals', '==', function(obj1, obj2) { return helper.equals(obj1(), obj2(), false, this); }, 'eq'));
-                ops.push(new ctor('StrictEquals', '==', function(obj1, obj2) { return helper.equals(obj1(), obj2(), true, this); }, 'eq', '==='));
-                ops.push(new ctor('NotEqual', '!=', function(obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
-                ops.push(new ctor('StrictNotEqual', '!=', function(obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
-                ops.push(new ctor('Greater', '>', function(obj1, obj2) {
+                ops.push(new ctor('And', '&&', function (obj1, obj2) { return obj1() && obj2(); }, 'and'));
+                ops.push(new ctor('Or', '||', function (obj1, obj2) { return obj1() || obj2(); }, 'or'));
+                ops.push(new ctor('Equals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), false, this); }, 'eq'));
+                ops.push(new ctor('StrictEquals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), true, this); }, 'eq', '==='));
+                ops.push(new ctor('NotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
+                ops.push(new ctor('StrictNotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
+                ops.push(new ctor('Greater', '>', function (obj1, obj2) {
                     return obj1() > obj2();
                 }, 'gt'));
-                ops.push(new ctor('Lesser', '<', function(obj1, obj2) {
+                ops.push(new ctor('Lesser', '<', function (obj1, obj2) {
                     return obj1() < obj2();
                 }, 'lt'));
-                ops.push(new ctor('GreaterEqual', '>=', function(obj1, obj2) {
+                ops.push(new ctor('GreaterEqual', '>=', function (obj1, obj2) {
                     var o1 = obj1(), o2 = obj2();
                     return o1 == o2 || o1 > o2;
                 }, 'ge'));
-                ops.push(new ctor('LesserEqual', '<=', function(obj1, obj2) {
+                ops.push(new ctor('LesserEqual', '<=', function (obj1, obj2) {
                     var o1 = obj1(), o2 = obj2();
                     return o1 == o2 || o1 < o2;
                 }, 'le'));
                 // arithmetic
-                ops.push(new ctor('Sum', '+', function(obj1, obj2) { return obj1() + obj2(); }, 'add'));
-                ops.push(new ctor('Subtract', '-', function(obj1, obj2) { return obj1() - obj2(); }, 'sub'));
-                ops.push(new ctor('Multiply', '*', function(obj1, obj2) { return obj1() * obj2(); }, 'mul'));
-                ops.push(new ctor('Divide', '/', function(obj1, obj2) { return obj1() / obj2(); }, 'div'));
-                ops.push(new ctor('Modulo', '%', function(obj1, obj2) { return obj1() % obj2(); }, 'mod'));
+                ops.push(new ctor('Sum', '+', function (obj1, obj2) { return obj1() + obj2(); }, 'add'));
+                ops.push(new ctor('Subtract', '-', function (obj1, obj2) { return obj1() - obj2(); }, 'sub'));
+                ops.push(new ctor('Multiply', '*', function (obj1, obj2) { return obj1() * obj2(); }, 'mul'));
+                ops.push(new ctor('Divide', '/', function (obj1, obj2) { return obj1() / obj2(); }, 'div'));
+                ops.push(new ctor('Modulo', '%', function (obj1, obj2) { return obj1() % obj2(); }, 'mod'));
                 // bitwise
-                ops.push(new ctor('BitAnd', '&', function(obj1, obj2) { return obj1() & obj2(); }));
-                ops.push(new ctor('BitOr', '|', function(obj1, obj2) { return obj1() | obj2(); }));
-                ops.push(new ctor('BitShiftLeft', '<<', function(obj1, obj2) { return obj1() << obj2(); }));
-                ops.push(new ctor('BitShiftRight', '>>', function(obj1, obj2) { return obj1() >> obj2(); }));
+                ops.push(new ctor('BitAnd', '&', function (obj1, obj2) { return obj1() & obj2(); }));
+                ops.push(new ctor('BitOr', '|', function (obj1, obj2) { return obj1() | obj2(); }));
+                ops.push(new ctor('BitShiftLeft', '<<', function (obj1, obj2) { return obj1() << obj2(); }));
+                ops.push(new ctor('BitShiftRight', '>>', function (obj1, obj2) { return obj1() >> obj2(); }));
 
-                ctor.find = function(code) {
-                    var a = helper.filterArray(ops, function(op) {
+                ctor.find = function (code) {
+                    var a = helper.filterArray(ops, function (op) {
                         return op.code == code || op.oData == code || op.js == code;
                     });
                     return a.length > 0 ? a[0] : null;
@@ -10176,7 +10176,7 @@
             ///  Mvc: Mvc service.
             /// </field>
             serviceTypes: new libs.enums('WebApi', 'Mvc')
-    };
+        };
     })();
     var events = (function () {
         /// <summary>Manager independent static events.</summary>
@@ -10340,8 +10340,7 @@
             /// Sets array set behaviour.
             /// </summary>
             /// <param name="provider">Array set behaviour.</param>
-            helper.assertPrm(behaviour, 'behaviour').isEnum(enums.arraySetBehaviour).check();
-            _arraySetBehaviour = behaviour;
+            _arraySetBehaviour = getValue(behaviour, null, enums.arraySetBehaviour);
         };
 
         expose.getDefaultServiceType = function () {
@@ -10356,8 +10355,7 @@
             /// Sets default service type.
             /// </summary>
             /// <param name="serviceType">Service type enum value.</param>
-            helper.assertPrm(serviceType, 'serviceType').isEnum(enums.serviceTypes).check();
-            _defaultServiceType = serviceType;
+            _defaultServiceType = getValue(serviceType, null, enums.serviceTypes);
         };
 
         expose.getDateConverter = function () {
@@ -10394,14 +10392,14 @@
         };
 
         function getValue(value, type, typeEnum) {
-            if (assert.isInstanceOf(value, type))
+            if (type && assert.isInstanceOf(value, type))
                 return value;
             else if (typeEnum != null) {
                 if (assert.isNotEmptyString(value)) {
                     var symbols = typeEnum.symbols();
                     for (var i = 0; i < symbols.length; i++) {
                         var sym = symbols[i];
-                        if (helper.equals(sym.name, value, false, {isCaseSensitive: false, ignoreWhiteSpaces: false})) {
+                        if (helper.equals(sym.name, value, false, { isCaseSensitive: false, ignoreWhiteSpaces: false })) {
                             value = sym;
                             break;
                         }
@@ -10409,7 +10407,7 @@
                 }
                 if (assert.isEnum(value, typeEnum)) return value.instance;
             }
-            throw helper.createError(i18N.invalidValue, [type.name], { args: arguments });
+            throw helper.createError(i18N.invalidArguments, null, { args: arguments });
         }
 
         return expose;
