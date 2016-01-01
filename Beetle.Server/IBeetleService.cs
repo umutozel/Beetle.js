@@ -44,8 +44,9 @@ namespace Beetle.Server {
         /// </summary>
         /// <param name="contentValue">The content value.</param>
         /// <param name="actionContext">The action context.</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <returns></returns>
-        ProcessResult ProcessRequest(object contentValue, ActionContext actionContext);
+        ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig);
 
         /// <summary>
         /// Handles the unknowns objects (which does not have $type).

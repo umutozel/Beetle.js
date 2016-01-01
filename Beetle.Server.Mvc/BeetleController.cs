@@ -147,9 +147,10 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="contentValue">The content value.</param>
         /// <param name="actionContext">The action context.</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <returns></returns>
-        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext) {
-            return Helper.ProcessRequest(contentValue, actionContext, this);
+        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig = null) {
+            return Helper.ProcessRequest(contentValue, actionContext, actionConfig ?? BeetleConfig, this);
         }
 
         /// <summary>

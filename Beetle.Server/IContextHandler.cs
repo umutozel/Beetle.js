@@ -59,9 +59,10 @@ namespace Beetle.Server {
         /// <param name="contentValue">The content value.</param>
         /// <param name="queryParameters">The query parameters.</param>
         /// <param name="actionContext">The action context.</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <param name="service">The service.</param>
         /// <returns></returns>
-        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, ActionContext actionContext, IBeetleService service);
+        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service);
 
         /// <summary>
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).

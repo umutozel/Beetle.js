@@ -117,10 +117,11 @@ namespace Beetle.Server {
         /// <param name="contentValue">The content value.</param>
         /// <param name="queryParameters">The query parameters.</param>
         /// <param name="actionContext">The action context.</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <param name="service">The service.</param>
         /// <returns></returns>
         public virtual ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters,
-                                                    ActionContext actionContext, IBeetleService service) {
+                                                    ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service) {
             return Helper.DefaultRequestProcessor(contentValue, queryParameters, actionContext, service, this, QueryableHandler, EnumerableHandler);
         }
 

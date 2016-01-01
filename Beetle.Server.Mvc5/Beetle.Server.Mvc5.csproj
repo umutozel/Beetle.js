@@ -82,6 +82,9 @@
     <Compile Include="..\Beetle.Server.Mvc\BeetleActionFilterAttribute.cs">
       <Link>BeetleActionFilterAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\Beetle.Server.Mvc\BeetleContentResult.cs">
+      <Link>BeetleContentResult.cs</Link>
+    </Compile>
     <Compile Include="..\Beetle.Server.Mvc\BeetleController.cs">
       <Link>BeetleController.cs</Link>
     </Compile>
@@ -130,4 +133,3 @@
   </Target>
   -->
 </Project>
-

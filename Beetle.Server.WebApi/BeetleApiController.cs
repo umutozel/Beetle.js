@@ -182,9 +182,9 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="contentValue">The content value.</param>
         /// <param name="actionContext">The action context.</param>
-        /// <returns></returns>
-        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext) {
-            return Helper.ProcessRequest(contentValue, actionContext, Request, ForbidBeetleQueryString, this);
+        /// <param name="actionConfig">The action config (if specified).</param>
+        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig = null) {
+            return Helper.ProcessRequest(contentValue, actionContext, Request, ForbidBeetleQueryString, actionConfig ?? BeetleConfig, this);
         }
 
         /// <summary>
