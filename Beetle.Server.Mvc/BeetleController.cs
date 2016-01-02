@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Routing;
 
@@ -102,6 +103,16 @@ namespace Beetle.Server.Mvc {
         }
 
         /// <summary>
+        /// Saves the changes using context handler.
+        /// </summary>
+        /// <param name="saveBundle">The save bundle.</param>
+        public virtual async Task<BeetleContentResult<SaveResult>> SaveChanges(object saveBundle) {
+            var svc = (IBeetleService) this;
+            var result = await svc.SaveChanges(saveBundle);
+            return new BeetleContentResult<SaveResult>(result);
+        }
+
+        /// <summary>
         /// Gets the context handler.
         /// </summary>
         /// <value>
@@ -169,7 +180,7 @@ namespace Beetle.Server.Mvc {
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
         [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual SaveResult SaveChanges(object saveBundle) {
+        async Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);
             var entityBagList = entityBags == null
@@ -182,7 +193,7 @@ namespace Beetle.Server.Mvc {
 
             var saveContext = new SaveContext();
             OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
-            var retVal = ContextHandler.SaveChanges(entityBagList, saveContext);
+            var retVal = await ContextHandler.SaveChanges(entityBagList, saveContext);
             OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
 
             return retVal;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using Beetle.Client.Models;
 using Beetle.Server;
@@ -76,7 +77,7 @@ namespace Beetle.Client.Controllers {
 
         [HttpPost]
         [ValidateJsonAntiForgeryToken]
-        public SaveResult UpdateEntity(object saveBundle) {
+        public Task<BeetleContentResult<SaveResult>> UpdateEntity(object saveBundle) {
             return SaveChanges(saveBundle);
         }
 

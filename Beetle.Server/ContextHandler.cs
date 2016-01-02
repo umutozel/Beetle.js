@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Beetle.Server.Meta;
+using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
@@ -180,7 +181,7 @@ namespace Beetle.Server {
         /// <returns>
         /// Save result.
         /// </returns>
-        public abstract SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
+        public abstract Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
 
         /// <summary>
         /// Gets the enumerable handler.

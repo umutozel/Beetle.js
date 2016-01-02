@@ -204,7 +204,7 @@ namespace Beetle.Server.WebApi {
         /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
         [HttpPost]
         [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual SaveResult SaveChanges(object saveBundle) {
+        public virtual async Task<SaveResult> SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);
             var entityBagList = entityBags == null
@@ -217,7 +217,7 @@ namespace Beetle.Server.WebApi {
 
             var saveContext = new SaveContext();
             OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
-            var retVal = ContextHandler.SaveChanges(entityBagList, saveContext);
+            var retVal = await ContextHandler.SaveChanges(entityBagList, saveContext);
             OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
 
             return retVal;

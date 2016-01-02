@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
@@ -59,7 +60,7 @@ namespace Beetle.Server {
         /// </summary>
         /// <param name="saveBundle">The save bundle.</param>
         /// <returns></returns>
-        SaveResult SaveChanges(object saveBundle);
+        Task<SaveResult> SaveChanges(object saveBundle);
 
         /// <summary>
         /// The beetle configuration

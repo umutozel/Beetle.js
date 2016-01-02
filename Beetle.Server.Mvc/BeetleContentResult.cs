@@ -3,6 +3,16 @@ using System.Web.Mvc;
 
 namespace Beetle.Server.Mvc {
 
+    public class BeetleContentResult<T> : BeetleContentResult {
+        private readonly T _value;
+
+        public BeetleContentResult(T value): base(value) {
+            _value = value;
+        }
+
+        public new T Value { get { return _value; } }
+    }
+
     public class BeetleContentResult : ActionResult {
         private readonly object _value;
 
