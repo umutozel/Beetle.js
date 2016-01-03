@@ -8284,6 +8284,7 @@
                     ///  (optional) Injection object to change behavior of the manager, can include these properties: 
                     ///    promiseProvider, autoFixScalar, autoFixPlural, validateOnMerge, validateOnSave, liveValidate, handleUnmappedProperties, forceUpdate, workAsync, minimizePackage.
                     ///    for service: ajaxTimeout, dataType, contentType
+                    ///    registerMetadataTypes: when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope.
                     ///  When not provided, defaults will be used.
                     /// </param>
                     initialize(arguments, this);
@@ -9255,9 +9256,52 @@
                     instance.saving = new core.event('saving', instance);
                     instance.saved = new core.event('saved', instance);
 
+                    var registerMetadataTypes = injections && injections.registerMetadataTypes;
+                    if (registerMetadataTypes == null)
+                        registerMetadataTypes = settings.registerMetadataTypes;
                     instance.dataService.ready(function () {
+                        var metadata = instance.dataService.metadataManager;
+                        if (registerMetadataTypes && metadata) {
+                            var types = metadata.types;
+                            if (types) {
+                                for (var i = 0; i < types.length; i++) {
+                                    var type = types[i];
+                                    var shortName = type.shortName;
+                                    instance[shortName] = getManagerEntityClass(shortName, instance);
+
+                                    if (!exports.hasOwnProperty(shortName)) {
+                                        exports[shortName] = getGlobalEntityClass();
+                                    }
+                                }
+                            }
+                            var enums = metadata.enums;
+                            if (enums) {
+                                for (var enumName in enums) {
+                                    if (!exports.hasOwnProperty(enumName))
+                                        exports[enumName] = enums[enumName];
+                                }
+                            }
+                        }
+
                         checkReady(instance);
                     });
+
+                    function getManagerEntityClass(shortName, manager) {
+                        return function (initialValues) {
+                            helper.extend(this, initialValues);
+                            manager.createEntity(shortName, this);
+                        };
+                    }
+
+                    function getGlobalEntityClass(type) {
+                        return function (initialValues, createRaw) {
+                            helper.extend(this, initialValues);
+                            if (createRaw == true)
+                                type.createRawEntity(this);
+                            else
+                                type.createEntity(this);
+                        };
+                    }
                 }
 
                 function checkReady(instance) {
@@ -10256,6 +10300,8 @@
         expose.forceUpdate = false;
         /// <field>when true, loaded meta-data will be cached for url.</field>
         expose.cacheMetadata = true;
+        /// <field>when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope.</field>
+        expose.registerMetadataTypes = true;
         /// <field>
         /// when not equals to false all Ajax calls will be made asynchronously, 
         /// when false createEntityAsync, executeQuery, saveChanges will returns results immediately.</field>

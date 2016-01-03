@@ -1515,7 +1515,7 @@ if (metadata !== false) {
 
     test('check required', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('PostalCode', '');
         var err = add.$tracker.validate().q().single('(property.name == "PostalCode") && (validator.name == "Required")');
@@ -1528,7 +1528,7 @@ if (metadata !== false) {
 
     test('check string length', 3, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('PostalCode', '1');
         var err = add.$tracker.validate().q().single('(property.name == "PostalCode") && (validator.name == "StringLength")');
@@ -1545,7 +1545,7 @@ if (metadata !== false) {
 
     test('check min length', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('City', '1');
         var err = add.$tracker.validate().q().single('(property.name == "City") && (validator.name == "MinLength")');
@@ -1558,7 +1558,7 @@ if (metadata !== false) {
 
     test('check max length', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('City', '12345678901');
         var err = add.$tracker.validate().q().single('(property.name == "City") && (validator.name == "MaxLength")');
@@ -1571,7 +1571,7 @@ if (metadata !== false) {
 
     test('check range', 3, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('DoorNumber', 123);
         var err = add.$tracker.validate().q().single('(property.name == "DoorNumber") && (validator.name == "Range")');
@@ -1588,7 +1588,7 @@ if (metadata !== false) {
 
     test('check email', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', 'alan-et-turing.com');
         var err = add.$tracker.validate().q().single('(property.name == "Extra") && (validator.name == "EmailAddress")');
@@ -1601,7 +1601,7 @@ if (metadata !== false) {
 
     test('check credit card', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', '3782224631005');
         var err = add.$tracker.validate().q().single('(property.name == "Extra") && (validator.name == "CreditCard")');
@@ -1614,7 +1614,7 @@ if (metadata !== false) {
 
     test('check url', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', 'beetlejs');
         var err = add.$tracker.validate().q().single('(property.name == "Extra") && (validator.name == "Url")');
@@ -1627,7 +1627,7 @@ if (metadata !== false) {
 
     test('check phone', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', '55544');
         var err = add.$tracker.validate().q().single('(property.name == "Extra") && (validator.name == "Phone")');
@@ -1640,7 +1640,7 @@ if (metadata !== false) {
 
     test('check postal code', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('PostalCode', '123');
         var err = add.$tracker.validate().q().single('(property.name == "PostalCode") && (validator.name == "PostalCode")');
@@ -1653,7 +1653,7 @@ if (metadata !== false) {
 
     test('check time', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', '123');
         var err = add.$tracker.validate().q().single('(property.name == "Extra") && (validator.name == "Time")');
@@ -1666,7 +1666,7 @@ if (metadata !== false) {
 
     test('check regular expression', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', 4);
         var err = add.$tracker.validate().q().single('(property.name == "Extra") && (validator.name == "RegularExpression")');
@@ -1679,7 +1679,7 @@ if (metadata !== false) {
 
     test('check compare', 2, function () {
         var manager = new EntityManager(service);
-        var add = manager.createEntity('Address');
+        var add = new manager.Address();
 
         add.$tracker.setValue('Extra', 'Test');
         add.$tracker.setValue('Extra2', 'Test2');
@@ -1697,7 +1697,7 @@ if (metadata !== false) {
         var manager = new EntityManager(service);
         var name = 'Test Name';
         var id = beetle.helper.createGuid();
-        var ne = manager.createEntity('NamedEntity', { Id: id, Name: name });
+        var ne = new manager.NamedEntity({ Id: id, Name: name });
         ne.$tracker.setValue('Description', 'Test Description');
         ne.$tracker.setValue('UserNameCreate', 'Test User Name');
         ne.$tracker.setValue('TimeCreate', new Date());
