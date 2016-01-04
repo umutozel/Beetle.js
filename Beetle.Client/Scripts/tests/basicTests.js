@@ -2207,8 +2207,8 @@ if (metadata !== false) {
 
         com.$tracker.setValue('UserNameCreate', 'Nikola');
         expected = false;
-        com.$tracker.setValue('UserNameCreate', new beetle.core.valueNotifyWrapper('Tesla'));
-        equal(com.$tracker.getValue('UserNameCreate'), 'Tesla', 'data property changed with valueNotifyWrapper');
+        com.$tracker.setValue('UserNameCreate', new beetle.core.ValueNotifyWrapper('Tesla'));
+        equal(com.$tracker.getValue('UserNameCreate'), 'Tesla', 'data property changed with ValueNotifyWrapper');
     });
 }
 else

@@ -2497,7 +2497,7 @@
                     if (this.metadataManager)
                         type = this.metadataManager.getEntityType(typeName);
                     if (!type) type = new metadata.EntityType(typeName);
-                    return core.entityTracker.toEntity(result, type, settings.getObservableProvider());
+                    return core.EntityTracker.toEntity(result, type, settings.getObservableProvider());
                 };
 
                 proto.toODataQueryParams = function (query, varContext) {
@@ -2709,7 +2709,7 @@
                         if (registerMetadataTypes && metadata) {
                             var managerName = metadata.name;
                             if (!exports.hasOwnProperty(managerName))
-                                exports[managerName] = core.entityManager;
+                                exports[managerName] = core.EntityManager;
                         }
 
                         var cs = instance._readyCallbacks.slice(0);
@@ -2849,7 +2849,7 @@
                         var retVal;
                         value = value || [];
                         if (after)
-                            value = new core.trackableArray(value, object, property,
+                            value = new core.TrackableArray(value, object, property,
                                 function (o, p, i, r, a) {
                                     if (retVal.$fromKo !== true)
                                         object[propertyName].valueHasMutated();
@@ -2960,7 +2960,7 @@
                     function toObservableArray(property, propertyName, value, after, setCallback) {
                         value = value || [];
                         if (after)
-                            value = new core.trackableArray(value, object, property, after);
+                            value = new core.TrackableArray(value, object, property, after);
                         fields[propertyName] = value;
 
                         return Object.defineProperty(object, propertyName, {
@@ -3335,7 +3335,7 @@
                     /// <param name="args">Validator arguments.</param>
                     helper.assertPrm(name, 'name').isNotEmptyString().check();
                     helper.assertPrm(func, 'func').isFunction().check();
-                    this.validators.push(new core.validator(name, func, message, args));
+                    this.validators.push(new core.Validator(name, func, message, args));
                 };
 
                 proto.validate = function (entity) {
@@ -3407,7 +3407,7 @@
                     /// <param name="args">Validator arguments.</param>
                     helper.assertPrm(name, 'name').isNotEmptyString().check();
                     helper.assertPrm(func, 'func').isFunction().check();
-                    this.validators.push(new core.validator(name, func, message, args));
+                    this.validators.push(new core.Validator(name, func, message, args));
                 };
 
                 proto.validate = function (entity) {
@@ -3508,7 +3508,7 @@
                     /// <param name="initialValues">Entity initial values.</param>
                     var result = this.createRawEntity(initialValues);
                     // make it observable
-                    return core.entityTracker.toEntity(result, this, settings.getObservableProvider());
+                    return core.EntityTracker.toEntity(result, this, settings.getObservableProvider());
                 };
 
                 proto.createRawEntity = function (initialValues) {
@@ -3605,7 +3605,7 @@
                     /// <param name="args">Validator arguments.</param>
                     helper.assertPrm(name, 'name').isNotEmptyString().check();
                     helper.assertPrm(func, 'func').isFunction().check();
-                    this.validators.push(new core.validator(name, func, message, args));
+                    this.validators.push(new core.Validator(name, func, message, args));
                 };
 
                 proto.validate = function (entity) {
@@ -3828,7 +3828,7 @@
                                 dp.d ? dataType.handle(dp.d) : null, dp.c);
                             if (dp.v)
                                 helper.forEach(dp.v, function (v) {
-                                    property.validators.push(core.validator.byCode(v.t, v.a, v.m, v.r, property.displayName, dp.r));
+                                    property.validators.push(core.Validator.byCode(v.t, v.a, v.m, v.r, property.displayName, dp.r));
                                 });
                             if (dp.p) property.precision = Number(dp.p);
                             if (dp.s) property.scale = Number(dp.s);
@@ -3845,7 +3845,7 @@
                                     });
                                 if (np.v)
                                     helper.forEach(np.v, function (v) {
-                                        navProp.validators.push(core.validator.byCode(v.t, v.a, v.m, v.r, navProp.displayName, np.r));
+                                        navProp.validators.push(core.Validator.byCode(v.t, v.a, v.m, v.r, navProp.displayName, np.r));
                                     });
                                 t.navigationProperties.push(navProp);
                             });
@@ -6110,7 +6110,7 @@
         /// <summary>Core types.</summary>
 
         return {
-            valueNotifyWrapper: (function () {
+            ValueNotifyWrapper: (function () {
                 var ctor = function (value, fromBeetle) {
                     /// <summary>
                     /// This class wraps given value to allow skipping callbacks.
@@ -6122,7 +6122,7 @@
 
                 return ctor;
             })(),
-            trackableArray: (function () {
+            TrackableArray: (function () {
                 var ctor = function (initial, object, property, after) {
                     /// <summary>
                     /// Trackable array interceptor. Inherits from Array and can notify beetle core when array changes.
@@ -6135,8 +6135,8 @@
                     this.property = property;
                     this.after = after;
 
-                    this.changing = new core.event(property + "ArrayChanging", this);
-                    this.changed = new core.event(property + "ArrayChanged", this);
+                    this.changing = new core.Event(property + "ArrayChanging", this);
+                    this.changed = new core.Event(property + "ArrayChanged", this);
 
                     initialize(initial, this);
                 };
@@ -6253,7 +6253,7 @@
 
                 return ctor;
             })(),
-            event: (function () {
+            Event: (function () {
                 var ctor = function (name, publisher) {
                     /// <summary>
                     /// Event, notification and callback object.
@@ -6918,7 +6918,7 @@
 
                 return expose;
             })(),
-            validator: (function () {
+            Validator: (function () {
                 var ctor = function (name, func, message, args) {
                     /// <summary>
                     /// Data and navigation property validators.
@@ -7146,7 +7146,7 @@
 
                 return ctor;
             })(),
-            entityContainer: (function () {
+            EntityContainer: (function () {
                 var entitySet = (function () {
                     var c = function (type) {
                         /// <summary>
@@ -7483,7 +7483,7 @@
 
                 return ctor;
             })(),
-            entitySet: (function () {
+            EntitySet: (function () {
                 var ctor = function (type, manager) {
                     this.entityType = type;
                     this.manager = manager;
@@ -7675,7 +7675,7 @@
 
                 return ctor;
             })(),
-            entityTracker: (function () {
+            EntityTracker: (function () {
                 var ctor = function (entity, type, op) {
                     /// <summary>
                     /// Entity tracker class. Tracks changes made on entities.
@@ -7705,7 +7705,7 @@
                     /// <param name="manager">Entity manager.</param>
                     if (this.manager) throw helper.createError(i18N.entityAlreadyBeingTracked, { otherManager: this.manager });
                     // Check if argument is an instance of entityManager.
-                    helper.assertPrm(manager, 'manager').isInstanceOf(core.entityManager).check();
+                    helper.assertPrm(manager, 'manager').isInstanceOf(core.EntityManager).check();
                     this.manager = manager;
                 };
 
@@ -7956,7 +7956,7 @@
                     /// <param name="type">The entity type.</param>
                     /// <param name="op">Observable provider instance.</param>
                     // Crate entity tracker with this static method.
-                    return new core.entityTracker(result, type, op).entity;
+                    return new core.EntityTracker(result, type, op).entity;
                 };
 
                 function initialize(entity, type, op, instance) {
@@ -7974,10 +7974,10 @@
                     instance.manager = null;
                     instance.owners = [];
                     instance.validationErrors = [];
-                    instance.validationErrorsChanged = new core.event('validationErrorsChanged', instance);
-                    instance.entityStateChanged = new core.event('entityStateChanged', instance);
-                    instance.propertyChanged = new core.event('propertyChanged', instance);
-                    instance.arrayChanged = new core.event('arrayChanged', instance);
+                    instance.validationErrorsChanged = new core.Event('validationErrorsChanged', instance);
+                    instance.entityStateChanged = new core.Event('entityStateChanged', instance);
+                    instance.propertyChanged = new core.Event('propertyChanged', instance);
+                    instance.arrayChanged = new core.Event('arrayChanged', instance);
                     // get key's initial value.
                     if (type.hasMetadata)
                         instance.key = getKey(instance);
@@ -8080,7 +8080,7 @@
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
                     var noCallbackExternal = false;
-                    if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
+                    if (assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
                     }
@@ -8131,7 +8131,7 @@
                     /// <param name="newValue">New value.</param>
                     var noCallbackBeetle = false;
                     var noCallbackExternal = false;
-                    if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
+                    if (assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                         noCallbackBeetle = newValue.fromBeetle;
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
@@ -8222,7 +8222,7 @@
                                     if (fkEntity)
                                         tracker.setValue(np.name, fkEntity); // if found set as new value.
                                     else if (oldFkEntity)
-                                        tracker.setValue(np.name, new core.valueNotifyWrapper(null, true)); // if not found set navigation to null but preserve foreign key.
+                                        tracker.setValue(np.name, new core.ValueNotifyWrapper(null, true)); // if not found set navigation to null but preserve foreign key.
                                 } else
                                     tracker.setValue(np.name, null); // if foreign key is null set navigation to null.
                             }
@@ -8240,7 +8240,7 @@
                     /// <param name="newValue">New value.</param>
                     var noCallbackBeetle = false;
                     var noCallbackExternal = false;
-                    if (assert.isInstanceOf(newValue, core.valueNotifyWrapper)) {
+                    if (assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                         noCallbackBeetle = newValue.fromBeetle;
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
@@ -8506,7 +8506,7 @@
 
                 return ctor;
             })(),
-            entityManager: (function () {
+            EntityManager: (function () {
                 // static error message.
                 var ctor = function (service, metadataPrm, injections) {
                     /// <summary>
@@ -9491,16 +9491,16 @@
                     // Create a integer value to hold change count. This value will be updated after every entity state change.
                     instance.pendingChangeCount = 0;
                     // Create the entity container.
-                    instance.entities = new core.entityContainer();
+                    instance.entities = new core.EntityContainer();
                     instance.validationErrors = [];
                     // Events.
-                    instance.entityStateChanged = new core.event('entityStateChanged', instance);
-                    instance.validationErrorsChanged = new core.event('validationErrorsChanged', instance);
-                    instance.hasChangesChanged = new core.event('hasChangesChanged', instance);
-                    instance.queryExecuting = new core.event('queryExecuting', instance);
-                    instance.queryExecuted = new core.event('queryExecuted', instance);
-                    instance.saving = new core.event('saving', instance);
-                    instance.saved = new core.event('saved', instance);
+                    instance.entityStateChanged = new core.Event('entityStateChanged', instance);
+                    instance.validationErrorsChanged = new core.Event('validationErrorsChanged', instance);
+                    instance.hasChangesChanged = new core.Event('hasChangesChanged', instance);
+                    instance.queryExecuting = new core.Event('queryExecuting', instance);
+                    instance.queryExecuted = new core.Event('queryExecuted', instance);
+                    instance.saving = new core.Event('saving', instance);
+                    instance.saved = new core.Event('saved', instance);
 
                     var registerMetadataTypes = injections.registerMetadataTypes;
                     if (registerMetadataTypes == null)
@@ -9519,7 +9519,7 @@
                                     
                                     var setName = type.setName;
                                     if (setName && !instance.hasOwnProperty(setName)) {
-                                        var set = new core.entitySet(type, instance);
+                                        var set = new core.EntitySet(type, instance);
                                         instance[setName] = set;
                                         instance.entitySets[shortName] = set;
                                     }
@@ -9888,7 +9888,7 @@
                     /// <param name="preserveFK">When true, we can keep beetle from emptying related foreign key properties.</param>
                     var tracker = entity.$tracker;
                     var type = tracker.entityType;
-                    var nullValue = preserveFK ? new core.valueNotifyWrapper(null, true) : null;
+                    var nullValue = preserveFK ? new core.ValueNotifyWrapper(null, true) : null;
                     if (type.hasMetadata) {
                         // If type has metadata clear all navigation properties.
                         helper.forEach(type.navigationProperties, function (np) {
@@ -10481,19 +10481,19 @@
 
         return {
             /// <field>Notifies before a query is being executed. You can modify query and options from the args.</field>
-            queryExecuting: new core.event('beetleQueryExecuting', this),
+            queryExecuting: new core.Event('beetleQueryExecuting', this),
             /// <field>Notifies after a query is executed. You can modify result from the args.</field>
-            queryExecuted: new core.event('beetleQueryExecuted', this),
+            queryExecuted: new core.Event('beetleQueryExecuted', this),
             /// <field>Notifies before save call started. You can modify options from the args.</field>
-            saving: new core.event('beetleSaving', this),
+            saving: new core.Event('beetleSaving', this),
             /// <field>Notifies after save call completed.</field>
-            saved: new core.event('beetleSaved', this),
+            saved: new core.Event('beetleSaved', this),
             /// <field>Notifies when a information level event is occurred.</field>
-            info: new core.event('beetleInfo', this),
+            info: new core.Event('beetleInfo', this),
             /// <field>Notifies when a warning level event is occurred.</field>
-            warning: new core.event('beetleWarning', this),
+            warning: new core.Event('beetleWarning', this),
             /// <field>Notifies when a error level event is occurred.</field>
-            error: new core.event('beetleError', this)
+            error: new core.Event('beetleError', this)
         };
     })();
     var settings = (function () {
@@ -10822,7 +10822,7 @@
 
             // shortcuts
             MetadataManager: metadata.MetadataManager,
-            EntityManager: core.entityManager,
+            EntityManager: core.EntityManager,
             WebApiService: services.webApiService,
             MvcService: services.mvcService,
             EntityStates: enums.entityStates,
