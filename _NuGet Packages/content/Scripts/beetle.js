@@ -1467,7 +1467,7 @@
         /// This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
         /// </summary>
         return {
-            dateConverterBase: (function () {
+            DateConverterBase: (function () {
                 var ctor = function (name) {
                     /// <summary>
                     /// Data conversion base type (interface). With this we can abstract date conversion and users can choose (or write) their implementation.
@@ -1480,24 +1480,24 @@
                     /// <summary>
                     /// Converts given value to date.
                     /// </summary>
-                    throw helper.createError(i18N.notImplemented, ['dateConverterBase', 'parse']);
+                    throw helper.createError(i18N.notImplemented, ['DateConverterBase', 'parse']);
                 };
                 proto.toISOString = function (value) {
                     /// <summary>
                     /// Converts given date to ISO string.
                     /// </summary>
-                    throw helper.createError(i18N.notImplemented, ['dateConverterBase', 'toISOString']);
+                    throw helper.createError(i18N.notImplemented, ['DateConverterBase', 'toISOString']);
                 };
 
                 return ctor;
             })(),
-            dataTypeBase: (function () {
+            DataTypeBase: (function () {
                 var ctor = function (name) {
                     /// <summary>
                     /// Base of all types.
                     /// </summary>
                     /// <param name="name">Name of the type.</param>
-                    this.name = name || 'dataTypeBase';
+                    this.name = name || 'DataTypeBase';
                     this.isComplex = false;
                 };
                 var proto = ctor.prototype;
@@ -1558,7 +1558,7 @@
 
                 return ctor;
             })(),
-            expressionBase: (function () {
+            ExpressionBase: (function () {
                 var ctor = function (name, order, onlyBeetle, isProjection) {
                     /// <summary>
                     /// Javascript expression base class -like linq expressions.
@@ -1574,7 +1574,7 @@
                     /// Is this expression alters result type.
                     ///  after result type is changed, if an expression is added to query, query becomes OData incompatible.
                     /// </param>
-                    this.name = name || 'expressionBase';
+                    this.name = name || 'ExpressionBase';
                     this.order = order;
                     this.onlyBeetle = onlyBeetle;
                     this.isProjection = isProjection;
@@ -1624,7 +1624,7 @@
 
                 return ctor;
             })(),
-            queryFuncBase: (function () {
+            QueryFuncBase: (function () {
                 var ctor = function (name, beetleName, argCount) {
                     /// <summary>
                     /// Query function base class
@@ -1676,7 +1676,7 @@
 
                 return ctor;
             })(),
-            queryBase: (function () {
+            QueryBase: (function () {
                 var ctor = function () {
                     /// <summary>
                     /// Query base class. Contains common query methods. 
@@ -1720,7 +1720,7 @@
                     /// </summary>
                     /// <param name="exp">Expression to add.</param>
                     if (this.isClosed) throw helper.createError(i18N.queryClosed, null, { query: this });
-                    helper.assertPrm(exp, 'expression').isInstanceOf(baseTypes.expressionBase).check();
+                    helper.assertPrm(exp, 'expression').isInstanceOf(baseTypes.ExpressionBase).check();
                     this.expressions.push(exp);
                     if (exp.isExecuter === true) {
                         var executeAfterExecuter = this.options && this.options.executeAfterExecuter;
@@ -2209,13 +2209,13 @@
 
                 return ctor;
             })(),
-            observableProviderBase: (function () {
+            ObservableProviderBase: (function () {
                 var ctor = function (name) {
                     /// <summary>
                     /// Observable provider base class. Makes given object's properties observable.
                     /// </summary>
                     /// <param name="name">Name of the provider.</param>
-                    this.name = name || 'observableProviderBase';
+                    this.name = name || 'ObservableProviderBase';
                 };
                 var proto = ctor.prototype;
 
@@ -2258,13 +2258,13 @@
 
                 return ctor;
             })(),
-            ajaxProviderBase: (function () {
+            AjaxProviderBase: (function () {
                 var ctor = function (name) {
                     /// <summary>
                     /// Ajax provider base class. Operates ajax operations.
                     /// </summary>
                     /// <param name="name">Name of the provider.</param>
-                    this.name = name || 'ajaxProviderBase';
+                    this.name = name || 'AjaxProviderBase';
                     this.syncSupported = true;
                 };
                 var proto = ctor.prototype;
@@ -2296,13 +2296,13 @@
 
                 return ctor;
             })(),
-            serializationServiceBase: (function () {
+            SerializationServiceBase: (function () {
                 var ctor = function (name) {
                     /// <summary>
                     /// Serialization service base class. Deserializes incoming data and serializes outgoing data.
                     /// </summary>
                     /// <param name="name">Name of the service.</param>
-                    this.name = name || 'serializationServiceBase';
+                    this.name = name || 'SerializationServiceBase';
                 };
                 var proto = ctor.prototype;
 
@@ -2330,13 +2330,13 @@
 
                 return ctor;
             })(),
-            promiseProviderBase: (function () {
+            PromiseProviderBase: (function () {
                 var ctor = function (name) {
                     /// <summary>
                     /// Promise provider base class. Creates deferred promises for async operations..
                     /// </summary>
                     /// <param name="name">Name of the provider.</param>
-                    this.name = name || 'promiseProviderBase';
+                    this.name = name || 'PromiseProviderBase';
                 };
                 var proto = ctor.prototype;
 
@@ -2379,7 +2379,7 @@
 
                 return ctor;
             })(),
-            dataServiceBase: (function () {
+            DataServiceBase: (function () {
                 // cache metadata to reduce network traffic.
                 var _metadataCache = [];
 
@@ -2569,7 +2569,7 @@
                     /// <param name="options">Fetch metadata options, for details read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'fetchMetadata']);
+                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'fetchMetadata']);
                 };
                 proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
                     /// <summary>
@@ -2583,7 +2583,7 @@
                     /// <param name="options">Asynchronous entity creation options, for details read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'createEntityAsync']);
+                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'createEntityAsync']);
                 };
                 proto.executeQuery = function (query, options, successCallback, errorCallback) {
                     /// <summary>
@@ -2612,7 +2612,7 @@
                     /// <param name="options">Query options, for detail read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'executeQuery']);
+                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQuery']);
                 };
                 proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
                     /// <summary>
@@ -2623,7 +2623,7 @@
                     /// <param name="options">makeObservable, usePost etc. query execution parameters.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'executeQueryParams']);
+                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQueryParams']);
                 };
                 proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
                     /// <summary>
@@ -2638,7 +2638,7 @@
                     /// <param name="options">Save options, for details read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'saveChanges']);
+                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'saveChanges']);
                 };
 
                 var registerMetadataTypes;
@@ -2732,9 +2732,9 @@
             /// <field>Default date converter class. Uses browser's default Date object.</field>
             defaultDateConverterInstance: (function () {
                 var ctor = function () {
-                    baseTypes.dateConverterBase.call(this, 'Default Date Converter');
+                    baseTypes.DateConverterBase.call(this, 'Default Date Converter');
                 };
-                helper.inherit(ctor, baseTypes.dateConverterBase);
+                helper.inherit(ctor, baseTypes.DateConverterBase);
                 var proto = ctor.prototype;
 
                 proto.parse = function (value) {
@@ -2781,10 +2781,10 @@
                 }
 
                 var ctor = function () {
-                    baseTypes.observableProviderBase.call(this, 'Knockout Observable Provider');
+                    baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.observableProviderBase);
+                helper.inherit(ctor, baseTypes.ObservableProviderBase);
                 var proto = ctor.prototype;
 
                 proto.isObservable = function (object, property) {
@@ -2879,10 +2879,10 @@
             /// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
             propertyObservableProviderInstance: (function () {
                 var ctor = function () {
-                    baseTypes.observableProviderBase.call(this, 'Property Observable Provider');
+                    baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.observableProviderBase);
+                helper.inherit(ctor, baseTypes.ObservableProviderBase);
                 var proto = ctor.prototype;
 
                 proto.isObservable = function (object, property) {
@@ -2996,10 +2996,10 @@
             /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
             jQueryAjaxProviderInstance: (function (jQuery) {
                 var ctor = function () {
-                    baseTypes.ajaxProviderBase.call(this, 'jQuery Ajax Provider');
+                    baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.ajaxProviderBase);
+                helper.inherit(ctor, baseTypes.AjaxProviderBase);
                 var proto = ctor.prototype;
 
                 proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
@@ -3065,11 +3065,11 @@
             /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
             angularAjaxProviderInstance: (function (angular) {
                 var ctor = function () {
-                    baseTypes.ajaxProviderBase.call(this, 'Angular Ajax Provider');
+                    baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
                     this.syncSupported = false;
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.ajaxProviderBase);
+                helper.inherit(ctor, baseTypes.AjaxProviderBase);
                 var proto = ctor.prototype;
 
                 var $http;
@@ -3128,10 +3128,10 @@
             /// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
             jsonSerializationServiceInstance: (function () {
                 var ctor = function () {
-                    baseTypes.serializationServiceBase.call(this, 'Json Serializer');
+                    baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.serializationServiceBase);
+                helper.inherit(ctor, baseTypes.SerializationServiceBase);
                 var proto = ctor.prototype;
 
                 proto.serialize = function (data) {
@@ -3149,10 +3149,10 @@
             /// <field>Q promise provider instance.</field>
             qPromiseProviderInstance: (function (q) {
                 var ctor = function () {
-                    baseTypes.promiseProviderBase.call(this, 'Q Promise Provider');
+                    baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.promiseProviderBase);
+                helper.inherit(ctor, baseTypes.PromiseProviderBase);
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
@@ -3180,10 +3180,10 @@
             /// <field>Angular promise provider instance.</field>
             angularPromiseProviderInstance: (function (angular) {
                 var ctor = function () {
-                    baseTypes.promiseProviderBase.call(this, 'Angular Promise Provider');
+                    baseTypes.PromiseProviderBase.call(this, 'Angular Promise Provider');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.promiseProviderBase);
+                helper.inherit(ctor, baseTypes.PromiseProviderBase);
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
@@ -3219,10 +3219,10 @@
             /// <field>jQuery promise provider instance.</field>
             jQueryPromiseProviderInstance: (function (jQuery) {
                 var ctor = function () {
-                    baseTypes.promiseProviderBase.call(this, 'jQuery Promise Provider');
+                    baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
                     helper.tryFreeze(this);
                 };
-                helper.inherit(ctor, baseTypes.promiseProviderBase);
+                helper.inherit(ctor, baseTypes.PromiseProviderBase);
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
@@ -3926,10 +3926,10 @@
                             /// <summary>
                             /// Holds query concrete type name.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'oftype', -1, true, true);
+                            baseTypes.ExpressionBase.call(this, 'oftype', -1, true, true);
                             this.typeName = typeName;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.combine = function (typeName) {
@@ -4094,7 +4094,7 @@
                             ///          .orGroup('Name', op.Equal, 'Young').and('Age', op.Lesser, 30);
                             ///     (Name == 'Old' and Age > 30) or (Name == 'TooOld' and Age > 100)
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'filter', 2, false, false);
+                            baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
                             // active group, all and, or calls will be added to this groups as filters.
                             this.currentGroup = null;
                             // all root groups, query will be build using these.
@@ -4106,7 +4106,7 @@
                             if (initial)
                                 this.andGroup.apply(this, initial);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.and = function (args) {
@@ -4301,13 +4301,13 @@
                             /// <summary>
                             /// Holds query order by parameters.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'orderby', 1, false, false);
+                            baseTypes.ExpressionBase.call(this, 'orderby', 1, false, false);
                             expStr = expStr || defaultExp;
                             if (isDesc === true) expStr += ' desc';
                             this.expStr = expStr;
                             this.exp = libs.jsep(expStr);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.combine = function (expStr, isDesc) {
@@ -4383,11 +4383,11 @@
                             /// <summary>
                             /// Holds query expand list.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'expand', 1, false, false);
+                            baseTypes.ExpressionBase.call(this, 'expand', 1, false, false);
                             this.expStr = expStr;
                             this.exp = libs.jsep(expStr);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.combine = function (expStr) {
@@ -4418,11 +4418,11 @@
                             /// <summary>
                             /// Holds query projection parameters.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'select', 2, false, true);
+                            baseTypes.ExpressionBase.call(this, 'select', 2, false, true);
                             this.expStr = expStr;
                             this.exp = libs.jsep(expStr);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.combine = function (expStr) {
@@ -4467,10 +4467,10 @@
                             /// <summary>
                             /// Holds query skip count.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'skip', 2, false, false);
+                            baseTypes.ExpressionBase.call(this, 'skip', 2, false, false);
                             this.count = count;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.combine = function (count) {
@@ -4500,10 +4500,10 @@
                             /// <summary>
                             /// Holds query top information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'top', 2, false, false);
+                            baseTypes.ExpressionBase.call(this, 'top', 2, false, false);
                             this.count = count;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.combine = function (count) {
@@ -4533,7 +4533,7 @@
                             /// <summary>
                             /// Holds query groupBy information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'groupby', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'groupby', 3, true, true);
                             this.keySelectorStr = keySelectorStr;
                             this.elementSelectorStr = elementSelectorStr;
 
@@ -4544,7 +4544,7 @@
                             if (elementSelectorStr)
                                 this.elementSelectorExp = libs.jsep(elementSelectorStr);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4610,12 +4610,12 @@
                             /// <summary>
                             /// Holds query distinct information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'distinct', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'distinct', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4659,9 +4659,9 @@
                             /// <summary>
                             /// Holds query reverse information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'reverse', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'reverse', 3, true, false);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function () {
@@ -4687,11 +4687,11 @@
                             /// <summary>
                             /// Holds query distinct information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'selectMany', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'selectMany', 3, true, true);
                             this.expStr = expStr;
                             this.exp = libs.jsep(expStr);
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4728,13 +4728,13 @@
                             /// <summary>
                             /// Holds query skipWhile information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'skipWhile', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'skipWhile', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4763,13 +4763,13 @@
                             /// <summary>
                             /// Holds query takeWhile information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'takeWhile', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'takeWhile', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4798,13 +4798,13 @@
                             /// <summary>
                             /// Holds query all information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;all', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;all', 3, true, true);
                             this.expStr = expStr;
                             this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4831,14 +4831,14 @@
                             /// <summary>
                             /// Holds query any information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;any', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;any', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4868,13 +4868,13 @@
                             /// <summary>
                             /// Holds query average information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;avg', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;avg', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4901,13 +4901,13 @@
                             /// <summary>
                             /// Holds query maximum information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;max', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;max', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4934,13 +4934,13 @@
                             /// <summary>
                             /// Holds query minimum information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;min', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;min', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -4967,13 +4967,13 @@
                             /// <summary>
                             /// Holds query sum information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;sum', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;sum', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5000,14 +5000,14 @@
                             /// <summary>
                             /// Holds query count information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;count', 3, true, true);
+                            baseTypes.ExpressionBase.call(this, 'exec;count', 3, true, true);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5034,14 +5034,14 @@
                             /// <summary>
                             /// Holds query first information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;first', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'exec;first', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5069,14 +5069,14 @@
                             /// <summary>
                             /// Holds query firstOrDefault information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;firstOD', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'exec;firstOD', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5103,14 +5103,14 @@
                             /// <summary>
                             /// Holds query single information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;single', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'exec;single', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5138,14 +5138,14 @@
                             /// <summary>
                             /// Holds query singleOrDefault information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;singleOD', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'exec;singleOD', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5173,14 +5173,14 @@
                             /// <summary>
                             /// Holds query last information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;last', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'exec;last', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5208,14 +5208,14 @@
                             /// <summary>
                             /// Holds query lastOrDefault information.
                             /// </summary>
-                            baseTypes.expressionBase.call(this, 'exec;lastOD', 3, true, false);
+                            baseTypes.ExpressionBase.call(this, 'exec;lastOD', 3, true, false);
                             this.expStr = expStr;
                             if (expStr)
                                 this.exp = libs.jsep(expStr);
                             this.varContext = varContext;
                             this.isExecuter = true;
                         };
-                        helper.inherit(ctor, baseTypes.expressionBase);
+                        helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
@@ -5247,9 +5247,9 @@
                 /// <field>Returns uppercase value</field>
                 expose.toupper = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'toupper', 'ToUpper', 1);
+                        baseTypes.QueryFuncBase.call(this, 'toupper', 'ToUpper', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source) {
@@ -5261,9 +5261,9 @@
                 /// <field>Returns lowercase value</field>
                 expose.tolower = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'tolower', 'ToLower', 1);
+                        baseTypes.QueryFuncBase.call(this, 'tolower', 'ToLower', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source) {
@@ -5275,9 +5275,9 @@
                 /// <field>Returns substring of given string</field>
                 expose.substring = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'substring', 'Substring', 3);
+                        baseTypes.QueryFuncBase.call(this, 'substring', 'Substring', 3);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source, pos, length) {
@@ -5297,9 +5297,9 @@
                 /// <field>When given value contains given find string returns true, otherwise returns false</field>
                 expose.substringof = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'substringof', 'Contains', 2);
+                        baseTypes.QueryFuncBase.call(this, 'substringof', 'Contains', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (find, source) {
@@ -5319,9 +5319,9 @@
                 /// <field>Returns length of string</field>
                 expose.length = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'length', 'Length', 1);
+                        baseTypes.QueryFuncBase.call(this, 'length', 'Length', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5338,9 +5338,9 @@
                 /// <field>Returns trimmed string</field>
                 expose.trim = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'trim', 'Trim', 1);
+                        baseTypes.QueryFuncBase.call(this, 'trim', 'Trim', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source) {
@@ -5352,9 +5352,9 @@
                 /// <field>Returns concatenated string</field>
                 expose.concat = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'concat', 'Concat', null);
+                        baseTypes.QueryFuncBase.call(this, 'concat', 'Concat', null);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function () {
@@ -5376,9 +5376,9 @@
                 /// <field> Replace string from source with given value</field>
                 expose.replace = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'replace', 'Replace', 3);
+                        baseTypes.QueryFuncBase.call(this, 'replace', 'Replace', 3);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source, find, replace) {
@@ -5401,9 +5401,9 @@
                 /// <field>if source string starts with given parameter returns true, otherwise false</field>
                 expose.startswith = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'startswith', 'StartsWith', 2);
+                        baseTypes.QueryFuncBase.call(this, 'startswith', 'StartsWith', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source, find) {
@@ -5421,9 +5421,9 @@
                 /// <field>if source string ends with given parameter returns true, otherwise false</field>
                 expose.endswith = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'endswith', 'EndsWith', 2);
+                        baseTypes.QueryFuncBase.call(this, 'endswith', 'EndsWith', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source, find) {
@@ -5442,9 +5442,9 @@
                 /// <field>Returns indexof find string in source string</field>
                 expose.indexof = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'indexof', 'IndexOf', 2);
+                        baseTypes.QueryFuncBase.call(this, 'indexof', 'IndexOf', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source, find) {
@@ -5462,9 +5462,9 @@
                 /// <field>if items contains given item returns true, otherwise false. Supports arrays and strings as items parameter.</field>
                 expose.contains = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'contains', 'Contains', 2);
+                        baseTypes.QueryFuncBase.call(this, 'contains', 'Contains', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items, item) {
@@ -5515,9 +5515,9 @@
                 /// <field>Rounds given value to nearest integer</field>
                 expose.round = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'round', 'Math.Round', 1);
+                        baseTypes.QueryFuncBase.call(this, 'round', 'Math.Round', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5533,9 +5533,9 @@
                 /// <field>Returns smallest integer value that is greater than given value</field>
                 expose.ceiling = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'ceiling', 'Math.Ceiling(%1)', 1);
+                        baseTypes.QueryFuncBase.call(this, 'ceiling', 'Math.Ceiling(%1)', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5551,9 +5551,9 @@
                 /// <field>Returns biggest integer value that is smaller than given value</field>
                 expose.floor = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'floor', 'Math.Floor', 1);
+                        baseTypes.QueryFuncBase.call(this, 'floor', 'Math.Floor', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5570,9 +5570,9 @@
                 /// <field>Returns second of date</field>
                 expose.second = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'second', 'Second', 1);
+                        baseTypes.QueryFuncBase.call(this, 'second', 'Second', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5590,9 +5590,9 @@
                 /// <field>Returns minute of date</field>
                 expose.minute = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'minute', 'Minute', 1);
+                        baseTypes.QueryFuncBase.call(this, 'minute', 'Minute', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5610,9 +5610,9 @@
                 /// <field>Returns hour of date</field>
                 expose.hour = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'hour', 'Hour', 1);
+                        baseTypes.QueryFuncBase.call(this, 'hour', 'Hour', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5630,9 +5630,9 @@
                 /// <field>Returns day of date</field>
                 expose.day = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'day', 'Day', 1);
+                        baseTypes.QueryFuncBase.call(this, 'day', 'Day', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5650,9 +5650,9 @@
                 /// <field>Returns month of date</field>
                 expose.month = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'month', 'Month', 1);
+                        baseTypes.QueryFuncBase.call(this, 'month', 'Month', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5670,9 +5670,9 @@
                 /// <field>Returns year of date</field>
                 expose.year = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'year', 'Year', 1);
+                        baseTypes.QueryFuncBase.call(this, 'year', 'Year', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toBeetleFunction = function (source) {
@@ -5691,9 +5691,9 @@
                 /// <field>Returns max value in the array</field>
                 expose.max = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'max', 'Max', 2);
+                        baseTypes.QueryFuncBase.call(this, 'max', 'Max', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items, item) {
@@ -5724,9 +5724,9 @@
                 /// <field>Returns min value in the array</field>
                 expose.min = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'min', 'Min', 2);
+                        baseTypes.QueryFuncBase.call(this, 'min', 'Min', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items, item) {
@@ -5757,9 +5757,9 @@
                 /// <field>Returns sum value from the array</field>
                 expose.sum = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'sum', 'Sum', 2);
+                        baseTypes.QueryFuncBase.call(this, 'sum', 'Sum', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items, item) {
@@ -5788,9 +5788,9 @@
                 /// <field>Returns count of the array</field>
                 expose.count = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'count', 'Count', 1);
+                        baseTypes.QueryFuncBase.call(this, 'count', 'Count', 1);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items) {
@@ -5806,9 +5806,9 @@
                 /// <field>Returns average value from the array</field>
                 expose.avg = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'avg', 'Average', 2);
+                        baseTypes.QueryFuncBase.call(this, 'avg', 'Average', 2);
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items, item) {
@@ -5834,10 +5834,10 @@
                 /// <field>if any item from the array provides given predicate returns true, otherwise false</field>
                 expose.any = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'any', 'Any', 2);
+                        baseTypes.QueryFuncBase.call(this, 'any', 'Any', 2);
                         this.needsAlias = true;
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (alias, items, predicate) {
@@ -5867,10 +5867,10 @@
                 /// <field>if all items of the array provides given predicate returns true, otherwise false</field>
                 expose.all = (function () {
                     var ctor = function () {
-                        baseTypes.queryFuncBase.call(this, 'all', 'All', 2);
+                        baseTypes.QueryFuncBase.call(this, 'all', 'All', 2);
                         this.needsAlias = true;
                     };
-                    helper.inherit(ctor, baseTypes.queryFuncBase);
+                    helper.inherit(ctor, baseTypes.QueryFuncBase);
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (alias, items, predicate) {
@@ -5933,9 +5933,9 @@
                     ///     var result = query.execute();
                     /// </summary>
                     this.array = array;
-                    baseTypes.queryBase.call(this);
+                    baseTypes.QueryBase.call(this);
                 };
-                helper.inherit(ctor, baseTypes.queryBase);
+                helper.inherit(ctor, baseTypes.QueryBase);
                 var proto = ctor.prototype;
                 proto.executeAfterExecuter = true;
 
@@ -5962,7 +5962,7 @@
                 };
 
                 proto.copy = function (query) {
-                    baseTypes.queryBase.prototype.copy.call(this, query);
+                    baseTypes.QueryBase.prototype.copy.call(this, query);
                 };
 
                 return ctor;
@@ -5978,9 +5978,9 @@
                     this.liveValidate = manager && manager.liveValidate;
                     this.parameters = [];
 
-                    baseTypes.queryBase.call(this);
+                    baseTypes.QueryBase.call(this);
                 };
-                helper.inherit(ctor, baseTypes.queryBase);
+                helper.inherit(ctor, baseTypes.QueryBase);
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
@@ -5990,7 +5990,7 @@
                         retVal.push('entityType: (' + this.entityType.shortName + ')');
                     if (this.manager)
                         retVal.push('manager: (' + this.manager.toString() + ')');
-                    retVal.push(baseTypes.queryBase.prototype.toString.call(this));
+                    retVal.push(baseTypes.QueryBase.prototype.toString.call(this));
 
                     return retVal.join(', ');
                 };
@@ -6086,7 +6086,7 @@
                 };
 
                 proto.copy = function (query) {
-                    baseTypes.queryBase.prototype.copy.call(this, query);
+                    baseTypes.QueryBase.prototype.copy.call(this, query);
                     helper.forEach(this.parameters, function (prm) {
                         query.parameters.push(prm);
                     });
@@ -6306,10 +6306,10 @@
                 var dateBase = (function () {
                     var ctor = function (name) {
                         /// <summary>Date base type.</summary>
-                        baseTypes.dataTypeBase.call(this, 'dateBase');
+                        baseTypes.DataTypeBase.call(this, 'dateBase');
                         this.name = name;
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6387,20 +6387,20 @@
                 /// <field>Object type.</field>
                 expose.object = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'object');
+                        baseTypes.DataTypeBase.call(this, 'object');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
 
                     return new ctor();
                 })();
                 /// <field>Object type.</field>
                 expose.array = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'array');
+                        baseTypes.DataTypeBase.call(this, 'array');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.isValid = function (value) {
@@ -6433,10 +6433,10 @@
                 /// <field>Function type.</field>
                 expose.function = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'function');
+                        baseTypes.DataTypeBase.call(this, 'function');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
 
                     return new ctor();
                 })();
@@ -6445,10 +6445,10 @@
                     var i = 0;
 
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'string');
+                        baseTypes.DataTypeBase.call(this, 'string');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6477,10 +6477,10 @@
                 /// <field>Guid type.</field>
                 expose.guid = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'guid');
+                        baseTypes.DataTypeBase.call(this, 'guid');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6539,10 +6539,10 @@
                 /// <field>Time type.</field>
                 expose.time = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'time');
+                        baseTypes.DataTypeBase.call(this, 'time');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6576,10 +6576,10 @@
                 /// <field>Boolean type.</field>
                 expose.boolean = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'boolean');
+                        baseTypes.DataTypeBase.call(this, 'boolean');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6608,10 +6608,10 @@
                     var i = 0;
 
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'int');
+                        baseTypes.DataTypeBase.call(this, 'int');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6639,10 +6639,10 @@
                     var i = 0;
 
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'number');
+                        baseTypes.DataTypeBase.call(this, 'number');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6670,10 +6670,10 @@
                     var i = 0;
 
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'byte');
+                        baseTypes.DataTypeBase.call(this, 'byte');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6699,10 +6699,10 @@
                 /// <field>Binary type.</field>
                 expose.binary = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'binary');
+                        baseTypes.DataTypeBase.call(this, 'binary');
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6731,13 +6731,13 @@
                 /// <field>Enum type.</field>
                 expose.enum = (function () {
                     var ctor = function (enumType, enumTypeName, displayName) {
-                        baseTypes.dataTypeBase.call(this, 'enum');
+                        baseTypes.DataTypeBase.call(this, 'enum');
                         this.enumType = enumType;
                         this.enumTypeName = enumTypeName;
                         this.displayName = displayName || enumTypeName;
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6802,11 +6802,11 @@
                 /// <field>Geometry spatial type.</field>
                 expose.geometry = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'geometry');
+                        baseTypes.DataTypeBase.call(this, 'geometry');
                         this.isComplex = true;
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -6828,11 +6828,11 @@
                 /// <field>Geography spatial type.</field>
                 expose.geography = (function () {
                     var ctor = function () {
-                        baseTypes.dataTypeBase.call(this, 'geography');
+                        baseTypes.DataTypeBase.call(this, 'geography');
                         this.isComplex = true;
                         helper.tryFreeze(this);
                     };
-                    helper.inherit(ctor, baseTypes.dataTypeBase);
+                    helper.inherit(ctor, baseTypes.DataTypeBase);
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
@@ -9457,7 +9457,7 @@
                         throw helper.createError(i18N.managerInvalidArgs, { entityManager: instance });
                     var service = args[0], metadataPrm = args[1], injections = args[2];
                     // If first parameter is data service instance use it
-                    if (assert.isInstanceOf(service, baseTypes.dataServiceBase)) {
+                    if (assert.isInstanceOf(service, baseTypes.DataServiceBase)) {
                         instance.dataService = service;
                         injections = args[1];
                     }
@@ -10049,9 +10049,9 @@
                 /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService.
                 ///  When not given, defaults will be used.
                 /// </param>
-                baseTypes.dataServiceBase.call(this, uri, metadataPrm, injections);
+                baseTypes.DataServiceBase.call(this, uri, metadataPrm, injections);
             };
-            helper.inherit(ctor, baseTypes.dataServiceBase);
+            helper.inherit(ctor, baseTypes.DataServiceBase);
             var proto = ctor.prototype;
 
             proto.fetchMetadata = function (options, successCallback, errorCallback) {
@@ -10580,7 +10580,7 @@
             /// Sets static observable provider instance. All generated entities after this call will use given observable provider instance.
             /// </summary>
             /// <param name="provider">Observable provider parameter.</param>
-            _observableProvider = getValue(provider, baseTypes.observableProviderBase, enums.observableProviders);
+            _observableProvider = getValue(provider, baseTypes.ObservableProviderBase, enums.observableProviders);
         };
 
         expose.getPromiseProvider = function () {
@@ -10595,7 +10595,7 @@
             /// Sets static promise provider instance. All async operations after this call will use given promise provider instance.
             /// </summary>
             /// <param name="provider">Promise provider parameter.</param>
-            _promiseProvider = getValue(provider, baseTypes.promiseProviderBase, enums.promiseProviders);
+            _promiseProvider = getValue(provider, baseTypes.PromiseProviderBase, enums.promiseProviders);
         };
 
         expose.getAjaxProvider = function () {
@@ -10610,7 +10610,7 @@
             /// Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
             /// </summary>
             /// <param name="provider">Ajax provider parameter.</param>
-            _ajaxProvider = getValue(provider, baseTypes.ajaxProviderBase, enums.ajaxProviders);
+            _ajaxProvider = getValue(provider, baseTypes.AjaxProviderBase, enums.ajaxProviders);
         };
 
         expose.getSerializationService = function () {
@@ -10625,7 +10625,7 @@
             /// Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
             /// </summary>
             /// <param name="provider">Serialization service parameter.</param>
-            _serializationService = getValue(service, baseTypes.serializationServiceBase);
+            _serializationService = getValue(service, baseTypes.SerializationServiceBase);
         };
 
         expose.getArraySetBehaviour = function () {
@@ -10669,8 +10669,8 @@
             /// <summary>
             /// Sets date converter.
             /// </summary>
-            // check if parameter is dateConverterBase.
-            helper.assertPrm(converter, 'converter').isInstanceOf(converter, baseTypes.dateConverterBase).check();
+            // check if parameter is DateConverterBase.
+            helper.assertPrm(converter, 'converter').isInstanceOf(converter, baseTypes.DateConverterBase).check();
             _dateConverter = converter;
         };
 

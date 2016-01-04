@@ -17,9 +17,9 @@
             /// <summary>
             /// Holds query all information.
             /// </summary>
-            beetle.baseTypes.expressionBase.call(this, name, 3, true, true);
+            beetle.baseTypes.ExpressionBase.call(this, name, 3, true, true);
         };
-        beetle.helper.inherit(ctor, beetle.baseTypes.expressionBase);
+        beetle.helper.inherit(ctor, beetle.baseTypes.ExpressionBase);
         var proto = ctor.prototype;
 
         proto.toODataQuery = function () {
