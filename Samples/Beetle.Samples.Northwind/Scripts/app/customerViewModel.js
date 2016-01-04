@@ -32,7 +32,7 @@
             .inlineCount(true)
             .skip(skip)
             .take(take);
-        vm.manager.executeQuery(query, beetle.MergeStrategy.Preserve)
+        vm.manager.executeQuery(query, beetle.mergeStrategy.Preserve)
             .then(querySucceeded)
             .fail(opFailed);
     }
@@ -68,7 +68,7 @@
         var m = new beetle.EntityManager('Home');
         var query = m.createQuery('Order_Details').expand('Order').top(vm.count());
         var mergeStr = vm.mergeStrategy();
-        var merge = beetle.MergeStrategy.symbols().q().first('name == "' + mergeStr + '"');
+        var merge = beetle.mergeStrategy.symbols().q().first('name == "' + mergeStr + '"');
         var dt1 = new Date().getTime();
         m.executeQuery(query, { merge: merge, autoFixScalar: vm.autoFixScalar(), autoFixPlural: vm.autoFixPlural() })
             .then(function (data) {

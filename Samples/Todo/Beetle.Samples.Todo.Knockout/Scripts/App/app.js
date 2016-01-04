@@ -47,28 +47,28 @@
 
 	// our main view model
 	var ViewModel = function () {
-	    var manager = new beetle.entityManager(new beetle.MvcService('Home'));
-	    manager.registerCtor('Todo', null, // null constructor
-	        function (todo) { // we want to intercept after entity properties converted to observables
-	            todo.editing = ko.observable(false);
-	        }
-	    );
+		var manager = new beetle.EntityManager(new beetle.MvcService('Home'));
+		manager.registerCtor('Todo', null, // null constructor
+			function (todo) { // we want to intercept after entity properties converted to observables
+				todo.editing = ko.observable(false);
+			}
+		);
 
-	    var self = this;
+		var self = this;
 
 		// map array of passed in todos to an observableArray of Todo objects
-	    self.todos = ko.observableArray([]);
-	    self.getTodos = function () {
-	        manager.createQuery('Todos')
-                .execute()
-                .then(function (result) {
-                    self.todos(result);
-                })
-                .fail(function (e) {
-                    toastr.error(e.message);
-                });
-	    };
-	    self.getTodos();
+		self.todos = ko.observableArray([]);
+		self.getTodos = function () {
+			manager.createQuery('Todos')
+				.execute()
+				.then(function (result) {
+					self.todos(result);
+				})
+				.fail(function (e) {
+					toastr.error(e.message);
+				});
+		};
+		self.getTodos();
 
 		// store the new todo value being entered
 		self.current = ko.observable();
@@ -92,31 +92,31 @@
 
 		// add a new todo, when enter key is pressed
 		self.add = function () {
-		    var current = self.current().trim();
-		    if (current) {
-		        var todo = manager.createEntity('Todo');
-		        todo.Title(current);
-		        self.todos.push(todo);
-		        self.current('');
-		        saveChanges();
-		    }
+			var current = self.current().trim();
+			if (current) {
+				var todo = manager.createEntity('Todo');
+				todo.Title(current);
+				self.todos.push(todo);
+				self.current('');
+				saveChanges();
+			}
 		};
 
 		// remove a single todo
 		self.remove = function (todo) {
-		    manager.deleteEntity(todo);
-		    self.todos.remove(todo);
-		    saveChanges();
+			manager.deleteEntity(todo);
+			self.todos.remove(todo);
+			saveChanges();
 		};
 
 		// remove all completed todos
 		self.removeCompleted = function () {
 			for (var i = self.todos().length - 1; i >= 0; i--) {
-			    var todo = self.todos()[i];
-			    if (todo.Completed()) {
-			        self.todos.splice(i, 1);
-			        manager.deleteEntity(todo);
-			    }
+				var todo = self.todos()[i];
+				if (todo.Completed()) {
+					self.todos.splice(i, 1);
+					manager.deleteEntity(todo);
+				}
 			}
 			saveChanges();
 		};
@@ -131,16 +131,16 @@
 			item.editing(false);
 
 			if (!item.Title().trim())
-			    self.remove(item);
+				self.remove(item);
 			saveChanges();
 		};
 
-        // save changes after item Completed changes
+		// save changes after item Completed changes
 		self.completedChange = function () {
-		    saveChanges();
-		    return true;
+			saveChanges();
+			return true;
 		};
-	    
+		
 		// count of all completed todos
 		self.completedCount = ko.computed(function () {
 			return ko.utils.arrayFilter(self.todos(), function (todo) {
@@ -175,13 +175,13 @@
 		};
 
 		function saveChanges() {
-		    manager.saveChanges()
-                .then(function (result) {
-                    toastr.success('Affected count: ' + result.AffectedCount, 'Save succeeded.');
-                })
-                .fail(function (e) {
-                    toastr.error(e.message);
-                });
+			manager.saveChanges()
+				.then(function (result) {
+					toastr.success('Affected count: ' + result.AffectedCount, 'Save succeeded.');
+				})
+				.fail(function (e) {
+					toastr.error(e.message);
+				});
 		}
 	};
 
