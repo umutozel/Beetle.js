@@ -2496,7 +2496,7 @@
                     var type = null;
                     if (this.metadataManager)
                         type = this.metadataManager.getEntityType(typeName);
-                    if (!type) type = new metadata.entityType(typeName);
+                    if (!type) type = new metadata.EntityType(typeName);
                     return core.entityTracker.toEntity(result, type, settings.getObservableProvider());
                 };
 
@@ -3429,7 +3429,7 @@
 
                 return ctor;
             })(),
-            entityType: (function () {
+            EntityType: (function () {
                 var ctor = function (name, displayName, shortName, keyNames, baseTypeName, setName, setTypeName, isComplexType, metadataManager) {
                     /// <summary>
                     /// Entity type class. Defines an entity type. When there is no metadata for type, holds only the type name.
@@ -3814,7 +3814,7 @@
                     // first create an entityType for each entity.
                     for (var j = 0; j < maps.length; j++) {
                         var map = maps[j];
-                        var t = new metadata.entityType(map.n, helper.getResourceValue(map.rn, map.s), map.s, map.k, map.b, map.q, map.t, map.c, this);
+                        var t = new metadata.EntityType(map.n, helper.getResourceValue(map.rn, map.s), map.s, map.k, map.b, map.q, map.t, map.c, this);
                         // create data properties
                         helper.forEach(map.d, function (dp) {
                             var dataType;
@@ -6098,7 +6098,7 @@
                         if (manager == null) throw helper.createError(i18N.onlyManagerCreatedCanAcceptEntityShortName);
                         return manager.getEntityType(type, true);
                     }
-                    helper.assertPrm(type, 'type').isInstanceOf(metadata.entityType).check();
+                    helper.assertPrm(type, 'type').isInstanceOf(metadata.EntityType).check();
                     return type;
                 }
 
@@ -8887,7 +8887,7 @@
                     /// </summary>
                     /// <param name="key">Entity key as a string. When entity has more than one key, the key is keys joined with a ','.</param>
                     /// <param name="type">Entity type or type short name.</param>
-                    var t = assert.isInstanceOf(type, metadata.entityType) ? type : this.getEntityType(type, true);
+                    var t = assert.isInstanceOf(type, metadata.EntityType) ? type : this.getEntityType(type, true);
                     return this.entities.getEntityByKey(key, t);
                 };
 
