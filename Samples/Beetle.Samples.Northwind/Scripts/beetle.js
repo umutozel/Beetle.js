@@ -858,7 +858,7 @@
 
         // A simple enum implementation for JavaScript
         // https://github.com/rauschma/enums
-        expose.enums = (function () {
+        expose.Enum = (function () {
 
             function copyOwnFrom(target, source) {
                 for (var p in source)
@@ -3803,7 +3803,7 @@
                             helper.forEach(e.m, function (m) {
                                 enumObj[m.n] = { name: m.n, value: m.v, displayName: helper.getResourceValue(m.r, m.l || m.n) };
                             });
-                            var enm = new libs.enums(enumObj);
+                            var enm = new libs.Enum(enumObj);
                             this.enums[e.n] = enm;
                             enumTypes[e.n] = new core.dataTypes.enum(enm, e.n, helper.getResourceValue(e.r, e.l || e.n));
                         }
@@ -10339,7 +10339,7 @@
             /// Observable providers. Possible values;
             ///  ko, prop
             /// </field>
-            observableProviders: new libs.enums({
+            observableProviders: new libs.Enum({
                 Knockout: { code: 'ko', instance: impls.koObservableProviderInstance },
                 Property: { code: 'prop', instance: impls.propertyObservableProviderInstance }
             }),
@@ -10347,7 +10347,7 @@
             /// Promise providers. Possible values;
             ///  Q, jQuery
             /// </field>
-            promiseProviders: new libs.enums({
+            promiseProviders: new libs.Enum({
                 Q: { code: 'Q', instance: impls.qPromiseProviderInstance },
                 jQuery: { code: 'jQuery', instance: impls.jQueryPromiseProviderInstance }
             }),
@@ -10355,7 +10355,7 @@
             /// Ajax providers. Possible values;
             ///  jQuery, Angular
             /// </field>
-            ajaxProviders: new libs.enums({
+            ajaxProviders: new libs.Enum({
                 jQuery: { code: 'jQuery', instance: impls.jQueryAjaxProviderInstance },
                 Angular: { code: 'Angular', instance: impls.angularAjaxProviderInstance }
             }),
@@ -10363,7 +10363,7 @@
             /// Entity states. Possible values;
             ///  Detached, Unchanged, Added, Deleted, Modified
             /// </field>
-            entityStates: new libs.enums('Detached', 'Unchanged', 'Added', 'Deleted', 'Modified'),
+            entityStates: new libs.Enum('Detached', 'Unchanged', 'Added', 'Deleted', 'Modified'),
             /// <field>
             /// Language operators. Possible values;
             ///  !, - (unary), &&, ||, ==, ===, !=, !==, >, <, >=, <=, +, -, *, /, %, &, |, <<, >>
@@ -10427,7 +10427,7 @@
             /// Filter operations. Used in queries's where operations. Possible values;
             ///  ==, !=, >, <, >=, <=, contains, startswith, endswith
             /// </field>
-            filterOps: new libs.enums({
+            filterOps: new libs.Enum({
                 Equals: { oData: 'eq', code: '==' },
                 NotEqual: { oData: 'ne', code: '!=' },
                 Greater: { oData: 'gt', code: '>' },
@@ -10446,7 +10446,7 @@
             ///  NoTracking: Query result will not be merged into the cache.
             ///  NoTrackingRaw: Query results will not be merged into the cache and will not be converted to entities (raw objects will be returned).
             /// </field>
-            mergeStrategy: new libs.enums('Preserve', 'Overwrite', 'ThrowError', 'NoTracking', 'NoTrackingRaw'),
+            mergeStrategy: new libs.Enum('Preserve', 'Overwrite', 'ThrowError', 'NoTracking', 'NoTrackingRaw'),
             /// <field>
             /// Query execution strategies. Can be passed to execute query method of entity manager. Possible values;
             ///  Server: Get entities only from server.
@@ -10454,26 +10454,26 @@
             ///  Both: Get entities from local cache then from server and then mix them up.
             ///  LocalIfEmptyServer: Get entities from local cache if no result is found get them from server.
             /// </field>
-            executionStrategy: new libs.enums('Server', 'Local', 'Both', 'LocalIfEmptyServer'),
+            executionStrategy: new libs.Enum('Server', 'Local', 'Both', 'LocalIfEmptyServer'),
             /// <field>
             /// Property value auto generation type. Possible values;
             ///  Identity: Auto-Increment identity column.
             ///  Server: Calculated column.
             /// </field>
-            generationPattern: new libs.enums('Identity', 'Computed'),
+            generationPattern: new libs.Enum('Identity', 'Computed'),
             /// <field>
             /// What to do when user sets an observable array's value with a new array.
             ///  NotAllowed: An exception will be thrown.
             ///  Replace: Old items will be replaced with next array items.
             ///  Append: New array items will be appended to existing array.
             /// </field>
-            arraySetBehaviour: new libs.enums('NotAllowed', 'Replace', 'Append'),
+            arraySetBehaviour: new libs.Enum('NotAllowed', 'Replace', 'Append'),
             /// <field>
             /// Supported service types.
             ///  WebApi: Web Api service.
             ///  Mvc: Mvc service.
             /// </field>
-            serviceTypes: new libs.enums('WebApi', 'Mvc')
+            serviceTypes: new libs.Enum('WebApi', 'Mvc')
         };
     })();
     var events = (function () {
