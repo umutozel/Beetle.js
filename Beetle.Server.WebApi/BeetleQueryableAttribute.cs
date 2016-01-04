@@ -22,7 +22,7 @@ namespace Beetle.Server.WebApi {
     public class BeetleQueryableAttribute : QueryableAttribute {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
         private static readonly MethodInfo _dummyMethodInfo;
-        private BeetleConfig _beetleConfig;
+        private readonly BeetleConfig _beetleConfig;
         private bool? _checkRequestHash;
 
         /// <summary>
@@ -79,9 +79,6 @@ namespace Beetle.Server.WebApi {
             request.Properties["BeetleService"] = service;
             request.Properties["BeetleActionContext"] = actionContext;
 
-            if (_beetleConfig == null)
-                _beetleConfig = service != null ? service.BeetleConfig : BeetleConfig.Instance;
-
             // call base and let WebApi process the request
             base.OnActionExecuted(actionExecutedContext);
 
@@ -96,7 +93,7 @@ namespace Beetle.Server.WebApi {
             // process the request and return the result
             var processResult = ProcessRequest(contentValue, actionContext, request, service);
             // handle response message
-            response.Content = HandleResponse(actionExecutedContext, processResult);
+            response.Content = HandleResponse(actionExecutedContext, processResult, service);
         }
 
         /// <summary>
@@ -239,7 +236,7 @@ namespace Beetle.Server.WebApi {
         protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext,
                                                        HttpRequestMessage request, IBeetleService service) {
             return service != null
-                ? service.ProcessRequest(contentValue, actionContext)
+                ? service.ProcessRequest(contentValue, actionContext, _beetleConfig)
                 : Helper.ProcessRequest(contentValue, actionContext, request);
         }
 
@@ -248,9 +245,10 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
         /// <param name="result">The result.</param>
-        /// <returns></returns>
-        protected virtual ObjectContent HandleResponse(HttpActionExecutedContext filterContext, ProcessResult result) {
-            return Helper.HandleResponse(result, _beetleConfig);
+        /// <param name="service">The beetle service.</param>
+        protected virtual ObjectContent HandleResponse(HttpActionExecutedContext filterContext, ProcessResult result, IBeetleService service) {
+            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
+            return Helper.HandleResponse(result, config);
         }
 
         /// <summary>

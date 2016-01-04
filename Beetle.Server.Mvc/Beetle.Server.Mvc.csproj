@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeetleActionFilterAttribute.cs" />
+    <Compile Include="BeetleContentResult.cs" />
     <Compile Include="BeetleController.cs" />
     <Compile Include="BeetleJsonResult.cs" />
     <Compile Include="Helper.cs" />
@@ -125,4 +126,3 @@
   </Target>
   -->
 </Project>
-

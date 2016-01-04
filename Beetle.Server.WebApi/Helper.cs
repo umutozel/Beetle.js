@@ -60,11 +60,12 @@ namespace Beetle.Server.WebApi {
         /// <param name="actionContext">The action context.</param>
         /// <param name="request">The request.</param>
         /// <param name="forbidBeetleQueryParams">if set to <c>true</c> [forbid beetle query params].</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <param name="service">The service.</param>
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
-                                                     bool forbidBeetleQueryParams = false, IBeetleService service = null) {
+                                                     bool forbidBeetleQueryParams = false, BeetleConfig actionConfig = null, IBeetleService service = null) {
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
                 if (!actionContext.CheckRequestHash.HasValue)
@@ -90,7 +91,7 @@ namespace Beetle.Server.WebApi {
             var contextHandler = service == null ? null : service.ContextHandler;
             // allow context handler to process the value
             var processResult = contextHandler != null 
-                ? contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, service) 
+                ? contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, actionConfig, service) 
                 : Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service);
 
             if (processResult.InlineCount == null && inlineCountParam == "allpages") {

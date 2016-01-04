@@ -1,7 +1,8 @@
 ﻿var customerViewModel = (function () {
 
+    beetle.settings.setDefaultServiceType('Mvc');
     var vm = {
-        manager: new beetle.EntityManager('svc/NorthwindService/'),
+        manager: new beetle.EntityManager('Home'),
         customers: ko.observableArray(),
         pages: ko.observableArray([1]),
         currentPage: ko.observable(1),
@@ -56,7 +57,7 @@
     }
 
     function save() {
-        vm.manager.saveChanges()
+        vm.manager.saveChanges({saveAction: 'SaveChangesAsync'})
             .then(function () {
                 toastr.success("Changes saved");
             })
@@ -64,8 +65,8 @@
     }
     
     function loadOrderDetails() {
-        var m = new beetle.EntityManager('svc/NorthwindService/');
-        var query = m.createQuery('OrderDetails').expand('Order').top(vm.count());
+        var m = new beetle.EntityManager('Home');
+        var query = m.createQuery('Order_Details').expand('Order').top(vm.count());
         var mergeStr = vm.mergeStrategy();
         var merge = beetle.MergeStrategy.symbols().q().first('name == "' + mergeStr + '"');
         var dt1 = new Date().getTime();

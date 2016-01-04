@@ -55,7 +55,6 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\NorthwindServiceController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -218,9 +217,9 @@
       <Project>{1f3aaed6-3477-4729-9e6a-e763fb327fc1}</Project>
       <Name>Beetle.Server.EntityFramework6</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Beetle.Server.WebApi\Beetle.Server.WebApi.csproj">
-      <Project>{69c503fe-189a-4f56-bb8b-e64bf2bab612}</Project>
-      <Name>Beetle.Server.WebApi</Name>
+    <ProjectReference Include="..\..\Beetle.Server.Mvc\Beetle.Server.Mvc.csproj">
+      <Project>{6395b599-7f45-4051-a4fb-061fb5bea5b7}</Project>
+      <Name>Beetle.Server.Mvc</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Beetle.Server\Beetle.Server.csproj">
       <Project>{4cd3ab61-3219-42f4-a93c-1f09faf9b6ce}</Project>
@@ -270,4 +269,3 @@
   <Target Name="AfterBuild">
   </Target> -->
 </Project>
-

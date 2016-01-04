@@ -84,12 +84,13 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="contentValue">The content value.</param>
         /// <param name="actionContext">The action context.</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <param name="service">The service.</param>
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
-        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service = null) {
+        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service = null) {
             // beetle should be used for all content types except mvc actions results. so we check only if content is not an mvc action result
-            if (!(contentValue is ActionResult) && !string.IsNullOrEmpty(actionContext.QueryString)) {
+            if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
                 if (!actionContext.CheckRequestHash.HasValue)
                     checkHash = service != null && service.CheckRequestHash;
@@ -106,7 +107,7 @@ namespace Beetle.Server.Mvc {
             var contextHandler = service == null ? null : service.ContextHandler;
             // allow context handler to process the value
             if (contextHandler != null)
-                return contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, service);
+                return contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, actionConfig, service);
 
             return Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service);
         }
@@ -115,14 +116,14 @@ namespace Beetle.Server.Mvc {
         /// Handles the response.
         /// </summary>
         /// <param name="processResult">The process result.</param>
-        /// <param name="config">The configuration.</param>
+        /// <param name="actionConfig">The action config (if specified).</param>
         /// <param name="response">The response.</param>
         /// <returns></returns>
-        public static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
+        public static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig actionConfig = null, HttpResponse response = null) {
             var result = processResult.Result;
 
-            if (config == null)
-                config = BeetleConfig.Instance;
+            if (actionConfig == null)
+                actionConfig = BeetleConfig.Instance;
             if (response == null)
                 response = HttpContext.Current.Response;
 
@@ -131,7 +132,7 @@ namespace Beetle.Server.Mvc {
             if (inlineCount != null && response.Headers["X-InlineCount"] == null)
                 response.Headers.Add("X-InlineCount", inlineCount.ToString());
             if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
-                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, Formatting.None, config.JsonSerializerSettings);
+                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, Formatting.None, actionConfig.JsonSerializerSettings);
                 response.Headers.Add("X-UserData", userDataStr);
             }
 
@@ -139,7 +140,7 @@ namespace Beetle.Server.Mvc {
             if (actionResult != null) return actionResult;
 
             // write the result to response content
-            return new BeetleJsonResult(config, processResult) {
+            return new BeetleJsonResult(actionConfig, processResult) {
                 Data = result,
                 ContentEncoding = response.HeaderEncoding,
                 ContentType = "application/json",

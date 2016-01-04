@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Linq.Dynamic;
 using Beetle.Server.Meta;
+using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
@@ -297,7 +298,7 @@ namespace Beetle.Server {
         /// <returns>
         /// Save result.
         /// </returns>
-        public override SaveResult SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext) {
+        public override Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext) {
             return SaveChangesBase(entities, saveContext);
         }
 
@@ -308,7 +309,7 @@ namespace Beetle.Server {
         /// <param name="saveContext">The save context.</param>
         /// <returns></returns>
         /// <exception cref="EntityValidationException"></exception>
-        protected SaveResult SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
+        protected Task<SaveResult> SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntitiesBase(entityBags, out unmappeds);
             var mergeList = merges == null
@@ -323,7 +324,7 @@ namespace Beetle.Server {
                 MergeEntitiesBase(handledUnmappedList, out discarded);
                 saveList = saveList.Concat(handledUnmappedList).ToList();
             }
-            if (!saveList.Any()) return SaveResult.Empty;
+            if (!saveList.Any()) return Task.FromResult(SaveResult.Empty);
 
             OnBeforeSaveChanges(new BeforeSaveEventArgs(saveList, saveContext));
             // do data annotation validations
@@ -416,7 +417,7 @@ namespace Beetle.Server {
             var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
             OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
 
-            return saveResult;
+            return Task.FromResult(saveResult);
         }
 
         /// <summary>
