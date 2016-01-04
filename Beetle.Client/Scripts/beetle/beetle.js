@@ -3357,7 +3357,7 @@
 
                 return ctor;
             })(),
-            navigationProperty: (function () {
+            NavigationProperty: (function () {
                 var ctor = function (owner, name, displayName, entityTypeName, isScalar, associationName, cascadeDelete, foreignKeyNames) {
                     /// <summary>
                     /// Navigation property default implemantation.
@@ -3838,7 +3838,7 @@
                         var relations = map.r;
                         if (relations)
                             helper.forEach(relations, function (np) {
-                                var navProp = new metadata.navigationProperty(t, np.n, helper.getResourceValue(np.r, np.l || np.n), np.t, np.s === true, np.a, np.c);
+                                var navProp = new metadata.NavigationProperty(t, np.n, helper.getResourceValue(np.r, np.l || np.n), np.t, np.s === true, np.a, np.c);
                                 if (np.f)
                                     helper.forEach(np.f, function (fk) {
                                         navProp.foreignKeyNames.push(fk);
@@ -3852,7 +3852,7 @@
                         var complex = map.x;
                         if (complex)
                             helper.forEach(complex, function (cp) {
-                                var property = new metadata.navigationProperty(t, cp.n, helper.getResourceValue(cp.r, cp.l || cp.n), cp.t, true);
+                                var property = new metadata.NavigationProperty(t, cp.n, helper.getResourceValue(cp.r, cp.l || cp.n), cp.t, true);
                                 t.navigationProperties.push(property);
                             });
                         this.types.push(t);
@@ -6242,7 +6242,7 @@
                             handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
                         if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
 
-                        if (assert.isInstanceOf(p, metadata.navigationProperty))
+                        if (assert.isInstanceOf(p, metadata.NavigationProperty))
                             helper.forEach(added, function (a) { p.checkAssign(a); });
                         else if (assert.isInstanceOf(p, metadata.DataProperty))
                             helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
