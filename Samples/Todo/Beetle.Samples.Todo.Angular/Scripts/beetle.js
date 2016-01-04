@@ -3253,7 +3253,7 @@
         /// <summary>Metadata related types.</summary>
 
         return {
-            dataProperty: (function () {
+            DataProperty: (function () {
                 var ctor = function (owner, name, displayName, dataType, isNullable, isKeyPart, genPattern, defaultValue, useForConcurrency) {
                     /// <summary>
                     /// Data property default implementation.
@@ -3591,7 +3591,7 @@
                     if (defaultValue != null && !dataType.isValid(defaultValue))
                         throw helper.createError(i18N.invalidDefaultValue, [defaultValue, dataType.name],
                             { entityType: this, dataType: dataType, defaultValue: defaultValue });
-                    var property = new metadata.dataProperty(this, name, displayName, dataType, isNullable === true, false, null, defaultValue);
+                    var property = new metadata.DataProperty(this, name, displayName, dataType, isNullable === true, false, null, defaultValue);
                     this.dataProperties.push(property);
                 };
 
@@ -3823,7 +3823,7 @@
                             else
                                 dataType = core.dataTypes.byName(dp.t);
                             var dn = helper.getResourceValue(dp.r, dp.l || dp.n);
-                            var property = new metadata.dataProperty(t, dp.n, dn, dataType, dp.i === true, map.k && helper.findInArray(map.k, dp.n) != null,
+                            var property = new metadata.DataProperty(t, dp.n, dn, dataType, dp.i === true, map.k && helper.findInArray(map.k, dp.n) != null,
                                 dp.g ? (dp.g == "I" ? enums.generationPattern.Identity : enums.generationPattern.Computed) : null,
                                 dp.d ? dataType.handle(dp.d) : null, dp.c);
                             if (dp.v)
@@ -6244,7 +6244,7 @@
 
                         if (assert.isInstanceOf(p, metadata.navigationProperty))
                             helper.forEach(added, function (a) { p.checkAssign(a); });
-                        else if (assert.isInstanceOf(p, metadata.dataProperty))
+                        else if (assert.isInstanceOf(p, metadata.DataProperty))
                             helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
                         else if (handleUnmappedProperties === true)
                             helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
