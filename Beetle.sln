@@ -7,7 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Shared", "_Shared", "{C70C
 	ProjectSection(SolutionItems) = preProject
 		_Shared\Beetle.snk = _Shared\Beetle.snk
 		_Shared\favicon.ico = _Shared\favicon.ico
-		_Shared\GlobalAssemblyInfo.cs = _Shared\GlobalAssemblyInfo.cs
 		_Shared\icon.zip = _Shared\icon.zip
 		_Shared\logo.zip = _Shared\logo.zip
 	EndProjectSection

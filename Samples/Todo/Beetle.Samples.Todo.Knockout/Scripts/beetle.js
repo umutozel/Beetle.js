@@ -10803,7 +10803,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0-beta',
+            version: '1.2',
             i18N: i18N,
 
             helper: helper,

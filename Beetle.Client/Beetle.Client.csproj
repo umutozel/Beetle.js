@@ -109,9 +109,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\_Shared\GlobalAssemblyInfo.cs">
-      <Link>GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="App_Start\BeetleWebApiConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -315,10 +312,6 @@ copy "$(ProjectDir)Scripts\beetle\beetle.min.js" 		"$(ProjectDir)..\_NuGet Packa
 copy "$(ProjectDir)Scripts\beetle\beetle.lang-tr-TR.js" 	"$(ProjectDir)..\_NuGet Packages\content\Scripts\beetle.lang-tr-TR.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.js" 	"$(ProjectDir)..\_NuGet Packages\content\Scripts\beetle.queryExtensions.js"
 </PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
