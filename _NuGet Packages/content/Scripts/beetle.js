@@ -2438,7 +2438,7 @@
                     helper.assertPrm(resourceName, 'resourceName').isNotEmptyString().check();
                     if (shortName) return this.createEntityQuery(shortName, resourceName, manager);
                     if (this.metadataManager) this.metadataManager.createQuery(resourceName, null, manager);
-                    return new querying.entityQuery(resourceName, null, manager);
+                    return new querying.EntityQuery(resourceName, null, manager);
                 };
 
                 proto.createEntityQuery = function (shortName, resourceName, manager) {
@@ -3479,9 +3479,9 @@
                     /// </summary>
                     /// <param name="resourceName">WebApi query resource name (Service controller action).</param>
                     /// <param name="manager">The entity manager.</param>
-                    if (resourceName) return new querying.entityQuery(resourceName, this, manager);
+                    if (resourceName) return new querying.EntityQuery(resourceName, this, manager);
 
-                    var q = new querying.entityQuery(this.setName, this, manager);
+                    var q = new querying.EntityQuery(this.setName, this, manager);
                     return this.shortName == this.setTypeName ? q : q.ofType(this.shortName);
                 };
 
@@ -3742,7 +3742,7 @@
                     if (shortName) return this.getEntityTypeByShortName(shortName, true).createQuery(resourceName, manager);
                     // try to find entity type by its resource (set) name.
                     var typeList = helper.filterArray(this.types, function (item) { return item.setName == resourceName; });
-                    return typeList.length == 1 ? typeList[0].createQuery(resourceName, manager) : new querying.entityQuery(resourceName, null, manager);
+                    return typeList.length == 1 ? typeList[0].createQuery(resourceName, manager) : new querying.EntityQuery(resourceName, null, manager);
                 };
 
                 proto.registerCtor = function (shortName, constructor, initializer) {
@@ -5908,12 +5908,12 @@
 
                 return expose;
             })(),
-            arrayQuery: (function () {
+            ArrayQuery: (function () {
                 Array.prototype.asQueryable = function () {
                     /// <summary>
                     /// Creates query for this array.
                     /// </summary>
-                    return new querying.arrayQuery(this);
+                    return new querying.ArrayQuery(this);
                 };
                 if (!Array.hasOwnProperty('q')) {
                     Array.prototype.q = function () {
@@ -5956,7 +5956,7 @@
                 };
 
                 proto.clone = function () {
-                    var q = new querying.arrayQuery(this.array);
+                    var q = new querying.ArrayQuery(this.array);
                     this.copy(q);
                     return q;
                 };
@@ -5967,7 +5967,7 @@
 
                 return ctor;
             })(),
-            entityQuery: (function () {
+            EntityQuery: (function () {
                 var ctor = function (resource, type, manager) {
                     /// <summary>
                     /// Entity query class. It can collect informations like where, orderBy etc.. 
@@ -6080,7 +6080,7 @@
                 };
 
                 proto.clone = function () {
-                    var q = new querying.entityQuery(this.resource, this.entityType, this.manager);
+                    var q = new querying.EntityQuery(this.resource, this.entityType, this.manager);
                     this.copy(q);
                     return q;
                 };

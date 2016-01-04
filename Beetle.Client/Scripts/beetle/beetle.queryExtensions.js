@@ -37,8 +37,8 @@
         return ctor;
     })();
     var arrayProto = Array.prototype;
-    var arrayQueryProto = beetle.querying.arrayQuery.prototype;
-    var entityQueryProto = beetle.querying.entityQuery.prototype;
+    var arrayQueryProto = beetle.querying.ArrayQuery.prototype;
+    var entityQueryProto = beetle.querying.EntityQuery.prototype;
 
     var aggregateExp = (function () {
         var ctor = function (func, seed) {
@@ -946,8 +946,7 @@
 
     // Create a length property for query so it can be automatically executed before enumeration (like LINQ).
     if (Object.hasOwnProperty("defineProperty")) {
-        var queryProto = beetle.querying.arrayQuery.prototype;
-        queryProto.length = Object.defineProperty(queryProto, "length", {
+        arrayQueryProto.length = Object.defineProperty(arrayQueryProto, "length", {
             get: function () {
                 var result = this.execute();
                 if (!(result instanceof Array))
