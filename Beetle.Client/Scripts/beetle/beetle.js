@@ -2641,6 +2641,7 @@
                     throw helper.createError(i18N.notImplemented, ['dataServiceBase', 'saveChanges']);
                 };
 
+                var registerMetadataTypes;
                 function initialize(uri, metadataPrm, injections, instance) {
                     instance._awaitingMetadata = false;
                     instance._readyCallbacks = [];
@@ -2656,6 +2657,10 @@
                     instance.ajaxTimeout = injections.ajaxTimeout;
                     instance.dataType = injections.dataType || 'json';
                     instance.contentType = injections.contentType || 'application/json; charset=utf-8';
+
+                    registerMetadataTypes = injections.registerMetadataTypes;
+                    if (registerMetadataTypes == null)
+                        registerMetadataTypes = settings.registerMetadataTypes;
 
                     // If metadata parameter is false or undefined, it means do not use metadata
                     if (metadataPrm !== false || metadataPrm === undefined) {
@@ -2694,10 +2699,19 @@
                             }
                         }
                     }
+                    if (!instance._awaitingMetadata)
+                        checkReady(instance);
                 }
 
                 function checkReady(instance) {
                     if (instance.isReady()) {
+                        var metadata = instance.metadataManager;
+                        if (registerMetadataTypes && metadata) {
+                            var managerName = metadata.name;
+                            if (!exports.hasOwnProperty(managerName))
+                                exports[managerName] = core.entityManager;
+                        }
+
                         var cs = instance._readyCallbacks.slice(0);
                         instance._readyCallbacks = [];
                         for (var i = 0; i < cs.length; i++) {
@@ -6031,6 +6045,24 @@
                 proto.execute = function (options, successCallback, errorCallback) {
                     /// <summary>
                     /// Executes this query using related entity manager.
+                    /// 
+                    ///  Query options;
+                    ///  merge: Merge strategy
+                    ///  execution: Execution strategy
+                    ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
+                    ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
+                    ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
+                    ///  isCaseSensitive: When true string comparisons will be case sensitive
+                    ///  ignoreWhiteSpaces: When true before comparison strings will be trimmed
+                    ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
+                    ///  uri: Overrides dataService's uri
+                    ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
+                    ///  
+                    ///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
+                    ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
+                    ///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
+                    ///  dataType: We can set ajax call's dataType with this option
+                    ///  contentType: We can set ajax call's contentType with this option
                     /// </summary>
                     /// <param name="options">Query options.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
@@ -7305,8 +7337,7 @@
                     if (key) {
                         while (type) {
                             // add this key index entry to all sets for inheritance hierarchy
-                            var es = this.findEntitySet(type);
-                            if (!es) es = createEntitySet(type, this.entitySets);
+                            var es = this.getEntitySet(type);
                             es.push(key, entity);
                             type = type.baseType;
                         }
@@ -7428,6 +7459,17 @@
                     return helper.findInArray(this.entitySets, type.name, 'typeName');
                 };
 
+                proto.getEntitySet = function (type) {
+                    /// <summary>
+                    /// Finds entity set for given type in the cache, creates if there isn't any.
+                    /// </summary>
+                    /// <param name="type">The entity type.</param>
+                    /// <returns type="">Entity set.</returns>
+                    var es = this.findEntitySet(type);
+                    if (!es) es = createEntitySet(type, this.entitySets);
+                    return es;
+                };
+
                 function createEntitySet(type, entitySets) {
                     /// <summary>
                     /// Creates entity set for given type.
@@ -7437,6 +7479,198 @@
                     var es = new entitySet(type);
                     entitySets.push(es);
                     return es;
+                }
+
+                return ctor;
+            })(),
+            entitySet: (function () {
+                var ctor = function (type, manager) {
+                    this.entityType = type;
+                    this.manager = manager;
+
+                    this.local = manager.entities.getEntitySet(type);
+                };
+                var proto = ctor.prototype;
+
+                proto.toString = function () {
+                    /// <summary>
+                    /// String representation of the object.
+                    /// </summary>
+                    return 'EntitySet: ' + this.entityType.shortName;
+                };
+
+                proto.add = function (entity) {
+                    /// <summary>
+                    /// Adds the given entity to the manager in the Added state.
+                    /// </summary>
+                    assert.isInstanceOf(entity, this.entityType).check();
+                    this.manager.addEntity(entity);
+                };
+
+                proto.attach = function (entity) {
+                    /// <summary>
+                    /// Attaches the given entity to the manager in the Unchanged state.
+                    /// </summary>
+                    assert.isInstanceOf(entity, this.entityType).check();
+                    this.manager.attachEntity(entity);
+                };
+
+                proto.remove = function (entity) {
+                    /// <summary>
+                    /// Marks the given entity as Deleted.
+                    /// </summary>
+                    assert.isInstanceOf(entity, this.entityType).check();
+                    this.manager.deleteEntity(entity);
+                };
+
+                proto.inlineCount = function () {
+                    var q = createQuery(this);
+                    return q.inlineCount.apply(q, arguments);
+                };
+
+                proto.ofType = function () {
+                    var q = createQuery(this);
+                    return q.ofType.apply(q, arguments);
+                };
+
+                proto.where = function () {
+                    var q = createQuery(this);
+                    return q.where.apply(q, arguments);
+                };
+
+                proto.orderBy = function () {
+                    var q = createQuery(this);
+                    return q.orderBy.apply(q, arguments);
+                };
+
+                proto.select = function () {
+                    var q = createQuery(this);
+                    return q.select.apply(q, arguments);
+                };
+
+                proto.skip = function () {
+                    var q = createQuery(this);
+                    return q.skip.apply(q, arguments);
+                };
+
+                proto.take = function () {
+                    var q = createQuery(this);
+                    return q.take.apply(q, arguments);
+                };
+
+                proto.top = function () {
+                    var q = createQuery(this);
+                    return q.top.apply(q, arguments);
+                };
+
+                proto.groupBy = function () {
+                    var q = createQuery(this);
+                    return q.groupBy.apply(q, arguments);
+                };
+
+                proto.distinct = function () {
+                    var q = createQuery(this);
+                    return q.distinct.apply(q, arguments);
+                };
+
+                proto.reverse = function () {
+                    var q = createQuery(this);
+                    return q.reverse.apply(q, arguments);
+                };
+
+                proto.selectMany = function () {
+                    var q = createQuery(this);
+                    return q.selectMany.apply(q, arguments);
+                };
+
+                proto.skipWhile = function () {
+                    var q = createQuery(this);
+                    return q.skipWhile.apply(q, arguments);
+                };
+
+                proto.takeWhile = function () {
+                    var q = createQuery(this);
+                    return q.takeWhile.apply(q, arguments);
+                };
+
+                proto.all = function () {
+                    var q = createQuery(this);
+                    return q.all.apply(q, arguments);
+                };
+
+                proto.any = function () {
+                    var q = createQuery(this);
+                    return q.any.apply(q, arguments);
+                };
+
+                proto.avg = function () {
+                    var q = createQuery(this);
+                    return q.avg.apply(q, arguments);
+                };
+
+                proto.max = function () {
+                    var q = createQuery(this);
+                    return q.max.apply(q, arguments);
+                };
+
+                proto.min = function () {
+                    var q = createQuery(this);
+                    return q.min.apply(q, arguments);
+                };
+
+                proto.sum = function () {
+                    var q = createQuery(this);
+                    return q.sum.apply(q, arguments);
+                };
+
+                proto.count = function () {
+                    var q = createQuery(this);
+                    return q.count.apply(q, arguments);
+                };
+
+                proto.first = function () {
+                    var q = createQuery(this);
+                    return q.first.apply(q, arguments);
+                };
+
+                proto.firstOrDefault = function () {
+                    var q = createQuery(this);
+                    return q.firstOrDefault.apply(q, arguments);
+                };
+
+                proto.single = function () {
+                    var q = createQuery(this);
+                    return q.single.apply(q, arguments);
+                };
+
+                proto.singleOrDefault = function () {
+                    var q = createQuery(this);
+                    return q.singleOrDefault.apply(q, arguments);
+                };
+
+                proto.last = function () {
+                    var q = createQuery(this);
+                    return q.last.apply(q, arguments);
+                };
+
+                proto.lastOrDefault = function () {
+                    var q = createQuery(this);
+                    return q.lastOrDefault.apply(q, arguments);
+                };
+
+                proto.execute = function () {
+                    var q = createQuery(this);
+                    return q.execute.apply(q, arguments);
+                };
+
+                proto.x = function () {
+                    var q = createQuery(this);
+                    return q.x.apply(q, arguments);
+                };
+
+                function createQuery(that) {
+                    var shortName = that.entityType.shortName;
+                    return that.manager.createQuery(that.entityType.setName || shortName, shortName);
                 }
 
                 return ctor;
@@ -9202,6 +9436,18 @@
                     return flatList;
                 };
 
+                proto.entry = function (entity) {
+                    /// <summary>
+                    /// Returns tracking info for given entity.
+                    /// </summary>
+                    /// <param name="entity">The entity.</param>
+                    return entity.$tracker;
+                };
+
+                proto.set = function (shortName) {
+                    return this.entitySets && this.entitySets[shortName];
+                }
+
                 function initialize(args, instance) {
                     instance._readyCallbacks = [];
                     instance._readyPromises = [];
@@ -9256,7 +9502,7 @@
                     instance.saving = new core.event('saving', instance);
                     instance.saved = new core.event('saved', instance);
 
-                    var registerMetadataTypes = injections && injections.registerMetadataTypes;
+                    var registerMetadataTypes = injections.registerMetadataTypes;
                     if (registerMetadataTypes == null)
                         registerMetadataTypes = settings.registerMetadataTypes;
                     instance.dataService.ready(function () {
@@ -9264,14 +9510,22 @@
                         if (registerMetadataTypes && metadata) {
                             var types = metadata.types;
                             if (types) {
+                                instance.entitySets = {};
                                 for (var i = 0; i < types.length; i++) {
                                     var type = types[i];
                                     var shortName = type.shortName;
-                                    instance[shortName] = getManagerEntityClass(shortName, instance);
-
-                                    if (!exports.hasOwnProperty(shortName)) {
-                                        exports[shortName] = getGlobalEntityClass();
+                                    if (!instance.hasOwnProperty(shortName))
+                                        instance[shortName] = getManagerEntityClass(shortName, instance);
+                                    
+                                    var setName = type.setName;
+                                    if (setName && !instance.hasOwnProperty(setName)) {
+                                        var set = new core.entitySet(type, instance);
+                                        instance[setName] = set;
+                                        instance.entitySets[shortName] = set;
                                     }
+
+                                    if (!exports.hasOwnProperty(shortName))
+                                        exports[shortName] = getGlobalEntityClass();
                                 }
                             }
                             var enums = metadata.enums;

@@ -234,6 +234,12 @@ test('seed the test db', 1, function () {
 
 test('get all NamedEntities', 1, function () {
     var manager = new EntityManager(service);
+    var q = manager.Orders.where("Id > 5");
+    q.execute().then(function (data) {
+        var x = data;
+
+        var ol = manager.Orders.local;
+    });
     var query = manager.createQuery('NamedEntities');
     stop();
     manager.executeQuery(query)
