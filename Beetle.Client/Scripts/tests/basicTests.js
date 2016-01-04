@@ -65,7 +65,7 @@ function populateVars() {
         metadata = false;
     else {
         metadataType = 'MM';
-        metadata = new beetle.metadata.metadataManager(testMetadata);
+        metadata = new beetle.MetadataManager(testMetadata);
     }
     basicTestViewModel.metadataType = metadataType;
 

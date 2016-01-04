@@ -2678,7 +2678,7 @@
                                     null,
                                     function (metadataObject) {
                                         instance._awaitingMetadata = false;
-                                        instance.metadataManager = new metadata.metadataManager(metadataObject);
+                                        instance.metadataManager = new metadata.MetadataManager(metadataObject);
                                         // cache retrieved and parsed metadata
                                         if (settings.cacheMetadata === true)
                                             _metadataCache.push({ uri: uri, data: instance.metadataManager });
@@ -2689,11 +2689,11 @@
                                         throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
                                     });
                             }
-                        } else if (assert.isInstanceOf(metadataPrm, metadata.metadataManager))
+                        } else if (assert.isInstanceOf(metadataPrm, metadata.MetadataManager))
                             instance.metadataManager = metadataPrm;
                         else if (assert.isObject(metadataPrm)) {
                             try {
-                                instance.metadataManager = new metadata.metadataManager(metadataPrm);
+                                instance.metadataManager = new metadata.MetadataManager(metadataPrm);
                             } catch (e) {
                                 throw helper.createError(i18N.invalidArguments, { exception: e, args: arguments, dataService: this });
                             }
@@ -3685,7 +3685,7 @@
 
                 return ctor;
             })(),
-            metadataManager: (function () {
+            MetadataManager: (function () {
                 var ctor = function (metadataPrm) {
                     /// <summary>
                     /// Metadata manager default implementation.
@@ -10821,8 +10821,7 @@
             settings: settings,
 
             // shortcuts
-            MetadataManager: metadata.metadataManager,
-            entityManager: core.entityManager,
+            MetadataManager: metadata.MetadataManager,
             EntityManager: core.entityManager,
             WebApiService: services.webApiService,
             MvcService: services.mvcService,
