@@ -686,7 +686,7 @@
             var groups = [];
             // project keys
             if (keySelectorExp) {
-                var keys = beetle.querying.expressions.selectExp.execute(array, keySelectorExp, queryContext);
+                var keys = beetle.querying.expressions.SelectExp.execute(array, keySelectorExp, queryContext);
                 for (var i = 0; i < keys.length; i++) {
                     var keyGroup = null;
                     var key = keys[i];

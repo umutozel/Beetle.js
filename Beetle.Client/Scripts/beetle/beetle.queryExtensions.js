@@ -12,7 +12,7 @@
         indexOutOfRange: "Specified argument was out of the range of valid values. Parameter name: %1"
     };
 
-    var arrayExpBase = (function () {
+    var ArrayExpBase = (function () {
         var ctor = function (name) {
             /// <summary>
             /// Holds query all information.
@@ -48,12 +48,12 @@
             if (!beetle.assert.isFunction(func))
                 throw new Error(beetle.helper.formatString(beetle.i18N.typeError, 'aggregate: func', 'function'));
 
-            arrayExpBase.call(this, 'aggregate');
+            ArrayExpBase.call(this, 'aggregate');
             this.func = func;
             this.seed = seed;
             this.isExecuter = true;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -94,10 +94,10 @@
             /// <summary>
             /// Holds query concat information.
             /// </summary>
-            arrayExpBase.call(this, 'concat');
+            ArrayExpBase.call(this, 'concat');
             this.other = other;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -128,11 +128,11 @@
             /// <summary>
             /// Holds query contains information.
             /// </summary>
-            arrayExpBase.call(this, 'contains');
+            ArrayExpBase.call(this, 'contains');
             this.item = item;
             this.isExecuter = true;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -166,10 +166,10 @@
             /// <summary>
             /// Holds query except information.
             /// </summary>
-            arrayExpBase.call(this, 'except');
+            ArrayExpBase.call(this, 'except');
             this.other = other;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -211,7 +211,7 @@
             /// <summary>
             /// Holds query except information.
             /// </summary>
-            arrayExpBase.call(this, 'groupJoin');
+            ArrayExpBase.call(this, 'groupJoin');
             this.other = other;
             this.thisKey = thisKey;
             this.thisKeyExp = beetle.libs.jsep(thisKey);
@@ -219,7 +219,7 @@
             this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -268,10 +268,10 @@
             /// <summary>
             /// Holds query intersect information.
             /// </summary>
-            arrayExpBase.call(this, 'intersect');
+            ArrayExpBase.call(this, 'intersect');
             this.other = other;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -317,7 +317,7 @@
             /// <summary>
             /// Holds query join information.
             /// </summary>
-            arrayExpBase.call(this, 'join');
+            ArrayExpBase.call(this, 'join');
             this.other = other;
             this.thisKey = thisKey;
             this.thisKeyExp = beetle.libs.jsep(thisKey);
@@ -325,7 +325,7 @@
             this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -379,7 +379,7 @@
             /// <summary>
             /// Holds query join information.
             /// </summary>
-            arrayExpBase.call(this, 'leftJoin');
+            ArrayExpBase.call(this, 'leftJoin');
             this.other = other;
             this.thisKey = thisKey;
             this.thisKeyExp = beetle.libs.jsep(thisKey);
@@ -387,7 +387,7 @@
             this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -444,7 +444,7 @@
             /// <summary>
             /// Holds query join information.
             /// </summary>
-            arrayExpBase.call(this, 'rightJoin');
+            ArrayExpBase.call(this, 'rightJoin');
             this.other = other;
             this.thisKey = thisKey;
             this.thisKeyExp = beetle.libs.jsep(thisKey);
@@ -452,7 +452,7 @@
             this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -509,7 +509,7 @@
             /// <summary>
             /// Holds query join information.
             /// </summary>
-            arrayExpBase.call(this, 'fullJoin');
+            ArrayExpBase.call(this, 'fullJoin');
             this.other = other;
             this.thisKey = thisKey;
             this.thisKeyExp = beetle.libs.jsep(thisKey);
@@ -517,7 +517,7 @@
             this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -580,11 +580,11 @@
             /// <summary>
             /// Holds query join information.
             /// </summary>
-            arrayExpBase.call(this, 'crossJoin');
+            ArrayExpBase.call(this, 'crossJoin');
             this.other = other;
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -625,11 +625,11 @@
             /// <summary>
             /// Holds query intersect information.
             /// </summary>
-            arrayExpBase.call(this, 'sequenceEqual');
+            ArrayExpBase.call(this, 'sequenceEqual');
             this.other = other;
             this.isExecuter = true;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -664,14 +664,14 @@
             /// <summary>
             /// Holds query toLookup information (same as groupBy but elementSelector is function instead of string).
             /// </summary>
-            arrayExpBase.call(this, 'toLookup', 3, true, true);
+            ArrayExpBase.call(this, 'toLookup', 3, true, true);
             this.keySelectorStr = keySelectorStr;
             this.elementSelector = elementSelector;
 
             if (keySelectorStr)
                 this.keySelectorExp = beetle.libs.jsep(keySelectorStr);
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -686,7 +686,7 @@
             var groups = [];
             // project keys
             if (keySelectorExp) {
-                var keys = beetle.querying.expressions.selectExp.execute(array, keySelectorExp, queryContext);
+                var keys = beetle.querying.expressions.SelectExp.execute(array, keySelectorExp, queryContext);
                 for (var i = 0; i < keys.length; i++) {
                     var keyGroup = null;
                     var key = keys[i];
@@ -736,10 +736,10 @@
             /// <summary>
             /// Holds query concat information.
             /// </summary>
-            arrayExpBase.call(this, 'union');
+            ArrayExpBase.call(this, 'union');
             this.other = other;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
@@ -788,11 +788,11 @@
             /// <summary>
             /// Holds query join information.
             /// </summary>
-            arrayExpBase.call(this, 'zip');
+            ArrayExpBase.call(this, 'zip');
             this.other = other;
             this.selector = selector;
         };
-        beetle.helper.inherit(ctor, arrayExpBase);
+        beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {

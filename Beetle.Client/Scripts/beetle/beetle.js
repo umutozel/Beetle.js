@@ -1757,12 +1757,12 @@
                     /// </summary>
                     /// <param name="type">Derived type.</param>
                     var q = this.clone();
-                    var ofType = q.getExpression(querying.expressions.ofTypeExp);
+                    var ofType = q.getExpression(querying.expressions.OfTypeExp);
                     if (ofType) {
                         ofType.combine(type);
                         return q;
                     }
-                    return q.addExpression(new querying.expressions.ofTypeExp(type));
+                    return q.addExpression(new querying.expressions.OfTypeExp(type));
                 };
 
                 proto.clearWhere = function () {
@@ -1770,7 +1770,7 @@
                     /// Clear where filters.
                     /// </summary>
                     var q = this.clone();
-                    return q.removeExpression(querying.expressions.whereExp);
+                    return q.removeExpression(querying.expressions.WhereExp);
                 };
 
                 proto.where = function (property, filterOp, value) {
@@ -1781,8 +1781,8 @@
                     /// <param name="filterOp">Filter operation: [Equals, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Contains, StartsWith, EndsWith].</param>
                     /// <param name="value">Filter value.</param>
                     var q = this.clone();
-                    var where = q.getExpression(querying.expressions.whereExp);
-                    if (where == null) q.addExpression(new querying.expressions.whereExp(arguments));
+                    var where = q.getExpression(querying.expressions.WhereExp);
+                    if (where == null) q.addExpression(new querying.expressions.WhereExp(arguments));
                     else where.and(arguments);
                     return q;
                 };
@@ -1793,7 +1793,7 @@
                     /// </summary>
                     /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
                     var q = this.clone();
-                    q.getExpression(querying.expressions.whereExp, true).and(arguments);
+                    q.getExpression(querying.expressions.WhereExp, true).and(arguments);
                     return q;
                 };
 
@@ -1803,7 +1803,7 @@
                     /// </summary>
                     /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
                     var q = this.clone();
-                    q.getExpression(querying.expressions.whereExp, true).or(arguments);
+                    q.getExpression(querying.expressions.WhereExp, true).or(arguments);
                     return q;
                 };
 
@@ -1813,7 +1813,7 @@
                     /// </summary>
                     /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
                     var q = this.clone();
-                    var where = q.getExpression(querying.expressions.whereExp);
+                    var where = q.getExpression(querying.expressions.WhereExp);
                     if (where) where.andGroup.apply(where, arguments);
                     else q = q.where.apply(q, arguments);
                     return q;
@@ -1825,7 +1825,7 @@
                     /// </summary>
                     /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
                     var q = this.clone();
-                    var where = q.getExpression(querying.expressions.whereExp);
+                    var where = q.getExpression(querying.expressions.WhereExp);
                     if (where) where.orGroup.apply(where, arguments);
                     else q = q.where.apply(q, arguments);
                     return q;
@@ -1837,7 +1837,7 @@
                     /// </summary>
                     /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
                     var q = this.clone();
-                    q.getExpression(querying.expressions.whereExp, true).closeGroup();
+                    q.getExpression(querying.expressions.WhereExp, true).closeGroup();
                     return q;
                 };
 
@@ -1846,7 +1846,7 @@
                     /// Clear orderBy parameters.
                     /// </summary>
                     var q = this.clone();
-                    return q.removeExpression(querying.expressions.orderByExp);
+                    return q.removeExpression(querying.expressions.OrderByExp);
                 };
 
                 proto.orderBy = function (properties, isDesc) {
@@ -1856,12 +1856,12 @@
                     /// <param name="properties">The properties to sort by.</param>
                     /// <param name="desc">Is it descending?</param>
                     var q = this.clone();
-                    var orderBy = q.getExpression(querying.expressions.orderByExp);
+                    var orderBy = q.getExpression(querying.expressions.OrderByExp);
                     if (orderBy) {
                         orderBy.combine(properties, isDesc);
                         return q;
                     }
-                    return q.addExpression(new querying.expressions.orderByExp(properties, isDesc));
+                    return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
                 };
 
                 proto.orderByDesc = function (properties) {
@@ -1887,7 +1887,7 @@
                         if (assert.isArray(arg))
                             properties = arg.join(', ');
                     } else properties = Array.prototype.slice.call(arguments).join(', ');
-                    return q.addExpression(new querying.expressions.selectExp(properties));
+                    return q.addExpression(new querying.expressions.SelectExp(properties));
                 };
 
                 proto.skip = function (count) {
@@ -1895,12 +1895,12 @@
                     /// Skips given count records and start reading.
                     /// </summary>
                     var q = this.clone();
-                    var skip = q.getExpression(querying.expressions.skipExp);
+                    var skip = q.getExpression(querying.expressions.SkipExp);
                     if (skip) {
                         skip.combine(count);
                         return q;
                     }
-                    return q.addExpression(new querying.expressions.skipExp(count));
+                    return q.addExpression(new querying.expressions.SkipExp(count));
                 };
 
                 proto.take = function (count) {
@@ -1915,12 +1915,12 @@
                     /// Takes only first given count records.
                     /// </summary>
                     var q = this.clone();
-                    var top = q.getExpression(querying.expressions.topExp);
+                    var top = q.getExpression(querying.expressions.TopExp);
                     if (top) {
                         top.combine(count);
                         return q;
                     }
-                    return q.addExpression(new querying.expressions.topExp(count));
+                    return q.addExpression(new querying.expressions.TopExp(count));
                 };
 
                 proto.groupBy = function (keySelector, valueSelector) {
@@ -1934,7 +1934,7 @@
                         keySelector = keySelector.join(', ');
                     if (assert.isArray(valueSelector))
                         valueSelector = valueSelector.join(', ');
-                    return q.addExpression(new querying.expressions.groupByExp(keySelector, valueSelector));
+                    return q.addExpression(new querying.expressions.GroupByExp(keySelector, valueSelector));
                 };
 
                 proto.distinct = function (selector) {
@@ -1945,7 +1945,7 @@
                     var q = this.clone();
                     if (assert.isArray(selector))
                         selector = selector.join(', ');
-                    return q.addExpression(new querying.expressions.distinctExp(selector));
+                    return q.addExpression(new querying.expressions.DistinctExp(selector));
                 };
 
                 proto.reverse = function () {
@@ -1953,7 +1953,7 @@
                     /// Reverse the collection.
                     /// </summary>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.reverseExp());
+                    return q.addExpression(new querying.expressions.ReverseExp());
                 };
 
                 proto.selectMany = function (properties) {
@@ -1962,7 +1962,7 @@
                     /// </summary>
                     /// <param name="properties">Collection property path.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.selectManyExp(properties));
+                    return q.addExpression(new querying.expressions.SelectManyExp(properties));
                 };
 
                 proto.skipWhile = function (predicate, varContext) {
@@ -1972,7 +1972,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.skipWhileExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.SkipWhileExp(predicate, varContext));
                 };
 
                 proto.takeWhile = function (predicate, varContext) {
@@ -1982,7 +1982,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.takeWhileExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.TakeWhileExp(predicate, varContext));
                 };
 
                 proto.all = function (predicate, varContext) {
@@ -1992,7 +1992,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.allExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.AllExp(predicate, varContext));
                 };
 
                 proto.any = function (predicate, varContext) {
@@ -2002,7 +2002,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.anyExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.AnyExp(predicate, varContext));
                 };
 
                 proto.avg = function (selector) {
@@ -2011,7 +2011,7 @@
                     /// </summary>
                     /// <param name="selector">A sequence of Number values to calculate the average of.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.avgExp(selector));
+                    return q.addExpression(new querying.expressions.AvgExp(selector));
                 };
 
                 proto.max = function (selector) {
@@ -2020,7 +2020,7 @@
                     /// </summary>
                     /// <param name="selector">A sequence of Number values to calculate the maximum of.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.maxExp(selector));
+                    return q.addExpression(new querying.expressions.MaxExp(selector));
                 };
 
                 proto.min = function (selector) {
@@ -2029,7 +2029,7 @@
                     /// </summary>
                     /// <param name="selector">A sequence of Number values to calculate the minimum of.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.minExp(selector));
+                    return q.addExpression(new querying.expressions.MinExp(selector));
                 };
 
                 proto.sum = function (selector) {
@@ -2038,7 +2038,7 @@
                     /// </summary>
                     /// <param name="selector">A sequence of Number values to calculate the sum of.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.sumExp(selector));
+                    return q.addExpression(new querying.expressions.SumExp(selector));
                 };
 
                 proto.count = function (predicate, varContext) {
@@ -2048,7 +2048,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.countExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.CountExp(predicate, varContext));
                 };
 
                 proto.first = function (predicate, varContext) {
@@ -2058,7 +2058,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.firstExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.FirstExp(predicate, varContext));
                 };
 
                 proto.firstOrDefault = function (predicate, varContext) {
@@ -2068,7 +2068,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.firstOrDefaultExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.FirstOrDefaultExp(predicate, varContext));
                 };
 
                 proto.single = function (predicate, varContext) {
@@ -2078,7 +2078,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.singleExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.SingleExp(predicate, varContext));
                 };
 
                 proto.singleOrDefault = function (predicate, varContext) {
@@ -2088,7 +2088,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.singleOrDefaultExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.SingleOrDefaultExp(predicate, varContext));
                 };
 
                 proto.last = function (predicate, varContext) {
@@ -2098,7 +2098,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.lastExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.LastExp(predicate, varContext));
                 };
 
                 proto.lastOrDefault = function (predicate, varContext) {
@@ -2108,7 +2108,7 @@
                     /// <param name="predicate">A function to test each element for a condition.</param>
                     /// <param name="varContext">Variable context for the expression.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.lastOrDefaultExp(predicate, varContext));
+                    return q.addExpression(new querying.expressions.LastOrDefaultExp(predicate, varContext));
                 };
 
                 proto.withOptions = function (options) {
@@ -2148,7 +2148,7 @@
                         helper.forEach(that.expressions, function (exp) {
                             qc.expVarContext = exp.varContext;
                             array = exp.execute(array, qc);
-                            if (that.inlineCountEnabled && !assert.isInstanceOf(exp, querying.expressions.topExp) && !assert.isInstanceOf(exp, querying.expressions.skipExp))
+                            if (that.inlineCountEnabled && !assert.isInstanceOf(exp, querying.expressions.TopExp) && !assert.isInstanceOf(exp, querying.expressions.SkipExp))
                                 qc.inlineCount = array.length;
                             qc.expVarContext = undefined;
                         });
@@ -3921,7 +3921,7 @@
                 /// <summary>Linq like expressions to filter, order etc. arrays and server resources. Used by queries.</summary>
 
                 return {
-                    ofTypeExp: (function () {
+                    OfTypeExp: (function () {
                         var ctor = function (typeName) {
                             /// <summary>
                             /// Holds query concrete type name.
@@ -3953,7 +3953,7 @@
 
                         return ctor;
                     })(),
-                    whereExp: (function () {
+                    WhereExp: (function () {
                         var filterItem = (function () {
                             var c = function (expStr, isOr, varContext) {
                                 /// <summary>
@@ -4295,7 +4295,7 @@
 
                         return ctor;
                     })(),
-                    orderByExp: (function () {
+                    OrderByExp: (function () {
                         var defaultExp = 'x => x';
                         var ctor = function (expStr, isDesc) {
                             /// <summary>
@@ -4378,7 +4378,7 @@
 
                         return ctor;
                     })(),
-                    expandExp: (function () {
+                    ExpandExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query expand list.
@@ -4413,7 +4413,7 @@
 
                         return ctor;
                     })(),
-                    selectExp: (function () {
+                    SelectExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query projection parameters.
@@ -4462,7 +4462,7 @@
 
                         return ctor;
                     })(),
-                    skipExp: (function () {
+                    SkipExp: (function () {
                         var ctor = function (count) {
                             /// <summary>
                             /// Holds query skip count.
@@ -4495,7 +4495,7 @@
 
                         return ctor;
                     })(),
-                    topExp: (function () {
+                    TopExp: (function () {
                         var ctor = function (count) {
                             /// <summary>
                             /// Holds query top information.
@@ -4528,7 +4528,7 @@
 
                         return ctor;
                     })(),
-                    groupByExp: (function () {
+                    GroupByExp: (function () {
                         var ctor = function (keySelectorStr, elementSelectorStr) {
                             /// <summary>
                             /// Holds query groupBy information.
@@ -4568,7 +4568,7 @@
                             var groups = [];
                             // project keys
                             if (keySelectorExp) {
-                                var keys = querying.expressions.selectExp.execute(array, keySelectorExp, queryContext);
+                                var keys = querying.expressions.SelectExp.execute(array, keySelectorExp, queryContext);
                                 for (var i = 0; i < keys.length; i++) {
                                     var keyGroup = null;
                                     var key = keys[i];
@@ -4605,7 +4605,7 @@
 
                         return ctor;
                     })(),
-                    distinctExp: (function () {
+                    DistinctExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query distinct information.
@@ -4632,7 +4632,7 @@
 
                         ctor.execute = function (array, exp, queryContext) {
                             if (exp)
-                                array = querying.expressions.selectExp.execute(array, exp, queryContext);
+                                array = querying.expressions.SelectExp.execute(array, exp, queryContext);
                             return getDistincts(array);
                         };
 
@@ -4654,7 +4654,7 @@
 
                         return ctor;
                     })(),
-                    reverseExp: (function () {
+                    ReverseExp: (function () {
                         var ctor = function () {
                             /// <summary>
                             /// Holds query reverse information.
@@ -4682,7 +4682,7 @@
 
                         return ctor;
                     })(),
-                    selectManyExp: (function () {
+                    SelectManyExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query distinct information.
@@ -4723,7 +4723,7 @@
 
                         return ctor;
                     })(),
-                    skipWhileExp: (function () {
+                    SkipWhileExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query skipWhile information.
@@ -4758,7 +4758,7 @@
 
                         return ctor;
                     })(),
-                    takeWhileExp: (function () {
+                    TakeWhileExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query takeWhile information.
@@ -4793,7 +4793,7 @@
 
                         return ctor;
                     })(),
-                    allExp: (function () {
+                    AllExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query all information.
@@ -4826,7 +4826,7 @@
 
                         return ctor;
                     })(),
-                    anyExp: (function () {
+                    AnyExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query any information.
@@ -4863,7 +4863,7 @@
 
                         return ctor;
                     })(),
-                    avgExp: (function () {
+                    AvgExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query average information.
@@ -4896,7 +4896,7 @@
 
                         return ctor;
                     })(),
-                    maxExp: (function () {
+                    MaxExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query maximum information.
@@ -4929,7 +4929,7 @@
 
                         return ctor;
                     })(),
-                    minExp: (function () {
+                    MinExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query minimum information.
@@ -4962,7 +4962,7 @@
 
                         return ctor;
                     })(),
-                    sumExp: (function () {
+                    SumExp: (function () {
                         var ctor = function (expStr) {
                             /// <summary>
                             /// Holds query sum information.
@@ -4995,7 +4995,7 @@
 
                         return ctor;
                     })(),
-                    countExp: (function () {
+                    CountExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query count information.
@@ -5029,7 +5029,7 @@
 
                         return ctor;
                     })(),
-                    firstExp: (function () {
+                    FirstExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query first information.
@@ -5064,7 +5064,7 @@
 
                         return ctor;
                     })(),
-                    firstOrDefaultExp: (function () {
+                    FirstOrDefaultExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query firstOrDefault information.
@@ -5098,7 +5098,7 @@
 
                         return ctor;
                     })(),
-                    singleExp: (function () {
+                    SingleExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query single information.
@@ -5133,7 +5133,7 @@
 
                         return ctor;
                     })(),
-                    singleOrDefaultExp: (function () {
+                    SingleOrDefaultExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query singleOrDefault information.
@@ -5168,7 +5168,7 @@
 
                         return ctor;
                     })(),
-                    lastExp: (function () {
+                    LastExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query last information.
@@ -5203,7 +5203,7 @@
 
                         return ctor;
                     })(),
-                    lastOrDefaultExp: (function () {
+                    LastOrDefaultExp: (function () {
                         var ctor = function (expStr, varContext) {
                             /// <summary>
                             /// Holds query lastOrDefault information.
@@ -6005,9 +6005,9 @@
                     ///     This query takes Orders and OrderDetails for each order in one query.
                     /// </summary>
                     var q = this.clone();
-                    var expand = q.getExpression(querying.expressions.expandExp);
+                    var expand = q.getExpression(querying.expressions.ExpandExp);
                     if (expand) expand.combine(propertyPath);
-                    else q.addExpression(new querying.expressions.expandExp(propertyPath));
+                    else q.addExpression(new querying.expressions.ExpandExp(propertyPath));
                     return q;
                 };
 
@@ -8850,7 +8850,7 @@
                     } else
                         throw helper.createError(i18N.typeRequiredForLocalQueries);
 
-                    if (calculateInlineCountDiff && query.getExpression(querying.expressions.groupByExp, false)) {
+                    if (calculateInlineCountDiff && query.getExpression(querying.expressions.GroupByExp, false)) {
                         events.warning.notify({ message: i18N.countDiffCantBeCalculatedForGrouped, query: query, options: options });
                         calculateInlineCountDiff = false;
                     }
