@@ -81,10 +81,10 @@ function populateVars() {
 
     var serviceType = urlVars['serviceType'];
     if (serviceType == 'MV')
-        service = new beetle.services.mvcService('Home', metadata);
+        service = new beetle.MvcService('Home', metadata);
     else {
         serviceType = 'WA';
-        service = new beetle.services.webApiService('api/BeetleTest', metadata);
+        service = new beetle.services.WebApiService('api/BeetleTest', metadata);
     }
     basicTestViewModel.serviceType = serviceType;
 }
@@ -95,8 +95,8 @@ beetle.events.saving.subscribe(function (args) {
     args.options.headers.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
 });
 var EntityManager = beetle.EntityManager;
-var entityStates = beetle.EntityStates;
-var op = beetle.FilterOps;
+var entityStates = beetle.entityStates;
+var op = beetle.filterOps;
 var testArray = [
     {
         Name: 'Ord1',
@@ -235,11 +235,6 @@ test('seed the test db', 1, function () {
 test('get all NamedEntities', 1, function () {
     var manager = new EntityManager(service);
     var q = manager.Orders.where("Id > 5");
-    q.execute().then(function (data) {
-        var x = data;
-
-        var ol = manager.Orders.local;
-    });
     var query = manager.createQuery('NamedEntities');
     stop();
     manager.executeQuery(query)
@@ -1721,7 +1716,7 @@ if (metadata !== false) {
 
         function saveSucceeded() {
             var query = manager.createQuery('NamedEntities').where('Id == @0', [id]);
-            manager.executeQuery(query, beetle.MergeStrategy.NoTracking)
+            manager.executeQuery(query, beetle.mergeStrategy.NoTracking)
                 .then(querySucceeded)
                 .fail(handleFail)
                 .fin(start);
@@ -1748,7 +1743,7 @@ if (metadata !== false) {
 
         function saveSucceeded() {
             var query = manager.createQuery('Entities').where('Id', op.Equals, id);
-            manager.executeQuery(query, beetle.MergeStrategy.NoTracking)
+            manager.executeQuery(query, beetle.mergeStrategy.NoTracking)
                 .then(querySucceeded)
                 .fail(handleFail)
                 .fin(start);
@@ -2001,7 +1996,7 @@ if (metadata !== false) {
             ne = neResult[0];
             ne.$tracker.setValue('IsCanceled', true);
             var ne2Query = manager.createQuery('NamedEntities');
-            manager.executeQuery(ne2Query, beetle.MergeStrategy.Overwrite)
+            manager.executeQuery(ne2Query, beetle.mergeStrategy.Overwrite)
                 .then(ne2QuerySucceeded)
                 .fail(handleFail)
                 .fin(start);
@@ -2025,7 +2020,7 @@ if (metadata !== false) {
             ne = neResult[0];
             ne.$tracker.setValue('IsCanceled', true);
             var ne2Query = manager.createQuery('NamedEntities');
-            manager.executeQuery(ne2Query, beetle.MergeStrategy.Preserve)
+            manager.executeQuery(ne2Query, beetle.mergeStrategy.Preserve)
                 .then(ne2QuerySucceeded)
                 .fail(handleFail)
                 .fin(start);
@@ -2048,7 +2043,7 @@ if (metadata !== false) {
 
         function netQuerySucceeded() {
             var net2Query = manager.createQuery('NamedEntityTypes');
-            manager.executeQuery(net2Query, beetle.MergeStrategy.ThrowError)
+            manager.executeQuery(net2Query, beetle.mergeStrategy.ThrowError)
             .then(function () {
                 ok(false, 'entity should not be overwritten');
             })

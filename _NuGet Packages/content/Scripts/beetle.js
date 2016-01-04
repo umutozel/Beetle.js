@@ -9471,7 +9471,7 @@
 
                         // If first parameter is string, use it as an Uri and create the default service.
                         var dst = settings.getDefaultServiceType();
-                        var serviceType = dst === enums.serviceTypes.WebApi ? services.webApiService : services.mvcService;
+                        var serviceType = dst === enums.serviceTypes.WebApi ? services.WebApiService : services.MvcService;
                         instance.dataService = new serviceType(service, metadataPrm, injections);
                     }
                     else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this, arguments: args });
@@ -10033,11 +10033,11 @@
         };
     })();
     var services = (function () {
-        /// <summary>Data service implementations like webApiService, mvcService etc..</summary>
+        /// <summary>Data service implementations like WebApiService, MvcService etc..</summary>
 
         var expose = {};
 
-        expose.mvcService = (function () {
+        expose.MvcService = (function () {
             // Dependencies are injected through constructor.
             var ctor = function (uri, metadataPrm, injections) {
                 /// <summary>
@@ -10287,7 +10287,7 @@
             return ctor;
         })();
 
-        expose.webApiService = (function () {
+        expose.WebApiService = (function () {
             // Dependencies are injected through constructor.
             var ctor = function (uri, metadataPrm, injections) {
                 /// <summary>
@@ -10299,10 +10299,10 @@
                 /// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
                 ///  When not given, defaults will be used.
                 /// </param>
-                services.mvcService.call(this, uri, metadataPrm, injections);
+                services.MvcService.call(this, uri, metadataPrm, injections);
                 this.useBeetleQueryStrings = false;
             };
-            helper.inherit(ctor, expose.mvcService);
+            helper.inherit(ctor, expose.MvcService);
             var proto = ctor.prototype;
 
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
@@ -10823,11 +10823,17 @@
             // shortcuts
             MetadataManager: metadata.MetadataManager,
             EntityManager: core.EntityManager,
-            WebApiService: services.webApiService,
-            MvcService: services.mvcService,
-            EntityStates: enums.entityStates,
-            FilterOps: enums.filterOps,
-            MergeStrategy: enums.mergeStrategy
+            WebApiService: services.WebApiService,
+            MvcService: services.MvcService,
+            Event: core.Event,
+            Validator: core.Validator,
+            ValueNotifyWrapper: core.ValueNotifyWrapper,
+            entityStates: enums.entityStates,
+            filterOps: enums.filterOps,
+            mergeStrategy: enums.mergeStrategy,
+            executionStrategy: enums.executionStrategy,
+            arraySetBehaviour: enums.arraySetBehaviour,
+            serviceTypes: enums.serviceTypes
         };
     })();
 
