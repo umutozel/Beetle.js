@@ -360,7 +360,7 @@ test('reject changes with relations', 4, function () {
 
 test('check if derived entity returned from base entity query', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.Entities.q();
+    var query = manager.Entities;
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)

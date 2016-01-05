@@ -2437,7 +2437,7 @@
                     /// <param name="manager">Entity manager.</param>
                     helper.assertPrm(resourceName, 'resourceName').isNotEmptyString().check();
                     if (shortName) return this.createEntityQuery(shortName, resourceName, manager);
-                    if (this.metadataManager) this.metadataManager.createQuery(resourceName, null, manager);
+                    if (this.metadataManager) return this.metadataManager.createQuery(resourceName, null, manager);
                     return new querying.EntityQuery(resourceName, null, manager);
                 };
 
@@ -7485,11 +7485,11 @@
             })(),
             EntitySet: (function () {
                 var ctor = function (type, manager) {
-                    this.entityType = type;
-                    this.manager = manager;
-
                     this.local = manager.entities.getEntitySet(type);
+
+                    querying.EntityQuery.call(this, type.setName, type, manager);
                 };
+                helper.inherit(ctor, querying.EntityQuery);
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
@@ -7522,164 +7522,6 @@
                     checkType(entity, this);
                     this.manager.deleteEntity(entity);
                 };
-
-                proto.asQueryable = function () {
-                    return createQuery(this);
-                };
-
-                proto.q = function () {
-                    return this.asQueryable.apply(this, arguments);
-                };
-
-                proto.inlineCount = function () {
-                    var q = createQuery(this);
-                    return q.inlineCount.apply(q, arguments);
-                };
-
-                proto.ofType = function () {
-                    var q = createQuery(this);
-                    return q.ofType.apply(q, arguments);
-                };
-
-                proto.where = function () {
-                    var q = createQuery(this);
-                    return q.where.apply(q, arguments);
-                };
-
-                proto.orderBy = function () {
-                    var q = createQuery(this);
-                    return q.orderBy.apply(q, arguments);
-                };
-
-                proto.select = function () {
-                    var q = createQuery(this);
-                    return q.select.apply(q, arguments);
-                };
-
-                proto.skip = function () {
-                    var q = createQuery(this);
-                    return q.skip.apply(q, arguments);
-                };
-
-                proto.take = function () {
-                    var q = createQuery(this);
-                    return q.take.apply(q, arguments);
-                };
-
-                proto.top = function () {
-                    var q = createQuery(this);
-                    return q.top.apply(q, arguments);
-                };
-
-                proto.groupBy = function () {
-                    var q = createQuery(this);
-                    return q.groupBy.apply(q, arguments);
-                };
-
-                proto.distinct = function () {
-                    var q = createQuery(this);
-                    return q.distinct.apply(q, arguments);
-                };
-
-                proto.reverse = function () {
-                    var q = createQuery(this);
-                    return q.reverse.apply(q, arguments);
-                };
-
-                proto.selectMany = function () {
-                    var q = createQuery(this);
-                    return q.selectMany.apply(q, arguments);
-                };
-
-                proto.skipWhile = function () {
-                    var q = createQuery(this);
-                    return q.skipWhile.apply(q, arguments);
-                };
-
-                proto.takeWhile = function () {
-                    var q = createQuery(this);
-                    return q.takeWhile.apply(q, arguments);
-                };
-
-                proto.all = function () {
-                    var q = createQuery(this);
-                    return q.all.apply(q, arguments);
-                };
-
-                proto.any = function () {
-                    var q = createQuery(this);
-                    return q.any.apply(q, arguments);
-                };
-
-                proto.avg = function () {
-                    var q = createQuery(this);
-                    return q.avg.apply(q, arguments);
-                };
-
-                proto.max = function () {
-                    var q = createQuery(this);
-                    return q.max.apply(q, arguments);
-                };
-
-                proto.min = function () {
-                    var q = createQuery(this);
-                    return q.min.apply(q, arguments);
-                };
-
-                proto.sum = function () {
-                    var q = createQuery(this);
-                    return q.sum.apply(q, arguments);
-                };
-
-                proto.count = function () {
-                    var q = createQuery(this);
-                    return q.count.apply(q, arguments);
-                };
-
-                proto.first = function () {
-                    var q = createQuery(this);
-                    return q.first.apply(q, arguments);
-                };
-
-                proto.firstOrDefault = function () {
-                    var q = createQuery(this);
-                    return q.firstOrDefault.apply(q, arguments);
-                };
-
-                proto.single = function () {
-                    var q = createQuery(this);
-                    return q.single.apply(q, arguments);
-                };
-
-                proto.singleOrDefault = function () {
-                    var q = createQuery(this);
-                    return q.singleOrDefault.apply(q, arguments);
-                };
-
-                proto.last = function () {
-                    var q = createQuery(this);
-                    return q.last.apply(q, arguments);
-                };
-
-                proto.lastOrDefault = function () {
-                    var q = createQuery(this);
-                    return q.lastOrDefault.apply(q, arguments);
-                };
-
-                proto.execute = function () {
-                    var q = createQuery(this);
-                    return q.execute.apply(q, arguments);
-                };
-
-                proto.x = function () {
-                    var q = createQuery(this);
-                    return q.x.apply(q, arguments);
-                };
-
-                function createQuery(that) {
-                    var shortName = that.entityType.shortName;
-                    return that.manager.createQuery(that.entityType.setName || shortName, shortName);
-                }
 
                 function checkType(entity, that) {
                     if (entity == null)
