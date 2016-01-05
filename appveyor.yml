@@ -1,0 +1,18 @@
+configuration: Release
+
+# enable AssemblyInfo.cs patching with build version number
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "{version}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+
+# restore NuGet packages before running MSBuild
+before_build:
+  - nuget restore
+
+# package Web Application project for Web Deploy
+build:
+  verbosity: minimal
+  publish_wap: true
