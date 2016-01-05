@@ -97,7 +97,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)bin\Debug\Beetle.Server.EntityFramework6.dll" 	"$(SolutionDir)_NuGet Packages\lib\Beetle.Server.EntityFramework6.dll"</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)bin\$(ConfigurationName)\Beetle.Server.EntityFramework6.dll" 	"$(SolutionDir)_NuGet Packages\lib\Beetle.Server.EntityFramework6.dll"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -139,7 +139,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)bin\Debug\Beetle.Server.WebApi2.dll" 	"$(SolutionDir)_NuGet Packages\lib\Beetle.Server.WebApi2.dll"</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)bin\$(ConfigurationName)\Beetle.Server.WebApi2.dll" 	"$(SolutionDir)_NuGet Packages\lib\Beetle.Server.WebApi2.dll"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
