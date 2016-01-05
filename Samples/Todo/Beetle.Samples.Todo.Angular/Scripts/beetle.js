@@ -7503,7 +7503,7 @@
                     /// <summary>
                     /// Adds the given entity to the manager in the Added state.
                     /// </summary>
-                    assert.isInstanceOf(entity, this.entityType).check();
+                    checkType(entity, this);
                     this.manager.addEntity(entity);
                 };
 
@@ -7511,7 +7511,7 @@
                     /// <summary>
                     /// Attaches the given entity to the manager in the Unchanged state.
                     /// </summary>
-                    assert.isInstanceOf(entity, this.entityType).check();
+                    checkType(entity, this);
                     this.manager.attachEntity(entity);
                 };
 
@@ -7519,8 +7519,16 @@
                     /// <summary>
                     /// Marks the given entity as Deleted.
                     /// </summary>
-                    assert.isInstanceOf(entity, this.entityType).check();
+                    checkType(entity, this);
                     this.manager.deleteEntity(entity);
+                };
+
+                proto.asQueryable = function () {
+                    return createQuery(this);
+                };
+
+                proto.q = function () {
+                    return this.asQueryable.apply(this, arguments);
                 };
 
                 proto.inlineCount = function () {
@@ -7671,6 +7679,18 @@
                 function createQuery(that) {
                     var shortName = that.entityType.shortName;
                     return that.manager.createQuery(that.entityType.setName || shortName, shortName);
+                }
+
+                function checkType(entity, that) {
+                    if (entity == null)
+                        throw helper.createError(i18N.cannotCheckInstanceOnNull);
+                    var t = that.entityType;
+                    if (!t.isAssignableWith(entity)) {
+                        var ot = entity.$tracker && entity.$tracker.entityType;
+                        var otn = (ot && ot.shortName) || 'Object';
+                        if (!ot || !t.isAssignableWith(ot))
+                            throw helper.createError(i18N.typeError, [otn, t.shortName]);
+                    }
                 }
 
                 return ctor;
@@ -9516,7 +9536,7 @@
                                     var shortName = type.shortName;
                                     if (!instance.hasOwnProperty(shortName))
                                         instance[shortName] = getManagerEntityClass(shortName, instance);
-                                    
+
                                     var setName = type.setName;
                                     if (setName && !instance.hasOwnProperty(setName)) {
                                         var set = new core.EntitySet(type, instance);
@@ -9525,7 +9545,7 @@
                                     }
 
                                     if (!exports.hasOwnProperty(shortName))
-                                        exports[shortName] = getGlobalEntityClass();
+                                        exports[shortName] = getGlobalEntityClass(type);
                                 }
                             }
                             var enums = metadata.enums;

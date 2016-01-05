@@ -234,8 +234,7 @@ test('seed the test db', 1, function () {
 
 test('get all NamedEntities', 1, function () {
     var manager = new EntityManager(service);
-    var q = manager.Orders.where("Id > 5");
-    var query = manager.createQuery('NamedEntities');
+    var query = manager.Entities.ofType('NamedEntity');
     stop();
     manager.executeQuery(query)
         .then(firstQuerySucceeded)
@@ -361,7 +360,7 @@ test('reject changes with relations', 4, function () {
 
 test('check if derived entity returned from base entity query', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('Entities');
+    var query = manager.Entities.q();
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -399,7 +398,7 @@ module('query operator tests');
 
 test('use equals null', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('OrderDetails').where('ProductNo', op.Equals, null);
+    var query = manager.OrderDetails.where('ProductNo', op.Equals, null);
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -414,7 +413,7 @@ test('use equals null', 1, function () {
 
 test('use equals', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntityTypes').where('Name', op.Equals, 'NE_2');
+    var query = manager.NamedEntityTypes.where('Name', op.Equals, 'NE_2');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
