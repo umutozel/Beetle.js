@@ -1,26 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>Beetlejs.EF6</id>
-        <version>1.2.0</version>
-        <title>Beetlejs Entity Framework 6 Handler</title>
+        <id>Beetlejs.WebApi2.EF6</id>
+        <version>2.0.0</version>
+        <title>Beetlejs WebApi 2 Controller (OData) and Entity Framework 6 Api</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
         <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
         <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Beetle Entity Framework 6 handler.</description>
+        <description>Beetle WebApi 2 Controller Api with Entity Framework 6 handler. Simply derive from BeetleWebApiController with EFContextHandler generic parameter and manage your data easily. For example check sample project on github.</description>
         <summary>Manage your data with Javascript easily.</summary>
         <copyright>Copyright (c) 2015 Umut Özel</copyright>
         <language>en-US</language>
-        <tags>ASP.NET Mvc 5 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle</tags>
+        <tags>ASP.NET WebApi 2 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle</tags>
         <dependencies>
-            <dependency id="Beetlejs.Server" version="1.0" />
-            <dependency id="EntityFramework" version="6.0" />
+            <dependency id="Beetlejs.WebApi2" version="1.0" />
+            <dependency id="Beetlejs.EF6" version="1.0" />
         </dependencies>
     </metadata>
-    <files>
-        <file src="lib\Beetle.Server.EntityFramework6.dll" target="lib\Beetle.Server.EntityFramework6.dll" />
-    </files>
+	<files>
+	</files>
 </package>

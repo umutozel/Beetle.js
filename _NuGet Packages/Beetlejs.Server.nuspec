@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>Beetlejs.Mvc5.EF6</id>
-        <version>1.2.0</version>
-        <title>Beetlejs Mvc 5 Controller and Entity Framework 6 Api</title>
+        <id>Beetlejs.Server</id>
+        <version>2.0.0</version>
+        <title>Beetlejs Server Files</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
         <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
         <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Beetle Mvc 5 Controller Api with Entity Framework 6 handler. Simply derive from BeetleMvcController with EFContextHandler generic parameter and manage your data easily. For example check sample project on github.</description>
+        <description>Beetle.js server files.</description>
         <summary>Manage your data with Javascript easily.</summary>
         <copyright>Copyright (c) 2015 Umut Özel</copyright>
         <language>en-US</language>
         <tags>ASP.NET Mvc 5 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle</tags>
-        <dependencies>
-            <dependency id="Beetlejs.Mvc5" version="1.0" />
-            <dependency id="Beetlejs.EF6" version="1.0" />
-        </dependencies>
     </metadata>
-	<files>
-	</files>
+    <files>
+        <file src="lib\Beetle.Server.dll" target="lib\Beetle.Server.dll" />
+    </files>
 </package>

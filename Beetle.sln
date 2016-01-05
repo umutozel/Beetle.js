@@ -17,15 +17,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Todo", "Todo", "{A5A9F3F5-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_NuGet Packages", "_NuGet Packages", "{FC020D39-AB65-4394-B3F8-BF1602C68A65}"
 	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\Beetlejs.Client.1.2.0.nuspec = _NuGet Packages\Beetlejs.Client.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.EF6.1.2.0.nuspec = _NuGet Packages\Beetlejs.EF6.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.Mvc5.1.2.0.nuspec = _NuGet Packages\Beetlejs.Mvc5.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.Mvc5.EF6.1.2.0.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.2.0.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.Sample.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.Server.1.2.0.nuspec = _NuGet Packages\Beetlejs.Server.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.WebApi2.1.2.0.nuspec = _NuGet Packages\Beetlejs.WebApi2.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.WebApi2.EF6.1.2.0.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.1.2.0.nuspec
-		_NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.2.0.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.Sample.1.2.0.nuspec
+		_NuGet Packages\Beetlejs.Client.nuspec = _NuGet Packages\Beetlejs.Client.nuspec
+		_NuGet Packages\Beetlejs.EF6.nuspec = _NuGet Packages\Beetlejs.EF6.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.EF6.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.EF6.Sample.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.Sample.nuspec
+		_NuGet Packages\Beetlejs.Mvc5.nuspec = _NuGet Packages\Beetlejs.Mvc5.nuspec
+		_NuGet Packages\Beetlejs.Server.nuspec = _NuGet Packages\Beetlejs.Server.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.EF6.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.EF6.Sample.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.Sample.nuspec
+		_NuGet Packages\Beetlejs.WebApi2.nuspec = _NuGet Packages\Beetlejs.WebApi2.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{EECD6D87-AB15-4624-B0C5-CB43288023D2}"
