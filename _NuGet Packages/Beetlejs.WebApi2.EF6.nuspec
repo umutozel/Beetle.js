@@ -12,7 +12,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Beetle WebApi 2 Controller Api with Entity Framework 6 handler. Simply derive from BeetleWebApiController with EFContextHandler generic parameter and manage your data easily. For example check sample project on github.</description>
         <summary>Manage your data with Javascript easily.</summary>
-        <copyright>Copyright (c) 2015 Umut Özel</copyright>
+        <copyright>Copyright (c) 2016 Umut Özel</copyright>
         <language>en-US</language>
         <tags>ASP.NET WebApi 2 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle</tags>
         <dependencies>

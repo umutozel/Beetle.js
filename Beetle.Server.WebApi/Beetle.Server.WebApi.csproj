@@ -84,6 +84,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\_Shared\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="BeetleActionFilterAttribute.cs" />
     <Compile Include="BeetleApiControllerAttribute.cs" />
     <Compile Include="BeetleMediaTypeFormatter.cs" />
@@ -128,4 +131,3 @@
   </Target>
   -->
 </Project>
-

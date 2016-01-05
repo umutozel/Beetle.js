@@ -55,6 +55,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\_Shared\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="EFContextHandler.cs" />
     <Compile Include="MetadataGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -56,6 +56,9 @@
     <Reference Include="System.Data.Entity.Design" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\_Shared\GlobalAssemblyInfo.cs">
+      <Link>GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ActionContext.cs" />
     <Compile Include="BeetleConfig.cs" />
     <Compile Include="EnumerableHandler.cs" />
