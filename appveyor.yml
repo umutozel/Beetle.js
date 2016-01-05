@@ -1,4 +1,4 @@
-configuration: Debug
+configuration: Release
 
 # enable AssemblyInfo.cs patching with build version number
 assembly_info:
