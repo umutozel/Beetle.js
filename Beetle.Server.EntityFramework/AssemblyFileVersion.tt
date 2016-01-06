@@ -1,0 +1,34 @@
+﻿﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ output extension=".cs" #>
+<#
+    int major, minor, build, revision = 0;
+  
+    using(var f = File.OpenText(Host.ResolvePath("Properties/AssemblyInfo.cs"))) {
+        var s = f.ReadToEnd();
+        var rx = new Regex(@"AssemblyVersion\(\""(\d{1,3})\.(\d{1,3})\""\)");
+        var m = rx.Match(s);             
+        major = Convert.ToInt32(m.Groups[1].Value);
+        minor = Convert.ToInt32(m.Groups[2].Value);
+    }
+    build = (DateTime.Now - new DateTime(2010, 1, 1)).Days;
+    
+    try {
+        using(var f = File.OpenText(Host.ResolvePath("AssemblyFileVersion.cs"))) {
+            var s = f.ReadToEnd();
+            var rx = new Regex(@"(\d{1,3}).(\d{1,3}).(\d{1,6}).(\d{1,6})");
+            var m = rx.Match(s);             
+            var omajor = Convert.ToInt32(m.Groups[1].Value);
+            var ominor = Convert.ToInt32(m.Groups[2].Value);
+            var obuild = Convert.ToInt32(m.Groups[3].Value);
+            if (build != obuild)
+                revision = 0;
+            else
+                revision = Convert.ToInt32(m.Groups[4].Value) + 1;
+        }
+    }
+    catch {
+    }
+#>
+[assembly: System.Reflection.AssemblyFileVersion("<#= major #>.<#= minor #>.<#= build #>.<#= revision #>")]
