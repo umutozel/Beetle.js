@@ -1,5 +1,7 @@
 configuration: Release
 
+version: 2.0.{build}
+
 # enable AssemblyInfo.cs patching with build version number
 assembly_info:
   patch: true
