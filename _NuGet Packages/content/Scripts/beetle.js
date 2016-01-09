@@ -2595,8 +2595,6 @@
                     ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
                     ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
                     ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
-                    ///  isCaseSensitive: When true string comparisons will be case sensitive
-                    ///  ignoreWhiteSpaces: When true before comparison strings will be trimmed
                     ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
                     ///  uri: Overrides dataService's uri.
                     ///  headers: Extra http headers
@@ -3119,6 +3117,7 @@
 
                 function getHeaderGetter(headers) {
                     return function (header) {
+                        if (!header) return headers;
                         return headers[header];
                     }
                 }
@@ -3691,6 +3690,7 @@
                     /// Metadata manager default implementation.
                     /// </summary>
                     this.types = [];
+                    this.typesDict = {};
                     this.enums = {};
                     this.name = null;
                     this.displayName = null;
@@ -3725,7 +3725,7 @@
                     /// </summary>
                     /// <param name="shortName">Type name</param>
                     /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
-                    var type = helper.findInArray(this.types, shortName, 'shortName');
+                    var type = this.typesDict[shortName];
                     if (!type && throwIfNotFound === true)
                         throw helper.createError(i18N.notFoundInMetadata, [shortName], { metadataManager: this, typeShortName: shortName });
                     return type;
@@ -3793,6 +3793,7 @@
                         metadataPrm = JSON.parse(metadataPrm);
 
                     this.types = [];
+                    this.typesDict = {};
                     this.enums = {};
                     this.name = metadataPrm.n;
                     this.displayName = helper.getResourceValue(metadataPrm.r, metadataPrm.l || metadataPrm.n);
@@ -3859,6 +3860,7 @@
                                 t.navigationProperties.push(property);
                             });
                         this.types.push(t);
+                        this.typesDict[t.shortName] = t;
                     }
 
                     // then create relation between inherited entities.
@@ -6055,10 +6057,9 @@
                     ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
                     ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
                     ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
-                    ///  isCaseSensitive: When true string comparisons will be case sensitive
-                    ///  ignoreWhiteSpaces: When true before comparison strings will be trimmed
                     ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
                     ///  uri: Overrides dataService's uri
+                    ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
                     ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
                     ///  
                     ///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
@@ -8501,6 +8502,7 @@
                     /// </summary>
                     /// <param name="typeName">The entity typa name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
+                    /// <param name="options">Query options (optional), for detail read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
                     /// <returns type="">Returns promise if supported.</returns>
@@ -8537,7 +8539,7 @@
                     var retVal = null;
                     instance.dataService.createEntityAsync(
                         typeName, initialValues, options,
-                        function (entity, allEntities) {
+                        function (entity, allEntities, headerGetter, xhr) {
                             try {
                                 var isSingle = false;
                                 if (!assert.isArray(entity)) {
@@ -8549,6 +8551,22 @@
                                 // If only one entity returned (most likely) return it, otherwise return the array.
                                 if (isSingle)
                                     entity = entity[0];
+
+                                var extra = {};
+                                extra.userData = headerGetter("X-UserData");
+                                var extraNeeded = extra.userData != null;
+                                if (options.includeHeaderGetter === true) {
+                                    extra.headerGetter = headerGetter;
+                                    extraNeeded = true;
+                                }
+                                if (options.includeXhr === true) {
+                                    extra.xhr = xhr;
+                                    extraNeeded = true;
+                                }
+
+                                if (extraNeeded)
+                                    entity.$extra = extra;
+
                                 onSuccess(successCallback, pp, d, entity);
                                 if (!pp) retVal = entity;
                             } catch (e) {
@@ -8575,13 +8593,13 @@
                     ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
                     ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
                     ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
-                    ///  isCaseSensitive: When true string comparisons will be case sensitive
-                    ///  ignoreWhiteSpaces: When true before comparison strings will be trimmed
                     ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
                     ///  uri: Overrides dataService's uri
+                    ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
                     ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
                     ///  
                     ///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
+                    ///  async: When false, Ajax call will be made synchronously (default: true)
                     ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
                     ///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
                     ///  dataType: We can set ajax call's dataType with this option
@@ -8673,9 +8691,20 @@
                                         if (query.inlineCountEnabled && inlineCount != null)
                                             newEntities.$inlineCount = inlineCount;
 
-                                        newEntities.$extra = { userData: headerGetter("X-UserData") };
-                                        if (options.includeXhr === true)
-                                            newEntities.$extra.xhr = xhr;
+                                        var extra = {};
+                                        extra.userData = headerGetter("X-UserData");
+                                        var extraNeeded = extra.userData != null;
+                                        if (options.includeHeaderGetter === true) {
+                                            extra.headerGetter = headerGetter;
+                                            extraNeeded = true;
+                                        }
+                                        if (options.includeXhr === true) {
+                                            extra.xhr = xhr;
+                                            extraNeeded = true;
+                                        }
+
+                                        if (extraNeeded)
+                                            newEntities.$extra = extra;
                                     }
                                     newEntities = notifyExecuted(that, query, options, newEntities);
                                     onSuccess(successCallback, pp, d, newEntities);
@@ -9092,6 +9121,8 @@
                     ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
                     ///  uri: Overrides dataService's uri.
                     ///  saveAction: Custom save action on server side (default is SaveChanges).
+                    ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
+                    ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
                     /// </summary>
                     /// <param name="options">Save options, for details read summary.</param>
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
@@ -9135,7 +9166,7 @@
                             this.dataService.saveChanges(
                                 this.createSavePackage(changes, options),
                                 options,
-                                function (result) {
+                                function (result, headerGetter, xhr) {
                                     try {
                                         // merge generated entities
                                         if (result.GeneratedEntities != null && result.GeneratedEntities.length > 0)
@@ -9166,6 +9197,12 @@
 
                                         // Accept all changes, means Added -> Unchanged; Modified -> Unchanged, Clear Original Values; Deleted -> Remove from cache.
                                         acceptSaves(changes, that.entities, that);
+
+                                        result.userData = headerGetter("X-UserData");
+                                        if (options.includeHeaderGetter === true)
+                                            result.headerGetter = headerGetter;
+                                        if (options.includeXhr === true)
+                                            result.xhr = xhr;
 
                                         notifySaved(that, changes, options);
                                         onSuccess(successCallback, pp, d, result);
@@ -9938,10 +9975,10 @@
                 this.ajaxProvider.doAjax(
                     this.uri + 'Metadata',
                     'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
-                    function (data) {
+                    function (data, headerGetter, xhr) {
                         // deserialize return value to object.
                         retVal = that.serializationService.deserialize(data); // parse string
-                        successCallback(retVal);
+                        successCallback(retVal, headerGetter, xhr);
                     },
                     errorCallback
                 );
@@ -9964,12 +10001,12 @@
                 this.ajaxProvider.doAjax(
                     uri,
                     'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
-                    function (data) {
+                    function (data, headerGetter, xhr) {
                         // deserialize return value to object.
                         data = that.serializationService.deserialize(data);
                         // Fix the relations between object (using $ref and $id values)
                         var allEntities = that.fixResults(data, makeObservable);
-                        successCallback(data, allEntities);
+                        successCallback(data, allEntities, headerGetter, xhr);
                     },
                     function (error) {
                         errorCallback(error);
@@ -10023,7 +10060,7 @@
                 this.ajaxProvider.doAjax(
                     uri,
                     type, dataType, contentType, d, async, timeout, extra, headers,
-                    function (data, xhr) {
+                    function (data, headerGetter, xhr) {
                         // deserialize returned data (if deserializable).
                         try {
                             data = that.serializationService.deserialize(data);
@@ -10035,7 +10072,7 @@
                         var allEntities = null;
                         if (data)
                             allEntities = that.fixResults(data, makeObservable, handleUnmappedProperties);
-                        successCallback(data, allEntities, xhr);
+                        successCallback(data, allEntities, headerGetter, xhr);
                     },
                     function (error) {
                         errorCallback(error);
@@ -10061,7 +10098,7 @@
                 this.ajaxProvider.doAjax(
                     uri,
                     'POST', this.dataType, this.contentType, saveData, async, timeout, extra, headers,
-                    function (result) {
+                    function (result, headerGetter, xhr) {
                         // deserialize returned data (if deserializable).
                         try {
                             result = that.serializationService.deserialize(result);
@@ -10073,7 +10110,7 @@
                             delete result.$id;
                             delete result.$type;
                         }
-                        successCallback(result);
+                        successCallback(result, headerGetter, xhr);
                     },
                     function (error) {
                         errorCallback(error);
