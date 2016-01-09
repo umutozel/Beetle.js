@@ -7503,6 +7503,15 @@
                     return 'EntitySet: ' + this.entityType.shortName;
                 };
 
+                proto.create = function (initialValues) {
+                    /// <summary>
+                    /// Creates a new entity with Added state.
+                    /// </summary>
+                    var entity = this.entityType.createEntity(initialValues);
+                    this.manager.addEntity(entity);
+                    return entity;
+                };
+
                 proto.add = function (entity) {
                     /// <summary>
                     /// Adds the given entity to the manager in the Added state.
