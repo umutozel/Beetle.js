@@ -2388,7 +2388,7 @@
                     /// Data service base class.
                     /// </summary>
                     /// <param name="uri">Service URI.</param>
-                    /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
+                    /// <param name="metadataPrm">[Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used, no auto relation fix]</param>
                     /// <param name="injections">
                     /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService, ajaxTimeout, dataType, contentType. 
                     ///  When not given, defaults will be used.
@@ -8375,7 +8375,7 @@
                     /// Entity manager class. All operations must be made using manager to be properly tracked.
                     /// </summary>
                     /// <param name="service">[Service Uri - settings default service will be used] or [Service Instance]</param>
-                    /// <param name="metadataPrm">(optional) [Metadata Manager] or [string] or [true - false (default) - when false no metadata will be used, no auto relation fix]</param>
+                    /// <param name="metadataPrm">(optional) [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used, no auto relation fix]</param>
                     /// <param name="injections">
                     ///  (optional) Injection object to change behavior of the manager, can include these properties: 
                     ///    promiseProvider, autoFixScalar, autoFixPlural, validateOnMerge, validateOnSave, liveValidate, handleUnmappedProperties, forceUpdate, workAsync, minimizePackage.
@@ -8713,7 +8713,7 @@
                         throw helper.createError(i18N.typeRequiredForLocalQueries);
 
                     if (calculateInlineCountDiff && query.getExpression(querying.expressions.GroupByExp, false)) {
-                        events.warning.notify({ message: i18N.countDiffCantBeCalculatedForGrouped, query: query, options: options });
+                        events.warning.notify({ message: i18N.countDiffCantBeCalculatedForGrouped, query: query, options: varContext });
                         calculateInlineCountDiff = false;
                     }
 
@@ -9306,6 +9306,14 @@
                     return entity.$tracker;
                 };
 
+                proto.createSet = function(shortName) {
+                    return this.createSetForType(this.getEntityType(shortName));
+                }
+
+                proto.createSetForType = function (type) {
+                    return new core.EntitySet(type, this);
+                }
+
                 proto.set = function (shortName) {
                     return this.entitySets && this.entitySets[shortName];
                 }
@@ -9381,7 +9389,7 @@
 
                                     var setName = type.setName;
                                     if (setName && !instance.hasOwnProperty(setName)) {
-                                        var set = new core.EntitySet(type, instance);
+                                        var set = instance.createSetForType(type);
                                         instance[setName] = set;
                                         instance.entitySets[shortName] = set;
                                     }

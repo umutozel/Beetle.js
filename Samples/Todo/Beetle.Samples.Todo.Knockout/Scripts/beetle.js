@@ -9306,6 +9306,14 @@
                     return entity.$tracker;
                 };
 
+                proto.createSet = function(shortName) {
+                    return this.createSetForType(this.getEntityType(shortName));
+                }
+
+                proto.createSetForType = function (type) {
+                    return new core.EntitySet(type, this);
+                }
+
                 proto.set = function (shortName) {
                     return this.entitySets && this.entitySets[shortName];
                 }
@@ -9381,7 +9389,7 @@
 
                                     var setName = type.setName;
                                     if (setName && !instance.hasOwnProperty(setName)) {
-                                        var set = new core.EntitySet(type, instance);
+                                        var set = instance.createSetForType(type);
                                         instance[setName] = set;
                                         instance.entitySets[shortName] = set;
                                     }
