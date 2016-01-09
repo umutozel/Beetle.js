@@ -2425,7 +2425,7 @@
                     /// Gets entity type from metadata by its short name.
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
-                    return this.metadataManager ? this.metadataManager.getEntityTypeByShortName(shortName) : null;
+                    return this.metadataManager ? this.metadataManager.getEntityType(shortName) : null;
                 };
 
                 proto.createQuery = function (resourceName, shortName, manager) {
@@ -2495,7 +2495,7 @@
                     /// <param name="typeName">Entity type name.</param>
                     var type = null;
                     if (this.metadataManager)
-                        type = this.metadataManager.getEntityType(typeName);
+                        type = this.metadataManager.getEntityTypeByFullName(typeName);
                     if (!type) type = new metadata.EntityType(typeName);
                     return core.EntityTracker.toEntity(result, type, settings.getObservableProvider());
                 };
@@ -3707,7 +3707,7 @@
                     return this.types.join(', ');
                 };
 
-                proto.getEntityType = function (typeName, throwIfNotFound) {
+                proto.getEntityTypeByFullName = function (typeName, throwIfNotFound) {
                     /// <summary>
                     /// Finds entity type by given entity type name (fully qualified).
                     /// </summary>
@@ -3719,7 +3719,7 @@
                     return type;
                 };
 
-                proto.getEntityTypeByShortName = function (shortName, throwIfNotFound) {
+                proto.getEntityType = function (shortName, throwIfNotFound) {
                     /// <summary>
                     /// Finds entity type by given entity type short name (only class name).
                     /// </summary>
@@ -3739,7 +3739,7 @@
                     /// <param name="shortName">Type name</param>
                     /// <param name="manager">Entity manager</param>
                     // if shortName is given find entityType and create query for it.
-                    if (shortName) return this.getEntityTypeByShortName(shortName, true).createQuery(resourceName, manager);
+                    if (shortName) return this.getEntityType(shortName, true).createQuery(resourceName, manager);
                     // try to find entity type by its resource (set) name.
                     var typeList = helper.filterArray(this.types, function (item) { return item.setName == resourceName; });
                     return typeList.length == 1 ? typeList[0].createQuery(resourceName, manager) : new querying.EntityQuery(resourceName, null, manager);
@@ -3754,7 +3754,7 @@
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="constructor">Constructor function.</param>
                     /// <param name="initializer">Initializer function.</param>
-                    var type = this.getEntityTypeByShortName(shortName, true);
+                    var type = this.getEntityType(shortName, true);
                     type.registerCtor(constructor, initializer);
                 };
 
@@ -3765,7 +3765,7 @@
                     /// <param name="shortName">Type name</param>
                     /// <param name="initialValues">Entity initial values.</param>
                     // find entity type.
-                    var type = this.getEntityTypeByShortName(shortName, true);
+                    var type = this.getEntityType(shortName, true);
                     // create entity for this type
                     return type.createEntity(initialValues);
                 };
@@ -3777,7 +3777,7 @@
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
                     // find entity type.
-                    var type = this.getEntityTypeByShortName(shortName, true);
+                    var type = this.getEntityType(shortName, true);
                     // create entity for this type
                     return type.createRawEntity(initialValues);
                 };
@@ -3789,6 +3789,9 @@
                     /// <param name="metadataPrm">Metadata object.</param>
                     /// <param name="types">Type list to hold imported data.</param>
                     /// <param name="instance">Metadata manager instance.</param>
+                    if (assert.isTypeOf(metadataPrm, 'string'))
+                        metadataPrm = JSON.parse(metadataPrm);
+
                     this.types = [];
                     this.enums = {};
                     this.name = metadataPrm.n;
@@ -3861,7 +3864,7 @@
                     // then create relation between inherited entities.
                     helper.forEach(this.types, function (type) {
                         if (type.baseTypeName)
-                            type.baseType = that.getEntityTypeByShortName(type.baseTypeName, true);
+                            type.baseType = that.getEntityType(type.baseTypeName, true);
                         delete type.baseTypeName;
                     });
                     // fill inherited properties using base type informations.
@@ -3884,7 +3887,7 @@
                         // populate navigation properties inverse and create relation between data property and navigation property
                         helper.forEach(type.navigationProperties, function (np) {
                             if (!np.entityType) {
-                                np.entityType = that.getEntityTypeByShortName(np.entityTypeName, true);
+                                np.entityType = that.getEntityType(np.entityTypeName, true);
                                 for (var k = 0; k < np.entityType.navigationProperties.length; k++) {
                                     var tnp = np.entityType.navigationProperties[k];
                                     if (tnp.associationName === np.associationName && np !== tnp) {
