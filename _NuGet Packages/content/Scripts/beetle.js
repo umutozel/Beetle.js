@@ -2359,7 +2359,7 @@
                     /// </summary>
                     throw helper.createError(i18N.notImplemented, [this.name, 'getPromise']);
                 };
-                proto.resolve = function (deferred, data, extra) {
+                proto.resolve = function (deferred, data) {
                     /// <summary>
                     /// Resolves given promise for succesfull operation.
                     /// </summary>
@@ -7512,6 +7512,20 @@
                     return entity;
                 };
 
+                proto.createDetached = function (initialValues) {
+                    /// <summary>
+                    /// Creates a new detached entity.
+                    /// </summary>
+                    return this.entityType.createEntity(initialValues);
+                };
+
+                proto.createRaw = function (initialValues) {
+                    /// <summary>
+                    /// Creates a new detached entity.
+                    /// </summary>
+                    return this.entityType.createRawEntity(initialValues);
+                };
+
                 proto.add = function (entity) {
                     /// <summary>
                     /// Adds the given entity to the manager in the Added state.
@@ -9355,7 +9369,7 @@
                     return entity.$tracker;
                 };
 
-                proto.createSet = function(shortName) {
+                proto.createSet = function (shortName) {
                     return this.createSetForType(this.getEntityType(shortName));
                 }
 
@@ -10268,7 +10282,8 @@
             /// </field>
             promiseProviders: new libs.Enum({
                 Q: { code: 'Q', instance: impls.qPromiseProviderInstance },
-                jQuery: { code: 'jQuery', instance: impls.jQueryPromiseProviderInstance }
+                jQuery: { code: 'jQuery', instance: impls.jQueryPromiseProviderInstance },
+                Angular: { code: 'Angular', instance: impls.angularPromiseProviderInstance }
             }),
             /// <field>
             /// Ajax providers. Possible values;
@@ -10277,6 +10292,13 @@
             ajaxProviders: new libs.Enum({
                 jQuery: { code: 'jQuery', instance: impls.jQueryAjaxProviderInstance },
                 Angular: { code: 'Angular', instance: impls.angularAjaxProviderInstance }
+            }),
+            /// <field>
+            /// Ajax providers. Possible values;
+            ///  jQuery, Angular
+            /// </field>
+            serializationServices: new libs.Enum({
+                JSON: { code: 'JSON', instance: impls.jsonSerializationServiceInstance },
             }),
             /// <field>
             /// Entity states. Possible values;
@@ -10544,7 +10566,7 @@
             /// Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
             /// </summary>
             /// <param name="provider">Serialization service parameter.</param>
-            _serializationService = getValue(service, baseTypes.SerializationServiceBase);
+            _serializationService = getValue(service, baseTypes.SerializationServiceBase, enums.serializationServices);
         };
 
         expose.getArraySetBehaviour = function () {
