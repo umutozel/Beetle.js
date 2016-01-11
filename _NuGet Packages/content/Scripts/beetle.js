@@ -1,12 +1,4 @@
-﻿var predicate = function (t) {
-    return t == 5;
-};
-var f = predicate.toString();
-var p = /function\s+\(.*\)\s+\{(.+)\}/;
-var r = f.match(p);
-
-
-(function (exports) {
+﻿(function (exports) {
     'use strict';
 
     var helper = (function () {
@@ -234,6 +226,28 @@ var r = f.match(p);
 
                 return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                     s4() + '-' + s4() + s4() + s4();
+            },
+            funcToStr: function (func) {
+                helper.assertPrm(func, "func").isFunction().check();
+
+                var f = func.toString();
+
+                var p1 = f.indexOf("(");
+                var p2 = f.lastIndexOf(")");
+                var p = f.substring(p1 + 1, p2).trim();
+
+                var b1 = f.indexOf("{");
+                var b2 = f.lastIndexOf("}");
+                var b = f.substring(b1 + 1, b2).trim();
+
+                if (b.substring(0, 7) == "return ")
+                    b = b.substring(7);
+
+                f = p ? p + " => " + b : b;
+                if (f[f.length - 1] == ";")
+                    f = f.substring(0, f.length - 1);
+
+                return f;
             },
             inherit: function (derivedClass, baseClass) {
                 /// <summary>
@@ -1796,8 +1810,7 @@ var r = f.match(p);
                 };
 
                 proto.Where = function (predicate) {
-                    var f = predicate.toString();
-                    var p = /function\s+\(.*\)\s+\{(.+)\}/;
+                    return this.where(helper.funcToStr(predicate));
                 };
 
                 proto.and = function (args) {
@@ -1877,12 +1890,22 @@ var r = f.match(p);
                     return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
                 };
 
+                proto.OrderBy = function (selector, isDesc) {
+                    var f = helper.funcToStr(selector);
+                    return this.orderBy(f, isDesc);
+                };
+
                 proto.orderByDesc = function (properties) {
                     /// <summary>
                     /// Sorts descendingly results based on given properties.
                     /// </summary>
                     /// <param name="properties">Properties to order.</param>
                     return this.orderBy(properties, true);
+                };
+
+                proto.OrderByDesc = function (selector) {
+                    var f = helper.funcToStr(selector);
+                    return this.orderBy(f);
                 };
 
                 proto.select = function (properties) {

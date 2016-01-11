@@ -227,6 +227,27 @@
                 return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                     s4() + '-' + s4() + s4() + s4();
             },
+            parseFunc: function (func) {
+                helper.assertPrm(func, "func").isFunction().check();
+
+                var f = func.toString();
+
+                var p1 = f.indexOf("(");
+                var p2 = f.lastIndexOf(")");
+                var p = f.substring(p1 + 1, p2).trim();
+
+                var b1 = f.indexOf("{");
+                var b2 = f.lastIndexOf("}");
+                var b = f.substring(b1 + 1, b2).trim();
+
+                if (b.substring(0, 7) == "return ")
+                    b = b.substring(7);
+
+                if (f[f.length - 1] == ";")
+                    f = f.substring(0, f.length - 1);
+
+                return { prm: p, body: b };
+            },
             inherit: function (derivedClass, baseClass) {
                 /// <summary>
                 /// Inherits given derivedClass from baseClass.
@@ -1787,6 +1808,12 @@
                     return q;
                 };
 
+                proto.Where = function (predicate) {
+                    var f = helper.parseFunc(predicate);
+                    var s = f.prm ? (f.prm + " => " + f.body) : f.body;
+                    return this.where(s);
+                };
+
                 proto.and = function (args) {
                     /// <summary>
                     /// Combines given predication with previous filters using 'and'.
@@ -1862,6 +1889,14 @@
                         return q;
                     }
                     return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
+                };
+
+                proto.OrderBy = function (selector, isDesc) {
+                    var f = helper.parseFunc(predicate);
+                    var b = f.body;
+                    if (b.indexOf(",")) b = "{" + b + "}";
+                    var s = f.prm ? (f.prm + " => " + b) : b;
+                    return this.orderBy(s);
                 };
 
                 proto.orderByDesc = function (properties) {
