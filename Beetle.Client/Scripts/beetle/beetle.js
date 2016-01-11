@@ -9394,7 +9394,7 @@
                     }
                     else if (Assert.isTypeOf(service, 'string')) {
                         if (args.length === 2) {
-                            if (Assert.isObject(metadataPrm) && !Assert.isInstanceOf(metadataPrm, core.metadataManager)) {
+                            if (Assert.isObject(metadataPrm) && !Assert.isInstanceOf(metadataPrm, metadata.MetadataManager)) {
                                 injections = metadataPrm;
                                 metadataPrm = undefined;
                             }

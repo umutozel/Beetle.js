@@ -1,4 +1,12 @@
-﻿(function (exports) {
+﻿var predicate = function (t) {
+    return t == 5;
+};
+var f = predicate.toString();
+var p = /function\s+\(.*\)\s+\{(.+)\}/;
+var r = f.match(p);
+
+
+(function (exports) {
     'use strict';
 
     var helper = (function () {
@@ -1785,6 +1793,11 @@
                     if (where == null) q.addExpression(new querying.expressions.WhereExp(arguments));
                     else where.and(arguments);
                     return q;
+                };
+
+                proto.Where = function (predicate) {
+                    var f = predicate.toString();
+                    var p = /function\s+\(.*\)\s+\{(.+)\}/;
                 };
 
                 proto.and = function (args) {
@@ -9394,7 +9407,7 @@
                     }
                     else if (Assert.isTypeOf(service, 'string')) {
                         if (args.length === 2) {
-                            if (Assert.isObject(metadataPrm) && !Assert.isInstanceOf(metadataPrm, core.metadataManager)) {
+                            if (Assert.isObject(metadataPrm) && !Assert.isInstanceOf(metadataPrm, metadata.MetadataManager)) {
                                 injections = metadataPrm;
                                 metadataPrm = undefined;
                             }
