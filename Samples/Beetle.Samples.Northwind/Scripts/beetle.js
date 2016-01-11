@@ -9371,7 +9371,7 @@
 
                 proto.createSet = function (type) {
                     if (Assert.isTypeOf(type, 'string'))
-                        type = this.getEntityType(shortName);
+                        type = this.getEntityType(type);
                     return new core.EntitySet(type, this);
                 }
 
