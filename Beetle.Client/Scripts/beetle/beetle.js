@@ -243,8 +243,8 @@
                 if (b.substring(0, 7) == "return ")
                     b = b.substring(7);
 
-                if (f[f.length - 1] == ";")
-                    f = f.substring(0, f.length - 1);
+                if (b[b.length - 1] == ";")
+                    b = b.substring(0, b.length - 1);
 
                 return { prm: p, body: b };
             },
@@ -364,11 +364,16 @@
                         if (exp != firstExp)
                             throw helper.createError(i18N.odataDoesNotSupportAlias);
                         queryContext.aliases.push({ alias: exp.left.name, value: null });
+                        var r = helper.jsepToODataQuery(exp.right, queryContext, firstExp);
+                        if (exp != firstExp)
+                            queryContext.aliases.pop();
+                        return r;
                     }
                     var op = enums.langOperators.find(exp.operator).oData;
                     if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
                     return '(' + helper.jsepToODataQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext, firstExp) + ')';
-                } else if (exp.type == 'UnaryExpression')
+                }
+                else if (exp.type == 'UnaryExpression')
                     return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
                 else if (exp.type == 'Identifier') {
                     var n = exp.name;
@@ -386,7 +391,8 @@
                         if (a) return a.value;
                     }
                     return n;
-                } else if (exp.type == 'Literal')
+                }
+                else if (exp.type == 'Literal')
                     return core.dataTypes.toODataValue(exp.value);
                 else if (exp.type == 'MemberExpression') {
                     if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
@@ -397,25 +403,29 @@
                         else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
                         return o ? o + '/' + exp.property.name : exp.property.name;
                     }
-                } else if (exp.type == 'Compound') {
+                }
+                else if (exp.type == 'Compound') {
                     var sts = [];
                     for (var i = 0; i < exp.body.length; i++) {
                         var st = exp.body[i];
-                        var s = helper.jsepToODataQuery(st, queryContext, firstExp);
+                        var s = helper.jsepToODataQuery(st, queryContext);
                         var ls = s.toLowerCase();
                         if (ls == 'desc' || ls == 'asc') {
                             if (sts.length == 0)
                                 throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
                             sts[sts.length - 1] += ' ' + s;
-                        } else if (ls == 'as') {
+                        }
+                        else if (ls == 'as') {
                             if (sts.length == 0 || exp.body.length < i + 1)
                                 throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
                             sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
                             i++;
-                        } else sts.push(s);
+                        }
+                        else sts.push(s);
                     }
                     return sts.join(', ');
-                } else if (exp.type == 'CallExpression') {
+                }
+                else if (exp.type == 'CallExpression') {
                     var argList = exp.arguments, args = [], alias = null;
                     if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
                         alias = { alias: argList[0].left.name };
@@ -435,7 +445,8 @@
                     if (exp.callee.type == 'MemberExpression') {
                         args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext, firstExp));
                         funcName = exp.callee.property.name;
-                    } else funcName = exp.callee.name;
+                    }
+                    else funcName = exp.callee.name;
                     var func = querying.queryFuncs.getFunc(funcName);
                     if (func.needsAlias == true) {
                         if (alias)
@@ -468,7 +479,8 @@
                     }
                     var op = enums.langOperators.find(exp.operator).code;
                     return '(' + helper.jsepToBeetleQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext, firstExp) + ')';
-                } else if (exp.type == 'UnaryExpression')
+                }
+                else if (exp.type == 'UnaryExpression')
                     return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
                 else if (exp.type == 'Identifier') {
                     var n = exp.name;
@@ -481,12 +493,14 @@
                             val = queryContext.varContext[varName];
                         if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
                         return core.dataTypes.toBeetleValue(val);
-                    } else {
+                    }
+                    else {
                         var a = helper.findInArray(queryContext.aliases, n, 'alias');
                         if (a) return a.value;
                     }
                     return n;
-                } else if (exp.type == 'Literal')
+                }
+                else if (exp.type == 'Literal')
                     return core.dataTypes.toBeetleValue(exp.value);
                 else if (exp.type == 'MemberExpression') {
                     if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
@@ -497,25 +511,29 @@
                         else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
                         return o + '.' + exp.property.name;
                     }
-                } else if (exp.type == 'Compound') {
+                }
+                else if (exp.type == 'Compound') {
                     var sts = [];
                     for (var i = 0; i < exp.body.length; i++) {
                         var st = exp.body[i];
-                        var s = helper.jsepToBeetleQuery(st, queryContext, firstExp);
+                        var s = helper.jsepToBeetleQuery(st, queryContext);
                         var ls = s.toLowerCase();
                         if (ls == 'desc' || ls == 'asc') {
                             if (sts.length == 0)
                                 throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
                             sts[sts.length - 1] += ' ' + s;
-                        } else if (ls == 'as') {
+                        }
+                        else if (ls == 'as') {
                             if (sts.length == 0 || exp.body.length < i + 1)
                                 throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
                             sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
                             i++;
-                        } else sts.push(s);
+                        }
+                        else sts.push(s);
                     }
                     return sts.join(', ');
-                } else if (exp.type == 'CallExpression') {
+                }
+                else if (exp.type == 'CallExpression') {
                     var argList = exp.arguments, args = [], alias = null;
                     if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
                         alias = { alias: argList[0].left.name };
@@ -535,7 +553,8 @@
                     if (exp.callee.type == 'MemberExpression') {
                         args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext, firstExp));
                         funcName = exp.callee.property.name;
-                    } else funcName = exp.callee.name;
+                    }
+                    else funcName = exp.callee.name;
                     var func = querying.queryFuncs.getFunc(funcName);
                     var retVal = func.toBeetleFunction.apply(func, args);
                     if (alias) {
@@ -1814,12 +1833,6 @@
                     return q;
                 };
 
-                proto.Where = function (predicate) {
-                    var f = helper.parseFunc(predicate);
-                    var s = f.prm ? (f.prm + " => " + f.body) : f.body;
-                    return this.where(s);
-                };
-
                 proto.and = function (args) {
                     /// <summary>
                     /// Combines given predication with previous filters using 'and'.
@@ -1895,14 +1908,6 @@
                         return q;
                     }
                     return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
-                };
-
-                proto.OrderBy = function (selector, isDesc) {
-                    var f = helper.parseFunc(predicate);
-                    var b = f.body;
-                    if (b.indexOf(",")) b = "{" + b + "}";
-                    var s = f.prm ? (f.prm + " => " + b) : b;
-                    return this.orderBy(s);
                 };
 
                 proto.orderByDesc = function (properties) {
@@ -6039,6 +6044,26 @@
                     retVal.push(baseTypes.QueryBase.prototype.toString.call(this));
 
                     return retVal.join(', ');
+                };
+
+                proto.Where = function (predicate) {
+                    var f = helper.parseFunc(predicate);
+                    var s = f.prm ? (f.prm + " => " + f.body) : f.body;
+                    return this.where(s);
+                };
+
+                proto.OrderBy = function (selector) {
+                    var f = helper.parseFunc(selector);
+                    var b = f.body;
+                    var s = f.prm ? (f.prm + " => " + b) : b;
+                    return this.orderBy(s);
+                };
+
+                proto.OrderByDesc = function (selector) {
+                    var f = helper.parseFunc(selector);
+                    var b = f.body;
+                    var s = f.prm ? (f.prm + " => " + b) : b;
+                    return this.orderByDesc(s);
                 };
 
                 proto.expand = function (propertyPath) {
