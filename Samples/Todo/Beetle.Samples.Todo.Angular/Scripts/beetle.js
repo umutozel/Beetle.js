@@ -9,7 +9,7 @@
                 /// <summary>Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check(). (adapted from breezejs)</summary>
                 /// <param name="value">The value.</param>
                 /// <param name="name">Name of the parameter.</param>
-                return new assert(value, name);
+                return new Assert(value, name);
             },
             combine: function (obj1, obj2) {
                 /// <summary>Combines first object's properties with second object's properties on a new object.</summary>
@@ -26,7 +26,7 @@
                     for (var p2 in obj2) {
                         var v1 = obj[p2];
                         var v2 = obj2[p2];
-                        var v = assert.isTypeOf(v1, 'object') && assert.isTypeOf(v2, 'object') ? helper.combine(v1, v2) : v2;
+                        var v = Assert.isTypeOf(v1, 'object') && Assert.isTypeOf(v2, 'object') ? helper.combine(v1, v2) : v2;
                         obj[p2] = v;
                     }
                 }
@@ -49,7 +49,7 @@
 
                 if (obj1 == null || obj2 == null)
                     return false;
-                if (assert.isObject(obj1) && assert.isObject(obj2)) {
+                if (Assert.isObject(obj1) && Assert.isObject(obj2)) {
                     var count1 = 0;
                     var count2 = 0;
                     for (var p in obj1) {
@@ -125,9 +125,9 @@
                 if (withChildren === true) {
                     for (var p in obj) {
                         var v = obj[p];
-                        if (assert.isArray(v))
+                        if (Assert.isArray(v))
                             this.tryFreezeArray(v, withChildren);
-                        else if (assert.isObject(v))
+                        else if (Assert.isObject(v))
                             this.tryFreeze(v, withChildren);
                     }
                 }
@@ -166,7 +166,7 @@
                 for (var p in object) {
                     if (p[0] == '$') continue;
                     var v = object[p];
-                    if (assert.isFunction(v)) continue;
+                    if (Assert.isFunction(v)) continue;
                     callback(p, v);
                 }
             },
@@ -293,10 +293,10 @@
                 /// <param name="arg1">Message format arguments.</param>
                 /// <param name="arg2">Extra informations, will be attached to error object.</param>
                 var args = null, obj = null;
-                if (assert.isArray(arg1)) {
+                if (Assert.isArray(arg1)) {
                     args = arg1;
                     obj = arg2;
-                } else if (assert.isObject(arg1)) obj = arg1;
+                } else if (Assert.isObject(arg1)) obj = arg1;
 
                 if (args && args.length > 0) {
                     args.splice(0, 0, message);
@@ -640,7 +640,7 @@
                 /// <param name="exps">Jsep expressions.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
                 var projectExps = [];
-                if (!assert.isArray(exps)) exps = [exps];
+                if (!Assert.isArray(exps)) exps = [exps];
                 for (var i = 0; i < exps.length; i++) {
                     var propertyName = null;
                     var e = exps[i];
@@ -679,7 +679,7 @@
             }
         };
     })();
-    var assert = (function () {
+    var Assert = (function () {
         var ctor = function (value, name) {
             /// <summary>
             /// Assertion methods. Two different usage possible, static methods and instance methods. 
@@ -905,7 +905,7 @@
                 var retVal = [];
                 for (var p in this) {
                     var v = this[p];
-                    if (assert.isFunction(v)) continue;
+                    if (Assert.isFunction(v)) continue;
                     retVal.push(v);
                 }
                 return retVal;
@@ -1884,7 +1884,7 @@
                     var q = this.clone();
                     if (arguments.length == 1) {
                         var arg = arguments[0];
-                        if (assert.isArray(arg))
+                        if (Assert.isArray(arg))
                             properties = arg.join(', ');
                     } else properties = Array.prototype.slice.call(arguments).join(', ');
                     return q.addExpression(new querying.expressions.SelectExp(properties));
@@ -1930,9 +1930,9 @@
                     /// <param name="keySelector">A projection to extract the key for each element.</param>
                     /// <param name="valueSelector">A projection to create a result value from each group.</param>
                     var q = this.clone();
-                    if (assert.isArray(keySelector))
+                    if (Assert.isArray(keySelector))
                         keySelector = keySelector.join(', ');
-                    if (assert.isArray(valueSelector))
+                    if (Assert.isArray(valueSelector))
                         valueSelector = valueSelector.join(', ');
                     return q.addExpression(new querying.expressions.GroupByExp(keySelector, valueSelector));
                 };
@@ -1943,7 +1943,7 @@
                     /// </summary>
                     /// <param name="selector">A projection to extract the key for each element.</param>
                     var q = this.clone();
-                    if (assert.isArray(selector))
+                    if (Assert.isArray(selector))
                         selector = selector.join(', ');
                     return q.addExpression(new querying.expressions.DistinctExp(selector));
                 };
@@ -2148,7 +2148,7 @@
                         helper.forEach(that.expressions, function (exp) {
                             qc.expVarContext = exp.varContext;
                             array = exp.execute(array, qc);
-                            if (that.inlineCountEnabled && !assert.isInstanceOf(exp, querying.expressions.TopExp) && !assert.isInstanceOf(exp, querying.expressions.SkipExp))
+                            if (that.inlineCountEnabled && !Assert.isInstanceOf(exp, querying.expressions.TopExp) && !Assert.isInstanceOf(exp, querying.expressions.SkipExp))
                                 qc.inlineCount = array.length;
                             qc.expVarContext = undefined;
                         });
@@ -2188,7 +2188,7 @@
                     /// </summary>
                     for (var i = this.lastProjection; i < this.expressions.length; i++) {
                         var exp = this.expressions[i];
-                        if (assert.isInstanceOf(exp, type)) return exp;
+                        if (Assert.isInstanceOf(exp, type)) return exp;
                     }
                     if (throwIfNotFound === true)
                         throw helper.createError(i18N.expressionCouldNotBeFound, { type: type, query: this });
@@ -2201,7 +2201,7 @@
                     /// </summary>
                     for (var i = this.expressions.length - 1; i >= 0; i--) {
                         var exp = this.expressions[i];
-                        if (assert.isInstanceOf(exp, type))
+                        if (Assert.isInstanceOf(exp, type))
                             this.expressions.splice(i, 1);
                     }
                     return this;
@@ -2687,9 +2687,9 @@
                                         throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
                                     });
                             }
-                        } else if (assert.isInstanceOf(metadataPrm, metadata.MetadataManager))
+                        } else if (Assert.isInstanceOf(metadataPrm, metadata.MetadataManager))
                             instance.metadataManager = metadataPrm;
-                        else if (assert.isObject(metadataPrm)) {
+                        else if (Assert.isObject(metadataPrm)) {
                             try {
                                 instance.metadataManager = new metadata.MetadataManager(metadataPrm);
                             } catch (e) {
@@ -2822,7 +2822,7 @@
                     helper.forEach(ps, function (pv) {
                         var p = pv.p;
                         var v = pv.v;
-                        if (assert.isArray(v))
+                        if (Assert.isArray(v))
                             object[p] = toObservableArray(p, p, v, ac, as);
                         else
                             object[p] = toObservableProperty(p, v, pc);
@@ -2926,7 +2926,7 @@
                         var p = pv.p;
                         var v = pv.v;
                         delete object[p];
-                        if (assert.isArray(v))
+                        if (Assert.isArray(v))
                             toObservableArray(p, p, v, ac, as);
                         else {
                             toObservableProperty(p, p, pc);
@@ -3138,7 +3138,7 @@
                 };
 
                 proto.deserialize = function (value) {
-                    if (assert.isTypeOf(value, 'string'))
+                    if (Assert.isTypeOf(value, 'string'))
                         return JSON.parse(value);
                     return value;
                 };
@@ -3584,7 +3584,7 @@
                     var dp = helper.findInArray(this.dataProperties, name, 'name');
                     if (dp)
                         throw helper.createError(i18N.dataPropertyAlreadyExists, [name], { entityType: this, existing: dp });
-                    if (assert.isNotEmptyString(dataType))
+                    if (Assert.isNotEmptyString(dataType))
                         dataType = core.dataTypes.byName(dataType);
                     helper.assertPrm(dataType, 'dataType').isInstanceOf(core.dataTypes.baseType).check();
                     if (defaultValue != null && !dataType.isValid(defaultValue))
@@ -3673,7 +3673,7 @@
                     /// </summary>
                     /// <param name="type1">Type to set.</param>
                     /// <param name="type2">Type to check.</param>
-                    var name = assert.isTypeOf(type2, 'string') ? type2 : type2.name;
+                    var name = Assert.isTypeOf(type2, 'string') ? type2 : type2.name;
                     if (type1.name === name)
                         return true;
                     else if (type1.baseType != null)
@@ -3789,7 +3789,7 @@
                     /// <param name="metadataPrm">Metadata object.</param>
                     /// <param name="types">Type list to hold imported data.</param>
                     /// <param name="instance">Metadata manager instance.</param>
-                    if (assert.isTypeOf(metadataPrm, 'string'))
+                    if (Assert.isTypeOf(metadataPrm, 'string'))
                         metadataPrm = JSON.parse(metadataPrm);
 
                     this.types = [];
@@ -4263,7 +4263,7 @@
                             if (args.length == 3 || args.length == 4) {
                                 var op = args[1];
                                 // if operation filter is given as string, try to find enum value
-                                if (assert.isTypeOf(op, 'string')) {
+                                if (Assert.isTypeOf(op, 'string')) {
                                     op = op.toLowerCase();
                                     var symbols = enums.filterOps.symbols();
                                     for (var i = 0; i < symbols.length; i++) {
@@ -4280,7 +4280,7 @@
                                 var val = args[2];
                                 if (core.dataTypes.date.isValid(val))
                                     val = '"' + settings.getDateConverter().toISOString(val) + '"';
-                                else if (assert.isTypeOf(val, 'string') && !(args.length == 4 && val[0] == "@"))
+                                else if (Assert.isTypeOf(val, 'string') && !(args.length == 4 && val[0] == "@"))
                                     val = '"' + val + '"';
                                 var expStr;
                                 if (op.isFunc) {
@@ -5473,7 +5473,7 @@
                     var proto = ctor.prototype;
 
                     proto.toODataFunction = function (items, item) {
-                        if (assert.isTypeOf(items, 'string'))
+                        if (Assert.isTypeOf(items, 'string'))
                             return expose.substringof.toODataFunction(item, items);
                         var args = [];
                         helper.forEach(items, function (i) {
@@ -5483,7 +5483,7 @@
                     };
 
                     proto.toBeetleFunction = function (items, item) {
-                        if (assert.isTypeOf(items, 'string'))
+                        if (Assert.isTypeOf(items, 'string'))
                             return expose.substringof.toBeetleFunction(item, items);
                         var args = [];
                         helper.forEach(items, function (i) {
@@ -5502,7 +5502,7 @@
                         else
                             items = items(value);
                         item = (item ? item(value) : value);
-                        if (assert.isArray(items)) {
+                        if (Assert.isArray(items)) {
                             for (var i = 0; i < items.length; i++) {
                                 var v = items[i];
                                 if (v == item) return true;
@@ -6098,7 +6098,7 @@
 
                 function handleEntityType(type, manager) {
                     if (type == null) return null;
-                    if (assert.isTypeOf(type, 'string')) {
+                    if (Assert.isTypeOf(type, 'string')) {
                         if (manager == null) throw helper.createError(i18N.onlyManagerCreatedCanAcceptEntityShortName);
                         return manager.getEntityType(type, true);
                     }
@@ -6246,9 +6246,9 @@
                             handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
                         if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
 
-                        if (assert.isInstanceOf(p, metadata.NavigationProperty))
+                        if (Assert.isInstanceOf(p, metadata.NavigationProperty))
                             helper.forEach(added, function (a) { p.checkAssign(a); });
-                        else if (assert.isInstanceOf(p, metadata.DataProperty))
+                        else if (Assert.isInstanceOf(p, metadata.DataProperty))
                             helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
                         else if (handleUnmappedProperties === true)
                             helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
@@ -6759,7 +6759,7 @@
                     };
 
                     proto.getRawValue = function (value) {
-                        if (assert.isEnum(value, this.enumType))
+                        if (Assert.isEnum(value, this.enumType))
                             return value.value;
                         return value;
                     };
@@ -6773,14 +6773,14 @@
                     };
 
                     function getMember(value, enumType) {
-                        if (assert.isArray(value)) {
+                        if (Assert.isArray(value)) {
                             var flags = 0;
                             helper.forEach(value, function (v) {
                                 flags |= v.value;
                             });
                             return flags;
                         }
-                        if (assert.isTypeOf(value, 'string')) {
+                        if (Assert.isTypeOf(value, 'string')) {
                             var values = value.split(', ');
                             if (values.length == 1)
                                 return enumType[value];
@@ -6788,7 +6788,7 @@
                                 if (enumType[values[i]] == null) return null;
                             return value;
                         }
-                        if (assert.isTypeOf(value, 'number')) {
+                        if (Assert.isTypeOf(value, 'number')) {
                             var member = value;
                             helper.forEach(enumType.symbols(), function (s) {
                                 if (s.value == value) {
@@ -6798,7 +6798,7 @@
                             });
                             return member;
                         }
-                        return assert.isEnum(value, enumType) ? value : null;
+                        return Assert.isEnum(value, enumType) ? value : null;
                     }
 
                     return ctor;
@@ -7013,7 +7013,7 @@
                     /// <param name="allowEmptyStrings">Should we treat empty strings as 'no value' or not.</param>
                     var func = function (value) {
                         if (value == null) return false;
-                        if (assert.isTypeOf(value, 'string') && !allowEmptyStrings && value == '') return false;
+                        if (Assert.isTypeOf(value, 'string') && !allowEmptyStrings && value == '') return false;
                         return true;
                     };
                     message = helper.formatString(message || i18N.requiredError, displayName);
@@ -7027,7 +7027,7 @@
                     /// <param name="max">Maximum allowed string length.</param>
                     var func = function (value) {
                         if (!min && !max) return true;
-                        if (!assert.isNotEmptyString(value)) return false;
+                        if (!Assert.isNotEmptyString(value)) return false;
                         if (min && value.length < min) return false;
                         if (max && value.length > max) return false;
                         return true;
@@ -7080,7 +7080,7 @@
                     /// <summary>
                     /// Checks if given value is a valid time.
                     /// </summary>
-                    if (assert.isTypeOf(pattern, 'string')) pattern = new RegExp(pattern);
+                    if (Assert.isTypeOf(pattern, 'string')) pattern = new RegExp(pattern);
                     return regex('RegularExpression', pattern, message, displayName);
                 };
                 ctor.emailAddress = function (message, displayName) {
@@ -7802,7 +7802,7 @@
                                 var v = that.getValue(np.name);
                                 if (v == null)
                                     data[np.name] = null;
-                                else if (assert.isArray(v))
+                                else if (Assert.isArray(v))
                                     helper.forEach(v, function (item) {
                                         if (item == null || !item.$tracker)
                                             data[p].push(item);
@@ -7818,7 +7818,7 @@
                     helper.forEach(type.properties, function (p) {
                         var v = that.getValue(p);
                         // if value is array enumerate each item
-                        if (assert.isArray(v)) {
+                        if (Assert.isArray(v)) {
                             // create new array property in return data.
                             data[p] = [];
                             helper.forEach(v, function (item) {
@@ -7969,7 +7969,7 @@
                     /// <param name="accessor">Property value accessor.</param>
                     /// <param name="newValue">New value.</param>
                     var noCallbackExternal = false;
-                    if (assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
+                    if (Assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
                     }
@@ -8020,7 +8020,7 @@
                     /// <param name="newValue">New value.</param>
                     var noCallbackBeetle = false;
                     var noCallbackExternal = false;
-                    if (assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
+                    if (Assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                         noCallbackBeetle = newValue.fromBeetle;
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
@@ -8129,7 +8129,7 @@
                     /// <param name="newValue">New value.</param>
                     var noCallbackBeetle = false;
                     var noCallbackExternal = false;
-                    if (assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
+                    if (Assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                         noCallbackBeetle = newValue.fromBeetle;
                         noCallbackExternal = !newValue.fromBeetle;
                         newValue = newValue.value;
@@ -8565,7 +8565,7 @@
                         function (entity, allEntities, headerGetter, xhr) {
                             try {
                                 var isSingle = false;
-                                if (!assert.isArray(entity)) {
+                                if (!Assert.isArray(entity)) {
                                     entity = [entity];
                                     isSingle = true;
                                 }
@@ -8650,10 +8650,10 @@
 
                     // get execute options from parameters.
                     var merge = enums.mergeStrategy.Preserve, execution = enums.executionStrategy.Server, locals = null;
-                    if (assert.isEnum(options, enums.mergeStrategy)) {
+                    if (Assert.isEnum(options, enums.mergeStrategy)) {
                         merge = options;
                         options = { makeObservable: merge != enums.mergeStrategy.NoTrackingRaw };
-                    } else if (assert.isEnum(options, enums.executionStrategy))
+                    } else if (Assert.isEnum(options, enums.executionStrategy))
                         execution = options;
                     else {
                         if (options.merge) merge = options.merge;
@@ -8692,7 +8692,7 @@
                                     if (newEntities) {
                                         if (!noTracking) {
                                             // we convert result to array to get modified result (replaced with cached by manager when necessary).
-                                            if (!assert.isArray(newEntities)) {
+                                            if (!Assert.isArray(newEntities)) {
                                                 newEntities = [newEntities];
                                                 isSingle = true;
                                             }
@@ -8710,7 +8710,7 @@
                                             delete newEntities.$inlineCountDiff;
                                         }
                                     }
-                                    if (newEntities && assert.isObject(newEntities)) {
+                                    if (newEntities && Assert.isObject(newEntities)) {
                                         if (query.inlineCountEnabled && inlineCount != null)
                                             newEntities.$inlineCount = inlineCount;
 
@@ -8804,7 +8804,7 @@
                     /// </summary>
                     /// <param name="key">Entity key as a string. When entity has more than one key, the key is keys joined with a ','.</param>
                     /// <param name="type">Entity type or type short name.</param>
-                    var t = assert.isInstanceOf(type, metadata.EntityType) ? type : this.getEntityType(type, true);
+                    var t = Assert.isInstanceOf(type, metadata.EntityType) ? type : this.getEntityType(type, true);
                     return this.entities.getEntityByKey(key, t);
                 };
 
@@ -8943,7 +8943,7 @@
                     /// <param name="entity">The entity.</param>
                     /// <param name="includeRelations">If set to true, rejectChanges will be called for all navigation properties too.</param>
                     var manager = this;
-                    if (!assert.isArray(entity)) entity = [entity];
+                    if (!Assert.isArray(entity)) entity = [entity];
                     var rejectList = includeRelations === true ? this.flatEntities(entity) : entity;
                     helper.forEach(rejectList, function (rejected) {
                         var tracker = rejected.$tracker;
@@ -8963,7 +8963,7 @@
                     /// </summary>
                     /// <param name="entity">The entity.</param>
                     /// <param name="includeRelations">If set to true, undoChanges will be called for all navigation properties too.</param>
-                    if (!assert.isArray(entity)) entity = [entity];
+                    if (!Assert.isArray(entity)) entity = [entity];
                     var undoList = includeRelations === true ? this.flatEntities(entity) : entity;
                     helper.forEach(undoList, function (toUndo) {
                         toUndo.$tracker.undoChanges(); // Undo all changes.
@@ -8976,7 +8976,7 @@
                     /// </summary>
                     /// <param name="entity">The entity.</param>
                     /// <param name="includeRelations">If set to true, acceptChanges will be called for all navigation properties too.</param>
-                    if (!assert.isArray(entity)) entity = [entity];
+                    if (!Assert.isArray(entity)) entity = [entity];
                     var acceptList = includeRelations === true ? this.flatEntities(entity) : entity;
                     helper.forEach(acceptList, function (toAccept) {
                         toAccept.$tracker.acceptChanges(); // Accept all changes.
@@ -9084,7 +9084,7 @@
                     /// <param name="exportedEntities">Exported entities.</param>
                     /// <param name="merge">Merge strategy to use while adding this entities to cache.</param>
                     var that = this;
-                    if (!assert.isArray(exportedEntities)) exportedEntities = [exportedEntities];
+                    if (!Assert.isArray(exportedEntities)) exportedEntities = [exportedEntities];
                     helper.forEach(exportedEntities, function (exportedEntity) {
                         var tracker = exportedEntity.$t;
                         var state;
@@ -9165,7 +9165,7 @@
                     if (pp) d = pp.deferred();
 
                     var retVal = null;
-                    if (!assert.isArray(changes)) changes = [changes];
+                    if (!Assert.isArray(changes)) changes = [changes];
                     if (changes && changes.length > 0) {
                         var validationErrors = [];
                         var validateOnSave = options.validateOnSave;
@@ -9287,11 +9287,11 @@
                     /// <param name="entities">Entities to float.</param>
                     var that = this;
                     var flatList = arguments[1] || [];
-                    if (!assert.isArray(entities)) entities = [entities];
+                    if (!Assert.isArray(entities)) entities = [entities];
                     helper.forEach(entities, function (entity) {
                         if (entity == null) return;
 
-                        if (assert.isArray(entity)) {
+                        if (Assert.isArray(entity)) {
                             that.flatEntities(entity, flatList);
                             return;
                         }
@@ -9309,7 +9309,7 @@
                                         var dv = tracker.getValue(dp.name);
                                         if (dv) {
                                             // If property is array, flat each item.
-                                            if (assert.isArray(dv))
+                                            if (Assert.isArray(dv))
                                                 that.flatEntities(dv, flatList);
                                                 // If property is entity, flat it.
                                             else if (dv.$tracker || dv.$type)
@@ -9321,7 +9321,7 @@
                                     var nv = tracker.getValue(np.name);
                                     if (nv) {
                                         // If property is array, flat each item.
-                                        if (assert.isArray(nv))
+                                        if (Assert.isArray(nv))
                                             that.flatEntities(nv, flatList);
                                             // If property is entity, flat it.
                                         else if (nv.$tracker || nv.$type)
@@ -9333,7 +9333,7 @@
                                     var uv = tracker.getValue(up);
                                     if (uv) {
                                         // If property is array, flat each item.
-                                        if (assert.isArray(uv))
+                                        if (Assert.isArray(uv))
                                             that.flatEntities(uv, flatList);
                                             // If property is entity, flat it.
                                         else if (uv.$tracker || uv.$type)
@@ -9349,7 +9349,7 @@
                                 var v = entity[p];
                                 if (v) {
                                     // If property is array, flat each item.
-                                    if (assert.isArray(v))
+                                    if (Assert.isArray(v))
                                         that.flatEntities(v, flatList);
                                         // If property is entity, flat it.
                                     else if (v.$tracker || v.$type)
@@ -9390,13 +9390,13 @@
                         throw helper.createError(i18N.managerInvalidArgs, { entityManager: instance });
                     var service = args[0], metadataPrm = args[1], injections = args[2];
                     // If first parameter is data service instance use it
-                    if (assert.isInstanceOf(service, baseTypes.DataServiceBase)) {
+                    if (Assert.isInstanceOf(service, baseTypes.DataServiceBase)) {
                         instance.dataService = service;
                         injections = args[1];
                     }
-                    else if (assert.isTypeOf(service, 'string')) {
+                    else if (Assert.isTypeOf(service, 'string')) {
                         if (args.length === 2) {
-                            if (assert.isObject(metadataPrm) && !assert.isInstanceOf(metadataPrm, core.metadataManager)) {
+                            if (Assert.isObject(metadataPrm) && !Assert.isInstanceOf(metadataPrm, core.metadataManager)) {
                                 injections = metadataPrm;
                                 metadataPrm = undefined;
                             }
@@ -9534,7 +9534,7 @@
                     if (validateOnMerge == null) validateOnMerge = settings.validateOnMerge;
 
                     // Flat list, means merge navigations also.
-                    flatList = flatList || instance.flatEntities(assert.isArray(newEntities) ? newEntities : [newEntities]);
+                    flatList = flatList || instance.flatEntities(Assert.isArray(newEntities) ? newEntities : [newEntities]);
                     var added = [], toOverwrite = [], toReplace = [];
                     // Get initial entity count.
                     var count = instance.entities.count();
@@ -9697,7 +9697,7 @@
                     });
                     helper.forEach(tracker.entityType.properties, function (p) {
                         var value = tracker.getValue(p);
-                        if (assert.isArray(value))
+                        if (Assert.isArray(value))
                             handlePlural(value, instance);
                         else
                             handleScalar(tracker, value, null, p, false, instance);
@@ -10150,7 +10150,7 @@
                 /// <param name="handleUnmappedProperties">When null, value is read from settings. When true, all values will be handled (types changed) by their value.</param>
                 var that = this;
                 var flatList = arguments[3] || [];
-                if (!assert.isArray(results)) results = [results];
+                if (!Assert.isArray(results)) results = [results];
                 if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
                 // Push results id's.
                 helper.forEach(results, function (result, i) {
@@ -10160,7 +10160,7 @@
                         results[i] = flatList[result.$ref - 1];
                     else if (result.$id)
                         fixSingle(result);
-                    else if (assert.isArray(result))
+                    else if (Assert.isArray(result))
                         that.fixResults(result, makeObservable, handleUnmappedProperties, flatList);
                     else if (handleUnmappedProperties !== false)
                         results[i] = core.dataTypes.handle(result);
@@ -10188,7 +10188,7 @@
                                 result[property] = flatList[value.$ref - 1];
                             else if (value.$id)
                                 fixSingle(value); // if its a entity, fix it.
-                            else if (assert.isArray(value))  // if its array
+                            else if (Assert.isArray(value))  // if its array
                                 that.fixResults(value, makeObservable, handleUnmappedProperties, flatList);
                             else if (handleUnmappedProperties !== false)
                                 result[property] = core.dataTypes.handle(value);
@@ -10633,10 +10633,10 @@
         };
 
         function getValue(value, type, typeEnum) {
-            if (type && assert.isInstanceOf(value, type))
+            if (type && Assert.isInstanceOf(value, type))
                 return value;
             else if (typeEnum != null) {
-                if (assert.isNotEmptyString(value)) {
+                if (Assert.isNotEmptyString(value)) {
                     var symbols = typeEnum.symbols();
                     for (var i = 0; i < symbols.length; i++) {
                         var sym = symbols[i];
@@ -10646,7 +10646,7 @@
                         }
                     }
                 }
-                if (assert.isEnum(value, typeEnum)) return value.instance;
+                if (Assert.isEnum(value, typeEnum)) return value.instance;
             }
             throw helper.createError(i18N.invalidArguments, null, { args: arguments });
         }
@@ -10748,9 +10748,10 @@
             i18N: i18N,
 
             helper: helper,
-            assert: assert,
+            Assert: Assert,
             libs: libs,
 
+            // namespaces
             baseTypes: baseTypes,
             impls: impls,
             metadata: metadata,
@@ -10769,6 +10770,8 @@
             Event: core.Event,
             Validator: core.Validator,
             ValueNotifyWrapper: core.ValueNotifyWrapper,
+
+            // enums
             entityStates: enums.entityStates,
             filterOps: enums.filterOps,
             mergeStrategy: enums.mergeStrategy,

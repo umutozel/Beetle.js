@@ -45,7 +45,7 @@
             /// <summary>
             /// Holds query aggregate information.
             /// </summary>
-            if (!beetle.assert.isFunction(func))
+            if (!beetle.Assert.isFunction(func))
                 throw new Error(beetle.helper.formatString(beetle.i18N.typeError, 'aggregate: func', 'function'));
 
             ArrayExpBase.call(this, 'aggregate');
@@ -927,7 +927,7 @@
     if (!entityQueryProto.hasOwnProperty("forEach")) {
         entityQueryProto.forEach = function (callback) {
             this.execute(null, function (items) {
-                if (beetle.assert.isArray(items))
+                if (beetle.Assert.isArray(items))
                     items.forEach(callback);
                 else
                     callback.call(items, items);
