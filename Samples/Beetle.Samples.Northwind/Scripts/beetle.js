@@ -227,7 +227,7 @@
                 return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                     s4() + '-' + s4() + s4() + s4();
             },
-            funcToStr: function (func) {
+            parseFunc: function (func) {
                 helper.assertPrm(func, "func").isFunction().check();
 
                 var f = func.toString();
@@ -243,11 +243,10 @@
                 if (b.substring(0, 7) == "return ")
                     b = b.substring(7);
 
-                f = p ? p + " => " + b : b;
                 if (f[f.length - 1] == ";")
                     f = f.substring(0, f.length - 1);
 
-                return f;
+                return { prm: p, body: b };
             },
             inherit: function (derivedClass, baseClass) {
                 /// <summary>
@@ -353,20 +352,24 @@
                         tracker.setValue(fk.name, fk.getDefaultValue());
                 }
             },
-            jsepToODataQuery: function (exp, queryContext) {
+            jsepToODataQuery: function (exp, queryContext, firstExp) {
                 /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
                 /// <param name="exp">Jsep expression.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
+                firstExp = firstExp || exp;
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
                 if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                    if (exp.operator == '=>')
-                        throw helper.createError(i18N.odataDoesNotSupportAlias);
+                    if (exp.operator == '=>') {
+                        if (exp != firstExp)
+                            throw helper.createError(i18N.odataDoesNotSupportAlias);
+                        queryContext.aliases.push({ alias: exp.left.name, value: null });
+                    }
                     var op = enums.langOperators.find(exp.operator).oData;
                     if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
-                    return '(' + helper.jsepToODataQuery(exp.left, queryContext) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext) + ')';
+                    return '(' + helper.jsepToODataQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext, firstExp) + ')';
                 } else if (exp.type == 'UnaryExpression')
-                    return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext);
+                    return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
                 else if (exp.type == 'Identifier') {
                     var n = exp.name;
                     if (n[0] == '@') {
@@ -391,14 +394,14 @@
                     else {
                         var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
                         if (ali) o = ali.value;
-                        else o = helper.jsepToODataQuery(exp.object, queryContext);
-                        return o + '/' + exp.property.name;
+                        else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
+                        return o ? o + '/' + exp.property.name : exp.property.name;
                     }
                 } else if (exp.type == 'Compound') {
                     var sts = [];
                     for (var i = 0; i < exp.body.length; i++) {
                         var st = exp.body[i];
-                        var s = helper.jsepToODataQuery(st, queryContext);
+                        var s = helper.jsepToODataQuery(st, queryContext, firstExp);
                         var ls = s.toLowerCase();
                         if (ls == 'desc' || ls == 'asc') {
                             if (sts.length == 0)
@@ -426,11 +429,11 @@
                     for (var j = 0; j < argList.length; j++) {
                         var arg = argList[j];
                         if (arg != null)
-                            args.push(helper.jsepToODataQuery(arg, queryContext));
+                            args.push(helper.jsepToODataQuery(arg, queryContext, firstExp));
                     }
                     var funcName;
                     if (exp.callee.type == 'MemberExpression') {
-                        args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext));
+                        args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext, firstExp));
                         funcName = exp.callee.property.name;
                     } else funcName = exp.callee.name;
                     var func = querying.queryFuncs.getFunc(funcName);
@@ -448,23 +451,25 @@
                 }
                 throw helper.createError(i18N.unknownExpression, { expression: exp });
             },
-            jsepToBeetleQuery: function (exp, queryContext) {
+            jsepToBeetleQuery: function (exp, queryContext, firstExp) {
                 /// <summary>Converts parsed javascript expression (jsep) to Beetle format query string.</summary>
                 /// <param name="exp">Jsep expression.</param>
                 /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
+                firstExp = firstExp || exp;
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
                 if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
                     if (exp.operator == '=>') {
                         queryContext.aliases.push({ alias: exp.left.name, value: 'it' });
-                        var r = helper.jsepToBeetleQuery(exp.right, queryContext);
-                        queryContext.aliases.pop();
+                        var r = helper.jsepToBeetleQuery(exp.right, queryContext, firstExp);
+                        if (exp != firstExp)
+                            queryContext.aliases.pop();
                         return r;
                     }
                     var op = enums.langOperators.find(exp.operator).code;
-                    return '(' + helper.jsepToBeetleQuery(exp.left, queryContext) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext) + ')';
+                    return '(' + helper.jsepToBeetleQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext, firstExp) + ')';
                 } else if (exp.type == 'UnaryExpression')
-                    return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext);
+                    return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
                 else if (exp.type == 'Identifier') {
                     var n = exp.name;
                     if (n[0] == '@') {
@@ -489,14 +494,14 @@
                     else {
                         var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
                         if (ali) o = ali.value;
-                        else o = helper.jsepToBeetleQuery(exp.object, queryContext);
+                        else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
                         return o + '.' + exp.property.name;
                     }
                 } else if (exp.type == 'Compound') {
                     var sts = [];
                     for (var i = 0; i < exp.body.length; i++) {
                         var st = exp.body[i];
-                        var s = helper.jsepToBeetleQuery(st, queryContext);
+                        var s = helper.jsepToBeetleQuery(st, queryContext, firstExp);
                         var ls = s.toLowerCase();
                         if (ls == 'desc' || ls == 'asc') {
                             if (sts.length == 0)
@@ -524,11 +529,11 @@
                     for (var j = 0; j < argList.length; j++) {
                         var arg = argList[j];
                         if (arg != null)
-                            args.push(helper.jsepToBeetleQuery(arg, queryContext));
+                            args.push(helper.jsepToBeetleQuery(arg, queryContext, firstExp));
                     }
                     var funcName;
                     if (exp.callee.type == 'MemberExpression') {
-                        args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext));
+                        args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext, firstExp));
                         funcName = exp.callee.property.name;
                     } else funcName = exp.callee.name;
                     var func = querying.queryFuncs.getFunc(funcName);
@@ -1810,7 +1815,9 @@
                 };
 
                 proto.Where = function (predicate) {
-                    return this.where(helper.funcToStr(predicate));
+                    var f = helper.parseFunc(predicate);
+                    var s = f.prm ? (f.prm + " => " + f.body) : f.body;
+                    return this.where(s);
                 };
 
                 proto.and = function (args) {
@@ -1891,8 +1898,11 @@
                 };
 
                 proto.OrderBy = function (selector, isDesc) {
-                    var f = helper.funcToStr(selector);
-                    return this.orderBy(f, isDesc);
+                    var f = helper.parseFunc(predicate);
+                    var b = f.body;
+                    if (b.indexOf(",")) b = "{" + b + "}";
+                    var s = f.prm ? (f.prm + " => " + b) : b;
+                    return this.orderBy(s);
                 };
 
                 proto.orderByDesc = function (properties) {
@@ -1901,11 +1911,6 @@
                     /// </summary>
                     /// <param name="properties">Properties to order.</param>
                     return this.orderBy(properties, true);
-                };
-
-                proto.OrderByDesc = function (selector) {
-                    var f = helper.funcToStr(selector);
-                    return this.orderBy(f);
                 };
 
                 proto.select = function (properties) {
