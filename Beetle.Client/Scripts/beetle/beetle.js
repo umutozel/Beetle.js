@@ -227,13 +227,13 @@
                 return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                     s4() + '-' + s4() + s4() + s4();
             },
-            parseFunc: function (func) {
+            funcToLambda: function (func) {
                 helper.assertPrm(func, "func").isFunction().check();
 
                 var f = func.toString();
 
                 var p1 = f.indexOf("(");
-                var p2 = f.lastIndexOf(")");
+                var p2 = f.indexOf(")");
                 var p = f.substring(p1 + 1, p2).trim();
 
                 var b1 = f.indexOf("{");
@@ -246,7 +246,12 @@
                 if (b[b.length - 1] == ";")
                     b = b.substring(0, b.length - 1);
 
-                return { prm: p, body: b };
+                return p ? (p + " => " + b) : b;
+            },
+            getFuncName: function (func) {
+                var funcNameRegex = /function (.{1,})\(/;
+                var results = funcNameRegex.exec(func.toString());
+                return results[1];
             },
             inherit: function (derivedClass, baseClass) {
                 /// <summary>
@@ -1634,13 +1639,6 @@
                     return this.toBeetleQuery({});
                 };
 
-                proto.combine = function () {
-                    /// <summary>
-                    /// Combines two expression to one. Not all expressions support this.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'combine']);
-                };
-
                 proto.toODataQuery = function (queryContext) {
                     /// <summary>
                     /// Converts expression to OData representation.
@@ -1803,20 +1801,7 @@
                     /// </summary>
                     /// <param name="type">Derived type.</param>
                     var q = this.clone();
-                    var ofType = q.getExpression(querying.expressions.OfTypeExp);
-                    if (ofType) {
-                        ofType.combine(type);
-                        return q;
-                    }
                     return q.addExpression(new querying.expressions.OfTypeExp(type));
-                };
-
-                proto.clearWhere = function () {
-                    /// <summary>
-                    /// Clear where filters.
-                    /// </summary>
-                    var q = this.clone();
-                    return q.removeExpression(querying.expressions.WhereExp);
                 };
 
                 proto.where = function (property, filterOp, value) {
@@ -1827,72 +1812,7 @@
                     /// <param name="filterOp">Filter operation: [Equals, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Contains, StartsWith, EndsWith].</param>
                     /// <param name="value">Filter value.</param>
                     var q = this.clone();
-                    var where = q.getExpression(querying.expressions.WhereExp);
-                    if (where == null) q.addExpression(new querying.expressions.WhereExp(arguments));
-                    else where.and(arguments);
-                    return q;
-                };
-
-                proto.and = function (args) {
-                    /// <summary>
-                    /// Combines given predication with previous filters using 'and'.
-                    /// </summary>
-                    /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
-                    var q = this.clone();
-                    q.getExpression(querying.expressions.WhereExp, true).and(arguments);
-                    return q;
-                };
-
-                proto.or = function (args) {
-                    /// <summary>
-                    /// Combines given predication with previous filters using 'or'.
-                    /// </summary>
-                    /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
-                    var q = this.clone();
-                    q.getExpression(querying.expressions.WhereExp, true).or(arguments);
-                    return q;
-                };
-
-                proto.andGroup = function (args) {
-                    /// <summary>
-                    /// Creates new filter group with given initial filter and combines it with previous group using 'and'.
-                    /// </summary>
-                    /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
-                    var q = this.clone();
-                    var where = q.getExpression(querying.expressions.WhereExp);
-                    if (where) where.andGroup.apply(where, arguments);
-                    else q = q.where.apply(q, arguments);
-                    return q;
-                };
-
-                proto.orGroup = function (args) {
-                    /// <summary>
-                    /// Creates new filter group with given initial filter and combines it with previous group using 'or'.
-                    /// </summary>
-                    /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
-                    var q = this.clone();
-                    var where = q.getExpression(querying.expressions.WhereExp);
-                    if (where) where.orGroup.apply(where, arguments);
-                    else q = q.where.apply(q, arguments);
-                    return q;
-                };
-
-                proto.closeGroup = function () {
-                    /// <summary>
-                    /// gets lastly opened filter group from stack and sets the last item as current. 
-                    /// </summary>
-                    /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] or expression.</param>
-                    var q = this.clone();
-                    q.getExpression(querying.expressions.WhereExp, true).closeGroup();
-                    return q;
-                };
-
-                proto.clearOrderBy = function () {
-                    /// <summary>
-                    /// Clear orderBy parameters.
-                    /// </summary>
-                    var q = this.clone();
-                    return q.removeExpression(querying.expressions.OrderByExp);
+                    return q.addExpression(new querying.expressions.WhereExp(arguments));
                 };
 
                 proto.orderBy = function (properties, isDesc) {
@@ -1902,11 +1822,6 @@
                     /// <param name="properties">The properties to sort by.</param>
                     /// <param name="desc">Is it descending?</param>
                     var q = this.clone();
-                    var orderBy = q.getExpression(querying.expressions.OrderByExp);
-                    if (orderBy) {
-                        orderBy.combine(properties, isDesc);
-                        return q;
-                    }
                     return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
                 };
 
@@ -1941,11 +1856,6 @@
                     /// Skips given count records and start reading.
                     /// </summary>
                     var q = this.clone();
-                    var skip = q.getExpression(querying.expressions.SkipExp);
-                    if (skip) {
-                        skip.combine(count);
-                        return q;
-                    }
                     return q.addExpression(new querying.expressions.SkipExp(count));
                 };
 
@@ -1961,11 +1871,6 @@
                     /// Takes only first given count records.
                     /// </summary>
                     var q = this.clone();
-                    var top = q.getExpression(querying.expressions.TopExp);
-                    if (top) {
-                        top.combine(count);
-                        return q;
-                    }
                     return q.addExpression(new querying.expressions.TopExp(count));
                 };
 
@@ -3977,15 +3882,12 @@
                             /// <summary>
                             /// Holds query concrete type name.
                             /// </summary>
+                            if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
                             baseTypes.ExpressionBase.call(this, 'oftype', -1, true, true);
                             this.typeName = typeName;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
-
-                        proto.combine = function (typeName) {
-                            this.typeName = typeName;
-                        };
 
                         proto.toBeetleQuery = function () {
                             return this.typeName;
@@ -4135,15 +4037,6 @@
                         var ctor = function (initial) {
                             /// <summary>
                             /// Builds complex queries with filter items, can use and, or and groups (to group filter items with parentheses).
-                            /// Example:
-                            ///     query.Where('Name', op.Equal, 'Old').and('Age', op.Greater, 30).closeGroup()
-                            ///          .orGroup('Name', op.Equal, 'Young').and('Age', op.Lesser, 30);
-                            /// 
-                            /// Note: When there is no open group left, 'and' or 'or' call will also open a group.
-                            /// Example: This query is same with the previous one.
-                            ///     query.Where('Name', op.Equal, 'Old').and('Age', op.Greater, 30).closeGroup()
-                            ///          .orGroup('Name', op.Equal, 'Young').and('Age', op.Lesser, 30);
-                            ///     (Name == 'Old' and Age > 30) or (Name == 'TooOld' and Age > 100)
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
                             // active group, all and, or calls will be added to this groups as filters.
@@ -4153,73 +4046,16 @@
                             // open group stacks, when group is closed we pop current group from this list.
                             this.openGroups = [];
 
+                            if (Assert.isFunction(initial)) {
+                                this.predicate = initial;
+                                initial = helper.funcToLambda(initial);
+                            }
                             // create a default group for initial filter.
                             if (initial)
-                                this.andGroup.apply(this, initial);
+                                createGroup(initial, false, this);
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
-
-                        proto.and = function (args) {
-                            /// <summary>
-                            /// Combines given predication with previous filters using 'and'.
-                            /// </summary>
-                            /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            // add this filter to current group's filter list.
-                            if (!this.currentGroup) createGroup(args, false, this);
-                            else parseFilterArgs(args, false, this.currentGroup);
-                            return this;
-                        };
-
-                        proto.or = function (args) {
-                            /// <summary>
-                            /// Combines given predication with previous filters using 'or'.
-                            /// </summary>
-                            /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            if (!this.currentGroup) createGroup(args, true, this);
-                            else parseFilterArgs(args, true, this.currentGroup);
-                            return this;
-                        };
-
-                        proto.andGroup = function (args) {
-                            /// <summary>
-                            /// Creates new group with given initial filter and combines it with previous group using 'and'.
-                            /// </summary>
-                            /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            // create new group with initial filter and false (to say it is not an 'or').
-                            createGroup(arguments, false, this);
-                            return this;
-                        };
-
-                        proto.orGroup = function (args) {
-                            /// <summary>
-                            /// Creates new group with given initial filter and combines it with previous group using 'or'.
-                            /// </summary>
-                            /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            createGroup(arguments, true, this);
-                            return this;
-                        };
-
-                        proto.closeGroup = function () {
-                            /// <summary>
-                            /// gets lastly opened group from stack and sets the last item as current. 
-                            /// </summary>
-                            /// <param name="args">Filter arguments. Can be expression or [Property], [FilterOps], [Value].</param>
-                            // get last opened group.
-                            var og = this.openGroups.pop();
-                            // if there is no open group, throw an error.
-                            if (!og) throw helper.createError(i18N.noOpenGroup, { expression: this });
-                            // set the current group.
-                            this.currentGroup = this.openGroups[this.openGroups.length - 1];
-                            return this;
-                        };
-
-                        proto.combine = function (args) {
-                            /// <summary>
-                            /// Converts given arguments to filter item and combines (and) it with this expression.
-                            /// </summary>
-                            this.and(args);
-                        };
 
                         proto.toODataQuery = function (queryContext) {
                             var retVal = null;
@@ -4262,6 +4098,9 @@
                         };
 
                         proto.execute = function (array, queryContext) {
+                            if (this.predicate)
+                                return helper.filterArray(array, this.predicate);
+
                             return ctor.execute(array, this.groups, queryContext);
                         };
 
@@ -4361,14 +4200,6 @@
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.combine = function (expStr, isDesc) {
-                            helper.assertPrm(expStr, 'expStr').isNotEmptyString().check();
-                            expStr = expStr || defaultExp;
-                            if (isDesc === true) expStr += ' desc';
-                            this.expStr += ', ' + expStr;
-                            this.exp = libs.jsep(this.expStr);
-                        };
-
                         proto.toODataQuery = function (queryContext) {
                             return helper.jsepToODataQuery(this.exp, queryContext);
                         };
@@ -4441,11 +4272,6 @@
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.combine = function (expStr) {
-                            this.expStr += ', ' + expStr;
-                            this.exp = libs.jsep(this.expStr);
-                        };
-
                         proto.toODataQuery = function (queryContext) {
                             return helper.jsepToODataQuery(this.exp, queryContext);
                         };
@@ -4475,11 +4301,6 @@
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
-
-                        proto.combine = function (expStr) {
-                            this.expStr += ', ' + expStr;
-                            this.exp = libs.jsep(this.expStr);
-                        };
 
                         proto.toODataQuery = function (queryContext) {
                             return helper.jsepToODataQuery(this.exp, queryContext);
@@ -4524,10 +4345,6 @@
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.combine = function (count) {
-                            if (count < this.count) this.count = count;
-                        };
-
                         proto.toODataQuery = function () {
                             return this.count;
                         };
@@ -4556,10 +4373,6 @@
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
-
-                        proto.combine = function (count) {
-                            if (count < this.count) this.count = count;
-                        };
 
                         proto.toODataQuery = function () {
                             return this.count;
@@ -6046,26 +5859,6 @@
                     return retVal.join(', ');
                 };
 
-                proto.Where = function (predicate) {
-                    var f = helper.parseFunc(predicate);
-                    var s = f.prm ? (f.prm + " => " + f.body) : f.body;
-                    return this.where(s);
-                };
-
-                proto.OrderBy = function (selector) {
-                    var f = helper.parseFunc(selector);
-                    var b = f.body;
-                    var s = f.prm ? (f.prm + " => " + b) : b;
-                    return this.orderBy(s);
-                };
-
-                proto.OrderByDesc = function (selector) {
-                    var f = helper.parseFunc(selector);
-                    var b = f.body;
-                    var s = f.prm ? (f.prm + " => " + b) : b;
-                    return this.orderByDesc(s);
-                };
-
                 proto.expand = function (propertyPath) {
                     /// <summary>
                     /// Expand query with given properties.
@@ -6076,10 +5869,7 @@
                     ///     This query takes Orders and OrderDetails for each order in one query.
                     /// </summary>
                     var q = this.clone();
-                    var expand = q.getExpression(querying.expressions.ExpandExp);
-                    if (expand) expand.combine(propertyPath);
-                    else q.addExpression(new querying.expressions.ExpandExp(propertyPath));
-                    return q;
+                    return q.addExpression(new querying.expressions.ExpandExp(propertyPath));
                 };
 
                 proto.include = function (propertyPath) {
@@ -8598,6 +8388,20 @@
                     return createAsync(typeName, initialValues, options, successCallback, errorCallback, this);
                 };
 
+                proto.createDetachedEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
+                    /// <summary>
+                    /// Request server to create entity. Server should handle this.
+                    /// </summary>
+                    /// <param name="typeName">The entity typa name.</param>
+                    /// <param name="initialValues">Entity initial values.</param>
+                    /// <param name="successCallback">Function to call after operation succeeded.</param>
+                    /// <param name="errorCallback">Function to call when operation fails.</param>
+                    /// <returns type="">Returns promise if supported.</returns>
+                    if (!options) options = { state: enums.entityStates.Detached };
+                    else options.state = enums.entityStates.Detached;
+                    return createAsync(typeName, initialValues, options, successCallback, errorCallback, this);
+                };
+
                 proto.createRawEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
                     /// <summary>
                     /// Request server to create entity. Server should handle this.
@@ -8625,6 +8429,7 @@
 
                     var makeObservable = options.makeObservable;
                     if (makeObservable == null) makeObservable = true;
+                    var detached = options.state == enums.entityStates.Detached;
                     var retVal = null;
                     instance.dataService.createEntityAsync(
                         typeName, initialValues, options,
@@ -8635,7 +8440,7 @@
                                     entity = [entity];
                                     isSingle = true;
                                 }
-                                if (makeObservable) // Merge incoming entities.
+                                if (makeObservable && !detached) // Merge incoming entities.
                                     mergeEntities(entity, allEntities, enums.mergeStrategy.ThrowError, enums.entityStates.Added, instance);
                                 // If only one entity returned (most likely) return it, otherwise return the array.
                                 if (isSingle)
@@ -9588,8 +9393,10 @@
                     /// <param name="instance">Manager instance.</param>
                     /// <param name="autoFixScalar">When true all scalar navigations will be fixed after merge (optional, default value will be read from settings).</param>
                     /// <param name="autoFixPlural">When true all plural navigations will be fixed after merge (optional, default value will be read from settings).</param>
+                    if (!state) state = enums.entityStates.Added;
+                    else if (state === enums.entityStates.Detached) return;
+
                     if (!merge) merge = enums.mergeStrategy.Preserve;
-                    if (!state || state === enums.entityStates.Detached) state = enums.entityStates.Added;
                     if (autoFixScalar == null) autoFixScalar = instance.autoFixScalar;
                     if (autoFixScalar == null) autoFixScalar = settings.autoFixScalar;
                     if (autoFixPlural == null) autoFixPlural = instance.autoFixPlural;

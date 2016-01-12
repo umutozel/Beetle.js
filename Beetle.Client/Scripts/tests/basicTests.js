@@ -501,54 +501,6 @@ test('use startsWith', 1, function () {
     }
 });
 
-test('use or', 1, function () {
-    var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntities')
-        .where('Name', op.Equals, 'Name_1').orGroup('Name', op.Equals, 'Name_2');
-    stop();
-    manager.executeQuery(query)
-        .then(querySucceeded)
-        .fail(handleFail)
-        .fin(start);
-
-    function querySucceeded(data) {
-        var count = data.length;
-        equal(count, 2, 'got all NamedEntities named \'Name_2\' or \'Name_3\'');
-    }
-});
-
-test('use and', 1, function () {
-    var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntities')
-        .where('Name', op.NotEqual, 'Name_1').andGroup('Name', op.NotEqual, 'Name_2');
-    stop();
-    manager.executeQuery(query)
-        .then(querySucceeded)
-        .fail(handleFail)
-        .fin(start);
-
-    function querySucceeded(data) {
-        var count = data.length;
-        equal(count, 9, 'got all NamedEntities except ones named \'Name_2\' and \'Name_3\'');
-    }
-});
-
-test('use complex where', 1, function () {
-    var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntities')
-        .where('Name', op.NotEqual, 'Name_1').where('IsCanceled', op.Equals, false) // second where equals to and
-        .orGroup('Name', op.NotEqual, 'Name_2').and('IsCanceled', op.Equals, true);
-    stop();
-    manager.executeQuery(query)
-        .then(querySucceeded)
-        .fail(handleFail)
-        .fin(start);
-
-    function querySucceeded() {
-        ok(true, 'complex query is executed');
-    }
-});
-
 module('query operator string input tests');
 
 test('use equals null', 1, function () {
