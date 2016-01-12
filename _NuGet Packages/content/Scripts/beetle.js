@@ -2427,7 +2427,6 @@
                     /// </summary>
                     /// <param name="shortName">Short name of the entity type (mandatory).</param>
                     /// <param name="resourceName">Resource to query.</param>
-                    helper.assertPrm(shortName, 'shortName').isNotEmptyString().check();
                     if (!this.metadataManager)
                         throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
                     return this.metadataManager.createQuery(resourceName, shortName, manager);
@@ -3705,6 +3704,7 @@
                     /// </summary>
                     /// <param name="shortName">Type name</param>
                     /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
+                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                     var type = this.typesDict[shortName];
                     if (!type && throwIfNotFound === true)
                         throw helper.createError(i18N.notFoundInMetadata, [shortName], { metadataManager: this, typeShortName: shortName });
@@ -3718,6 +3718,7 @@
                     /// <param name="resourceName">Query resource name.</param>
                     /// <param name="shortName">Type name</param>
                     /// <param name="manager">Entity manager</param>
+                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                     // if shortName is given find entityType and create query for it.
                     if (shortName) return this.getEntityType(shortName, true).createQuery(resourceName, manager);
                     // try to find entity type by its resource (set) name.
@@ -3734,6 +3735,7 @@
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="constructor">Constructor function.</param>
                     /// <param name="initializer">Initializer function.</param>
+                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                     var type = this.getEntityType(shortName, true);
                     type.registerCtor(constructor, initializer);
                 };
@@ -3744,6 +3746,7 @@
                     /// </summary>
                     /// <param name="shortName">Type name</param>
                     /// <param name="initialValues">Entity initial values.</param>
+                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                     // find entity type.
                     var type = this.getEntityType(shortName, true);
                     // create entity for this type
@@ -3756,6 +3759,7 @@
                     /// </summary>
                     /// <param name="shortName">Entity type short name.</param>
                     /// <param name="initialValues">Entity initial values.</param>
+                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                     // find entity type.
                     var type = this.getEntityType(shortName, true);
                     // create entity for this type
@@ -8842,12 +8846,12 @@
                 };
 
                 proto.createSet = function (type) {
-                    if (Assert.isTypeOf(type, 'string'))
-                        type = this.getEntityType(type);
+                    var t = Assert.isInstanceOf(type, metadata.EntityType) ? type : this.getEntityType(type, true);
                     return new core.EntitySet(type, this);
                 }
 
                 proto.set = function (shortName) {
+                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                     return this.entitySets && this.entitySets[shortName];
                 }
 
@@ -9481,6 +9485,7 @@
             };
 
             proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
+                if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
                 var that = this;
                 options = options || {};
                 var makeObservable = options.makeObservable;
