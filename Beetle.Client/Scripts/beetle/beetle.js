@@ -594,11 +594,13 @@
                         var arg1 = function () { return helper.jsepToFunction(exp.left, queryContext)(value); };
                         var arg2 = function () { return helper.jsepToFunction(exp.right, queryContext)(value); };
                         return op.asFunc.call(varContext, arg1, arg2);
-                    } else if (exp.type == 'UnaryExpression') {
+                    }
+                    else if (exp.type == 'UnaryExpression') {
                         var arg = function () { return helper.jsepToFunction(exp.argument, queryContext)(value); };
                         var uop = enums.langOperators.find(exp.operator);
                         return uop.asFunc.call(varContext, arg);
-                    } else if (exp.type == 'Identifier') {
+                    }
+                    else if (exp.type == 'Identifier') {
                         var n = exp.name;
                         if (n == 'null') return null;
                         if (n == 'true') return true;
@@ -620,7 +622,8 @@
                         var v = helper.getValue(value, n);
                         if (v === undefined) return window[n];
                         return v;
-                    } else if (exp.type == 'Literal')
+                    }
+                    else if (exp.type == 'Literal')
                         return exp.value;
                     else if (exp.type == 'MemberExpression') {
                         if (exp.object.name) {
@@ -630,7 +633,8 @@
                             if (ali) return helper.getValue(ali.value, exp.property.name);
                         }
                         return helper.getValue(helper.jsepToFunction(exp.object, queryContext)(value), exp.property.name);
-                    } else if (exp.type == 'CallExpression') {
+                    }
+                    else if (exp.type == 'CallExpression') {
                         var argList = exp.arguments, args = [], alias = null;
                         if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
                             alias = argList[0].left.name;
@@ -657,7 +661,8 @@
                             args.splice(0, 0, value);
 
                             retVal = func.impl.apply(queryContext, args);
-                        } else {
+                        }
+                        else {
                             if (funcName[0] == '@') {
                                 var varFuncName = funcName.slice(1);
                                 if (queryContext.expVarContext && queryContext.expVarContext[varFuncName])
@@ -683,7 +688,8 @@
                         if (alias)
                             queryContext.currentAlias = queryContext.aliases.pop();
                         return retVal;
-                    } else throw helper.createError(i18N.unknownExpression, { expression: exp });
+                    }
+                    else throw helper.createError(i18N.unknownExpression, { expression: exp });
                 };
             },
             jsepToProjector: function (exps, queryContext) {
@@ -1804,7 +1810,7 @@
                     return q.addExpression(new querying.expressions.OfTypeExp(type));
                 };
 
-                proto.where = function (property, filterOp, value) {
+                proto.where = function (predicate, varContext) {
                     /// <summary>
                     /// Filter query based on given parameters.
                     /// </summary>
@@ -1812,7 +1818,7 @@
                     /// <param name="filterOp">Filter operation: [Equals, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Contains, StartsWith, EndsWith].</param>
                     /// <param name="value">Filter value.</param>
                     var q = this.clone();
-                    return q.addExpression(new querying.expressions.WhereExp(arguments));
+                    return q.addExpression(new querying.expressions.WhereExp(predicate, varContext));
                 };
 
                 proto.orderBy = function (properties, isDesc) {
@@ -3907,281 +3913,57 @@
                         return ctor;
                     })(),
                     WhereExp: (function () {
-                        var filterItem = (function () {
-                            var c = function (expStr, isOr, varContext) {
-                                /// <summary>
-                                /// Represents a single predication.
-                                /// </summary>
-                                // filter expression.
-                                this.expStr = expStr;
-                                this.exp = libs.jsep(expStr);
-                                // tells if we should append this filter with 'and' or 'or' with previous filter. 
-                                this.isOr = isOr === true;
-                                this.varContext = varContext;
-                            };
-                            var p = c.prototype;
-
-                            p.toString = function () {
-                                return this.exp.toString();
-                            };
-
-                            p.toODataQuery = function (queryContext) {
-                                queryContext = queryContext || {};
-                                queryContext.expVarContext = this.varContext;
-                                var retVal = helper.jsepToODataQuery(this.exp, queryContext);
-                                queryContext.expVarContext = undefined;
-                                return retVal;
-                            };
-
-                            p.toBeetleQuery = function (queryContext) {
-                                queryContext = queryContext || {};
-                                queryContext.expVarContext = this.varContext;
-                                var retVal = helper.jsepToBeetleQuery(this.exp, queryContext);
-                                queryContext.expVarContext = undefined;
-                                return retVal;
-                            };
-
-                            p.clone = function () {
-                                return new filterItem(this.expStr, this.isOr, this.varContext);
-                            };
-
-                            p.toFunction = function (queryContext) {
-                                // build a filter function
-                                var that = this;
-                                return function (object) {
-                                    queryContext = queryContext || {};
-                                    queryContext.expVarContext = that.varContext;
-                                    var retVal = helper.jsepToFunction(that.exp, queryContext)(object);
-                                    queryContext.expVarContext = undefined;
-                                    return retVal;
-                                };
-                            };
-
-                            return c;
-                        })();
-                        var filterGroup = (function () {
-                            var c = function (isOr) {
-                                /// <summary>
-                                /// represent a group of predications.
-                                /// </summary>
-                                // tells if we should append this group with 'and' or 'or' with previous group. 
-                                this.isOr = isOr === true;
-                                // single predications.
-                                this.filterItems = [];
-                            };
-                            var p = c.prototype;
-
-                            p.toString = function () {
-                                var retVal = [];
-                                var last = null;
-                                helper.forEach(this.filterItems, function (fi) {
-                                    if (last != null) retVal.push(last.isOr ? ' or ' : ' and ');
-                                    retVal.push(fi.toString());
-                                    last = fi;
-                                });
-                                return retVal.join('');
-                            };
-
-                            p.toODataQuery = function (queryContext) {
-                                var groupStr = '';
-                                helper.forEach(this.filterItems, function (fi) {
-                                    // get filter item's properties.
-                                    var predicate = fi.toODataQuery(queryContext);
-                                    // combine filter with previous filters with filter's operator.
-                                    if (groupStr) groupStr += (fi.isOr ? ' or ' : ' and ') + predicate;
-                                    else groupStr = predicate;
-                                });
-                                return '(' + groupStr + ')';
-                            };
-
-                            p.toBeetleQuery = function (queryContext) {
-                                var groupStr = '';
-                                helper.forEach(this.filterItems, function (fi) {
-                                    // get filter item's properties.
-                                    var predicate = fi.toBeetleQuery(queryContext);
-                                    // combine filter with previous filters with filter's operator.
-                                    if (groupStr) groupStr += (fi.isOr ? ' or ' : ' and ') + predicate;
-                                    else groupStr = predicate;
-                                });
-                                return '(' + groupStr + ')';
-                            };
-
-                            p.clone = function (cloneList) {
-                                var pg = new filterGroup(this.isOr);
-                                helper.forEach(this.filterItems, function (item) {
-                                    pg.filterItems.push(item.clone(cloneList));
-                                });
-                                if (cloneList) cloneList.push({ o: this, n: pg });
-                                return pg;
-                            };
-
-                            p.toFunction = function (queryContext) {
-                                var that = this;
-                                // build a filter function
-                                return function (object) {
-                                    var b = null;
-                                    for (var j = 0; j < that.filterItems.length; j++) {
-                                        var f = that.filterItems[j];
-                                        if (f.isOr)
-                                            b = (b == null ? false : b) || f.toFunction(queryContext)(object);
-                                        else
-                                            b = (b == null ? true : b) && f.toFunction(queryContext)(object);
-                                    }
-                                    return b;
-                                };
-                            };
-
-                            return c;
-                        })();
-
-                        var ctor = function (initial) {
+                        var ctor = function (expStr, varContext) {
                             /// <summary>
-                            /// Builds complex queries with filter items, can use and, or and groups (to group filter items with parentheses).
+                            /// Builds filter queries.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
-                            // active group, all and, or calls will be added to this groups as filters.
-                            this.currentGroup = null;
-                            // all root groups, query will be build using these.
-                            this.groups = [];
-                            // open group stacks, when group is closed we pop current group from this list.
-                            this.openGroups = [];
 
-                            if (Assert.isFunction(initial)) {
-                                this.predicate = initial;
-                                initial = helper.funcToLambda(initial);
+                            if (Assert.isFunction(expStr)) {
+                                this.predicate = expStr;
+                                expStr = helper.funcToLambda(expStr);
                             }
-                            // create a default group for initial filter.
-                            if (initial)
-                                createGroup(initial, false, this);
+                            this.expStr = expStr;
+                            this.exp = libs.jsep(expStr);
+                            this.varContext = helper.combine(null, varContext);
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toODataQuery = function (queryContext) {
-                            var retVal = null;
-                            helper.forEach(this.groups, function (group) {
-                                // create query string for group
-                                var groupStr = group.toODataQuery(queryContext);
-                                // combine whole group with filter with group's operator.
-                                if (retVal) retVal += (group.isOr ? ' or ' : ' and ') + groupStr;
-                                else retVal = groupStr;
-                            });
+                            queryContext = queryContext || {};
+                            queryContext.expVarContext = this.varContext;
+                            var retVal = helper.jsepToODataQuery(this.exp, queryContext);
+                            queryContext.expVarContext = undefined;
                             return retVal;
                         };
 
                         proto.toBeetleQuery = function (queryContext) {
-                            var retVal = null;
-                            helper.forEach(this.groups, function (group) {
-                                // create query string for group
-                                var groupStr = group.toBeetleQuery(queryContext);
-                                // combine whole group with filter with group's operator.
-                                if (retVal) retVal += (group.isOr ? ' or ' : ' and ') + groupStr;
-                                else retVal = groupStr;
-                            });
+                            queryContext = queryContext || {};
+                            queryContext.expVarContext = this.varContext;
+                            var retVal = helper.jsepToBeetleQuery(this.exp, queryContext);
+                            queryContext.expVarContext = undefined;
                             return retVal;
                         };
 
                         proto.clone = function () {
-                            var pb = new ctor();
-                            var cloneList = [];
-                            // create all groups for new predicate builder.
-                            helper.forEach(this.groups, function (item) {
-                                pb.groups.push(item.clone(cloneList));
-                            });
-                            // create all open groups and current group, so it works correctly
-                            helper.forEach(this.openGroups, function (item) {
-                                pb.openGroups.push(helper.findInArray(cloneList, item, 'o').n);
-                            });
-                            if (this.currentGroup)
-                                pb.currentGroup = helper.findInArray(cloneList, this.currentGroup, 'o').n;
-                            return pb;
+                            return new ctor(this.expStr, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
                             if (this.predicate)
                                 return helper.filterArray(array, this.predicate);
 
-                            return ctor.execute(array, this.groups, queryContext);
+                            return ctor.execute(array, queryContext, this);
                         };
 
-                        ctor.execute = function (array, groups, queryContext) {
-                            var predicate = function (object) {
-                                var b = null;
-                                for (var i = 0; i < groups.length; i++) {
-                                    var g = groups[i];
-                                    if (g.isOr) b = (b == null ? false : b) || g.toFunction(queryContext)(object);
-                                    else b = (b == null ? true : b) && g.toFunction(queryContext)(object);
-                                }
-                                return b;
-                            };
+                        ctor.execute = function (array, queryContext, that) {
+                            queryContext = queryContext || {};
+                            queryContext.expVarContext = that.varContext;
+                            var predicate = helper.jsepToFunction(that.exp, queryContext);
+                            queryContext.expVarContext = undefined;
                             return helper.filterArray(array, predicate);
                         };
-
-                        function createGroup(args, isOr, instance) {
-                            /// <summary>
-                            /// creates a new group. if this is a inner group, adds it to current group's inner groups, otherwise adds it to root groups.
-                            /// now this is the active group, so set it as currentGroup and add this group to openGroups.
-                            /// </summary>
-                            /// <param name="args">Filter arguments. Can be [Property], [FilterOps], [Value] for now.</param>
-                            // new group object.
-                            var group = new filterGroup(isOr);
-                            if (args.length > 0)
-                                parseFilterArgs(args, isOr, group);
-                            // add this group to proper list.
-                            if (!instance.currentGroup)
-                                instance.groups.push(group);
-                            else
-                                instance.currentGroup.filterItems.push(group);
-                            // set as current.
-                            instance.currentGroup = group;
-                            // add to open group list.
-                            instance.openGroups.push(group);
-                        }
-
-                        function parseFilterArgs(args, isOr, currentGroup) {
-                            /// <summary>
-                            /// creates filterItem for given arguments.
-                            /// </summary>
-                            /// <param name="args">filter parameters.</param>
-                            /// <param name="isOr">whether this filter needs to be connected to its predecessor with or.</param>
-                            /// <param name="currentGroup">active group to add created filterItem.</param>
-                            if (args.length == 3 || args.length == 4) {
-                                var op = args[1];
-                                // if operation filter is given as string, try to find enum value
-                                if (Assert.isTypeOf(op, 'string')) {
-                                    op = op.toLowerCase();
-                                    var symbols = enums.filterOps.symbols();
-                                    for (var i = 0; i < symbols.length; i++) {
-                                        var sym = symbols[i];
-                                        if (sym.oData == op || sym.code == op || sym.name == op) {
-                                            op = sym;
-                                            break;
-                                        }
-                                    }
-                                }
-                                helper.assertPrm(op, 'filterOperation').isEnum(enums.filterOps).check();
-
-                                var prop = args[0];
-                                var val = args[2];
-                                if (core.dataTypes.date.isValid(val))
-                                    val = '"' + settings.getDateConverter().toISOString(val) + '"';
-                                else if (Assert.isTypeOf(val, 'string') && !(args.length == 4 && val[0] == "@"))
-                                    val = '"' + val + '"';
-                                var expStr;
-                                if (op.isFunc) {
-                                    if (op === enums.filterOps.Contains)
-                                        expStr = 'substringof(' + val + ', ' + prop + ')';
-                                    else
-                                        expStr = op.code + '(' + prop + ', ' + val + ')';
-                                } else
-                                    expStr = prop + op.code + val;
-
-                                currentGroup.filterItems.push(new filterItem(expStr, isOr, args[3]));
-                                return;
-                            } else if (args.length == 1 || args.length == 2)
-                                currentGroup.filterItems.push(new filterItem(args[0], isOr, args[1]));
-                            else throw helper.createError(i18N.argCountMismatch, ['where'], { args: args });
-                        }
 
                         return ctor;
                     })(),

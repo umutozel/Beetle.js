@@ -398,7 +398,7 @@ module('query operator tests');
 
 test('use equals null', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.OrderDetails.where('ProductNo', op.Equals, null);
+    var query = manager.OrderDetails.where('ProductNo == null');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -413,7 +413,7 @@ test('use equals null', 1, function () {
 
 test('use equals', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.NamedEntityTypes.where('Name', op.Equals, 'NE_2');
+    var query = manager.NamedEntityTypes.where('Name == "NE_2"');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -428,7 +428,7 @@ test('use equals', 1, function () {
 
 test('use not equal', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntityTypes').where('Name', op.NotEqual, 'NE_2');
+    var query = manager.createQuery('NamedEntityTypes').where('Name != "NE_2"');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -443,7 +443,7 @@ test('use not equal', 1, function () {
 
 test('use greater', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntities').where('TimeCreate', op.Greater, '2012/03/01');
+    var query = manager.createQuery('NamedEntities').where('TimeCreate > "2012/03/01"');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -458,7 +458,7 @@ test('use greater', 1, function () {
 
 test('use lesser', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntities').where('TimeCreate', op.Lesser, '2000-01-01');
+    var query = manager.createQuery('NamedEntities').where('TimeCreate < "2000-01-01"');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -473,7 +473,7 @@ test('use lesser', 1, function () {
 
 test('use contains', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntityTypes').where('Name', op.Contains, 'e_2');
+    var query = manager.createQuery('NamedEntityTypes').where('substringof("e_2", Name)');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -488,7 +488,7 @@ test('use contains', 1, function () {
 
 test('use startsWith', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('Companies').where('CompanyNo', op.StartsWith, 'C');
+    var query = manager.createQuery('Companies').where('startswith(CompanyNo, "C")');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -1415,7 +1415,7 @@ test('delete an entity', 1, function () {
             .fail(handleFail);
 
         function saveSucceeded() {
-            manager.executeQuery(manager.createQuery('NamedEntities').where('ShortId', op.Equals, shortId))
+            manager.executeQuery(manager.createQuery('NamedEntities').where('ShortId == ' + shortId))
                 .then(secondQuerySucceeded)
                 .fail(handleFail)
                 .fin(start);
@@ -1693,7 +1693,7 @@ if (metadata !== false) {
             .fail(handleFail);
 
         function saveSucceeded() {
-            var query = manager.createQuery('Entities').where('Id', op.Equals, id);
+            var query = manager.createQuery('Entities').where('Id == @0', [id]);
             manager.executeQuery(query, beetle.mergeStrategy.NoTracking)
                 .then(querySucceeded)
                 .fail(handleFail)
