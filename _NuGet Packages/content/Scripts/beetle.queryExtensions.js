@@ -57,22 +57,18 @@
         var proto = ctor.prototype;
 
         proto.clone = function () {
-            return new ctor(this.func);
+            return new ctor(this.func, this.seed);
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.func, this.seed, queryContext);
-        };
-
-        ctor.execute = function (array, func, seed, queryContext) {
             if (array.length == 0) return null;
 
             var i = 0;
-            var agg = seed !== undefined ? seed : array[i++];
+            var agg = this.seed !== undefined ? this.seed : array[i++];
             if (array.length == 1) return agg;
 
             for (; i < array.length; i++) {
-                agg = func.call(queryContext, agg, array[i]);
+                agg = this.func.call(queryContext, agg, array[i]);
             }
             return agg;
         };
@@ -105,11 +101,7 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, queryContext);
-        };
-
-        ctor.execute = function (array, other, queryContext) {
-            return array.concat(other);
+            return array.concat(this.other);
         };
 
         return ctor;
@@ -140,12 +132,8 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.item, queryContext);
-        };
-
-        ctor.execute = function (array, item, queryContext) {
             for (var i = 0; i < array.length; i++) {
-                if (beetle.helper.objEquals(array[i], item)) return true;
+                if (beetle.helper.objEquals(array[i], this.item)) return true;
             }
             return false;
         };
@@ -177,16 +165,12 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, queryContext);
-        };
-
-        ctor.execute = function (array, other, queryContext) {
             var retVal = [];
             for (var i = 0; i < array.length; i++) {
                 var item1 = array[i];
                 var found = false;
-                for (var j = 0; j < other.length; j++) {
-                    var item2 = other[j];
+                for (var j = 0; j < this.other.length; j++) {
+                    var item2 = this.other[j];
                     found = beetle.helper.objEquals(item1, item2);
                     if (found) break;
                 }
@@ -214,9 +198,7 @@
             ArrayExpBase.call(this, 'groupJoin');
             this.other = other;
             this.thisKey = thisKey;
-            this.thisKeyExp = beetle.libs.jsep(thisKey);
             this.otherKey = otherKey;
-            this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
         beetle.helper.inherit(ctor, ArrayExpBase);
@@ -227,23 +209,20 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.thisKeyExp, this.otherKeyExp, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, thisKeyExp, otherKeyExp, selector, queryContext) {
             var retVal = [];
-            var keyGetter = beetle.helper.jsepToProjector(thisKeyExp, queryContext);
-            var otherKeyGetter = beetle.helper.jsepToProjector(otherKeyExp, queryContext);
+            var keyGetter = beetle.Assert.isFunction(this.thisKey) ? this.thisKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.thisKey), queryContext);
+            var otherKeyGetter = beetle.Assert.isFunction(this.otherKey) ? this.otherKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.otherKey), queryContext);
 
+            var that = this;
             beetle.helper.forEach(array, function (item) {
                 var key = keyGetter(item);
                 var items = [];
-                beetle.helper.forEach(other, function (otherItem) {
+                beetle.helper.forEach(that.other, function (otherItem) {
                     var otherKey = otherKeyGetter(otherItem);
                     if (beetle.helper.objEquals(key, otherKey))
                         items.push(otherItem);
                 });
-                retVal.push(selector.call(queryContext, item, items));
+                retVal.push(that.selector.call(queryContext, item, items));
             });
 
             return retVal;
@@ -279,10 +258,6 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, queryContext);
-        };
-
-        ctor.execute = function (array, other, queryContext) {
             var retVal = [];
             for (var i = 0; i < array.length; i++) {
                 var item1 = array[i];
@@ -293,8 +268,8 @@
                 if (exists) continue;
 
                 var found = false;
-                for (var k = 0; k < other.length; k++) {
-                    if (found = beetle.helper.objEquals(item1, other[k])) break;
+                for (var k = 0; k < this.other.length; k++) {
+                    if (found = beetle.helper.objEquals(item1, this.other[k])) break;
                 }
                 if (found) retVal.push(item1);
             }
@@ -320,9 +295,7 @@
             ArrayExpBase.call(this, 'join');
             this.other = other;
             this.thisKey = thisKey;
-            this.thisKeyExp = beetle.libs.jsep(thisKey);
             this.otherKey = otherKey;
-            this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
         beetle.helper.inherit(ctor, ArrayExpBase);
@@ -333,20 +306,17 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.thisKeyExp, this.otherKeyExp, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, thisKeyExp, otherKeyExp, selector, queryContext) {
             var retVal = [];
-            if (selector == null) selector = beetle.helper.combine;
+            var selector = this.selector || beetle.helper.combine;
 
-            var keyGetter = beetle.helper.jsepToProjector(thisKeyExp, queryContext);
-            var otherKeyGetter = beetle.helper.jsepToProjector(otherKeyExp, queryContext);
+            var keyGetter = beetle.Assert.isFunction(this.thisKey) ? this.thisKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.thisKey), queryContext);
+            var otherKeyGetter = beetle.Assert.isFunction(this.otherKey) ? this.otherKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.otherKey), queryContext);
 
+            var that = this;
             beetle.helper.forEach(array, function (item) {
                 var key = keyGetter(item);
                 var items = [];
-                beetle.helper.forEach(other, function (otherItem) {
+                beetle.helper.forEach(that.other, function (otherItem) {
                     var otherKey = otherKeyGetter(otherItem);
                     if (beetle.helper.objEquals(key, otherKey))
                         items.push(otherItem);
@@ -382,9 +352,7 @@
             ArrayExpBase.call(this, 'leftJoin');
             this.other = other;
             this.thisKey = thisKey;
-            this.thisKeyExp = beetle.libs.jsep(thisKey);
             this.otherKey = otherKey;
-            this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
         beetle.helper.inherit(ctor, ArrayExpBase);
@@ -395,20 +363,17 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.thisKeyExp, this.otherKeyExp, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, thisKeyExp, otherKeyExp, selector, queryContext) {
             var retVal = [];
-            if (selector == null) selector = beetle.helper.combine;
+            var selector = this.selector || beetle.helper.combine;
 
-            var keyGetter = beetle.helper.jsepToProjector(thisKeyExp, queryContext);
-            var otherKeyGetter = beetle.helper.jsepToProjector(otherKeyExp, queryContext);
+            var keyGetter = beetle.Assert.isFunction(this.thisKey) ? this.thisKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.thisKey), queryContext);
+            var otherKeyGetter = beetle.Assert.isFunction(this.otherKey) ? this.otherKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.otherKey), queryContext);
 
+            var that = this;
             beetle.helper.forEach(array, function (item) {
                 var key = keyGetter(item);
                 var items = [];
-                beetle.helper.forEach(other, function (otherItem) {
+                beetle.helper.forEach(that.other, function (otherItem) {
                     var otherKey = otherKeyGetter(otherItem);
                     if (beetle.helper.objEquals(key, otherKey))
                         items.push(otherItem);
@@ -447,9 +412,7 @@
             ArrayExpBase.call(this, 'rightJoin');
             this.other = other;
             this.thisKey = thisKey;
-            this.thisKeyExp = beetle.libs.jsep(thisKey);
             this.otherKey = otherKey;
-            this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
         beetle.helper.inherit(ctor, ArrayExpBase);
@@ -460,17 +423,14 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.thisKeyExp, this.otherKeyExp, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, thisKeyExp, otherKeyExp, selector, queryContext) {
             var retVal = [];
-            if (selector == null) selector = beetle.helper.combine;
+            var selector = this.selector || beetle.helper.combine;
 
-            var keyGetter = beetle.helper.jsepToProjector(otherKeyExp, queryContext);
-            var otherKeyGetter = beetle.helper.jsepToProjector(thisKeyExp, queryContext);
+            var keyGetter = beetle.Assert.isFunction(this.thisKey) ? this.thisKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.thisKey), queryContext);
+            var otherKeyGetter = beetle.Assert.isFunction(this.otherKey) ? this.otherKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.otherKey), queryContext);
 
-            beetle.helper.forEach(other, function (item) {
+            var that = this;
+            beetle.helper.forEach(this.other, function (item) {
                 var key = keyGetter(item);
                 var items = [];
                 beetle.helper.forEach(array, function (otherItem) {
@@ -512,9 +472,7 @@
             ArrayExpBase.call(this, 'fullJoin');
             this.other = other;
             this.thisKey = thisKey;
-            this.thisKeyExp = beetle.libs.jsep(thisKey);
             this.otherKey = otherKey;
-            this.otherKeyExp = beetle.libs.jsep(otherKey);
             this.selector = selector;
         };
         beetle.helper.inherit(ctor, ArrayExpBase);
@@ -525,16 +483,12 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.thisKeyExp, this.otherKeyExp, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, thisKeyExp, otherKeyExp, selector, queryContext) {
             var retVal = [];
-            if (selector == null) selector = beetle.helper.combine;
-            other = beetle.helper.filterArray(other, function () { return true; });
+            var selector = this.selector || beetle.helper.combine;
+            var other = beetle.helper.filterArray(this.other, function () { return true; });
 
-            var keyGetter = beetle.helper.jsepToProjector(thisKeyExp, queryContext);
-            var otherKeyGetter = beetle.helper.jsepToProjector(otherKeyExp, queryContext);
+            var keyGetter = beetle.Assert.isFunction(this.thisKey) ? this.thisKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.thisKey), queryContext);
+            var otherKeyGetter = beetle.Assert.isFunction(this.otherKey) ? this.otherKey : beetle.helper.jsepToProjector(beetle.libs.jsep(this.otherKey), queryContext);
 
             beetle.helper.forEach(array, function (item) {
                 var key = keyGetter(item);
@@ -592,15 +546,12 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, selector, queryContext) {
             var retVal = [];
-            if (selector == null) selector = beetle.helper.combine;
+            var selector = this.selector || beetle.helper.combine;
 
+            var that = this;
             beetle.helper.forEach(array, function (item) {
-                beetle.helper.forEach(other, function (otherItem) {
+                beetle.helper.forEach(that.other, function (otherItem) {
                     retVal.push(selector.call(queryContext, item, otherItem));
                 });
             });
@@ -637,13 +588,9 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, queryContext);
-        };
-
-        ctor.execute = function (array, other, queryContext) {
-            if (array.length != other.length) return false;
+            if (array.length != this.other.length) return false;
             for (var i = 0; i < array.length; i++) {
-                if (!beetle.helper.objEquals(array[i], other[i])) return false;
+                if (!beetle.helper.objEquals(array[i], this.other[i])) return false;
             }
             return true;
         };
@@ -660,33 +607,26 @@
     };
 
     var toLookupExp = (function () {
-        var ctor = function (keySelectorStr, elementSelector) {
+        var ctor = function (keySelector, elementSelector) {
             /// <summary>
             /// Holds query toLookup information (same as groupBy but elementSelector is function instead of string).
             /// </summary>
             ArrayExpBase.call(this, 'toLookup', 3, true, true);
-            this.keySelectorStr = keySelectorStr;
+            this.keySelector = keySelector;
             this.elementSelector = elementSelector;
-
-            if (keySelectorStr)
-                this.keySelectorExp = beetle.libs.jsep(keySelectorStr);
         };
         beetle.helper.inherit(ctor, ArrayExpBase);
         var proto = ctor.prototype;
 
         proto.clone = function () {
-            return new ctor(this.keySelectorStr, this.elementSelector);
+            return new ctor(this.keySelector, this.elementSelector);
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.keySelectorExp, this.elementSelector, queryContext);
-        };
-
-        ctor.execute = function (array, keySelectorExp, elementSelector, queryContext) {
             var groups = [];
             // project keys
-            if (keySelectorExp) {
-                var keys = beetle.querying.expressions.SelectExp.execute(array, keySelectorExp, queryContext);
+            if (this.keySelector) {
+                var keys = beetle.Assert.isFunction(this.keySelector) ? this.keySelector(array) : beetle.helper.runSelectExp(array, this.keySelector, queryContext);
                 for (var i = 0; i < keys.length; i++) {
                     var keyGroup = null;
                     var key = keys[i];
@@ -705,13 +645,15 @@
                     }
                     keyGroup.Items.push(array[i]);
                 }
-            } else groups.push({ Key: null, Items: array });
+            }
+            else groups.push({ Key: null, Items: array });
 
-            if (elementSelector) {
+            if (this.elementSelector) {
+                var es = beetle.Assert.isFunction(this.elementSelector) ? this.elementSelector : beetle.helper.jsepToFunction(beetle.libs.jsep(this.elementSelector), queryContext);
                 beetle.helper.forEach(groups, function (g, k) {
                     var items = g.Items;
                     items.Key = g.Key;
-                    var result = elementSelector.call(queryContext, g.Items, g.Key);
+                    var result = es.call(queryContext, g.Items, g.Key);
                     groups[k] = result;
                 });
             }
@@ -747,13 +689,9 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, queryContext);
-        };
-
-        ctor.execute = function (array, other, queryContext) {
             var retVal = [];
             addDistinctItems(array, retVal);
-            addDistinctItems(other, retVal);
+            addDistinctItems(this.other, retVal);
             return retVal;
         };
 
@@ -800,16 +738,12 @@
         };
 
         proto.execute = function (array, queryContext) {
-            return ctor.execute(array, this.other, this.selector, queryContext);
-        };
-
-        ctor.execute = function (array, other, selector, queryContext) {
             var retVal = [];
-            if (selector == null) selector = beetle.helper.combine;
+            var selector = this.selector || beetle.helper.combine;
 
-            var len = Math.min(array.length, other.length);
+            var len = Math.min(array.length, this.other.length);
             for (var i = 0; i < len; i++) {
-                retVal.push(selector.call(queryContext, array[i], other[i]));
+                retVal.push(selector.call(queryContext, array[i], this.other[i]));
             }
 
             return retVal;

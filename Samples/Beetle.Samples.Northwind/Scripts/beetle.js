@@ -336,12 +336,13 @@
                 events.error.notify(retVal);
                 return retVal;
             },
-            getPredicate: function (exp, queryContext, varContext) {
-                queryContext = queryContext || {};
-                queryContext.expVarContext = varContext;
-                var predicate = helper.jsepToFunction(exp, queryContext);
-                queryContext.expVarContext = undefined;
-                return predicate;
+            runSelectExp: function (array, exp, queryContext) {
+                if (array.length == 0) return array;
+
+                exp = libs.jsep(exp);
+                var exps = exp.type == 'Compound' ? exp.body : [exp];
+                var projector = helper.jsepToProjector(exps, queryContext);
+                return helper.mapArray(array, projector);
             },
             setForeignKeys: function (entity, navProperty, newValue) {
                 /// <summary>Updates foreign keys of given navigation property with new values.</summary>
@@ -1660,7 +1661,8 @@
 
                     queryContext = queryContext || {};
                     queryContext.expVarContext = this.varContext;
-                    var retVal = helper.jsepToODataQuery(this.exp, queryContext);
+                    var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+                    var retVal = helper.jsepToODataQuery(libs.jsep(exp), queryContext);
                     queryContext.expVarContext = undefined;
                     return retVal;
                 };
@@ -1673,7 +1675,8 @@
 
                     queryContext = queryContext || {};
                     queryContext.expVarContext = this.varContext;
-                    var retVal = helper.jsepToBeetleQuery(this.exp, queryContext);
+                    var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+                    var retVal = helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
                     queryContext.expVarContext = undefined;
                     return retVal;
                 };
@@ -3933,77 +3936,52 @@
                         return ctor;
                     })(),
                     WhereExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Builds filter queries.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
 
-                            var s;
-                            if (Assert.isFunction(expStr)) {
-                                this.predicate = expStr;
-                                s = helper.funcToLambda(expStr);
-                            }
-                            else s = expStr;
-                            this.expStr = expStr;
-                            this.exp = libs.jsep(s);
-                            this.varContext = helper.combine(null, varContext);
+                            this.exp = exp;
+                            this.varContext = varContext;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, helper.getPredicate(exp, queryContext, varContext));
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            return helper.filterArray(array, predicate)
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            return helper.filterArray(array, predicate);
                         };
 
                         return ctor;
                     })(),
                     OrderByExp: (function () {
                         var defaultExp = 'x => x';
-                        var ctor = function (expStr, isDesc) {
+                        var ctor = function (exp, isDesc) {
                             /// <summary>
                             /// Holds query order by parameters.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'orderby', 1, false, false);
 
-                            var s;
-                            if (Assert.isFunction(expStr)) {
-                                this.comparer = expStr;
-                                s = helper.funcToLambda(expStr);
-                            }
-                            else s = expStr;
-                            s = s || defaultExp;
-                            if (isDesc === true) s += ' desc';
-                            this.expStr = expStr;
-                            this.exp = libs.jsep(s);
+                            this.exp = exp || defaultExp;
+                            if (isDesc === true) this.exp += ' desc';
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.comparer) return ctor.run(array, this.comparer);
-                            ctor.execute(array, this.exp, queryContext);
-                        };
+                            if (Assert.isFunction(this.exp)) return array.sort(this.exp);
 
-                        ctor.execute = function (array, expr, queryContext) {
                             var comparers = [];
+                            var expr = libs.jsep(this.exp);
                             var exps = expr.type == 'Compound' ? expr.body : [expr];
                             for (var i = 0; i < exps.length; i++) {
                                 var isDesc = false;
@@ -4033,7 +4011,7 @@
                             }
                             var retVal = new Array();
                             retVal.push.apply(retVal, array);
-                            return ctor.run(retVal, function (object1, object2) {
+                            return retVal.sort(function (object1, object2) {
                                 for (var j = 0; j < comparers.length; j++) {
                                     var result = comparers[j](object1, object2);
                                     if (result != 0)
@@ -4043,26 +4021,21 @@
                             });
                         };
 
-                        ctor.run = function (array, comparer) {
-                            return array.sort(comparer);
-                        };
-
                         return ctor;
                     })(),
                     ExpandExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query expand list.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'expand', 1, false, false);
-                            this.expStr = expStr;
-                            this.exp = libs.jsep(expStr);
+                            this.exp = exp;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
@@ -4072,37 +4045,23 @@
                         return ctor;
                     })(),
                     SelectExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query projection parameters.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'select', 2, false, true);
-                            this.expStr = expStr;
-                            this.exp = libs.jsep(expStr);
+                            this.exp = exp;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
-                            if (array.length == 0) return array;
-
-                            // arrange expressions
-                            var exps = exp.type == 'Compound' ? exp.body : [exp];
-                            var projector = helper.jsepToProjector(exps, queryContext);
-
-                            // execute projection expression on array items
-                            var projections = [];
-                            for (var j = 0; j < array.length; j++)
-                                projections.push(projector(array[j]));
-                            return projections;
+                            if (Assert.isFunction(this.exp)) return helper.mapArray(array, this.exp);
+                            return helper.runSelectExp(array, this.exp, queryContext);
                         };
 
                         return ctor;
@@ -4166,46 +4125,43 @@
                         return ctor;
                     })(),
                     GroupByExp: (function () {
-                        var ctor = function (keySelectorStr, elementSelectorStr) {
+                        var ctor = function (keySelector, elementSelector) {
                             /// <summary>
                             /// Holds query groupBy information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'groupby', 3, true, true);
-                            this.keySelectorStr = keySelectorStr;
-                            this.elementSelectorStr = elementSelectorStr;
 
-                            this.keySelectorExp = null;
-                            if (keySelectorStr)
-                                this.keySelectorExp = libs.jsep(keySelectorStr);
-                            this.elementSelectorExp = null;
-                            if (elementSelectorStr)
-                                this.elementSelectorExp = libs.jsep(elementSelectorStr);
+                            this.keySelector = keySelector;
+                            this.elementSelector = elementSelector;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.toBeetleQuery = function (queryContext) {
                             var retVal = '';
-                            if (this.keySelectorExp)
-                                retVal += helper.jsepToBeetleQuery(this.keySelectorExp, queryContext);
-                            if (this.elementSelectorExp)
-                                retVal += ';' + helper.jsepToBeetleQuery(this.elementSelectorExp, queryContext);
+                            if (this.keySelector) {
+                                var ks = Assert.isFunction(this.keySelector) ? helper.funcToLambda(this.keySelector) : this.keySelector;
+                                retVal += helper.jsepToBeetleQuery(libs.jsep(ks), queryContext);
+                            }
+                            if (this.elementSelector) {
+                                var es = Assert.isFunction(this.elementSelector) ? helper.funcToLambda(this.elementSelector) : this.elementSelector;
+                                retVal += ';' + helper.jsepToBeetleQuery(libs.jsep(es), queryContext);
+                            }
                             return retVal;
                         };
 
                         proto.clone = function () {
-                            return new ctor(this.keySelectorStr, this.elementSelectorStr);
+                            return new ctor(this.keySelector, this.elementSelector);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.keySelectorExp, this.elementSelectorExp, queryContext);
-                        };
-
-                        ctor.execute = function (array, keySelectorExp, elementSelectorExp, queryContext) {
                             var groups = [];
-                            // project keys
-                            if (keySelectorExp) {
-                                var keys = querying.expressions.SelectExp.execute(array, keySelectorExp, queryContext);
+                            if (this.keySelector) {
+                                // project keys
+                                var keys = Assert.isFunction(this.keySelector)
+                                    ? helper.mapArray(array, this.keySelector)
+                                    : helper.runSelectExp(array, this.keySelector, queryContext);
+
                                 for (var i = 0; i < keys.length; i++) {
                                     var keyGroup = null;
                                     var key = keys[i];
@@ -4224,11 +4180,18 @@
                                     }
                                     keyGroup.Items.push(array[i]);
                                 }
-                            } else groups.push({ Key: null, Items: array });
+                            }
+                            else groups.push({ Key: null, Items: array });
 
-                            if (elementSelectorExp) {
-                                var exps = elementSelectorExp.type == 'Compound' ? elementSelectorExp.body : [elementSelectorExp];
-                                var projector = helper.jsepToProjector(exps, queryContext);
+                            if (this.elementSelector) {
+                                var projector;
+                                if (Assert.isFunction(this.elementSelector))
+                                    projector = this.elementSelector;
+                                else {
+                                    var es = libs.jsep(this.elementSelector);
+                                    var exps = es.type == 'Compound' ? es.body : [es];
+                                    projector = helper.jsepToProjector(exps, queryContext);
+                                }
                                 helper.forEach(groups, function (g, k) {
                                     var items = g.Items;
                                     items.Key = g.Key;
@@ -4243,30 +4206,24 @@
                         return ctor;
                     })(),
                     DistinctExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query distinct information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'distinct', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
+                            this.exp = exp;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
-                            if (exp)
-                                array = querying.expressions.SelectExp.execute(array, exp, queryContext);
-                            return getDistincts(array);
+                            if (!this.exp) return getDistincts(array);
+                            if (Assert.isFunction(this.exp)) return getDistincts(helper.mapArray(array, this.exp));
+                            return getDistincts(helper.runSelectExp(array, this.exp, queryContext));
                         };
 
                         function getDistincts(array) {
@@ -4306,42 +4263,35 @@
                         };
 
                         proto.execute = function (array) {
-                            return ctor.execute(array);
-                        };
-
-                        ctor.execute = function (array) {
                             return array.reverse();
                         };
 
                         return ctor;
                     })(),
                     SelectManyExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query distinct information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'selectMany', 3, true, true);
-                            this.expStr = expStr;
-                            this.exp = libs.jsep(expStr);
+                            this.exp = exp;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
                             if (array.length == 0) return array;
 
-                            // arrange expressions
-                            var projector = helper.jsepToFunction(exp, queryContext);
+                            if (Assert.isFunction(this.exp)) return getMany(array, this.exp);
+                            return getMany(array, helper.jsepToFunction(libs.jsep(this.exp), queryContext));
+                        };
 
-                            // execute projection expression on array items
+                        function getMany(array, projector) {
+                            if (array.length == 0) return array;
                             var projections = [];
                             for (var j = 0; j < array.length; j++) {
                                 var arr = projector(array[j]);
@@ -4353,33 +4303,24 @@
                         return ctor;
                     })(),
                     SkipWhileExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query skipWhile information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'skipWhile', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            this.exp = exp;
+                            this.varContext = varContext;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
 
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, helper.getPredicate(exp, queryContext, varContext));
-                        };
-
-                        ctor.run = function (array, predicate) {
                             var i = 0;
                             while (predicate(array[i]) == true) i++;
                             return array.slice(i + 1);
@@ -4388,33 +4329,24 @@
                         return ctor;
                     })(),
                     TakeWhileExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query takeWhile information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'takeWhile', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            this.exp = exp;
+                            this.varContext = varContext;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
 
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, helper.getPredicate(exp, queryContext, varContext));
-                        };
-
-                        ctor.run = function (array, predicate) {
                             var i = 0;
                             while (predicate(array[i]) == true) i++;
                             return array.slice(0, i);
@@ -4423,252 +4355,204 @@
                         return ctor;
                     })(),
                     AllExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query all information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;all', 3, true, true);
-                            this.expStr = expStr;
-                            this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, helper.getPredicate(exp, queryContext, varContext));
-                        };
-
-                        ctor.run = function (array, predicate) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
                             return querying.queryFuncs.all.impl(array, function () { return array; }, predicate);
                         };
 
                         return ctor;
                     })(),
                     AnyExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query any information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;any', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            return predicate ? querying.queryFuncs.any.impl(array, function () { return array; }, predicate).length > 0 : array.length > 0;
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                return querying.queryFuncs.any.impl(array, function () { return array; }, predicate);
+                            }
+                            return array.length > 0;
                         };
 
                         return ctor;
                     })(),
                     AvgExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query average information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;avg', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
+                            if (exp)
+                                this.exp = exp;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
-                            var selector = exp ? helper.jsepToFunction(exp, queryContext) : function (value) { return value; };
+                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
                             return querying.queryFuncs.avg.impl(array, function () { return array; }, selector);
                         };
 
                         return ctor;
                     })(),
                     MaxExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query maximum information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;max', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
+                            if (exp)
+                                this.exp = exp;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
-                            var selector = exp ? helper.jsepToFunction(exp, queryContext) : function (value) { return value; };
+                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
                             return querying.queryFuncs.max.impl(array, function () { return array; }, selector);
                         };
 
                         return ctor;
                     })(),
                     MinExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query minimum information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;min', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
+                            if (exp)
+                                this.exp = exp;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
-                            var selector = exp ? helper.jsepToFunction(exp, queryContext) : function (value) { return value; };
+                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
                             return querying.queryFuncs.min.impl(array, function () { return array; }, selector);
                         };
 
                         return ctor;
                     })(),
                     SumExp: (function () {
-                        var ctor = function (expStr) {
+                        var ctor = function (exp) {
                             /// <summary>
                             /// Holds query sum information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;sum', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
+                            if (exp)
+                                this.exp = exp;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr);
+                            return new ctor(this.exp);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            return ctor.execute(array, this.exp, queryContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext) {
-                            var selector = exp ? helper.jsepToFunction(exp, queryContext) : function (value) { return value; };
+                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
                             return querying.queryFuncs.sum.impl(array, function () { return array; }, selector);
                         };
 
                         return ctor;
                     })(),
                     CountExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query count information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;count', 3, true, true);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            return predicate ? helper.filterArray(array, predicate).length : array.length;
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                return helper.filterArray(array, predicate).length
+                            }
+                            return array.length
                         };
 
                         return ctor;
                     })(),
                     FirstExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query first information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;first', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(array, exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            if (predicate) array = helper.filterArray(array, predicate);
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                array = helper.filterArray(array, predicate);
+                            }
                             if (array.length == 0) throw helper.createError(i18N.arrayEmpty, { array: array, expression: this });
                             return array[0];
                         };
@@ -4676,74 +4560,56 @@
                         return ctor;
                     })(),
                     FirstOrDefaultExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query firstOrDefault information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;firstOD', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(array, exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            if (predicate) array = helper.filterArray(array, predicate);
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                array = helper.filterArray(array, predicate);
+                            }
                             return array.length == 0 ? null : array[0];
                         };
 
                         return ctor;
                     })(),
                     SingleExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query single information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;single', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.toBeetleQuery = function (queryContext) {
-                            return this.exp ? helper.jsepToBeetleQuery(this.exp, queryContext) : '';
-                        };
-
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(array, exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            if (predicate) array = helper.filterArray(array, predicate);
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                array = helper.filterArray(array, predicate);
+                            }
                             if (array.length != 1) throw helper.createError(i18N.arrayNotSingle, { array: array, expression: this });
                             return array[0];
                         };
@@ -4751,39 +4617,28 @@
                         return ctor;
                     })(),
                     SingleOrDefaultExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query singleOrDefault information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;singleOD', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.toBeetleQuery = function (queryContext) {
-                            return this.exp ? helper.jsepToBeetleQuery(this.exp, queryContext) : '';
-                        };
-
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(array, exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            if (predicate) array = helper.filterArray(array, predicate);
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                array = helper.filterArray(array, predicate);
+                            }
                             if (array.length > 1) throw helper.createError(i18N.arrayNotSingleOrEmpty, { array: array, expression: this });
                             return array.length == 0 ? null : array[0];
                         };
@@ -4791,39 +4646,28 @@
                         return ctor;
                     })(),
                     LastExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query last information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;last', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.toBeetleQuery = function (queryContext) {
-                            return this.exp ? helper.jsepToBeetleQuery(this.exp, queryContext) : '';
-                        };
-
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(array, exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            if (predicate) array = helper.filterArray(array, predicate);
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                array = helper.filterArray(array, predicate);
+                            }
                             if (array.length == 0) throw helper.createError(i18N.arrayEmpty, { array: array, expression: this });
                             return array[array.length - 1];
                         };
@@ -4831,39 +4675,28 @@
                         return ctor;
                     })(),
                     LastOrDefaultExp: (function () {
-                        var ctor = function (expStr, varContext) {
+                        var ctor = function (exp, varContext) {
                             /// <summary>
                             /// Holds query lastOrDefault information.
                             /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;lastOD', 3, true, false);
-                            this.expStr = expStr;
-                            if (expStr)
-                                this.exp = libs.jsep(expStr);
-                            this.varContext = helper.combine(null, varContext);
+                            if (exp)
+                                this.exp = exp;
+                            this.varContext = varContext;
                             this.isExecuter = true;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
-                        proto.toBeetleQuery = function (queryContext) {
-                            return this.exp ? helper.jsepToBeetleQuery(this.exp, queryContext) : '';
-                        };
-
                         proto.clone = function () {
-                            return new ctor(this.expStr, this.varContext);
+                            return new ctor(this.exp, this.varContext);
                         };
 
                         proto.execute = function (array, queryContext) {
-                            if (this.predicate) return ctor.run(array, this.predicate);
-                            return ctor.execute(array, this.exp, queryContext, this.varContext);
-                        };
-
-                        ctor.execute = function (array, exp, queryContext, varContext) {
-                            return ctor.run(array, exp ? helper.getPredicate(array, exp, queryContext, varContext) : null);
-                        };
-
-                        ctor.run = function (array, predicate) {
-                            if (predicate) array = helper.filterArray(array, predicate);
+                            if (this.exp) {
+                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                                array = helper.filterArray(array, predicate);
+                            }
                             return array.length == 0 ? null : array[array.length - 1];
                         };
 
