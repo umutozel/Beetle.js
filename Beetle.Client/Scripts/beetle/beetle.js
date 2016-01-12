@@ -8846,7 +8846,10 @@
                 };
 
                 proto.createSet = function (type) {
-                    var t = Assert.isInstanceOf(type, metadata.EntityType) ? type : this.getEntityType(type, true);
+                    if (!Assert.isInstanceOf(type, metadata.EntityType)) {
+                        if (Assert.isFunction(type)) type = helper.getFuncName(type);
+                        type = this.getEntityType(type, true);
+                    }
                     return new core.EntitySet(type, this);
                 }
 
