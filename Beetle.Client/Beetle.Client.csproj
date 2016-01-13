@@ -274,8 +274,8 @@
     <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\beetle.d.ts" />
-    <TypeScriptCompile Include="Scripts\beetle.queryExtensions.d.ts" />
+    <TypeScriptCompile Include="Scripts\beetle\beetle.d.ts" />
+    <TypeScriptCompile Include="Scripts\beetle\beetle.queryExtensions.d.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
