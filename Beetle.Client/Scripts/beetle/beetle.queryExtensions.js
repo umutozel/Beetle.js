@@ -870,11 +870,11 @@
     }
 
     if (!entityQueryProto.hasOwnProperty("then")) {
-        entityQueryProto.then = function (callback) {
+        entityQueryProto.then = function (callback, options) {
             var promiseProvider = beetle.settings.getPromiseProvider();
             if (promiseProvider)
-                return this.execute().then(callback);
-            return this.execute(null, callback);
+                this.execute(options).then(callback);
+            this.execute(options, callback);
         };
     }
 

@@ -156,7 +156,7 @@
                 /// <param name="callback">Method to call for each item.</param>
                 for (var i = 0; i < array.length; i++) {
                     var obj = array[i];
-                    callback.call(obj, obj, i);
+                    callback.call(null, obj, i);
                 }
             },
             forEachProperty: function (object, callback) {
@@ -7407,7 +7407,7 @@
                         helper.forEach(navProp.foreignKeys, function (fk, i) {
                             var property = navProp.entityType.keys[i];
                             var value = tracker.getValue(fk.name);
-                            query = query.where(property.name, enums.filterOps.Equals, value);
+                            query = query.where(property.name + " == @0", [value]);
                         });
                     } else { // if navigation is plural use the entity's key to load related entities via foreign key
                         var inverse = navProp.inverse;
@@ -7415,7 +7415,7 @@
                         helper.forEach(inverse.foreignKeys, function (fk, i) {
                             var property = fk.name;
                             var value = tracker.getValue(inverse.entityType.keys[i]);
-                            query = query.where(property, enums.filterOps.Equals, value);
+                            query = query.where(property + " == @0", [value]);
                         });
                     }
                     return query;
@@ -9441,6 +9441,19 @@
                 }
 
                 return ctor;
+            })(),
+            EntityBase: (function () {
+
+                var ctor = function (type, manager, initialValues) {
+                    if (initialValues)
+                        helper.extend(this, initialValues);
+
+                    type.createEntity(this);
+
+                    if (manager != null)
+                        manager.addEntity(this);
+                };
+
             })()
         };
     })();
@@ -9845,21 +9858,6 @@
                 return ctor;
             })(),
             /// <field>
-            /// Filter operations. Used in queries's where operations. Possible values;
-            ///  ==, !=, >, <, >=, <=, contains, startswith, endswith
-            /// </field>
-            filterOps: new libs.Enum({
-                Equals: { oData: 'eq', code: '==' },
-                NotEqual: { oData: 'ne', code: '!=' },
-                Greater: { oData: 'gt', code: '>' },
-                Lesser: { oData: 'lt', code: '<' },
-                GreaterEqual: { oData: 'ge', code: '>=' },
-                LesserEqual: { oData: 'le', code: '<=' },
-                Contains: { oData: 'substringof', code: 'contains', isFunc: true },
-                StartsWith: { oData: 'startswith', code: 'startswith', isFunc: true },
-                EndsWith: { oData: 'endswith', code: 'endswith', isFunc: true }
-            }),
-            /// <field>
             /// Merge strategies. Can be passed to execute query method of entity manager. Possible values;
             ///  Preserve: Cached entities are preserved and will be returned as query result (when entity with same key found).
             ///  Overwrite: Cached entity values will be overwritten and cached entity will be returned as query result (when entity with same key found).
@@ -10245,6 +10243,7 @@
             // shortcuts
             MetadataManager: metadata.MetadataManager,
             EntityManager: core.EntityManager,
+            EntityBase: core.EntityBase,
             WebApiService: services.WebApiService,
             MvcService: services.MvcService,
             Event: core.Event,
@@ -10253,7 +10252,6 @@
 
             // enums
             entityStates: enums.entityStates,
-            filterOps: enums.filterOps,
             mergeStrategy: enums.mergeStrategy,
             executionStrategy: enums.executionStrategy,
             arraySetBehaviour: enums.arraySetBehaviour,

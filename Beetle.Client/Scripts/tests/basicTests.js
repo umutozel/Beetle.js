@@ -96,7 +96,6 @@ beetle.events.saving.subscribe(function (args) {
 });
 var EntityManager = beetle.EntityManager;
 var entityStates = beetle.entityStates;
-var op = beetle.filterOps;
 var testArray = [
     {
         Name: 'Ord1',
