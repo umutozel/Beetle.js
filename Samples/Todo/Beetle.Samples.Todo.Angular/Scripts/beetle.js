@@ -1659,12 +1659,8 @@
                     /// </summary>
                     if (this.onlyBeetle === true) return this.toBeetleQuery(queryContext);
 
-                    queryContext = queryContext || {};
-                    queryContext.expVarContext = this.varContext;
                     var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
-                    var retVal = helper.jsepToODataQuery(libs.jsep(exp), queryContext);
-                    queryContext.expVarContext = undefined;
-                    return retVal;
+                    return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
                 };
 
                 proto.toBeetleQuery = function (queryContext) {
@@ -1673,12 +1669,8 @@
                     /// </summary>
                     if (!this.exp) return '';
 
-                    queryContext = queryContext || {};
-                    queryContext.expVarContext = this.varContext;
                     var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
-                    var retVal = helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
-                    queryContext.expVarContext = undefined;
-                    return retVal;
+                    return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
                 };
 
                 proto.clone = function () {
@@ -3972,17 +3964,40 @@
                             baseTypes.ExpressionBase.call(this, 'orderby', 1, false, false);
 
                             this.exp = exp || defaultExp;
-                            if (isDesc === true) this.exp += ' desc';
+                            this.isDesc = isDesc || false;
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
                         var proto = ctor.prototype;
 
                         proto.clone = function () {
-                            return new ctor(this.exp);
+                            return new ctor(this.exp, this.isDesc);
                         };
 
+                        proto.toODataQuery = function (queryContext) {
+                            var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+                            if (this.isDesc) exp = invertExp(exp);
+
+                            return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
+                        };
+
+                        proto.toBeetleQuery = function (queryContext) {
+                            if (!this.exp) return '';
+
+                            var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+                            if (this.isDesc) exp = invertExp(exp);
+
+                            return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
+                        };
+
+
                         proto.execute = function (array, queryContext) {
-                            if (Assert.isFunction(this.exp)) return array.sort(this.exp);
+                            if (Assert.isFunction(this.exp)) {
+                                var that = this;
+                                return array.sort(function (a, b) {
+                                    var r = that.exp(a, b);
+                                    return that.isDesc ? (-1 * r) : r;
+                                });
+                            }
 
                             var comparers = [];
                             var expr = libs.jsep(this.exp);
@@ -3998,6 +4013,7 @@
                                         i++;
                                     } else if (ls == 'asc') i++;
                                 }
+                                isDesc = isDesc != this.isDesc;
                                 var comparer = (function (e, desc) {
                                     return function (object1, object2) {
                                         var f = helper.jsepToFunction(e, queryContext);
@@ -4024,6 +4040,13 @@
                                 return 0;
                             });
                         };
+
+                        function invertExp(exp) {
+                            exp += ',';
+                            exp = exp.replace(/\,/, ' ,').replace(/ desc.*?\,/g, ' x,')
+                                .replace(/ \,/g, ' desc,').replace(/ x\,/g, ',');
+                            return exp.substr(0, exp.length - 1);
+                        }
 
                         return ctor;
                     })(),
