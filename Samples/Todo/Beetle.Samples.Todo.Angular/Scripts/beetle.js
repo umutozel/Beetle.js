@@ -9443,8 +9443,7 @@
                 return ctor;
             })(),
             EntityBase: (function () {
-
-                var ctor = function (type, manager, initialValues) {
+                return function (type, manager, initialValues) {
                     if (initialValues)
                         helper.extend(this, initialValues);
 
@@ -9453,7 +9452,6 @@
                     if (manager != null)
                         manager.addEntity(this);
                 };
-
             })()
         };
     })();
