@@ -47,7 +47,7 @@
 
         interface Grouping<T, TKey> {
             Key: TKey;
-            Items: Array<T>
+            Items: Array<T>;
         }
 
         interface IParameterlessConstructor<T> {
@@ -284,7 +284,6 @@
         isFunction(): Assert;
         isNotEmptyString(): Assert;
         isTypeOf(typeName: string): Assert;
-        isObject(): Assert;
         isArray(): Assert;
         isEnum(enumType: string): Assert;
         isInstanceOf(type: any): Assert;
@@ -295,7 +294,6 @@
         static isFunction(value: any): boolean;
         static isNotEmptyString(value: any): boolean;
         static isTypeOf(value: any, typeName: string): boolean;
-        static isObject(value: any): boolean;
         static isArray(value: any): boolean;
         static isEnum(value: any, enumType: string): boolean;
         static isInstanceOf(value: any, type: any): boolean;
@@ -425,6 +423,7 @@
             options: Object;
             inlineCountEnabled: boolean;
 
+            // not removing redundant qualifiers so they would be same (ok to copy-paste) with array extensions
             inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
             ofType<TResult extends T>(type: string): beetle.querying.ArrayQuery<TResult>;
             ofType<TResult extends T>(constructor: beetle.interfaces.IParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
@@ -666,8 +665,8 @@
             object: Object;
             property: string;
             after: interfaces.Delegate5<Object, string, TrackableArray<T>, T[], T[]>;
-            changing: core.Event;
-            changed: core.Event;
+            changing: Event;
+            changed: Event;
 
             remove(...T): T[];
             load(expands: string[], resourceName: string, options: ManagerQueryOptions,
@@ -683,7 +682,7 @@
             notify(data: any);
         }
         class EntitySet<T extends interfaces.IEntity> extends querying.EntityQuery<T> {
-            constructor(type: interfaces.EntityType, manager: core.EntityManager);
+            constructor(type: interfaces.EntityType, manager: EntityManager);
 
             local: interfaces.InternalSet<T>;
             toString(): string;
@@ -703,13 +702,13 @@
             dataService: baseTypes.DataServiceBase;
             pendingChangeCount: number;
             validationErrors: interfaces.ValidationError[];
-            entityStateChanged: core.Event;
-            validationErrorsChanged: core.Event;
-            hasChangesChanged: core.Event;
-            queryExecuting: core.Event;
-            queryExecuted: core.Event;
-            saving: core.Event;
-            saved: core.Event;
+            entityStateChanged: Event;
+            validationErrorsChanged: Event;
+            hasChangesChanged: Event;
+            queryExecuting: Event;
+            queryExecuted: Event;
+            saving: Event;
+            saved: Event;
 
             autoFixScalar: boolean;
             autoFixPlural: boolean;
@@ -782,20 +781,20 @@
             isInManager(entity: interfaces.IEntity): boolean;
             flatEntities(entities: interfaces.IEntity[]): interfaces.IEntity[];
             entry(entity: interfaces.IEntity): interfaces.Tracker;
-            createSet<T extends interfaces.IEntity>(shortName: string): core.EntitySet<T>;
-            createSet(shortName: string): core.EntitySet<interfaces.IEntity>;
-            createSet<T extends interfaces.IEntity>(type: interfaces.EntityType): core.EntitySet<T>;
-            createSet(type: interfaces.EntityType): core.EntitySet<interfaces.IEntity>;
-            createSet<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): core.EntitySet<T>;
-            set<T extends interfaces.IEntity>(shortName: string): core.EntitySet<T>;
-            set(shortName: string): core.EntitySet<interfaces.IEntity>;
-            set<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): core.EntitySet<T>;
+            createSet<T extends interfaces.IEntity>(shortName: string): EntitySet<T>;
+            createSet(shortName: string): EntitySet<interfaces.IEntity>;
+            createSet<T extends interfaces.IEntity>(type: interfaces.EntityType): EntitySet<T>;
+            createSet(type: interfaces.EntityType): EntitySet<interfaces.IEntity>;
+            createSet<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): EntitySet<T>;
+            set<T extends interfaces.IEntity>(shortName: string): EntitySet<T>;
+            set(shortName: string): EntitySet<interfaces.IEntity>;
+            set<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): EntitySet<T>;
         }
-        class EntityBase implements beetle.interfaces.IEntity {
-            constructor(type: beetle.interfaces.EntityType, manager?: beetle.core.EntityManager, initialValues?: Object);
+        class EntityBase implements interfaces.IEntity {
+            constructor(type: interfaces.EntityType, manager?: EntityManager, initialValues?: Object);
 
-            $tracker: beetle.interfaces.Tracker;
-            $extra: beetle.interfaces.IQueryResultExtra;
+            $tracker: interfaces.Tracker;
+            $extra: interfaces.IQueryResultExtra;
         }
     }
 
