@@ -9995,7 +9995,7 @@
         /// <field>when true, loaded meta-data will be cached for url.</field>
         expose.cacheMetadata = true;
         /// <field>when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope.</field>
-        expose.registerMetadataTypes = true;
+        expose.registerMetadataTypes = false;
         /// <field>
         /// when not equals to false all Ajax calls will be made asynchronously, 
         /// when false createEntityAsync, executeQuery, saveChanges will returns results immediately.</field>

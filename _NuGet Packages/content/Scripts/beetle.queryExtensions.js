@@ -871,7 +871,7 @@
 
     if (!entityQueryProto.hasOwnProperty("then")) {
         entityQueryProto.then = function (callback, options) {
-            return this.execute(options, callback).then(callback);
+            return this.execute(options).then(callback);
         };
     }
 

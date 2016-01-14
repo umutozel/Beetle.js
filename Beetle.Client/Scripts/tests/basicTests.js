@@ -90,6 +90,7 @@ function populateVars() {
 }
 populateVars();
 
+beetle.settings.registerMetadataTypes = true;
 beetle.events.saving.subscribe(function (args) {
     args.options.headers = args.options.headers || {};
     args.options.headers.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
@@ -233,7 +234,7 @@ test('seed the test db', 1, function () {
 
 test('get all NamedEntities', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.Entities.ofType('NamedEntity');
+    var query = manager.createQuery('Entities').ofType('NamedEntity');
     stop();
     manager.executeQuery(query)
         .then(firstQuerySucceeded)
@@ -359,7 +360,7 @@ test('reject changes with relations', 4, function () {
 
 test('check if derived entity returned from base entity query', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.Entities;
+    var query = manager.createQuery('Entities');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -397,7 +398,7 @@ module('query operator tests');
 
 test('use equals null', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.OrderDetails.where('ProductNo == null');
+    var query = manager.createQuery('OrderDetails').where('ProductNo == null');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -412,7 +413,7 @@ test('use equals null', 1, function () {
 
 test('use equals', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.NamedEntityTypes.where('Name == "NE_2"');
+    var query = manager.createQuery('NamedEntityTypes').where('Name == "NE_2"');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
