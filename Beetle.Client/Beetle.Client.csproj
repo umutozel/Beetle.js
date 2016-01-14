@@ -307,25 +307,28 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)Scripts\beetle\beetle.js" 		"$(SolutionDir)Samples\Beetle.Samples.Northwind\Scripts\beetle.js"
+    <PostBuildEvent>copy "$(ProjectDir)Scripts\beetle\beetle.js" 			"$(SolutionDir)Samples\Beetle.Samples.Northwind\Scripts\beetle.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.min.js" 		"$(SolutionDir)Samples\Beetle.Samples.Northwind\Scripts\beetle.min.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.lang-tr-TR.js" 	"$(SolutionDir)Samples\Beetle.Samples.Northwind\Scripts\beetle.lang-tr-TR.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.js" 	"$(SolutionDir)Samples\Beetle.Samples.Northwind\Scripts\beetle.queryExtensions.js"
 
-copy "$(ProjectDir)Scripts\beetle\beetle.js" 		"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Angular\Scripts\beetle.js"
+copy "$(ProjectDir)Scripts\beetle\beetle.js" 			"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Angular\Scripts\beetle.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.min.js" 		"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Angular\Scripts\beetle.min.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.lang-tr-TR.js" 	"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Angular\Scripts\beetle.lang-tr-TR.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.js" 	"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Angular\Scripts\beetle.queryExtensions.js"
 
-copy "$(ProjectDir)Scripts\beetle\beetle.js" 		"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Knockout\Scripts\beetle.js"
+copy "$(ProjectDir)Scripts\beetle\beetle.js" 			"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Knockout\Scripts\beetle.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.min.js"		"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Knockout\Scripts\beetle.min.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.lang-tr-TR.js" 	"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Knockout\Scripts\beetle.lang-tr-TR.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.js" 	"$(SolutionDir)Samples\Todo\Beetle.Samples.Todo.Knockout\Scripts\beetle.queryExtensions.js"
 
-copy "$(ProjectDir)Scripts\beetle\beetle.js" 		"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.js"
+copy "$(ProjectDir)Scripts\beetle\beetle.js" 			"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.min.js" 		"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.min.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.lang-tr-TR.js" 	"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.lang-tr-TR.js"
 copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.js" 	"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.queryExtensions.js"
+
+copy "$(ProjectDir)Scripts\beetle\beetle.d.ts" 			"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.d.ts"
+copy "$(ProjectDir)Scripts\beetle\beetle.queryExtensions.d.ts" 	"$(SolutionDir)_NuGet Packages\content\Scripts\beetle.queryExtensions.d.ts"
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
