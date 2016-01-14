@@ -871,10 +871,7 @@
 
     if (!entityQueryProto.hasOwnProperty("then")) {
         entityQueryProto.then = function (callback, options) {
-            var promiseProvider = beetle.settings.getPromiseProvider();
-            if (promiseProvider)
-                this.execute(options).then(callback);
-            this.execute(options, callback);
+            return this.execute(options, callback).then(callback);
         };
     }
 
