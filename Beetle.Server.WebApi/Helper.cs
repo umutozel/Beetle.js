@@ -38,8 +38,10 @@ namespace Beetle.Server.WebApi {
                 if (request.ContentType.Contains("application/json")) {
                     var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
                     var queryParams = new NameValueCollection(request.Params);
-                    foreach (var i in d)
-                        queryParams.Add(i.Key, i.Value.ToString());
+                    if (d != null) {
+                        foreach (var i in d)
+                            queryParams.Add(i.Key, i.Value.ToString());
+                    }
                     return queryParams;
                 }
                 return request.Params;

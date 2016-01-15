@@ -29,7 +29,7 @@ namespace Beetle.Server.Mvc {
         /// <param name="request">The request.</param>
         /// <exception cref="BeetleException">Action must have only one parameter (JsonObject, object or dynamic) to be able called with POST.</exception>
         public static void GetParameters(out string queryString, out NameValueCollection queryParams,
-                                           BeetleConfig config = null, 
+                                           BeetleConfig config = null,
                                            ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
                                            HttpRequest request = null) {
             if (config == null)
@@ -48,8 +48,10 @@ namespace Beetle.Server.Mvc {
                     // otherwise beetle cannot use query parameters when using post method
                     var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
                     queryParams = new NameValueCollection();
-                    foreach (var i in d)
-                        queryParams.Add(i.Key, i.Value == null ? string.Empty : i.Value.ToString());
+                    if (d != null) {
+                        foreach (var i in d)
+                            queryParams.Add(i.Key, i.Value == null ? string.Empty : i.Value.ToString());
+                    }
                 }
                 else {
                     var prms = request.Params;
