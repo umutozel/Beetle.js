@@ -725,6 +725,7 @@
             ready(callback: interfaces.Delegate): PromiseLike<any>;
             getEntityType(shortName: string): interfaces.EntityType;
             getEntityType<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): interfaces.EntityType;
+            createQuery<T>(resourceName: string): querying.EntityQuery<T>;
             createQuery<T extends interfaces.IEntity>(resourceName: string, shortName?: string): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string): querying.EntityQuery<any>;
             createEntityQuery<T extends interfaces.IEntity>(shortName: string, resourceName?: string): querying.EntityQuery<T>;
