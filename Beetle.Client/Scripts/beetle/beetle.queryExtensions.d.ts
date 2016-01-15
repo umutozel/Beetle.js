@@ -2,7 +2,7 @@
 
     module interfaces {
         interface IClosedQueryable<T, TOptions> {
-            then(successCallback: Delegate1<T>, options?: TOptions);
+            then(successCallback: Delegate1<T>, failCallback?: interfaces.Delegate1<Error>, options?: TOptions);
         }
     }
 
@@ -13,7 +13,7 @@
         }
 
         interface EntityQuery<T> {
-            then(callback: interfaces.Delegate1<T[]>);
+            then(callback: interfaces.Delegate1<T[]>, failCallback?: interfaces.Delegate1<Error>, options?: beetle.ManagerOptions);
         }
     }
 }

@@ -870,8 +870,14 @@
     }
 
     if (!entityQueryProto.hasOwnProperty("then")) {
-        entityQueryProto.then = function (callback, options) {
-            return this.execute(options).then(callback);
+        entityQueryProto.then = function (callback, failCallback, options) {
+            var p = this.execute(options);
+            if (failCallback) {
+                if (p.hasOwnProperty("fail"))
+                    return p.then(callback).fail(failCallback);
+                return p.then(callback, failCallback);
+            }
+            return p.then(callback);
         };
     }
 
