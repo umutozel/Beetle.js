@@ -852,7 +852,7 @@
             /// <summary>
             /// Checks if value is function.
             /// </summary>
-            if (value == null || !core.dataTypes.function.isValid(value)) {
+            if (value == null || !core.dataTypes.func.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'function'));
                 return false;
             }
@@ -1540,6 +1540,13 @@
                     this.name = name;
                 };
                 var proto = ctor.prototype;
+
+                proto.toString = function () {
+                    /// <summary>
+                    /// Returns string representation of the type.
+                    /// </summary>
+                    return this.name;
+                };
 
                 proto.parse = function (value) {
                     /// <summary>
@@ -3239,7 +3246,7 @@
                     this.useForConcurrency = useForConcurrency;
                     this.relatedNavigationProperties = [];
                     this.validators = [];
-                    this.isEnum = dataType instanceof core.dataTypes.enum;
+                    this.isEnum = dataType instanceof core.dataTypes.enumeration;
                     this.isComplex = dataType.isComplex;
                 };
                 var proto = ctor.prototype;
@@ -3316,7 +3323,7 @@
                     var retVal = [];
                     if (this.validators.length > 0) {
                         var that = this;
-                        var value = helper.getValue(entity, that.name);
+                        var value = helper.getValue(entity, this.name);
                         helper.forEach(this.validators, function (v) {
                             var result = v.validate(value, entity);
                             if (result) retVal.push(helper.createValidationError(entity, value, that, result, v));
@@ -3785,7 +3792,7 @@
                             });
                             var enm = new libs.Enum(enumObj);
                             this.enums[e.n] = enm;
-                            enumTypes[e.n] = new core.dataTypes.enum(enm, e.n, helper.getResourceValue(e.r, e.l || e.n));
+                            enumTypes[e.n] = new core.dataTypes.enumeration(enm, e.n, helper.getResourceValue(e.r, e.l || e.n));
                         }
                     }
 
@@ -5919,7 +5926,7 @@
                     return new ctor();
                 })();
                 /// <field>Function type.</field>
-                expose.function = (function () {
+                expose.func = (function () {
                     var ctor = function () {
                         baseTypes.DataTypeBase.call(this, 'function');
                         helper.tryFreeze(this);
@@ -6217,7 +6224,7 @@
                     return new ctor();
                 })();
                 /// <field>Enum type.</field>
-                expose.enum = (function () {
+                expose.enumeration = (function () {
                     var ctor = function (enumType, enumTypeName, displayName) {
                         baseTypes.DataTypeBase.call(this, 'enum');
                         this.enumType = enumType;

@@ -50,48 +50,49 @@
             Items: Array<T>;
         }
 
-        interface IParameterlessConstructor<T> {
+        interface ParameterlessConstructor<T> {
             new (): T;
         }
 
-        interface IObject {
+        interface RawEntity {
             $type: string;
-            $extra?: IQueryResultExtra;
+            $extra?: QueryResultExtra;
         }
 
         interface IEntity {
             $tracker: Tracker;
-            $extra?: IQueryResultExtra;
+            $extra?: QueryResultExtra;
         }
 
         interface PropertyValidator {
             name: string;
-            func: Delegate2<any, IEntity>;
             message: string;
-            args: any;
+            args?: any;
+
             toString(): string;
-            validate(value: any, entity: IEntity);
+            validate(value: any, entity: IEntity): string;
         }
 
         interface EntityValidator {
             name: string;
-            func: Delegate1<IEntity>;
             message: string;
-            args: any;
+            args?: any;
+
             toString(): string;
-            validate(entity: IEntity);
+            validate(entity: IEntity): string;
         }
 
         interface ValidationError {
             entity: IEntity;
             message: string;
-            property: string;
+            property?: string;
             value: any;
         }
 
         interface DataTypeBase {
             name: string;
             isComplex: boolean;
+
             toString(): string;
             getRawValue(value: any): string;
             isValid(value: any): boolean;
@@ -104,16 +105,18 @@
 
         interface MetadataPart {
             name: string;
-            displayName: string;
+            displayName?: string;
+
             toString(): string;
             validate(entity: IEntity): ValidationError[];
         }
 
         interface Property extends MetadataPart {
-            owner: any;
+            owner: EntityType;
             isComplex: boolean;
             validators: PropertyValidator[];
-            addValidation(name: string, func: Delegate2<any, IEntity>, message: string, args: any);
+
+            addValidation(name: string, func: Func2<any, IEntity, string>, message: string, args?: any);
         }
 
         interface DataProperty extends Property {
@@ -125,6 +128,7 @@
             useForConcurrency: boolean;
             relatedNavigationProperties: NavigationProperty[];
             isEnum: boolean;
+
             isValid(value: any): boolean;
             handle(value: any): any;
             getDefaultValue(): any;
@@ -137,8 +141,9 @@
             associationName: string;
             cascadeDelete: boolean;
             foreignKeyNames: string[];
-            foreignKeys: string[];
+            foreignKeys: DataProperty[];
             triggerOwnerModify: boolean;
+
             inverse: NavigationProperty;
             checkAssign(entity: IEntity);
         }
@@ -152,26 +157,26 @@
             metadataManager: metadata.MetadataManager;
             hasMetadata: boolean;
             properties: string[];
+            isComplexType: boolean;
             dataProperties: DataProperty[];
             navigationProperties: NavigationProperty[];
-            keys: string[];
-            isComplexType: boolean;
+            keys: DataProperty[];
             floorType: EntityType;
             baseType: EntityType;
             validators: EntityValidator[];
-            constructor: Delegate1<IObject>;
+            constructor: Delegate1<RawEntity>;
             initializer: Delegate1<IEntity>;
+
             getProperty(propertyPath: string): Property;
-            registerCtor<T extends IEntity>(ctor?: Delegate1<IObject>, initializer?: Delegate1<T>);
+            registerCtor(ctor?: Delegate1<RawEntity>, initializer?: Delegate1<IEntity>);
             createEntity(initialValues: Object): IEntity;
-            createRawEntity(initialValues: Object): IObject;
+            createRawEntity(initialValues: Object): RawEntity;
             isAssignableWith(otherType: EntityType): boolean;
             isAssignableTo(otherType: EntityType): boolean;
-            hasSameBaseType(type: EntityType): boolean;
-            addValidation(name: string, func: Delegate1<IEntity>, message: string, args: any);
+            addValidation(name: string, func: Func1<IEntity, string>, message: string, args?: any);
         }
 
-        interface IClosedQueryable<T, TOptions> {
+        interface ClosedQueryable<T, TOptions> {
             execute(options?: TOptions, successCallback?: Delegate1<T>, errorCallback?: Delegate1<Error>): PromiseLike<T>;
             execute<TResult>(options?: TOptions, successCallback?: Delegate1<TResult>, errorCallback?: Delegate1<Error>): PromiseLike<TResult>;
         }
@@ -187,21 +192,33 @@
             getEntities(): T[];
         }
 
+        interface PropertyValue {
+            p: string; // property
+            v: any; // value
+        }
+
+        interface OwnerValue {
+            owner: IEntity;
+            property: Property;
+        }
+
         interface Tracker {
             entity: IEntity;
             entityType: EntityType;
             entityState: enums.entityStates;
             forceUpdate: boolean;
-            originalValues: any[];
-            changedValues: any[];
+            originalValues: PropertyValue[];
+            changedValues: PropertyValue[];
             manager: core.EntityManager;
-            owners: any[];
+            owners: OwnerValue[];
             validationErrors: ValidationError[];
             validationErrorsChanged: core.Event;
             entityStateChanged: core.Event;
             propertyChanged: core.Event;
             arrayChanged: core.Event;
             key: string;
+
+            toString(): string;
             isChanged(): boolean;
             toAdded();
             toModified();
@@ -221,7 +238,7 @@
             toRaw(includeNavigations?: boolean): Object;
         }
 
-        interface ITrackInfo {
+        interface TrackInfo {
             t: string; // type
             s: string; // state
             i: number; // save index
@@ -229,22 +246,22 @@
             o?: Object[]; // original values
         }
 
-        interface IExportEntity {
-            $t: ITrackInfo;
+        interface ExportEntity {
+            $t: TrackInfo;
         }
 
-        interface IQueryResultExtra {
+        interface QueryResultExtra {
             userData: string;
             headerGetter: Func1<string, string>;
             xhr: Object;
         }
 
-        interface IQueryResultArray<T> extends Array<T> {
-            $extra: IQueryResultExtra;
+        interface QueryResultArray<T> extends Array<T> {
+            $extra: QueryResultExtra;
         }
 
         interface SavePackage {
-            entities: IExportEntity[];
+            entities: ExportEntity[];
             forceUpdate?: boolean;
             userData: string;
         }
@@ -269,7 +286,7 @@
         function objEquals(obj1: Object, obj2: Object): boolean;
         function formatString(str: string, ...params: string[]): string;
         function createGuid(): string;
-        function getResourceValue(resourceName: string, altValue: string): string;
+        function getResourceValue(resourceName: string, altValue?: string): string;
         function createError(message: string, args?: Array<any>, props?: interfaces.Dictionary<any>): Error;
         function getFuncName(func: Function): string;
     }
@@ -304,22 +321,26 @@
             constructor(name: string);
 
             name: string;
+
+            toString(): string;
             parse(value: string): Date;
             toISOString(value: Date): string;
         }
         abstract class ObservableProviderBase {
             constructor(name: string);
 
+            name: string;
+
             toString(): string;
             isObservable(object: Object, property: string): boolean;
             toObservable(object: string, type: interfaces.EntityType, callbacks: ObservableProviderCallbackOptions);
-            getValue<T>(object: Object, property: string): T;
             getValue(object: Object, property: string): any;
-            setValue<T>(object: Object, property: string, value: T);
             setValue(object: Object, property: string, value: any);
         }
         abstract class AjaxProviderBase {
             constructor(name: string);
+
+            name: string;
 
             toString(): string;
             doAjax(uri: string, type: string, dataType: string, contentType: string, data: any, async: boolean, timeout: number,
@@ -330,6 +351,8 @@
         abstract class SerializationServiceBase {
             constructor(name: string);
 
+            name: string;
+
             toString(): string;
             serialize(data: any): string;
             deserialize(string: string): any;
@@ -337,42 +360,49 @@
         abstract class PromiseProviderBase {
             constructor(name: string);
 
+            name: string;
+
             toString(): string;
             deferred(): any;
             getPromise(deferred: any): PromiseLike<any>;
-            resolve(deferredn: any, data: any);
-            reject(deferredn: any, error: Error);
+            resolve(deferred: any, data: any);
+            reject(deferred: any, error: Error);
         }
         abstract class DataServiceBase {
             constructor(url: string, loadMetadata?: boolean, options?: ServiceOptions);
             constructor(url: string, metadataManager: metadata.MetadataManager, options?: ServiceOptions);
-            constructor(url: string, metadata: string, options?: ServiceOptions); uri: string;
+            constructor(url: string, metadata: Object, options?: ServiceOptions);
+            constructor(url: string, metadata: string, options?: ServiceOptions);
 
+            uri: string;
             ajaxTimeout: number;
             dataType: string;
             contentType: string;
             metadataManager: metadata.MetadataManager;
+
             toString(): string;
             isReady(): boolean;
             ready(callback: interfaces.Delegate);
             getEntityType(shortName: string): interfaces.EntityType;
-            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): interfaces.EntityType;
+            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): interfaces.EntityType;
             createQuery<T extends interfaces.IEntity>(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<any>;
             createEntityQuery<T extends interfaces.IEntity>(shortName: string, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
-            createEntityQuery<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
-            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.IObject>, initializer?: interfaces.Delegate1<T>);
-            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.IObject>, initializer?: interfaces.Delegate1<T>);
+            createEntityQuery<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
+            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
 
             fetchMetadata(options?: ServiceQueryOptions, successCallback?: interfaces.Delegate1<Object>, errorCallback?: interfaces.Delegate1<Error>);
             createEntityAsync<T extends interfaces.IEntity>(typeName: string, initialValues: Object, options: ServiceQueryOptions,
                 successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
             createEntityAsync(typeName: string, initialValues: Object, options: ServiceQueryOptions,
                 successCallback: interfaces.Delegate1<interfaces.IEntity>, errorCallback: interfaces.Delegate1<Error>);
-            createEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues: Object, options: ServiceQueryOptions,
+            createEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues: Object, options: ServiceQueryOptions,
                 successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
-            executeQuery<T>(query: querying.EntityQuery<any>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
+            executeQuery<T>(query: querying.EntityQuery<T>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback: interfaces.Delegate1<Error>);
+            executeQuery<T>(query: interfaces.ClosedQueryable<T, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
             executeQuery(query: querying.EntityQuery<any>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<any>, errorCallback: interfaces.Delegate1<Error>);
+            executeQuery(query: interfaces.ClosedQueryable<any, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<any>, errorCallback: interfaces.Delegate1<Error>);
             saveChanges(options: ServiceSaveOptions, successCallback: interfaces.Delegate1<interfaces.SaveResult>, errorCallback: interfaces.Delegate1<Error>);
         }
     }
@@ -400,16 +430,17 @@
             enums: Object[];
             name: string;
             displayName: string;
+
             toString(): string;
             getEntityTypeByFullName(typeName: string, throwIfNotFound?: boolean): interfaces.EntityType;
             getEntityType(shortName: string, throwIfNotFound?: boolean): interfaces.EntityType;
-            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, throwIfNotFound?: boolean): interfaces.EntityType;
-            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.IObject>, initializer?: interfaces.Delegate1<T>);
-            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.IObject>, initializer?: interfaces.Delegate1<T>);
+            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, throwIfNotFound?: boolean): interfaces.EntityType;
+            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
             createEntity(shortName: string, initialValues?: Object): interfaces.IEntity;
-            createEntity<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object): T;
-            createRawEntity(shortName: string, initialValues?: Object): interfaces.IObject;
-            createRawEntity<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object): interfaces.IObject;
+            createEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
+            createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
+            createRawEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
             parseBeetleMetadata(metadataStr: string);
             parseBeetleMetadata(metadataObj: Object);
         }
@@ -426,7 +457,7 @@
             // not removing redundant qualifiers so they would be same (ok to copy-paste) with array extensions
             inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
             ofType<TResult extends T>(type: string): beetle.querying.ArrayQuery<TResult>;
-            ofType<TResult extends T>(constructor: beetle.interfaces.IParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
+            ofType<TResult extends T>(constructor: beetle.interfaces.ParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
             where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
             where(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
             orderBy(keySelector?: string): beetle.querying.ArrayQuery<T>;
@@ -504,7 +535,7 @@
 
             inlineCount(isEnabled?: boolean): EntityQuery<T>;
             ofType<TResult extends T>(type: string): EntityQuery<TResult>;
-            ofType<TResult extends T>(constructor: interfaces.IParameterlessConstructor<TResult>): EntityQuery<TResult>;
+            ofType<TResult extends T>(constructor: interfaces.ParameterlessConstructor<TResult>): EntityQuery<TResult>;
             where(predicate: string, varContext?: any): EntityQuery<T>;
             where(predicate: interfaces.Func1<T, boolean>): EntityQuery<T>;
             orderBy(keySelector?: string): EntityQuery<T>;
@@ -537,36 +568,36 @@
             skipWhile(predicate: interfaces.Func1<T, boolean>): EntityQuery<T>;
             takeWhile(predicate: string, varContext?: any): EntityQuery<T>;
             takeWhile(predicate: interfaces.Func1<T, boolean>): EntityQuery<T>;
-            all(predicate?: string, varContext?: any): interfaces.IClosedQueryable<boolean, ManagerQueryOptions>;
-            all(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<boolean, ManagerQueryOptions>;
-            any(predicate?: string, varContext?: any): interfaces.IClosedQueryable<boolean, ManagerQueryOptions>;
-            any(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<boolean, ManagerQueryOptions>;
-            avg(selector?: string): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            avg(selector: interfaces.Func1<T, number>): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            max(selector?: string): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            max(selector: interfaces.Func1<T, number>): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            min(selector?: string): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            min(selector: interfaces.Func1<T, number>): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            sum(selector?: string): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            sum(selector: interfaces.Func1<T, number>): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            count(predicate?: string, varContext?: any): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            count(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<number, ManagerQueryOptions>;
-            first(predicate?: string, varContext?: any): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            first(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            firstOrDefault(predicate?: string, varContext?: any): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            firstOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            single(predicate?: string, varContext?: any): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            single(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            singleOrDefault(predicate?: string, varContext?: any): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            singleOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            last(predicate?: string, varContext?: any): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            last(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            lastOrDefault(predicate?: string, varContext?: any): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
-            lastOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.IClosedQueryable<T, ManagerQueryOptions>;
+            all(predicate?: string, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            all(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            any(predicate?: string, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            any(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            avg(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            avg(selector: interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            max(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            max(selector: interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            min(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            min(selector: interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            sum(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            sum(selector: interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            count(predicate?: string, varContext?: any): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            count(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            first(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            first(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            firstOrDefault(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            firstOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            single(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            single(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            singleOrDefault(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            singleOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            last(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            last(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            lastOrDefault(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            lastOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
 
-            execute(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.IQueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IQueryResultArray<T>>;
+            execute(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
             execute<TResult>(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<TResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<TResult[]>;
-            x(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.IQueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IQueryResultArray<T>>;
+            x(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
             x<TResult>(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<TResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<TResult[]>;
 
             expand(propertyPath: string): EntityQuery<T>;
@@ -670,25 +701,45 @@
 
             remove(...T): T[];
             load(expands: string[], resourceName: string, options: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IQueryResultArray<T>>;
+                successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
         }
         class Event {
             constructor(name: string, publisher: Object);
 
             name: string;
+
             toString(): string;
             subscribe(subscriber: interfaces.Delegate2<any, any>);
             unsubscribe(subscriber: interfaces.Delegate2<any, any>);
             notify(data: any);
         }
+        module dataTypes {
+            var object: interfaces.DataTypeBase;
+            var array: interfaces.DataTypeBase;
+            var func: interfaces.DataTypeBase;
+            var string: interfaces.DataTypeBase;
+            var guid: interfaces.DataTypeBase;
+            var date: interfaces.DataTypeBase;
+            var dateTimeOffset: interfaces.DataTypeBase;
+            var time: interfaces.DataTypeBase;
+            var boolean: interfaces.DataTypeBase;
+            var int: interfaces.DataTypeBase;
+            var number: interfaces.DataTypeBase;
+            var byte: interfaces.DataTypeBase;
+            var binary: interfaces.DataTypeBase;
+            var enumeration : interfaces.DataTypeBase; // enum
+            var geometry: interfaces.DataTypeBase;
+            var geography: interfaces.DataTypeBase;
+        }
         class EntitySet<T extends interfaces.IEntity> extends querying.EntityQuery<T> {
             constructor(type: interfaces.EntityType, manager: EntityManager);
 
             local: interfaces.InternalSet<T>;
+
             toString(): string;
             create(initialValues?: Object): T;
             createDetached(): T;
-            createRaw(): interfaces.IObject;
+            createRaw(): interfaces.RawEntity;
             add(T);
             attach(T);
             remove(T);
@@ -724,45 +775,48 @@
             isReady(): boolean;
             ready(callback: interfaces.Delegate): PromiseLike<any>;
             getEntityType(shortName: string): interfaces.EntityType;
-            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): interfaces.EntityType;
+            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): interfaces.EntityType;
             createQuery<T>(resourceName: string): querying.EntityQuery<T>;
             createQuery<T extends interfaces.IEntity>(resourceName: string, shortName?: string): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string): querying.EntityQuery<any>;
             createEntityQuery<T extends interfaces.IEntity>(shortName: string, resourceName?: string): querying.EntityQuery<T>;
             createEntityQuery(shortName: string, resourceName?: string): querying.EntityQuery<any>;
-            createEntityQuery<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, resourceName?: string): querying.EntityQuery<T>;
-            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.IObject>, initializer?: interfaces.Delegate1<T>);
-            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.IObject>, initializer?: interfaces.Delegate1<T>);
+            createEntityQuery<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, resourceName?: string): querying.EntityQuery<T>;
+            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
             createEntity<T extends interfaces.IEntity>(shortName: string, initialValues?: Object): T;
             createEntity(shortName: string, initialValues?: Object): interfaces.IEntity;
-            createEntity<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object): T;
+            createEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
             createDetachedEntity<T extends interfaces.IEntity>(shortName: string, initialValues?: Object): T;
             createDetachedEntity(shortName: string, initialValues?: Object): interfaces.IEntity;
-            createDetachedEntity<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object): T;
-            createRawEntity(shortName: string, initialValues?: Object): interfaces.IObject;
-            createRawEntity<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object): interfaces.IObject;
+            createDetachedEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
+            createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
+            createRawEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
             createEntityAsync<T extends interfaces.IEntity>(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<interfaces.IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IEntity>;
-            createEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
+            createEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createDetachedEntityAsync<T extends interfaces.IEntity>(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createDetachedEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<interfaces.IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IEntity>;
-            createDetachedEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
+            createDetachedEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createRawEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<interfaces.IObject>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IObject>;
-            createRawEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<interfaces.IObject>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IObject>;
-            executeQuery<T>(query: querying.EntityQuery<any>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
+                successCallback?: interfaces.Delegate1<interfaces.RawEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.RawEntity>;
+            createRawEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
+                successCallback?: interfaces.Delegate1<interfaces.RawEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.RawEntity>;
+            executeQuery<T>(query: querying.EntityQuery<T>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T[]>;
+            executeQuery<T>(query: interfaces.ClosedQueryable<T, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             executeQuery(query: querying.EntityQuery<any>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<any>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<any>;
+            executeQuery(query: interfaces.ClosedQueryable<any, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<any>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<any>;
             executeQueryLocally<T>(query: querying.EntityQuery<T>, varContext?: any): T[];
+            executeQueryLocally<T>(query: interfaces.ClosedQueryable<T, any>, varContext?: any): T;
             getEntityByKey<T extends interfaces.IEntity>(key: any, shortName: string): T;
             getEntityByKey<T extends interfaces.IEntity>(key: any, type: interfaces.EntityType): T;
-            getEntityByKey<T extends interfaces.IEntity>(key: any, constructor: interfaces.IParameterlessConstructor<T>): T;
+            getEntityByKey<T extends interfaces.IEntity>(key: any, constructor: interfaces.ParameterlessConstructor<T>): T;
             deleteEntity(entity: interfaces.IEntity);
             addEntity(entity: interfaces.IEntity);
             attachEntity(entity: interfaces.IEntity);
@@ -771,13 +825,13 @@
             rejectChanges(entity: interfaces.IEntity, includeRelations: boolean);
             undoChanges(entity: interfaces.IEntity, includeRelations: boolean);
             acceptChanges(entity: interfaces.IEntity, includeRelations: boolean);
-            exportEntities(entities?: interfaces.IEntity[], options?: ExportOptions): interfaces.IExportEntity[];
-            importEntities(exportedEntities: interfaces.IExportEntity[], merge?: enums.mergeStrategy);
+            exportEntities(entities?: interfaces.IEntity[], options?: ExportOptions): interfaces.ExportEntity[];
+            importEntities(exportedEntities: interfaces.ExportEntity[], merge?: enums.mergeStrategy);
             hasChanges(): boolean;
             getChanges(): interfaces.IEntity[];
             saveChanges(options?: ManagerSaveOptions, successCallback?: interfaces.Delegate1<interfaces.SaveResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.SaveResult>;
-            toEntity<T extends interfaces.IEntity>(object: interfaces.IObject): T;
-            toEntity(object: interfaces.IObject): interfaces.IEntity;
+            toEntity<T extends interfaces.IEntity>(object: interfaces.RawEntity): T;
+            toEntity(object: interfaces.RawEntity): interfaces.IEntity;
             fixNavigations(entity: interfaces.IEntity);
             isInManager(entity: interfaces.IEntity): boolean;
             flatEntities(entities: interfaces.IEntity[]): interfaces.IEntity[];
@@ -786,16 +840,16 @@
             createSet(shortName: string): EntitySet<interfaces.IEntity>;
             createSet<T extends interfaces.IEntity>(type: interfaces.EntityType): EntitySet<T>;
             createSet(type: interfaces.EntityType): EntitySet<interfaces.IEntity>;
-            createSet<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): EntitySet<T>;
+            createSet<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): EntitySet<T>;
             set<T extends interfaces.IEntity>(shortName: string): EntitySet<T>;
             set(shortName: string): EntitySet<interfaces.IEntity>;
-            set<T extends interfaces.IEntity>(constructor: interfaces.IParameterlessConstructor<T>): EntitySet<T>;
+            set<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): EntitySet<T>;
         }
         class EntityBase implements interfaces.IEntity {
             constructor(type: interfaces.EntityType, manager?: EntityManager, initialValues?: Object);
 
             $tracker: interfaces.Tracker;
-            $extra: interfaces.IQueryResultExtra;
+            $extra: interfaces.QueryResultExtra;
         }
     }
 
@@ -803,11 +857,12 @@
         class MvcService extends baseTypes.DataServiceBase {
             constructor(url: string, loadMetadata?: boolean, options?: ServiceOptions);
             constructor(url: string, metadataManager: metadata.MetadataManager, options?: ServiceOptions);
+            constructor(url: string, metadata: Object, options?: ServiceOptions);
             constructor(url: string, metadata: string, options?: ServiceOptions);
 
             executeQueryParams(resource: string, queryParams: Object, options: ServiceQueryOptions,
                 successCallback: interfaces.Delegate1<interfaces.SaveResult>, errorCallback: interfaces.Delegate1<Error>);
-            fixResults(objects: interfaces.IObject[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.IObject[];
+            fixResults(objects: interfaces.RawEntity[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
         }
         class WebApiService extends MvcService {
         }
@@ -871,6 +926,7 @@
         var workAsync: boolean;
         var ajaxTimeout: number;
         var minimizePackage: boolean;
+
         function getObservableProvider(): baseTypes.ObservableProviderBase;
         function setObservableProvider(type: enums.observableProviders);
         function setObservableProvider(typeName: string);
@@ -910,9 +966,3 @@ interface Array<T> {
     asQueryable(): beetle.querying.ArrayQuery<T>;
     q(): beetle.querying.ArrayQuery<T>;
 }
-
-/*
-
-Async await
-
-*/

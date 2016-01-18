@@ -8,8 +8,9 @@
 
     module querying {
         interface ArrayQuery<T> extends Array<T> {
+            length: number; // also executes query (like GetEnumerator)
+
             forEach(callback: interfaces.Delegate1<T>);
-            length: number;
         }
 
         interface EntityQuery<T> {
@@ -21,7 +22,7 @@
 interface Array<T> {
     inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
     ofType<TResult extends T>(type: string): beetle.querying.ArrayQuery<TResult>;
-    OfType<TResult extends T>(constructor: beetle.interfaces.IParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
+    OfType<TResult extends T>(constructor: beetle.interfaces.ParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
     where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
     where(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
     orderBy(keySelector?: string): beetle.querying.ArrayQuery<T>;
