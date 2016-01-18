@@ -184,6 +184,12 @@
     <value>Güncelleme komutu beklenenden farklı kayıdı etkiledi, varlıklar son okumadan sonra değiştirilmiş ya da silinmiş olabilir.</value>
   </data>
   <data name="RequiredError" xml:space="preserve">
-    <value />
+    <value>%1 alanı gereklidir.</value>
+  </data>
+  <data name="AlteredRequestException" xml:space="preserve">
+    <value>İstek Beetle dışından değiştirildiği için işlenemedi.</value>
+  </data>
+  <data name="TypeIsNotEnum" xml:space="preserve">
+    <value>'{0}' tipi bir enum değil.</value>
   </data>
 </root>

@@ -189,4 +189,7 @@
   <data name="AlteredRequestException" xml:space="preserve">
     <value>Cannot process request, it has been sent or modified from outside of Beetle.</value>
   </data>
+  <data name="TypeIsNotEnum" xml:space="preserve">
+    <value>'{0}' type is not enum.</value>
+  </data>
 </root>
