@@ -54,16 +54,6 @@
             new (): T;
         }
 
-        interface RawEntity {
-            $type: string;
-            $extra?: QueryResultExtra;
-        }
-
-        interface IEntity {
-            $tracker: Tracker;
-            $extra?: QueryResultExtra;
-        }
-
         interface PropertyValidator {
             name: string;
             message: string;
@@ -176,6 +166,12 @@
             addValidation(name: string, func: Func1<IEntity, string>, message: string, args?: any);
         }
 
+        interface InternalSet<T extends IEntity> {
+            toString(): string;
+            getEntity(key: string): T;
+            getEntities(): T[];
+        }
+
         interface ClosedQueryable<T, TOptions> {
             execute(options?: TOptions, successCallback?: Delegate1<T>, errorCallback?: Delegate1<Error>): PromiseLike<T>;
             execute<TResult>(options?: TOptions, successCallback?: Delegate1<TResult>, errorCallback?: Delegate1<Error>): PromiseLike<TResult>;
@@ -186,10 +182,14 @@
             value: any;
         }
 
-        interface InternalSet<T extends IEntity> {
-            toString(): string;
-            getEntity(key: string): T;
-            getEntities(): T[];
+        interface QueryResultExtra {
+            userData: string;
+            headerGetter: Func1<string, string>;
+            xhr: Object;
+        }
+
+        interface QueryResultArray<T> extends Array<T> {
+            $extra: QueryResultExtra;
         }
 
         interface PropertyValue {
@@ -250,16 +250,6 @@
             $t: TrackInfo;
         }
 
-        interface QueryResultExtra {
-            userData: string;
-            headerGetter: Func1<string, string>;
-            xhr: Object;
-        }
-
-        interface QueryResultArray<T> extends Array<T> {
-            $extra: QueryResultExtra;
-        }
-
         interface SavePackage {
             entities: ExportEntity[];
             forceUpdate?: boolean;
@@ -277,6 +267,16 @@
             GeneratedValues: GeneratedValue[];
             GeneratedEntities: IEntity[];
             UserData: string;
+        }
+
+        interface RawEntity {
+            $type: string;
+            $extra?: QueryResultExtra;
+        }
+
+        interface IEntity {
+            $tracker: Tracker;
+            $extra?: QueryResultExtra;
         }
     }
 
@@ -422,8 +422,8 @@
     module metadata {
         class MetadataManager {
             constructor();
-            constructor(metadataStr: string);
             constructor(metadataObj: Object);
+            constructor(metadataStr: string);
 
             types: interfaces.EntityType[];
             typesDict: interfaces.Dictionary<interfaces.EntityType>;
