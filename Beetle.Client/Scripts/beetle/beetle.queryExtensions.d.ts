@@ -1,4 +1,7 @@
-﻿declare module beetle {
+﻿// Type definitions for beetle.js query extension 2.0
+// Project: https://github.com/umutozel/Beetle.js
+
+declare module beetle {
 
     module interfaces {
         interface IClosedQueryable<T, TOptions> {
