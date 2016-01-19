@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Beetlejs.Client.TypeScript</id>
-        <version>2.0.2</version>
+        <version>2.0.3</version>
         <title>Beetlejs Client with TypeScript Definition Files</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
@@ -16,7 +16,7 @@
         <language>en-US</language>
         <tags>ASP.NET Mvc 5 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle TypeScript</tags>
         <dependencies>
-            <dependency id="Beetlejs.Client" version="1.0" />
+            <dependency id="Beetlejs.Client" version="2.0" />
         </dependencies>
     </metadata>
     <files>
