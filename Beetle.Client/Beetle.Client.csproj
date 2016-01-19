@@ -276,6 +276,10 @@
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\beetle\beetle.d.ts" />
     <TypeScriptCompile Include="Scripts\beetle\beetle.queryExtensions.d.ts" />
+    <TypeScriptCompile Include="Scripts\jquery.d.ts" />
+    <TypeScriptCompile Include="Scripts\Q.d.ts" />
+    <TypeScriptCompile Include="Scripts\qunit.d.ts" />
+    <TypeScriptCompile Include="Scripts\tests\typeScriptBasicTests.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

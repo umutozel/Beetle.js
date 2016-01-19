@@ -470,6 +470,10 @@ declare module beetle {
             orderByDesc(comparer: beetle.interfaces.Func2<T, T, number>): beetle.querying.ArrayQuery<T>;
             select<TResult>(selector: string): beetle.querying.ArrayQuery<TResult>;
             select(selector: string): beetle.querying.ArrayQuery<any>;
+            select<TResult>(...selectors: string[]): beetle.querying.ArrayQuery<TResult>;
+            select(...selectors: string[]): beetle.querying.ArrayQuery<any>;
+            select<TResult>(selectors: string[]): beetle.querying.ArrayQuery<TResult>;
+            select(selectors: string[]): beetle.querying.ArrayQuery<any>;
             select<TResult>(selector: beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
             select(selector: beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
             skip(count: number): beetle.querying.ArrayQuery<T>;
@@ -548,6 +552,10 @@ declare module beetle {
             orderByDesc(keySelector: interfaces.Func1<T, any>): EntityQuery<T>;
             select<TResult>(selector: string): EntityQuery<TResult>;
             select(selector: string): EntityQuery<any>;
+            select<TResult>(...selectors: string[]): EntityQuery<TResult>;
+            select(...selectors: string[]): EntityQuery<any>;
+            select<TResult>(selectors: string[]): EntityQuery<TResult>;
+            select(selectors: string[]): EntityQuery<any>;
             select<TResult>(selector: interfaces.Func1<T, TResult>): EntityQuery<TResult>;
             select(selector: interfaces.Func1<T, any>): EntityQuery<any>;
             skip(count: number): EntityQuery<T>;
@@ -826,9 +834,9 @@ declare module beetle {
             attachEntity(entity: interfaces.IEntity);
             detachEntity(entity: interfaces.IEntity);
             createSavePackage(entities?: interfaces.IEntity[], options?: ExportOptions): interfaces.SavePackage;
-            rejectChanges(entity: interfaces.IEntity, includeRelations: boolean);
-            undoChanges(entity: interfaces.IEntity, includeRelations: boolean);
-            acceptChanges(entity: interfaces.IEntity, includeRelations: boolean);
+            rejectChanges(entity: interfaces.IEntity, includeRelations?: boolean);
+            undoChanges(entity: interfaces.IEntity, includeRelations?: boolean);
+            acceptChanges(entity: interfaces.IEntity, includeRelations?: boolean);
             exportEntities(entities?: interfaces.IEntity[], options?: ExportOptions): interfaces.ExportEntity[];
             importEntities(exportedEntities: interfaces.ExportEntity[], merge?: enums.mergeStrategy);
             hasChanges(): boolean;

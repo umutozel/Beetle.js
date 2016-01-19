@@ -20,16 +20,182 @@ var basicTestViewModel = {
     }
 };
 
-function getUrlVars() {
-    var vars = [], hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for (var i = 0; i < hashes.length; i++) {
-        hash = hashes[i].split('=');
-        vars.push(hash[0]);
-        vars[hash[0]] = hash[1];
+(function init() {
+
+    function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
     }
-    return vars;
-}
+
+    function populateVars() {
+        var urlVars = getUrlVars();
+
+        var metadataType = urlVars['metadataType'];
+        if (metadataType == 'MS')
+            metadata = testMetadata;
+        else if (metadataType == 'SM')
+            metadata = null;
+        else if (metadataType == 'NM')
+            metadata = false;
+        else {
+            metadataType = 'MM';
+            metadata = new beetle.MetadataManager(testMetadata);
+        }
+        basicTestViewModel.metadataType = metadataType;
+
+        var observableProviderType = urlVars['observableProviderType'];
+        if (observableProviderType == 'PR')
+            observableProvider = beetle.enums.observableProviders.Property;
+        else {
+            observableProviderType = 'KO';
+            observableProvider = beetle.enums.observableProviders.Knockout;
+        }
+        basicTestViewModel.observableProviderType = observableProviderType;
+        beetle.settings.setObservableProvider(observableProvider);
+
+        var serviceType = urlVars['serviceType'];
+        if (serviceType == 'MV')
+            service = new beetle.MvcService('Home', metadata);
+        else {
+            serviceType = 'WA';
+            service = new beetle.services.WebApiService('api/BeetleTest', metadata);
+        }
+        basicTestViewModel.serviceType = serviceType;
+    }
+    populateVars();
+})();
+
+var testArray = [];
+(function populateTestArray() {
+    testArray = [
+        {
+            Name: 'Ord1',
+            Price: 400,
+            Date: new Date("2013/8/6 12:34:56"),
+            Customer: { Name: 'Cus4' },
+            Details: [
+                {
+                    Product: 'Prd1',
+                    Supplier: 'ABC',
+                    Count: 4
+                },
+                {
+                    Product: 'Prd5',
+                    Supplier: 'QWE',
+                    Count: 23
+                }
+            ]
+        },
+        {
+            Name: 'Ord2',
+            Price: 750.42,
+            Date: new Date("2014/3/30 23:45:01"),
+            Customer: { Name: 'Cus9' },
+            Details: [
+                {
+                    Product: 'Prd3',
+                    Supplier: 'FGH',
+                    Count: 5
+                },
+                {
+                    Product: 'Prd8',
+                    Supplier: 'QWE',
+                    Count: 1
+                },
+                {
+                    Product: 'Prd9',
+                    Supplier: 'QWE',
+                    Count: 36
+                }
+            ]
+        },
+        {
+            Name: 'Ord3',
+            Price: 1125,
+            Date: new Date("2012/11/10 8:10:25"),
+            Customer: { Name: 'Cus3' },
+            Details: [
+                {
+                    Product: 'Prd2',
+                    Supplier: 'FGH',
+                    Count: 63
+                },
+                {
+                    Product: 'Prd4',
+                    Supplier: 'TYU',
+                    Count: 5
+                },
+                {
+                    Product: 'Prd6',
+                    Supplier: 'FGH',
+                    Count: 18
+                },
+                {
+                    Product: 'Prd9',
+                    Supplier: 'ABC',
+                    Count: 22
+                }
+            ]
+        },
+        {
+            Name: 'Ord4',
+            Price: 231.58,
+            Date: new Date("2011/5/1"),
+            Customer: { Name: 'Cus1' },
+            Details: [
+                {
+                    Product: 'Prd7',
+                    Supplier: 'TYU',
+                    Count: 4
+                }
+            ]
+        },
+        {
+            Name: 'Ord5',
+            Price: 1125,
+            Date: new Date("2010/1/28 14:42:33"),
+            Customer: { Name: 'Cus3' },
+            Details: [
+                {
+                    Product: 'Prd1',
+                    Supplier: 'QWE',
+                    Count: 4
+                },
+                {
+                    Product: 'Prd5',
+                    Supplier: 'BNM',
+                    Count: 67
+                },
+                {
+                    Product: 'Prd6',
+                    Supplier: 'BNM  ',
+                    Count: 13
+                },
+                {
+                    Product: 'Prd7',
+                    Supplier: 'TYU',
+                    Count: 8
+                },
+                {
+                    Product: 'Prd8',
+                    Supplier: 'FGH',
+                    Count: 34
+                },
+                {
+                    Product: 'Prd9',
+                    Supplier: 'FGH',
+                    Count: 86
+                }
+            ]
+        }
+    ];
+})();
 
 function handleFail(error) {
     if (error.handled === true) return;
@@ -53,172 +219,14 @@ function seed(serviceUri) {
     return deferred.promise;
 }
 
-function populateVars() {
-    var urlVars = getUrlVars();
-
-    var metadataType = urlVars['metadataType'];
-    if (metadataType == 'MS')
-        metadata = testMetadata;
-    else if (metadataType == 'SM')
-        metadata = null;
-    else if (metadataType == 'NM')
-        metadata = false;
-    else {
-        metadataType = 'MM';
-        metadata = new beetle.MetadataManager(testMetadata);
-    }
-    basicTestViewModel.metadataType = metadataType;
-
-    var observableProviderType = urlVars['observableProviderType'];
-    if (observableProviderType == 'PR')
-        observableProvider = beetle.enums.observableProviders.Property;
-    else {
-        observableProviderType = 'KO';
-        observableProvider = beetle.enums.observableProviders.Knockout;
-    }
-    basicTestViewModel.observableProviderType = observableProviderType;
-    beetle.settings.setObservableProvider(observableProvider);
-
-    var serviceType = urlVars['serviceType'];
-    if (serviceType == 'MV')
-        service = new beetle.MvcService('Home', metadata);
-    else {
-        serviceType = 'WA';
-        service = new beetle.services.WebApiService('api/BeetleTest', metadata);
-    }
-    basicTestViewModel.serviceType = serviceType;
-}
-populateVars();
-
 beetle.settings.registerMetadataTypes = true;
 beetle.events.saving.subscribe(function (args) {
     args.options.headers = args.options.headers || {};
     args.options.headers.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
 });
+
 var EntityManager = beetle.EntityManager;
 var entityStates = beetle.entityStates;
-var testArray = [
-    {
-        Name: 'Ord1',
-        Price: 400,
-        Date: new Date("2013/8/6 12:34:56"),
-        Customer: { Name: 'Cus4' },
-        Details: [
-            {
-                Product: 'Prd1',
-                Supplier: 'ABC',
-                Count: 4
-            },
-            {
-                Product: 'Prd5',
-                Supplier: 'QWE',
-                Count: 23
-            }
-        ]
-    },
-    {
-        Name: 'Ord2',
-        Price: 750.42,
-        Date: new Date("2014/3/30 23:45:01"),
-        Customer: { Name: 'Cus9' },
-        Details: [
-            {
-                Product: 'Prd3',
-                Supplier: 'FGH',
-                Count: 5
-            },
-            {
-                Product: 'Prd8',
-                Supplier: 'QWE',
-                Count: 1
-            },
-            {
-                Product: 'Prd9',
-                Supplier: 'QWE',
-                Count: 36
-            }
-        ]
-    },
-    {
-        Name: 'Ord3',
-        Price: 1125,
-        Date: new Date("2012/11/10 8:10:25"),
-        Customer: { Name: 'Cus3' },
-        Details: [
-            {
-                Product: 'Prd2',
-                Supplier: 'FGH',
-                Count: 63
-            },
-            {
-                Product: 'Prd4',
-                Supplier: 'TYU',
-                Count: 5
-            },
-            {
-                Product: 'Prd6',
-                Supplier: 'FGH',
-                Count: 18
-            },
-            {
-                Product: 'Prd9',
-                Supplier: 'ABC',
-                Count: 22
-            }
-        ]
-    },
-    {
-        Name: 'Ord4',
-        Price: 231.58,
-        Date: new Date("2011/5/1"),
-        Customer: { Name: 'Cus1' },
-        Details: [
-            {
-                Product: 'Prd7',
-                Supplier: 'TYU',
-                Count: 4
-            }
-        ]
-    },
-    {
-        Name: 'Ord5',
-        Price: 1125,
-        Date: new Date("2010/1/28 14:42:33"),
-        Customer: { Name: 'Cus3' },
-        Details: [
-            {
-                Product: 'Prd1',
-                Supplier: 'QWE',
-                Count: 4
-            },
-            {
-                Product: 'Prd5',
-                Supplier: 'BNM',
-                Count: 67
-            },
-            {
-                Product: 'Prd6',
-                Supplier: 'BNM  ',
-                Count: 13
-            },
-            {
-                Product: 'Prd7',
-                Supplier: 'TYU',
-                Count: 8
-            },
-            {
-                Product: 'Prd8',
-                Supplier: 'FGH',
-                Count: 34
-            },
-            {
-                Product: 'Prd9',
-                Supplier: 'FGH',
-                Count: 86
-            }
-        ]
-    }
-];
 
 module('basic tests');
 
@@ -1172,7 +1180,7 @@ test('use floor', 1, function () {
 
 test('use year', 1, function () {
     var manager = new EntityManager(service);
-    var year = new Date().getYear();
+    var year = new Date().getFullYear();
     var query = manager.createQuery('Companies').where('year(TimeCreate) != @0', [year]);
     stop();
     manager.executeQuery(query)
@@ -1657,7 +1665,7 @@ if (metadata !== false) {
 
         var net = manager.createEntity('NamedEntityType');
         net.$tracker.setValue('Id', beetle.helper.createGuid());
-        net.$tracker.getValue('Name', 'Test NamedEntityType');
+        net.$tracker.setValue('Name', 'Test NamedEntityType');
         ne.$tracker.setValue('NamedEntityType', net);
 
         stop();
@@ -2010,14 +2018,14 @@ if (metadata !== false) {
         var oQuery = manager.createEntityQuery('Order', 'Orders').inlineCount().top(1);
         stop();
         manager.executeQuery(oQuery)
-            .then(function(data) {
+            .then(function (data) {
                 var serverCount = data.$inlineCount;
                 manager.deleteEntity(data[0]);
                 var o1 = manager.createEntity('Order');
                 manager.createEntity('Order');
 
                 manager.executeQuery(oQuery, { execution: beetle.enums.executionStrategy.Both })
-                    .then(function(bothData) {
+                    .then(function (bothData) {
                         equal(bothData[0], o1, 'deleted entity is skipped');
                         equal(bothData.$inlineCount, serverCount + 1, 'inlineCount is corrected');
                     })
@@ -2147,7 +2155,7 @@ if (metadata !== false) {
         var com = manager.createEntity('Company');
 
         var expected = true;
-        com.$tracker.propertyChanged.subscribe(function() {
+        com.$tracker.propertyChanged.subscribe(function () {
             ok(expected, 'data property changed event fire is expected');
         });
 

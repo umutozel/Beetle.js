@@ -35,6 +35,10 @@ interface Array<T> {
     orderByDesc(comparer: beetle.interfaces.Func2<T, T, number>): beetle.querying.ArrayQuery<T>;
     select<TResult>(selector: string): beetle.querying.ArrayQuery<TResult>;
     select(selector: string): beetle.querying.ArrayQuery<any>;
+    select<TResult>(...selectors: string[]): beetle.querying.ArrayQuery<TResult>;
+    select(...selectors: string[]): beetle.querying.ArrayQuery<any>;
+    select<TResult>(selectors: string[]): beetle.querying.ArrayQuery<TResult>;
+    select(selectors: string[]): beetle.querying.ArrayQuery<any>;
     select<TResult>(selector: beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
     select(selector: beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
     skip(count: number): beetle.querying.ArrayQuery<T>;
