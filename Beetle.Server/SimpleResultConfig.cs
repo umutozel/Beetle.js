@@ -13,7 +13,7 @@ namespace Beetle.Server {
         /// Initializes a new instance of the <see cref="SimpleResultConfig"/> class.
         /// </summary>
         public SimpleResultConfig()
-            : base(NullValueHandling.Ignore, TypeNameHandling.None) {
+            : base(NullValueHandling.Ignore, TypeNameHandling.None, PreserveReferencesHandling.None, Formatting.None) {
         }
 
         /// <summary>

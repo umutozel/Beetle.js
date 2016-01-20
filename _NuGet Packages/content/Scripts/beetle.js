@@ -2661,7 +2661,6 @@
                                         checkReady(instance);
                                     },
                                     function (e) {
-                                        instance._awaitingMetadata = false;
                                         throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
                                     });
                             }
@@ -10250,7 +10249,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.2',
+            version: '2.0.3',
             i18N: i18N,
 
             helper: helper,
@@ -10272,11 +10271,13 @@
             MetadataManager: metadata.MetadataManager,
             EntityManager: core.EntityManager,
             EntityBase: core.EntityBase,
+            EntitySet: core.EntitySet,
             WebApiService: services.WebApiService,
             MvcService: services.MvcService,
             Event: core.Event,
             Validator: core.Validator,
             ValueNotifyWrapper: core.ValueNotifyWrapper,
+            TrackableArray: core.TrackableArray,
 
             // enums
             entityStates: enums.entityStates,

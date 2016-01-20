@@ -277,11 +277,88 @@ declare module beetle {
             $type: string;
             $extra?: QueryResultExtra;
         }
+    }
 
-        interface IEntity {
-            $tracker: Tracker;
-            $extra?: QueryResultExtra;
-        }
+    interface IEntity {
+        $tracker: interfaces.Tracker;
+        $extra?: interfaces.QueryResultExtra;
+    }
+
+    interface ServiceQueryOptions {
+        handleUnmappedProperties?: boolean;
+        usePost?: boolean;
+        dataType?: string;
+        contentType?: string;
+        async?: boolean;
+        timeout?: boolean;
+        extra?: Object;
+        uri?: string;
+        headers?: Object;
+        includeXhr?: boolean;
+        includeHeaderGetter?: boolean;
+    }
+
+    interface ManagerQueryOptions extends ServiceQueryOptions {
+        merge?: enums.mergeStrategy;
+        execution?: enums.executionStrategy;
+        autoFixScalar?: boolean;
+        autoFixPlural?: boolean;
+        varContext?: Object;
+        useBeetleQueryStrings?: boolean;
+    }
+
+    interface ServiceOptions {
+        ajaxTimeout?: number;
+        dataType?: string;
+        contentType?: string;
+        registerMetadataTypes?: boolean;
+        ajaxProvider: baseTypes.AjaxProviderBase;
+        serializationService: baseTypes.SerializationServiceBase;
+    }
+
+    interface ManagerOptions extends ServiceOptions {
+        autoFixScalar?: boolean;
+        autoFixPlural?: boolean;
+        validateOnMerge?: boolean;
+        validateOnSave?: boolean;
+        liveValidate?: boolean;
+        handleUnmappedProperties?: boolean;
+        forceUpdate?: boolean;
+        workAsync?: boolean;
+        minimizePackage?: boolean;
+        promiseProvider: baseTypes.PromiseProviderBase;
+    }
+
+    interface ExportOptions {
+        minimizePackage?: boolean;
+    }
+
+    interface ServiceSaveOptions {
+        async?: boolean;
+        timeout?: number;
+        extra?: Object;
+        uri?: string;
+        saveAction?: string;
+        headers?: Object;
+        includeXhr?: boolean;
+        includeHeaderGetter?: boolean;
+    }
+
+    interface ManagerSaveOptions extends ExportOptions, ServiceSaveOptions {
+        entities?: IEntity[];
+        forceUpdate?: boolean;
+        validateOnSave?: boolean;
+        autoFixScalar?: boolean;
+        autoFixPlural?: boolean;
+    }
+
+    interface ObservableProviderCallbackOptions {
+        propertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
+        arrayChange: interfaces.Delegate5<Object, string, Array<any>, Array<any>, Array<any>>;
+        dataPropertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
+        scalarNavigationPropertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
+        pluralNavigationPropertyChange: interfaces.Delegate5<Object, string, Array<any>, Array<any>, Array<any>>;
+        arraySet: interfaces.Delegate4<Object, Array<any>, Array<any>, string>;
     }
 
     module helper {
@@ -388,20 +465,20 @@ declare module beetle {
             isReady(): boolean;
             ready(callback: interfaces.Delegate);
             getEntityType(shortName: string): interfaces.EntityType;
-            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): interfaces.EntityType;
-            createQuery<T extends interfaces.IEntity>(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
+            getEntityType<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>): interfaces.EntityType;
+            createQuery<T extends IEntity>(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<any>;
-            createEntityQuery<T extends interfaces.IEntity>(shortName: string, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
-            createEntityQuery<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
-            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
-            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            createEntityQuery<T extends IEntity>(shortName: string, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
+            createEntityQuery<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
+            registerCtor<T extends IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
 
             fetchMetadata(options?: ServiceQueryOptions, successCallback?: interfaces.Delegate1<Object>, errorCallback?: interfaces.Delegate1<Error>);
-            createEntityAsync<T extends interfaces.IEntity>(typeName: string, initialValues: Object, options: ServiceQueryOptions,
+            createEntityAsync<T extends IEntity>(typeName: string, initialValues: Object, options: ServiceQueryOptions,
                 successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
             createEntityAsync(typeName: string, initialValues: Object, options: ServiceQueryOptions,
-                successCallback: interfaces.Delegate1<interfaces.IEntity>, errorCallback: interfaces.Delegate1<Error>);
-            createEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues: Object, options: ServiceQueryOptions,
+                successCallback: interfaces.Delegate1<IEntity>, errorCallback: interfaces.Delegate1<Error>);
+            createEntityAsync<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues: Object, options: ServiceQueryOptions,
                 successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
             executeQuery<T>(query: querying.EntityQuery<T>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback: interfaces.Delegate1<Error>);
             executeQuery<T>(query: interfaces.ClosedQueryable<T, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
@@ -438,13 +515,13 @@ declare module beetle {
             toString(): string;
             getEntityTypeByFullName(typeName: string, throwIfNotFound?: boolean): interfaces.EntityType;
             getEntityType(shortName: string, throwIfNotFound?: boolean): interfaces.EntityType;
-            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, throwIfNotFound?: boolean): interfaces.EntityType;
-            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
-            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
-            createEntity(shortName: string, initialValues?: Object): interfaces.IEntity;
-            createEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
+            getEntityType<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, throwIfNotFound?: boolean): interfaces.EntityType;
+            registerCtor<T extends IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            createEntity(shortName: string, initialValues?: Object): IEntity;
+            createEntity<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
-            createRawEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
+            createRawEntity<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
             parseBeetleMetadata(metadataStr: string);
             parseBeetleMetadata(metadataObj: Object);
         }
@@ -619,83 +696,6 @@ declare module beetle {
         }
     }
 
-    interface ServiceQueryOptions {
-        handleUnmappedProperties?: boolean;
-        usePost?: boolean;
-        dataType?: string;
-        contentType?: string;
-        async?: boolean;
-        timeout?: boolean;
-        extra?: Object;
-        uri?: string;
-        headers?: Object;
-        includeXhr?: boolean;
-        includeHeaderGetter?: boolean;
-    }
-
-    interface ManagerQueryOptions extends ServiceQueryOptions {
-        merge?: enums.mergeStrategy;
-        execution?: enums.executionStrategy;
-        autoFixScalar?: boolean;
-        autoFixPlural?: boolean;
-        varContext?: Object;
-        useBeetleQueryStrings?: boolean;
-    }
-
-    interface ServiceOptions {
-        ajaxTimeout?: number;
-        dataType?: string;
-        contentType?: string;
-        registerMetadataTypes?: boolean;
-        ajaxProvider: baseTypes.AjaxProviderBase;
-        serializationService: baseTypes.SerializationServiceBase;
-    }
-
-    interface ManagerOptions extends ServiceOptions {
-        autoFixScalar?: boolean;
-        autoFixPlural?: boolean;
-        validateOnMerge?: boolean;
-        validateOnSave?: boolean;
-        liveValidate?: boolean;
-        handleUnmappedProperties?: boolean;
-        forceUpdate?: boolean;
-        workAsync?: boolean;
-        minimizePackage?: boolean;
-        promiseProvider: baseTypes.PromiseProviderBase;
-    }
-
-    interface ExportOptions {
-        minimizePackage?: boolean;
-    }
-
-    interface ServiceSaveOptions {
-        async?: boolean;
-        timeout?: number;
-        extra?: Object;
-        uri?: string;
-        saveAction?: string;
-        headers?: Object;
-        includeXhr?: boolean;
-        includeHeaderGetter?: boolean;
-    }
-
-    interface ManagerSaveOptions extends ExportOptions, ServiceSaveOptions {
-        entities?: interfaces.IEntity[];
-        forceUpdate?: boolean;
-        validateOnSave?: boolean;
-        autoFixScalar?: boolean;
-        autoFixPlural?: boolean;
-    }
-
-    interface ObservableProviderCallbackOptions {
-        propertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
-        arrayChange: interfaces.Delegate5<Object, string, Array<any>, Array<any>, Array<any>>;
-        dataPropertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
-        scalarNavigationPropertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
-        pluralNavigationPropertyChange: interfaces.Delegate5<Object, string, Array<any>, Array<any>, Array<any>>;
-        arraySet: interfaces.Delegate4<Object, Array<any>, Array<any>, string>;
-    }
-
     module core {
         class ValueNotifyWrapper {
             constructor(value: any);
@@ -743,7 +743,7 @@ declare module beetle {
             var geometry: interfaces.DataTypeBase;
             var geography: interfaces.DataTypeBase;
         }
-        class EntitySet<T extends interfaces.IEntity> extends querying.EntityQuery<T> {
+        class EntitySet<T extends IEntity> extends querying.EntityQuery<T> {
             constructor(type: interfaces.EntityType, manager: EntityManager);
 
             local: interfaces.InternalSet<T>;
@@ -760,6 +760,7 @@ declare module beetle {
             constructor(url: string, loadMetadata?: boolean, options?: ManagerOptions);
             constructor(url: string, metadataManager: metadata.MetadataManager, options?: ManagerOptions);
             constructor(url: string, metadata: string, options?: ManagerOptions);
+            constructor(url: string, metadata: Object, options?: ManagerOptions);
             constructor(service: baseTypes.DataServiceBase, options?: ManagerOptions);
 
             dataService: baseTypes.DataServiceBase;
@@ -787,38 +788,38 @@ declare module beetle {
             isReady(): boolean;
             ready(callback: interfaces.Delegate): PromiseLike<any>;
             getEntityType(shortName: string): interfaces.EntityType;
-            getEntityType<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>): interfaces.EntityType;
             createQuery<T>(resourceName: string): querying.EntityQuery<T>;
-            createQuery<T extends interfaces.IEntity>(resourceName: string, shortName?: string): querying.EntityQuery<T>;
+            createQuery<T extends IEntity>(resourceName: string, shortName?: string): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string): querying.EntityQuery<any>;
-            createEntityQuery<T extends interfaces.IEntity>(shortName: string, resourceName?: string): querying.EntityQuery<T>;
+            createEntityQuery<T extends IEntity>(shortName: string, resourceName?: string): querying.EntityQuery<T>;
             createEntityQuery(shortName: string, resourceName?: string): querying.EntityQuery<any>;
-            createEntityQuery<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, resourceName?: string): querying.EntityQuery<T>;
-            registerCtor<T extends interfaces.IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
-            registerCtor<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
-            createEntity<T extends interfaces.IEntity>(shortName: string, initialValues?: Object): T;
-            createEntity(shortName: string, initialValues?: Object): interfaces.IEntity;
-            createEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
-            createDetachedEntity<T extends interfaces.IEntity>(shortName: string, initialValues?: Object): T;
-            createDetachedEntity(shortName: string, initialValues?: Object): interfaces.IEntity;
-            createDetachedEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
+            createEntityQuery<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, resourceName?: string): querying.EntityQuery<T>;
+            registerCtor<T extends IEntity>(shortName: string, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            createEntity<T extends IEntity>(shortName: string, initialValues?: Object): T;
+            createEntity(shortName: string, initialValues?: Object): IEntity;
+            createEntity<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
+            createDetachedEntity<T extends IEntity>(shortName: string, initialValues?: Object): T;
+            createDetachedEntity(shortName: string, initialValues?: Object): IEntity;
+            createDetachedEntity<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
-            createRawEntity<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
-            createEntityAsync<T extends interfaces.IEntity>(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
+            createRawEntity<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
+            createEntityAsync<T extends IEntity>(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<interfaces.IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IEntity>;
-            createEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
+                successCallback?: interfaces.Delegate1<IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<IEntity>;
+            createEntityAsync<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
-            createDetachedEntityAsync<T extends interfaces.IEntity>(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
+            createDetachedEntityAsync<T extends IEntity>(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createDetachedEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<interfaces.IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.IEntity>;
-            createDetachedEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
+                successCallback?: interfaces.Delegate1<IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<IEntity>;
+            createDetachedEntityAsync<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
             createRawEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<interfaces.RawEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.RawEntity>;
-            createRawEntityAsync<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
+            createRawEntityAsync<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: interfaces.Delegate1<interfaces.RawEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.RawEntity>;
             executeQuery<T>(query: querying.EntityQuery<T>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T[]>;
             executeQuery<T>(query: interfaces.ClosedQueryable<T, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
@@ -826,38 +827,38 @@ declare module beetle {
             executeQuery(query: interfaces.ClosedQueryable<any, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<any>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<any>;
             executeQueryLocally<T>(query: querying.EntityQuery<T>, varContext?: any): T[];
             executeQueryLocally<T>(query: interfaces.ClosedQueryable<T, any>, varContext?: any): T;
-            getEntityByKey<T extends interfaces.IEntity>(key: any, shortName: string): T;
-            getEntityByKey<T extends interfaces.IEntity>(key: any, type: interfaces.EntityType): T;
-            getEntityByKey<T extends interfaces.IEntity>(key: any, constructor: interfaces.ParameterlessConstructor<T>): T;
-            deleteEntity(entity: interfaces.IEntity);
-            addEntity(entity: interfaces.IEntity);
-            attachEntity(entity: interfaces.IEntity);
-            detachEntity(entity: interfaces.IEntity);
-            createSavePackage(entities?: interfaces.IEntity[], options?: ExportOptions): interfaces.SavePackage;
-            rejectChanges(entity: interfaces.IEntity, includeRelations?: boolean);
-            undoChanges(entity: interfaces.IEntity, includeRelations?: boolean);
-            acceptChanges(entity: interfaces.IEntity, includeRelations?: boolean);
-            exportEntities(entities?: interfaces.IEntity[], options?: ExportOptions): interfaces.ExportEntity[];
+            getEntityByKey<T extends IEntity>(key: any, shortName: string): T;
+            getEntityByKey<T extends IEntity>(key: any, type: interfaces.EntityType): T;
+            getEntityByKey<T extends IEntity>(key: any, constructor: interfaces.ParameterlessConstructor<T>): T;
+            deleteEntity(entity: IEntity);
+            addEntity(entity: IEntity);
+            attachEntity(entity: IEntity);
+            detachEntity(entity: IEntity);
+            createSavePackage(entities?: IEntity[], options?: ExportOptions): interfaces.SavePackage;
+            rejectChanges(entity: IEntity, includeRelations?: boolean);
+            undoChanges(entity: IEntity, includeRelations?: boolean);
+            acceptChanges(entity: IEntity, includeRelations?: boolean);
+            exportEntities(entities?: IEntity[], options?: ExportOptions): interfaces.ExportEntity[];
             importEntities(exportedEntities: interfaces.ExportEntity[], merge?: enums.mergeStrategy);
             hasChanges(): boolean;
-            getChanges(): interfaces.IEntity[];
+            getChanges(): IEntity[];
             saveChanges(options?: ManagerSaveOptions, successCallback?: interfaces.Delegate1<interfaces.SaveResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.SaveResult>;
-            toEntity<T extends interfaces.IEntity>(object: interfaces.RawEntity): T;
-            toEntity(object: interfaces.RawEntity): interfaces.IEntity;
-            fixNavigations(entity: interfaces.IEntity);
-            isInManager(entity: interfaces.IEntity): boolean;
-            flatEntities(entities: interfaces.IEntity[]): interfaces.IEntity[];
-            entry(entity: interfaces.IEntity): interfaces.Tracker;
-            createSet<T extends interfaces.IEntity>(shortName: string): EntitySet<T>;
-            createSet(shortName: string): EntitySet<interfaces.IEntity>;
-            createSet<T extends interfaces.IEntity>(type: interfaces.EntityType): EntitySet<T>;
-            createSet(type: interfaces.EntityType): EntitySet<interfaces.IEntity>;
-            createSet<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): EntitySet<T>;
-            set<T extends interfaces.IEntity>(shortName: string): EntitySet<T>;
-            set(shortName: string): EntitySet<interfaces.IEntity>;
-            set<T extends interfaces.IEntity>(constructor: interfaces.ParameterlessConstructor<T>): EntitySet<T>;
+            toEntity<T extends IEntity>(object: interfaces.RawEntity): T;
+            toEntity(object: interfaces.RawEntity): IEntity;
+            fixNavigations(entity: IEntity);
+            isInManager(entity: IEntity): boolean;
+            flatEntities(entities: IEntity[]): IEntity[];
+            entry(entity: IEntity): interfaces.Tracker;
+            createSet<T extends IEntity>(shortName: string): EntitySet<T>;
+            createSet(shortName: string): EntitySet<IEntity>;
+            createSet<T extends IEntity>(type: interfaces.EntityType): EntitySet<T>;
+            createSet(type: interfaces.EntityType): EntitySet<IEntity>;
+            createSet<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>): EntitySet<T>;
+            set<T extends IEntity>(shortName: string): EntitySet<T>;
+            set(shortName: string): EntitySet<IEntity>;
+            set<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>): EntitySet<T>;
         }
-        class EntityBase implements interfaces.IEntity {
+        class EntityBase implements IEntity {
             constructor(type: interfaces.EntityType, manager?: EntityManager, initialValues?: Object);
 
             $tracker: interfaces.Tracker;
@@ -966,10 +967,12 @@ declare module beetle {
     class MetadataManager extends metadata.MetadataManager { }
     class EntityManager extends core.EntityManager { }
     class EntityBase extends core.EntityBase { }
+    class EntitySet<T extends IEntity> extends core.EntitySet<T> { }
     class WebApiService extends services.WebApiService { }
     class MvcService extends services.MvcService { }
     class Event extends core.Event { }
     class ValueNotifyWrapper extends core.ValueNotifyWrapper { }
+    class TrackableArray<T> extends core.TrackableArray<T> { }
 
     var version: string;
 }

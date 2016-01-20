@@ -155,139 +155,7 @@ namespace Beetle.Server {
         /// <param name="unmappedEntities">The unmapped entities.</param>
         /// <returns></returns>
         public virtual IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, out IEnumerable<EntityBag> unmappedEntities) {
-            return MergeEntitiesBase(entityBags, out unmappedEntities);
-        }
-
-        /// <summary>
-        /// Merges the entities, fixes relations and sort entities for save operation.
-        /// </summary>
-        /// <param name="entityBags">The entity bags.</param>
-        /// <param name="unmappedEntities">The unmapped entities.</param>
-        /// <returns></returns>
-        protected IEnumerable<EntityBag> MergeEntitiesBase(IEnumerable<EntityBag> entityBags, out IEnumerable<EntityBag> unmappedEntities) {
-            if (entityBags == null)
-                throw new ArgumentNullException("entityBags");
-
-            var entityBagList = entityBags as IList<EntityBag> ?? entityBags.ToList();
-            var entityList = entityBagList.Select(eb => eb.Entity).ToList();
-            var mergedBagList = entityBagList.ToList();
-            var unmappedEntityList = new List<EntityBag>();
-            var metadata = Metadata();
-
-            foreach (var entityBag in entityBagList) {
-                var entity = entityBag.Entity;
-                var type = entity.GetType();
-                var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
-                if (entityBag.EntityType == null)
-                    entityBag.EntityType = entityBag.EntityType ?? metadata.Entities.First(e => e.Name == entityTypeName);
-                var entityType = entityBag.EntityType;
-                if (entityType == null) {
-                    unmappedEntityList.Add(entityBag);
-                    mergedBagList.Remove(entityBag);
-                    continue;
-                }
-
-                foreach (var metaNavigation in entityType.AllNavigationProperties) {
-                    var navigationType = Helper.GetPropertyType(type, metaNavigation.Name);
-                    if (navigationType == null) continue;
-                    var metaInverseNavigation = metaNavigation.Inverse;
-                    if (metaNavigation.IsScalar.HasValue && metaNavigation.IsScalar.Value) {
-                        if (!metaNavigation.ForeignKeys.Any()) continue;
-
-                        var navigationQuery = GetRelationQuery(entityList, entity, navigationType, entityType.Keys, metaNavigation.ForeignKeys);
-                        if (navigationQuery == null) continue;
-
-                        var navigationEntity = Enumerable.SingleOrDefault((dynamic)navigationQuery);
-                        if (navigationEntity == null) continue;
-
-                        var navigationEntityBag = entityBagList.Single(eb => eb.Entity == navigationEntity);
-                        if (navigationEntityBag.EntityState == EntityState.Added) {
-                            var navigationEntityBagIndex = mergedBagList.IndexOf(navigationEntityBag);
-                            var entityBagIndex = mergedBagList.IndexOf(entityBag);
-                            if (navigationEntityBagIndex > entityBagIndex) {
-                                mergedBagList.Remove(navigationEntityBag);
-                                mergedBagList.Insert(entityBagIndex, navigationEntityBag);
-                            }
-                        }
-
-                        Helper.SetPropertyValue(entity, metaNavigation.Name, navigationEntity);
-
-                        if (metaInverseNavigation == null) continue;
-
-                        var inverseNavigationPropertyType = Helper.GetPropertyType(navigationType, metaInverseNavigation.Name);
-                        if (inverseNavigationPropertyType == null) continue;
-
-                        if (metaInverseNavigation.IsScalar.HasValue && metaInverseNavigation.IsScalar.Value) {
-                            Helper.SetPropertyValue(navigationEntity, metaInverseNavigation.Name, entity);
-                        }
-                        else {
-                            var inverseValue = Helper.GetPropertyValue(navigationEntity, metaInverseNavigation.Name);
-                            if (inverseValue == null && !inverseNavigationPropertyType.IsInterface) {
-                                inverseValue = Activator.CreateInstance(inverseNavigationPropertyType);
-                                Helper.SetPropertyValue(navigationEntity, metaInverseNavigation.Name, inverseValue);
-                            }
-                            if (inverseValue != null && !Enumerable.Contains(inverseValue, entity)) {
-                                var addMethod = inverseValue.GetType().GetMethod("Add");
-                                addMethod.Invoke(inverseValue, new[] { entity });
-                            }
-                        }
-                    }
-                    else if (metaInverseNavigation != null) {
-                        if (!navigationType.IsGenericType) continue;
-                        var navigationValue = Helper.GetPropertyValue(entity, metaNavigation.Name);
-                        if (navigationValue == null && !navigationType.IsInterface) {
-                            navigationValue = Activator.CreateInstance(navigationType);
-                            Helper.SetPropertyValue(entity, metaNavigation.Name, navigationValue);
-                        }
-                        if (navigationValue == null) continue;
-
-                        var navigationQuery = GetRelationQuery(entityList, entity, navigationType.GenericTypeArguments.Single(),
-                                                               metaInverseNavigation.ForeignKeys, entityType.Keys);
-                        if (navigationQuery == null) continue;
-
-                        var navigationEntities = Enumerable.ToList((dynamic)navigationQuery);
-                        var addMethod = navigationValue.GetType().GetMethod("Add");
-                        foreach (var navigationEntity in navigationEntities) {
-                            if (!Enumerable.Contains(navigationValue, navigationEntity))
-                                addMethod.Invoke(navigationValue, new object[] { navigationEntity });
-                        }
-                    }
-                }
-            }
-
-            unmappedEntities = unmappedEntityList;
-            return mergedBagList;
-        }
-
-        /// <summary>
-        /// Gets the relation query.
-        /// </summary>
-        /// <param name="entities">The entities.</param>
-        /// <param name="keyEntity">The key entity.</param>
-        /// <param name="relationType">Type of the relation.</param>
-        /// <param name="keys">The keys.</param>
-        /// <param name="foreignKeys">The foreign keys.</param>
-        /// <returns></returns>
-        private static IQueryable GetRelationQuery(IEnumerable entities, object keyEntity, Type relationType, IReadOnlyList<string> keys, IReadOnlyList<string> foreignKeys) {
-            if (keys.Count != foreignKeys.Count) return null;
-
-            const string filter = "{0} == @{1}";
-            var ofTypeMethod = typeof(Queryable).GetMethod("OfType");
-            var navigationQuery = ofTypeMethod.MakeGenericMethod(relationType).Invoke(null, new object[] { entities.AsQueryable() }) as IQueryable;
-            var filters = new List<string>();
-            var parameters = new List<object>();
-
-            for (var i = 0; i < foreignKeys.Count; i++) {
-                var keyName = keys[i];
-                var foreignKeyName = foreignKeys[i];
-                var foreignKeyValue = Helper.GetPropertyValue(keyEntity, foreignKeyName);
-                if (foreignKeyValue == null) return null;
-
-                filters.Add(string.Format(filter, keyName, i));
-                parameters.Add(foreignKeyValue);
-            }
-
-            return navigationQuery.Where(string.Join(" && ", filters), parameters.ToArray());
+            return Helper.MergeEntities(entityBags, Metadata(), out unmappedEntities);
         }
 
         /// <summary>
@@ -311,7 +179,7 @@ namespace Beetle.Server {
         /// <exception cref="EntityValidationException"></exception>
         protected Task<SaveResult> SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
-            var merges = MergeEntitiesBase(entityBags, out unmappeds);
+            var merges = Helper.MergeEntities(entityBags, Metadata(), out unmappeds);
             var mergeList = merges == null
                 ? new List<EntityBag>()
                 : merges as List<EntityBag> ?? merges.ToList();
@@ -321,7 +189,7 @@ namespace Beetle.Server {
             var handledUnmappedList = handledUnmappeds == null ? null : handledUnmappeds as IList<EntityBag> ?? handledUnmappeds.ToList();
             if (handledUnmappedList != null && handledUnmappedList.Any()) {
                 IEnumerable<EntityBag> discarded;
-                MergeEntitiesBase(handledUnmappedList, out discarded);
+                Helper.MergeEntities(handledUnmappedList, Metadata(), out discarded);
                 saveList = saveList.Concat(handledUnmappedList).ToList();
             }
             if (!saveList.Any()) return Task.FromResult(SaveResult.Empty);

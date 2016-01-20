@@ -14,10 +14,9 @@ namespace Beetle.Server {
         private readonly JsonSerializerSettings _settings;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleConfig"/> class.
+        /// Initializes a new instance of the <see cref="BeetleConfig" /> class.
         /// </summary>
-        public BeetleConfig()
-            : this(NullValueHandling.Ignore, TypeNameHandling.Objects) {
+        public BeetleConfig(): this(CreateSettings()) {
         }
 
         /// <summary>
@@ -25,8 +24,13 @@ namespace Beetle.Server {
         /// </summary>
         /// <param name="nullValueHandling">The null value handling.</param>
         /// <param name="typeNameHandling">The type name handling.</param>
-        public BeetleConfig(NullValueHandling nullValueHandling, TypeNameHandling typeNameHandling)
-            : this(CreateSettings(nullValueHandling, typeNameHandling)) {
+        /// <param name="preserveReferencesHandling">The reference handling, uses $id.</param>
+        /// <param name="formatting">The reference handling, uses $id.</param>
+        public BeetleConfig(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
+                            TypeNameHandling typeNameHandling = TypeNameHandling.Objects,
+                            PreserveReferencesHandling preserveReferencesHandling = PreserveReferencesHandling.Objects,
+                            Formatting formatting = Formatting.Indented)
+            : this(CreateSettings(nullValueHandling, typeNameHandling, preserveReferencesHandling, formatting)) {
         }
 
         /// <summary>
@@ -43,13 +47,17 @@ namespace Beetle.Server {
         /// <param name="nullValueHandling">The null value handling.</param>
         /// <param name="typeNameHandling">The type name handling.</param>
         /// <returns></returns>
-        private static JsonSerializerSettings CreateSettings(NullValueHandling nullValueHandling, TypeNameHandling typeNameHandling) {
+        private static JsonSerializerSettings CreateSettings(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
+                                                             TypeNameHandling typeNameHandling = TypeNameHandling.Objects,
+                                                             PreserveReferencesHandling preserveReferencesHandling = PreserveReferencesHandling.Objects,
+                                                             Formatting formatting = Formatting.Indented) {
             var jsonSerializerSettings = new JsonSerializerSettings {
                 NullValueHandling = nullValueHandling,
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                PreserveReferencesHandling = preserveReferencesHandling,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 TypeNameHandling = typeNameHandling,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+                Formatting = formatting
             };
 
             jsonSerializerSettings.Converters.Add(new BeetleDateTimeConverter { DateTimeFormat = "yyyy-MM-dd\\THH:mm:ss.fffK" });
