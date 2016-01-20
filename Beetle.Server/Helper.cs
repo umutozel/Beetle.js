@@ -352,6 +352,17 @@ namespace Beetle.Server {
             return DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, QueryableHandler.Instance, EnumerableHandler.Instance);
         }
 
+        /// <summary>
+        /// Default implementation for request process.
+        /// </summary>
+        /// <param name="contentValue">The content value.</param>
+        /// <param name="beetlePrms">The beetle PRMS.</param>
+        /// <param name="actionContext">The action context.</param>
+        /// <param name="service">The service.</param>
+        /// <param name="contextHandler">The context handler.</param>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        /// <param name="enumerableHandler">The enumerable handler.</param>
+        /// <returns></returns>
         public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
                                                             IBeetleService service, IContextHandler contextHandler,
                                                             IQueryHandler<IQueryable> queryableHandler, IContentHandler<IEnumerable> enumerableHandler) {
@@ -1020,7 +1031,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                     }
                 }
             }
-
         }
 
         /// <summary>
