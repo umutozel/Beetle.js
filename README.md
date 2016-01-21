@@ -29,7 +29,7 @@ All dependencies have base types so custom implementations can be made easily.
 * Entity Framework
 * WebApi or Asp.Net Mvc project for service
 * Knockout.js or EcmaScript5 Properties (for Angular) for providing observable objects
-* JQuery for ajax operations
+* JQuery or Angular for ajax operations
 
 ##Usage
 * Create a Controller and inherit from BeetleApiController, generic argument tells we are using Entity Framework context handler with TestEntities context (DbContext)
