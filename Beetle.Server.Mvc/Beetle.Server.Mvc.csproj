@@ -133,6 +133,9 @@
       <LastGenOutput>AssemblyFileVersion.cs</LastGenOutput>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(ProjectDir)bin\$(ConfigurationName)\Beetle.Server.Mvc.dll" 	"$(SolutionDir)_NuGet Packages\lib\Beetle.Server.Mvc.dll"</PostBuildEvent>

@@ -1092,95 +1092,72 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// Merges the entities, fixes relations and sort entities for save operation.
         /// </summary>
         /// <param name="entityBags">The entity bags.</param>
+        /// <param name="metadata">The metadata.</param>
         /// <param name="unmappedEntities">The unmapped entities.</param>
         public static IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, Metadata metadata, out IEnumerable<EntityBag> unmappedEntities) {
             if (entityBags == null)
                 throw new ArgumentNullException("entityBags");
 
             var entityBagList = entityBags as IList<EntityBag> ?? entityBags.ToList();
-            var entityList = entityBagList.Select(eb => eb.Entity).ToList();
-            var mergedBagList = entityBagList.ToList();
+            var entityList = entityBagList.Where(eb => eb.EntityState != EntityState.Deleted && eb.EntityState != EntityState.Detached).Select(eb => eb.Entity).ToList();
+            var mergedBagList = new List<EntityBag>();
             var unmappedEntityList = new List<EntityBag>();
 
             foreach (var entityBag in entityBagList) {
+                if (entityBag.EntityState == EntityState.Deleted || entityBag.EntityState == EntityState.Detached)
+                    continue;
+
                 var entity = entityBag.Entity;
                 var type = entity.GetType();
                 var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
                 if (entityBag.EntityType == null)
-                    entityBag.EntityType = entityBag.EntityType ?? metadata.Entities.First(e => e.Name == entityTypeName);
+                    entityBag.EntityType = entityBag.EntityType ?? metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
                 var entityType = entityBag.EntityType;
                 if (entityType == null) {
                     unmappedEntityList.Add(entityBag);
-                    mergedBagList.Remove(entityBag);
                     continue;
                 }
 
-                foreach (var metaNavigation in entityType.AllNavigationProperties) {
-                    var navigationType = GetPropertyType(type, metaNavigation.Name);
+                foreach (var navigationProperty in entityType.AllNavigationProperties) {
+                    var navigationType = GetPropertyType(type, navigationProperty.Name);
                     if (navigationType == null) continue;
-                    var metaInverseNavigation = metaNavigation.Inverse;
-                    if (metaNavigation.IsScalar.HasValue && metaNavigation.IsScalar.Value) {
-                        if (!metaNavigation.ForeignKeys.Any()) continue;
 
-                        var navigationQuery = GetRelationQuery(entityList, entity, navigationType, entityType.Keys, metaNavigation.ForeignKeys);
+                    if (navigationProperty.IsScalar == true) {
+                        if (!navigationProperty.ForeignKeys.Any()) continue;
+
+                        var navigationQuery = GetRelationQuery(entityList, entity, navigationType, entityType.Keys, navigationProperty.ForeignKeys);
                         if (navigationQuery == null) continue;
 
                         var navigationEntity = Enumerable.SingleOrDefault((dynamic)navigationQuery);
                         if (navigationEntity == null) continue;
 
-                        var navigationEntityBag = entityBagList.Single(eb => eb.Entity == navigationEntity);
-                        if (navigationEntityBag.EntityState == EntityState.Added) {
-                            var navigationEntityBagIndex = mergedBagList.IndexOf(navigationEntityBag);
-                            var entityBagIndex = mergedBagList.IndexOf(entityBag);
-                            if (navigationEntityBagIndex > entityBagIndex) {
-                                mergedBagList.Remove(navigationEntityBag);
-                                mergedBagList.Insert(entityBagIndex, navigationEntityBag);
-                            }
-                        }
-
-                        SetPropertyValue(entity, metaNavigation.Name, navigationEntity);
-
-                        if (metaInverseNavigation == null) continue;
-
-                        var inverseNavigationPropertyType = GetPropertyType(navigationType, metaInverseNavigation.Name);
-                        if (inverseNavigationPropertyType == null) continue;
-
-                        if (metaInverseNavigation.IsScalar.HasValue && metaInverseNavigation.IsScalar.Value) {
-                            SetPropertyValue(navigationEntity, metaInverseNavigation.Name, entity);
-                        }
-                        else {
-                            var inverseValue = GetPropertyValue(navigationEntity, metaInverseNavigation.Name);
-                            if (inverseValue == null && !inverseNavigationPropertyType.IsInterface) {
-                                inverseValue = Activator.CreateInstance(inverseNavigationPropertyType);
-                                SetPropertyValue(navigationEntity, metaInverseNavigation.Name, inverseValue);
-                            }
-                            if (inverseValue != null && !Enumerable.Contains(inverseValue, entity)) {
-                                var addMethod = inverseValue.GetType().GetMethod("Add");
-                                addMethod.Invoke(inverseValue, new[] { entity });
-                            }
-                        }
+                        SetPropertyValue(entity, navigationProperty.Name, navigationEntity);
                     }
-                    else if (metaInverseNavigation != null) {
+                    else {
                         if (!navigationType.IsGenericType) continue;
-                        var navigationValue = GetPropertyValue(entity, metaNavigation.Name);
+
+                        var navigationValue = GetPropertyValue(entity, navigationProperty.Name);
                         if (navigationValue == null && !navigationType.IsInterface) {
                             navigationValue = Activator.CreateInstance(navigationType);
-                            SetPropertyValue(entity, metaNavigation.Name, navigationValue);
+                            SetPropertyValue(entity, navigationProperty.Name, navigationValue);
                         }
                         if (navigationValue == null) continue;
 
                         var navigationQuery = GetRelationQuery(entityList, entity, navigationType.GenericTypeArguments.Single(),
-                                                               metaInverseNavigation.ForeignKeys, entityType.Keys);
+                                                               navigationProperty.ForeignKeys, entityType.Keys);
                         if (navigationQuery == null) continue;
 
                         var navigationEntities = Enumerable.ToList((dynamic)navigationQuery);
-                        var addMethod = navigationValue.GetType().GetMethod("Add");
+                        var containsMethod = navigationType.GetMethod("Contains");
+                        var addMethod = navigationType.GetMethod("Add");
                         foreach (var navigationEntity in navigationEntities) {
-                            if (!Enumerable.Contains(navigationValue, navigationEntity))
+                            if (containsMethod.Invoke(navigationValue, new object[] { navigationEntity }).Equals(false))
                                 addMethod.Invoke(navigationValue, new object[] { navigationEntity });
                         }
                     }
                 }
+
+                mergedBagList.Add(entityBag);
             }
 
             unmappedEntities = unmappedEntityList;
