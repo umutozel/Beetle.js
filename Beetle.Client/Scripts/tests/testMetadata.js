@@ -154,7 +154,9 @@ var testMetadata = {
           "n": "Companies",
           "t": "Company",
           "a": "FK_Company_Address",
-          "f": [],
+          "f": [
+            "AddressId"
+          ],
           "v": []
         }
       ],
@@ -291,7 +293,9 @@ var testMetadata = {
           "n": "Children",
           "t": "NamedEntity",
           "a": "FK_NamedEntity_NamedEntity_Parent",
-          "f": [],
+          "f": [
+            "NamedEntityId_Parent"
+          ],
           "v": []
         },
         {
@@ -331,7 +335,9 @@ var testMetadata = {
           "n": "NamedEntities",
           "t": "NamedEntity",
           "a": "FK_NamedEntity_NamedEntityType",
-          "f": [],
+          "f": [
+            "NamedEntityTypeId"
+          ],
           "v": []
         }
       ],
@@ -370,7 +376,9 @@ var testMetadata = {
           "t": "OrderDetail",
           "a": "FK_Order_OrderDetail",
           "c": true,
-          "f": [],
+          "f": [
+            "OrderId"
+          ],
           "v": []
         }
       ],

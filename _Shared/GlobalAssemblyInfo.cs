@@ -8,9 +8,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("Beetle.js © 2016")]
 
-[assembly: AssemblyCulture("en-US")]
-[assembly: NeutralResourcesLanguageAttribute("en-US")]
-
 [assembly: ComVisible(false)]
 
 #if DEBUG

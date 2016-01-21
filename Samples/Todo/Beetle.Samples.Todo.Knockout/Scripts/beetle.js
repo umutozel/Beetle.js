@@ -349,9 +349,9 @@
                 /// <param name="entity">The entity.</param>
                 /// <param name="navProperty">The navigation property.</param>
                 /// <param name="newValue">New value.</param>
-                for (var i = 0; i < navProperty.foreignKeys.length; i++) {
+                for (var i = 0; i < navProperty.foreignKeyNames.length; i++) {
                     // We get each related foreign key for this navigation property.
-                    var fk = navProperty.foreignKeys[i];
+                    var fk = navProperty.foreignKeyNames[i];
                     var tracker = entity.$tracker;
                     if (newValue) {
                         // When foreign key is built with more than one column, we presume foreign key-primary key order is same
@@ -360,9 +360,11 @@
                         //  we presume Supplier's corresponding primary keys are in exactly same order.
                         var k = navProperty.entityType.keys[i];
                         var v = newValue.$tracker.getValue(k.name);
-                        tracker.setValue(fk.name, v);
-                    } else
-                        tracker.setValue(fk.name, fk.getDefaultValue());
+                        tracker.setValue(fk, v);
+                    } else {
+                        var fkp = helper.findInArray(tracker.entityType.dataProperties, fk, 'name');
+                        tracker.setValue(fk, fkp.getDefaultValue());
+                    }
                 }
             },
             jsepToODataQuery: function (exp, queryContext, firstExp) {
@@ -3883,8 +3885,10 @@
                             helper.forEach(np.foreignKeyNames, function (fkName) {
                                 if (!helper.findInArray(np.foreignKeys, fkName, 'name')) {
                                     var dp = helper.findInArray(type.dataProperties, fkName, 'name');
-                                    dp.relatedNavigationProperties.push(np);
-                                    np.foreignKeys.push(dp);
+                                    if (dp) {
+                                        dp.relatedNavigationProperties.push(np);
+                                        np.foreignKeys.push(dp);
+                                    }
                                 }
                             });
                         });
@@ -6706,15 +6710,11 @@
                         /// </summary>
                         /// <param name="fk">The foreign key.</param>
                         /// <param name="navProperty">The navigation property.</param>
-                        // get other side of the navigation property.
-                        var inverse = navProperty.inverse;
-                        // if there is no other side, return null.
-                        if (!inverse) return null;
                         var retVal = [];
                         // copy all items has same foreign key for given navigation propery to a new array.
                         for (var i = 0; i < this.keyIndex.length; i++) {
                             var ki = this.keyIndex[i];
-                            if (ki.entity.$tracker.foreignKey(inverse) === fk)
+                            if (ki.entity.$tracker.foreignKey(navProperty) === fk)
                                 retVal.push(ki.entity);
                         }
                         return retVal;
@@ -6888,15 +6888,10 @@
                     /// <param name="navProperty">The navigation property.</param>
                     // Example: We may want OrderDetails for Order
                     //  So entity: Order, navProperty: npOrderDetails
-                    //  Other side: npOrder (from OrderDetail's side)
                     //  key: OrderId
                     //  es: OrderDetailEntitySet
                     //  fk: OrderDetail's OrderId
                     //  result: entity set tries to find all OrderDetails with given OrderId
-
-                    // get other side of navigation
-                    var np = navProperty.inverse;
-                    if (!np) return null;
                     var type = navProperty.entityType;
                     var key = entity.$tracker.key;
                     if (!key) return null;
@@ -7203,9 +7198,7 @@
                     var retVal = [];
                     for (var i = 0; i < type.keys.length; i++) {
                         var key = type.keys[i];
-                        var fk = navProperty.foreignKeys[i];
-                        if (fk == null) return null;
-                        var fkName = fk.name;
+                        var fkName = navProperty.foreignKeyNames[i];
                         var value = this.getValue(fkName);
                         if (value == null) return null;
                         if (key.dataType.name == 'guid')
@@ -7439,12 +7432,9 @@
                             query = query.where(property.name + " == @0", [value]);
                         });
                     } else { // if navigation is plural use the entity's key to load related entities via foreign key
-                        var inverse = navProp.inverse;
-                        if (!inverse) throw helper.createError(i18N.pluralNeedsInverse, { property: navProp });
-                        helper.forEach(inverse.foreignKeys, function (fk, i) {
-                            var property = fk.name;
-                            var value = tracker.getValue(inverse.entityType.keys[i]);
-                            query = query.where(property + " == @0", [value]);
+                        helper.forEach(navProp.foreignKeyNames, function (fk, i) {
+                            var value = tracker.getValue(tracker.entityType.keys[i]);
+                            query = query.where(fk + " == @0", [value]);
                         });
                     }
                     return query;
@@ -7771,21 +7761,21 @@
                     // For each navigation property.
                     helper.forEach(tracker.entityType.navigationProperties, function (np) {
                         // If property has inverse navigation defined.
-                        if (np.inverse) {
+                        if (np.isScalar) {
                             var inverse = np.inverse;
-                            if (np.isScalar) {
+                            if (inverse && inverse.isScalar) {
                                 var value = tracker.getValue(np.name);
                                 if (value)
                                     helper.setForeignKeys(value, inverse, entity);
-                            } else {
-                                // Get the current items.
-                                var array = tracker.getValue(np.name);
-                                if (array && array.length > 0) {
-                                    // Set foreign keys to new value.
-                                    helper.forEach(array, function (item) {
-                                        helper.setForeignKeys(item, inverse, entity);
-                                    });
-                                }
+                            }
+                        } else {
+                            // Get the current items.
+                            var array = tracker.getValue(np.name);
+                            if (array && array.length > 0) {
+                                // Set foreign keys to new value.
+                                helper.forEach(array, function (item) {
+                                    helper.setForeignKeys(item, np, entity);
+                                });
                             }
                         }
                     });

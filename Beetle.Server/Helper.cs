@@ -564,9 +564,16 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                                 IsScalar = isOneToOne
                             };
                             pkEntity.NavigationProperties.Add(pkNavigation);
+
+                            if (isOneToOne)
+                                pkNavigation.ForeignKeys.AddRange(pkEntity.Keys);
                         }
                         else
                             pkNavigation.IsScalar &= isOneToOne;
+
+                        if (!isOneToOne)
+                            pkNavigation.ForeignKeys.Add(fkColumn);
+
                         if (pkEntity.ClrType != null)
                             PopulateNavigationPropertyValidations(pkEntity.ClrType, pkNavigation);
                     }
@@ -652,7 +659,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// <param name="maxLen">The maximum length.</param>
         public static void PopulateDataPropertyValidations(MemberInfo member, Type memberType, DataProperty dataProperty, int? maxLen = null) {
             var displayName = dataProperty.GetDisplayName() ?? dataProperty.Name;
-            var dataAnnotations = memberType.GetAttributes<ValidationAttribute>(true);
+            var dataAnnotations = member.GetAttributes<ValidationAttribute>(true);
             foreach (var att in dataAnnotations) {
                 string msg;
                 var rmsg = att.ErrorMessageResourceName;
@@ -905,10 +912,12 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
             foreach (var propertyInfo in properties) {
                 var propertyType = propertyInfo.PropertyType;
                 var isNullable = false;
-                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof (Nullable<>)) {
+                if ((propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof (Nullable<>))) {
                     isNullable = true;
                     propertyType = propertyType.GetGenericArguments().First();
                 }
+                else if (propertyType == typeof(string))
+                    isNullable = true;
 
                 var dataType = GetDataType(propertyType);
 
@@ -936,11 +945,16 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                         navigationProperty.AssociationName = associationAttribute.Name;
                         if (isScalar)
                             navigationProperty.ForeignKeys = associationAttribute.ThisKeyMembers.ToList();
+                        else
+                            navigationProperty.ForeignKeys = associationAttribute.OtherKeyMembers.ToList();
                     }
                     else {
-                        navigationProperty.AssociationName = isScalar 
-                            ? entityType.ShortName + "_" + navigationProperty.EntityTypeName 
-                            : navigationProperty.EntityTypeName + "_" + entityType.ShortName;
+                        var assName = string.Join("_", new[] { entityType.ShortName, navigationProperty.EntityTypeName }.OrderBy(s => s));
+                        var i = 0;
+                        while (entityType.AllNavigationProperties.Any(n => n.AssociationName == assName + i)) i++;
+                        if (i > 0) assName += i;
+
+                        navigationProperty.AssociationName = assName;
                     }
 
                     PopulateNavigationPropertyValidations(propertyInfo, navigationProperty);
@@ -1016,18 +1030,35 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 
             foreach (var entity in metadata.Entities) {
                 foreach (var navigationProperty in entity.NavigationProperties) {
-                    if (navigationProperty.IsScalar == false) {
-                        var inverse = navigationProperty.Inverse;
-                        if (inverse != null) {
-                            var inverseClrType = navigationProperty.EntityType.ClrType;
-                            var requiredAttribute = inverseClrType.GetProperty(inverse.Name).GetAttribute<RequiredAttribute>(true);
-                            navigationProperty.DoCascadeDelete = requiredAttribute != null;
-                        }
+                    var inverse = navigationProperty.Inverse;
+
+                    if (navigationProperty.IsScalar == false && inverse != null) {
+                        var inverseClrType = navigationProperty.EntityType.ClrType;
+                        var requiredAttribute = inverseClrType.GetProperty(inverse.Name).GetAttribute<RequiredAttribute>(true);
+                        navigationProperty.DoCascadeDelete = requiredAttribute != null;
                     }
-                    else if (!navigationProperty.ForeignKeys.Any()) {
-                        var fkName = navigationProperty.EntityTypeName + "Id";
-                        if (entity.DataProperties.Any(dp => dp.Name == fkName))
-                            navigationProperty.ForeignKeys = new List<string> { fkName };
+
+                    if (navigationProperty.ForeignKeys == null || !navigationProperty.ForeignKeys.Any()) {
+                        var assName = navigationProperty.AssociationName;
+                        var lastChar = assName.Last();
+
+                        var suffix = "Id";
+                        if (char.IsNumber(lastChar)) suffix = lastChar + suffix;
+
+                        if (navigationProperty.IsScalar == false) {
+                            var fkName = entity.ShortName + suffix;
+                            if (navigationProperty.EntityType.DataProperties.Any(dp => dp.Name == fkName))
+                                navigationProperty.ForeignKeys = new List<string> { fkName };
+                        }
+                        else {
+                            if (inverse != null && inverse.IsScalar == true)
+                                navigationProperty.ForeignKeys = entity.Keys.ToList(); // one-to-one
+                            else {
+                                var fkName = navigationProperty.EntityTypeName + suffix;
+                                if (entity.DataProperties.Any(dp => dp.Name == fkName))
+                                    navigationProperty.ForeignKeys = new List<string> { fkName };
+                            }
+                        }
                     }
                 }
             }

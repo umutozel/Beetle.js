@@ -76,7 +76,16 @@ namespace Beetle.Server.EntityFramework {
             metadataWorkspace.RegisterItemCollection(itemCollection);
             metadataWorkspace.RegisterItemCollection(objectItemCollection);
 #endif
-            metadataWorkspace.LoadFromAssembly(modelAssembly);
+            try {
+                metadataWorkspace.LoadFromAssembly(modelAssembly);
+            }
+            catch (Exception ex) {
+                if (ex is ReflectionTypeLoadException) {
+                    var typeLoadException = ex as ReflectionTypeLoadException;
+                    var loaderExceptions = typeLoadException.LoaderExceptions;
+                }
+                throw;
+            }
 
             return Generate(metadataWorkspace, itemCollection, objectItemCollection, modelAssembly, modelName);
         }
@@ -244,10 +253,14 @@ namespace Beetle.Server.EntityFramework {
                             };
 
                             var isScalar = p.ToEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many;
+                            var isOneToOne = isScalar && p.FromEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many;
+
                             if (isScalar) {
                                 np.IsScalar = true;
                                 np.ForeignKeys.AddRange(ass.ReferentialConstraints.SelectMany(rc => rc.ToProperties.Select(tp => tp.Name)));
                             }
+                            else
+                                np.ForeignKeys.AddRange(ass.ReferentialConstraints.SelectMany(rc => rc.ToProperties.Select(tp => tp.Name)));
 
                             if (p.FromEndMember.DeleteBehavior == OperationAction.Cascade)
                                 np.DoCascadeDelete = true;
