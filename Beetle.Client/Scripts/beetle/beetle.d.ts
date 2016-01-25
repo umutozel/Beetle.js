@@ -989,7 +989,6 @@ declare module beetle {
     class MvcService extends services.MvcService { }
     class Event extends core.Event { }
     class ValueNotifyWrapper extends core.ValueNotifyWrapper { }
-    class TrackableArray<T> extends core.TrackableArray<T> { }
 
     var version: string;
 }
