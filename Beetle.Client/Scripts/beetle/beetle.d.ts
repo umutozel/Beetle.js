@@ -58,6 +58,18 @@ declare module beetle {
             new (): T;
         }
 
+        interface TrackableArray<T> extends Array<T> {
+            object: Object;
+            property: string;
+            after: interfaces.Delegate5<Object, string, TrackableArray<T>, T[], T[]>;
+            changing: Event;
+            changed: Event;
+
+            remove(...T): T[];
+            load(expands: string[], resourceName: string, options: ManagerQueryOptions,
+                successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
+        }
+
         interface PropertyValidator {
             name: string;
             message: string;
@@ -370,6 +382,8 @@ declare module beetle {
         function getResourceValue(resourceName: string, altValue?: string): string;
         function createError(message: string, args?: Array<any>, props?: interfaces.Dictionary<any>): Error;
         function getFuncName(func: Function): string;
+        function createTrackableArray<T>(initial: Array<T>, object: Object, property: string,
+            after: interfaces.Delegate5<Object, string, TrackableArray<T>, Array<T>, Array<T>>): interfaces.TrackableArray<T>;
     }
 
     class Assert {
@@ -701,19 +715,6 @@ declare module beetle {
             constructor(value: any);
 
             value: any;
-        }
-        class TrackableArray<T> extends Array<T> {
-            constructor(initial: Array<T>, object: Object, property: string, after: interfaces.Delegate5<Object, string, TrackableArray<T>, Array<T>, Array<T>>)
-
-            object: Object;
-            property: string;
-            after: interfaces.Delegate5<Object, string, TrackableArray<T>, T[], T[]>;
-            changing: Event;
-            changed: Event;
-
-            remove(...T): T[];
-            load(expands: string[], resourceName: string, options: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
         }
         class Event {
             constructor(name: string, publisher: Object);

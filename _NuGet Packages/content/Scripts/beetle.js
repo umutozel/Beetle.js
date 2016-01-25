@@ -4,6 +4,91 @@
     var helper = (function () {
         /// <summary>Helper class for common codes. We are not using ECMA 5, so we must write these helper methods.</summary>
 
+        function pop(that) {
+            var items = [that[that.length - 1]];
+            // call base method
+            that.changing.notify({ added: [], removed: items });
+            var retVal = Array.prototype.pop.call(that);
+            that.after(that.object, that.property, that, items, null);
+            that.changed.notify({ added: [], removed: items });
+            return retVal;
+        };
+
+        function push(that, args) {
+            that.changing.notify({ added: args, removed: [] });
+            beforeAdd(args, that);
+            var retVal = Array.prototype.push.apply(that, args);
+            that.after(that.object, that.property, that, null, args);
+            that.changed.notify({ added: args, removed: [] });
+            return retVal;
+        };
+
+        function unshift(that, args) {
+            that.changing.notify({ added: args, removed: [] });
+            beforeAdd(args, that);
+            var retVal = Array.prototype.unshift.apply(that, args);
+            that.after(that.object, that.property, that, null, args);
+            that.changed.notify({ added: args, removed: [] });
+            return retVal;
+        };
+
+        function shift(that) {
+            var items = [that[0]];
+            that.changing.notify({ added: [], removed: items });
+            var retVal = Array.prototype.shift.call(that);
+            that.after(that.object, that.property, that, items, null);
+            that.changed.notify({ added: [], removed: items });
+            return retVal;
+        };
+
+        function splice(that, start, count, args) {
+            count = count || that.length;
+            var addedItems = null;
+            if (args.length > 2)
+                addedItems = Array.prototype.slice.call(args).slice(2); // convert arguments to array then slice
+            var removedItems = that.slice(start, start + count);
+            that.changing.notify({ added: addedItems, removed: removedItems });
+            if (addedItems)
+                beforeAdd(addedItems, that);
+            var retVal = Array.prototype.splice.apply(that, args);
+            that.after(that.object, that.property, that, removedItems, addedItems);
+            that.changed.notify({ added: addedItems, removed: removedItems });
+            return retVal;
+        };
+
+        function remove(that, args) {
+            var removed = [];
+            that.changing.notify({ added: [], removed: args });
+            helper.forEach(args, function (item) {
+                var index = helper.indexOf(that, item);
+                if (index >= 0) {
+                    Array.prototype.splice.call(that, index, 1);
+                    removed.push(item);
+                }
+            });
+            that.after(that.object, that.property, that, removed, null);
+            that.changed.notify({ added: [], removed: removed });
+            return removed;
+        };
+
+        function beforeAdd(added, instance) {
+            var o = instance.object;
+            var p = instance.property;
+            if (p) {
+                var handleUnmappedProperties;
+                if (o.$tracker && o.$tracker.manager)
+                    handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
+                if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
+
+                if (Assert.isInstanceOf(p, metadata.NavigationProperty))
+                    helper.forEach(added, function (a) { p.checkAssign(a); });
+                else if (Assert.isInstanceOf(p, metadata.DataProperty))
+                    helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
+                else if (handleUnmappedProperties === true)
+                    helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
+            }
+        }
+
         return {
             assertPrm: function (value, name) {
                 /// <summary>Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check(). (adapted from breezejs)</summary>
@@ -366,6 +451,53 @@
                         tracker.setValue(fk, fkp.getDefaultValue());
                     }
                 }
+            },
+            createTrackableArray: function (initial, object, property, after) {
+                var array = initial || [];
+                array.object = object;
+                array.property = property;
+                array.after = after;
+
+                array.changing = new core.Event(property + "ArrayChanging", array);
+                array.changed = new core.Event(property + "ArrayChanged", array);
+
+                array.pop = function () {
+                    return pop(this);
+                };
+
+                array.push = function (items) {
+                    return push(this, arguments);
+                };
+
+                array.unshift = function (items) {
+                    return unshift(this, arguments)
+                };
+
+                array.shift = function () {
+                    return shift(this);
+                };
+
+                array.splice = function (start, count) {
+                    return splice(this, start, count, arguments);
+                };
+
+                array.remove = function (items) {
+                    return remove(this, arguments);
+                };
+
+                array.load = function (expands, resourceName, options, successCallback, errorCallback) {
+                    /// <summary>
+                    /// Loads the navigation property.
+                    /// </summary>
+                    /// <param name="expands">Expand navigations to apply when loading navigation property.</param>
+                    /// <param name="resourceName">Resource name to query entities.</param>
+                    /// <param name="options">Query options.</param>
+                    /// <param name="successCallback">Function to call after operation succeeded.</param>
+                    /// <param name="errorCallback">Function to call when operation fails.</param>
+                    return this.object.$tracker.loadNavigationProperty(this.propertyName, expands, resourceName, options, successCallback, errorCallback);
+                };
+
+                return array;
             },
             jsepToODataQuery: function (exp, queryContext, firstExp) {
                 /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
@@ -2826,7 +2958,7 @@
                         var retVal;
                         value = value || [];
                         if (after)
-                            value = new core.TrackableArray(value, object, property,
+                            value = helper.createTrackableArray(value, object, property,
                                 function (o, p, i, r, a) {
                                     if (retVal.$fromKo !== true)
                                         object[propertyName].valueHasMutated();
@@ -2937,7 +3069,7 @@
                     function toObservableArray(property, propertyName, value, after, setCallback) {
                         value = value || [];
                         if (after)
-                            value = new core.TrackableArray(value, object, property, after);
+                            value = helper.createTrackableArray(value, object, property, after);
                         fields[propertyName] = value;
 
                         return Object.defineProperty(object, propertyName, {
@@ -5617,137 +5749,6 @@
                     this.fromBeetle = fromBeetle === true;
                     helper.tryFreeze(this);
                 };
-
-                return ctor;
-            })(),
-            TrackableArray: (function () {
-                var ctor = function (initial, object, property, after) {
-                    /// <summary>
-                    /// Trackable array interceptor. Inherits from Array and can notify beetle core when array changes.
-                    /// </summary>
-                    /// <param name="target">Initial array.</param>
-                    /// <param name="object">Array's owner object.</param>
-                    /// <param name="property">Property that holds this array on the object.</param>
-                    /// <param name="after">Callback to call after array changed.</param>
-                    this.object = object;
-                    this.property = property;
-                    this.after = after;
-
-                    this.changing = new core.Event(property + "ArrayChanging", this);
-                    this.changed = new core.Event(property + "ArrayChanged", this);
-
-                    initialize(initial, this);
-                };
-                helper.inherit(ctor, Array);
-                var proto = ctor.prototype;
-
-                // we change pop behavior. Now we have the full control.
-                // the technique is same for other methods.
-                proto.pop = function () {
-                    var items = [this[this.length - 1]];
-                    // call base method
-                    this.changing.notify({ added: [], removed: items });
-                    var retVal = Array.prototype.pop.call(this);
-                    this.after(this.object, this.property, this, items, null);
-                    this.changed.notify({ added: [], removed: items });
-                    return retVal;
-                };
-
-                proto.push = function (items) {
-                    this.changing.notify({ added: arguments, removed: [] });
-                    beforeAdd(arguments, this);
-                    var retVal = Array.prototype.push.apply(this, arguments);
-                    this.after(this.object, this.property, this, null, arguments);
-                    this.changed.notify({ added: arguments, removed: [] });
-                    return retVal;
-                };
-
-                proto.unshift = function (items) {
-                    this.changing.notify({ added: arguments, removed: [] });
-                    beforeAdd(arguments, this);
-                    var retVal = Array.prototype.unshift.apply(this, arguments);
-                    this.after(this.object, this.property, this, null, arguments);
-                    this.changed.notify({ added: arguments, removed: [] });
-                    return retVal;
-                };
-
-                proto.shift = function () {
-                    var items = [this[0]];
-                    this.changing.notify({ added: [], removed: items });
-                    var retVal = Array.prototype.shift.call(this);
-                    this.after(this.object, this.property, this, items, null);
-                    this.changed.notify({ added: [], removed: items });
-                    return retVal;
-                };
-
-                proto.splice = function (start, count) {
-                    count = count || this.length;
-                    var addedItems = null;
-                    if (arguments.length > 2)
-                        addedItems = Array.prototype.slice.call(arguments).slice(2); // convert arguments to array then slice
-                    var removedItems = this.slice(start, start + count);
-                    this.changing.notify({ added: addedItems, removed: removedItems });
-                    if (addedItems)
-                        beforeAdd(addedItems, this);
-                    var retVal = Array.prototype.splice.apply(this, arguments);
-                    this.after(this.object, this.property, this, removedItems, addedItems);
-                    this.changed.notify({ added: addedItems, removed: removedItems });
-                    return retVal;
-                };
-
-                proto.remove = function (items) {
-                    var removed = [];
-                    var that = this;
-                    this.changing.notify({ added: [], removed: arguments });
-                    helper.forEach(arguments, function (item) {
-                        var index = helper.indexOf(that, item);
-                        if (index >= 0) {
-                            Array.prototype.splice.call(that, index, 1);
-                            removed.push(item);
-                        }
-                    });
-                    this.after(this.object, this.property, this, removed, null);
-                    this.changed.notify({ added: [], removed: arguments });
-                    return removed;
-                };
-
-                proto.load = function (expands, resourceName, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Loads the navigation property.
-                    /// </summary>
-                    /// <param name="expands">Expand navigations to apply when loading navigation property.</param>
-                    /// <param name="resourceName">Resource name to query entities.</param>
-                    /// <param name="options">Query options.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    return this.object.$tracker.loadNavigationProperty(this.propertyName, expands, resourceName, options, successCallback, errorCallback);
-                };
-
-                function initialize(initial, instance) {
-                    // I couldn't call base constructor with parameter so I pushed all one by one.
-                    if (initial)
-                        helper.forEach(initial, function (item) {
-                            Array.prototype.push.call(instance, item);
-                        });
-                }
-
-                function beforeAdd(added, instance) {
-                    var o = instance.object;
-                    var p = instance.property;
-                    if (p) {
-                        var handleUnmappedProperties;
-                        if (o.$tracker && o.$tracker.manager)
-                            handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
-                        if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
-
-                        if (Assert.isInstanceOf(p, metadata.NavigationProperty))
-                            helper.forEach(added, function (a) { p.checkAssign(a); });
-                        else if (Assert.isInstanceOf(p, metadata.DataProperty))
-                            helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
-                        else if (handleUnmappedProperties === true)
-                            helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
-                    }
-                }
 
                 return ctor;
             })(),
