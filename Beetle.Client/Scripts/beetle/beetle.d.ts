@@ -743,6 +743,21 @@ declare module beetle {
             var geometry: interfaces.DataTypeBase;
             var geography: interfaces.DataTypeBase;
         }
+        class EntityContainer {
+            constructor();
+
+            toString(): string;
+            push(entity: IEntity);
+            remove(entity: IEntity);
+            getEntities(): IEntity[];
+            getEntityByKey(key: string, type: interfaces.EntityType): IEntity;
+            getRelations(entity: IEntity, navProperty: interfaces.NavigationProperty): IEntity[];
+            relocateKey(entity: IEntity, oldKey: string, newKey: string);
+            getChanges(): IEntity[];
+            count(): number;
+            findEntitySet(type: interfaces.EntityType): EntitySet<IEntity>;
+            getEntitySet(type: interfaces.EntityType): EntitySet<IEntity>;
+        }
         class EntitySet<T extends IEntity> extends querying.EntityQuery<T> {
             constructor(type: interfaces.EntityType, manager: EntityManager);
 
@@ -764,6 +779,7 @@ declare module beetle {
             constructor(service: baseTypes.DataServiceBase, options?: ManagerOptions);
 
             dataService: baseTypes.DataServiceBase;
+            entities: EntityContainer;
             pendingChangeCount: number;
             validationErrors: interfaces.ValidationError[];
             entityStateChanged: Event;
