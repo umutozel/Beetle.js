@@ -206,6 +206,7 @@ declare module beetle {
 
         interface QueryResultArray<T> extends Array<T> {
             $extra: QueryResultExtra;
+            $inlineCount?: number;
         }
 
         interface PropertyValue {
