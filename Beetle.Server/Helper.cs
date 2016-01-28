@@ -857,7 +857,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// <param name="resourceName">Metadata container resource name.</param>
         /// <param name="displayNameGetter">Metadata container culture name getter.</param>
         public static Metadata GenerateMetadata(Type type, string name = null, string resourceName = null, Func<string> displayNameGetter = null) {
-            var metadata = new Metadata(name ?? type.Name, displayNameGetter) {ResourceName = resourceName ?? type.Name};
+            var metadata = new Metadata(name ?? type.Name, displayNameGetter) {ResourceName = resourceName};
             PopulateMetadata(type, metadata);
 
             FixMetadata(metadata);
@@ -899,8 +899,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
             var entityType = new EntityType(fullName, type.Name, entityDisplayNameGetter);
             metadata.Entities.Add(entityType);
             entityType.ClrType = type;
-            entityType.QueryName = Pluralize(entityType.ShortName);
-            entityType.QueryType = type.Name;
 
             if (type.BaseType != null && type.BaseType != typeof(object)) {
                 entityType.BaseTypeName = type.BaseType.Name;
@@ -921,7 +919,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 
                 var dataType = GetDataType(propertyType);
 
-                var resourceName = propertyInfo.Name;
+                string resourceName = null;
                 Func<string> displayNameGetter = null;
                 GetDisplayInfo(propertyInfo, ref resourceName, ref displayNameGetter);
                 if (dataType == null) {
@@ -1078,7 +1076,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                 var member = enumType.GetField(name);
                 var value = member.GetRawConstantValue();
 
-                var resourceName = name;
+                string resourceName = null;
                 Func<string> displayNameGetter = null;
                 GetDisplayInfo(member, ref resourceName, ref displayNameGetter);
 
