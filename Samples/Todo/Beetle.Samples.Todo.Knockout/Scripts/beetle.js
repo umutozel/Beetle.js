@@ -524,19 +524,26 @@
                     return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
                 else if (exp.type == 'Identifier') {
                     var n = exp.name;
+                    var val = undefined;
+                    var isPrm = false;
                     if (n[0] == '@') {
-                        var val = undefined;
-                        var varName = n.slice(1);
-                        if (queryContext.expVarContext && queryContext.expVarContext[varName] !== undefined)
-                            val = queryContext.expVarContext[varName];
-                        else if (queryContext.varContext)
-                            val = queryContext.varContext[varName];
-                        if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-                        return core.dataTypes.toODataValue(val);
-                    } else {
-                        var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                        if (a) return a.value;
+                        isPrm = true;
+                        n = n.slice(1);
                     }
+
+                    if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
+                        val = queryContext.expVarContext[n];
+                    else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
+                        val = queryContext.varContext[n];
+
+                    if (val !== undefined)
+                        return core.dataTypes.toODataValue(val);
+                    if (isPrm)
+                        throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+
+                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                    if (a) return a.value;
+
                     return n;
                 }
                 else if (exp.type == 'Literal')
@@ -548,6 +555,9 @@
                         var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
                         if (ali) o = ali.value;
                         else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
+
+                        if (o[exp.property.name] !== undefined)
+                            return o[exp.property.name];
                         return o ? o + '/' + exp.property.name : exp.property.name;
                     }
                 }
@@ -631,20 +641,26 @@
                     return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
                 else if (exp.type == 'Identifier') {
                     var n = exp.name;
+                    var val = undefined;
+                    var isPrm = false;
                     if (n[0] == '@') {
-                        var val = undefined;
-                        var varName = n.slice(1);
-                        if (queryContext.expVarContext && queryContext.expVarContext[varName] !== undefined)
-                            val = queryContext.expVarContext[varName];
-                        else if (queryContext.varContext)
-                            val = queryContext.varContext[varName];
-                        if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+                        isPrm = true;
+                        n = n.slice(1);
+                    }
+
+                    if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
+                        val = queryContext.expVarContext[n];
+                    else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
+                        val = queryContext.varContext[n];
+
+                    if (val !== undefined)
                         return core.dataTypes.toBeetleValue(val);
-                    }
-                    else {
-                        var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                        if (a) return a.value;
-                    }
+                    if (isPrm)
+                        throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+
+                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                    if (a) return a.value;
+
                     return n;
                 }
                 else if (exp.type == 'Literal')
@@ -656,6 +672,9 @@
                         var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
                         if (ali) o = ali.value;
                         else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
+
+                        if (o[exp.property.name] !== undefined)
+                            return o[exp.property.name];
                         return o + '.' + exp.property.name;
                     }
                 }
@@ -4039,6 +4058,40 @@
     var querying = (function () {
         /// <summary>Querying related types.</summary>
 
+        (function queryFuncExtensions() {
+            // add missing query functions
+            if (!String.prototype.hasOwnProperty("substringOf")) {
+                String.prototype.substringOf = function (source) {
+                    return Assert.isNotEmptyString(source) && source.indexOf(this) >= 0;
+                }
+            }
+            if (!String.prototype.hasOwnProperty("startsWith")) {
+                String.prototype.startsWith = function (other) {
+                    return this.indexOf(other) == 0;
+                }
+            }
+            if (!String.prototype.hasOwnProperty("endsWith")) {
+                String.prototype.endsWith = function (other) {
+                    return this.indexOf(other) == (this.length - other.length);
+                }
+            }
+            if (!Number.prototype.hasOwnProperty("round")) {
+                Number.prototype.round = function () {
+                    return Math.round(this);
+                }
+            }
+            if (!Number.prototype.hasOwnProperty("ceiling")) {
+                Number.prototype.ceiling = function () {
+                    return Math.ceil(this);
+                }
+            }
+            if (!Number.prototype.hasOwnProperty("floor")) {
+                Number.prototype.floor = function () {
+                    return Math.floor(this);
+                }
+            }
+        })();
+
         return {
             expressions: (function () {
                 /// <summary>Linq like expressions to filter, order etc. arrays and server resources. Used by queries.</summary>
@@ -4892,6 +4945,7 @@
 
                     return new ctor();
                 })();
+                expose.touppercase = expose.toupper;
                 /// <field>Returns lowercase value</field>
                 expose.tolower = (function () {
                     var ctor = function () {
@@ -4906,6 +4960,7 @@
 
                     return new ctor();
                 })();
+                expose.tolowercase = expose.tolower;
                 /// <field>Returns substring of given string</field>
                 expose.substring = (function () {
                     var ctor = function () {
@@ -5221,6 +5276,7 @@
 
                     return new ctor();
                 })();
+                expose.getseconds = expose.second;
                 /// <field>Returns minute of date</field>
                 expose.minute = (function () {
                     var ctor = function () {
@@ -5241,6 +5297,7 @@
 
                     return new ctor();
                 })();
+                expose.getminutes = expose.minute;
                 /// <field>Returns hour of date</field>
                 expose.hour = (function () {
                     var ctor = function () {
@@ -5261,6 +5318,7 @@
 
                     return new ctor();
                 })();
+                expose.gethours = expose.hour;
                 /// <field>Returns day of date</field>
                 expose.day = (function () {
                     var ctor = function () {
@@ -5281,6 +5339,7 @@
 
                     return new ctor();
                 })();
+                expose.getdate = expose.day;
                 /// <field>Returns month of date</field>
                 expose.month = (function () {
                     var ctor = function () {
@@ -5301,6 +5360,7 @@
 
                     return new ctor();
                 })();
+                expose.getmonth = expose.month;
                 /// <field>Returns year of date</field>
                 expose.year = (function () {
                     var ctor = function () {
@@ -5321,6 +5381,7 @@
 
                     return new ctor();
                 })();
+                expose.getfullyear = expose.year;
 
                 /// <field>Returns max value in the array</field>
                 expose.max = (function () {
@@ -5890,6 +5951,15 @@
                         helper.tryFreeze(this);
                     };
                     helper.inherit(ctor, baseTypes.DataTypeBase);
+                    var proto = ctor.prototype;
+
+                    proto.toODataValue = function (value) {
+                        return value;
+                    };
+
+                    proto.toBeetleValue = function (value) {
+                        return value;
+                    };
 
                     return new ctor();
                 })();
@@ -6380,6 +6450,8 @@
                         return expose.number;
                     if (expose.array.isValid(value))
                         return expose.array;
+                    if (Assert.isObject(value))
+                        return expose.object;
                     return expose.binary;
                 };
                 expose.handle = function (value) {

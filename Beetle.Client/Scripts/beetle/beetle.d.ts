@@ -637,7 +637,7 @@ declare module beetle {
             ofType<TResult extends T>(type: string): EntityQuery<TResult>;
             ofType<TResult extends T>(constructor: interfaces.ParameterlessConstructor<TResult>): EntityQuery<TResult>;
             where(predicate: string, varContext?: any): EntityQuery<T>;
-            where(predicate: interfaces.Func1<T, boolean>): EntityQuery<T>;
+            where(predicate: interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
             orderBy(keySelector?: string): EntityQuery<T>;
             orderBy(keySelector: interfaces.Func1<T, any>): EntityQuery<T>;
             orderByDesc(keySelector?: string): EntityQuery<T>;
@@ -669,13 +669,13 @@ declare module beetle {
             selectMany<TResult>(selector: interfaces.Func1<T, Array<TResult>>): EntityQuery<Array<TResult>>;
             selectMany(selector: interfaces.Func1<T, any>): EntityQuery<any>;
             skipWhile(predicate: string, varContext?: any): EntityQuery<T>;
-            skipWhile(predicate: interfaces.Func1<T, boolean>): EntityQuery<T>;
+            skipWhile(predicate: interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
             takeWhile(predicate: string, varContext?: any): EntityQuery<T>;
-            takeWhile(predicate: interfaces.Func1<T, boolean>): EntityQuery<T>;
+            takeWhile(predicate: interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
             all(predicate?: string, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
-            all(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            all(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
             any(predicate?: string, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
-            any(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            any(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
             avg(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
             avg(selector: interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
             max(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
@@ -685,19 +685,19 @@ declare module beetle {
             sum(selector?: string): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
             sum(selector: interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
             count(predicate?: string, varContext?: any): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
-            count(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            count(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
             first(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            first(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            first(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
             firstOrDefault(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            firstOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            firstOrDefault(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
             single(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            single(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            single(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
             singleOrDefault(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            singleOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            singleOrDefault(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
             last(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            last(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            last(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
             lastOrDefault(predicate?: string, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            lastOrDefault(predicate: interfaces.Func1<T, boolean>): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            lastOrDefault(predicate: interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
 
             execute(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
             execute<TResult>(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<TResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<TResult[]>;
@@ -998,4 +998,16 @@ declare module beetle {
 interface Array<T> {
     asQueryable(): beetle.querying.ArrayQuery<T>;
     q(): beetle.querying.ArrayQuery<T>;
+}
+
+interface StringConstructor {
+    substringOf(other: string): boolean;
+    startsWith(other: string): boolean;
+    endsWith(other: string): boolean;
+}
+
+interface NumberConstructor {
+    round(): number;
+    ceiling(): number;
+    floor(): number;
 }

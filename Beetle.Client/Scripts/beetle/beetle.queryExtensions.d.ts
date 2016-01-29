@@ -54,6 +54,7 @@ interface Array<T> {
     distinct(selector: string): beetle.querying.ArrayQuery<any>;
     distinct<TResult>(selector: beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
     distinct(selector: beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
+    reverse(): beetle.querying.ArrayQuery<T>;
     selectMany<TResult>(selector: string): beetle.querying.ArrayQuery<Array<TResult>>;
     selectMany(selector: string): beetle.querying.ArrayQuery<any>;
     selectMany<TResult>(selector: beetle.interfaces.Func1<T, Array<TResult>>): beetle.querying.ArrayQuery<Array<TResult>>;
