@@ -557,7 +557,7 @@
                         else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
 
                         if (o[exp.property.name] !== undefined)
-                            return o[exp.property.name];
+                            return core.dataTypes.toODataValue(o[exp.property.name]);
                         return o ? o + '/' + exp.property.name : exp.property.name;
                     }
                 }
@@ -674,7 +674,7 @@
                         else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
 
                         if (o[exp.property.name] !== undefined)
-                            return o[exp.property.name];
+                            return core.dataTypes.toBeetleValue(o[exp.property.name]);
                         return o + '.' + exp.property.name;
                     }
                 }
