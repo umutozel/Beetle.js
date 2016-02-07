@@ -6,7 +6,7 @@ declare module beetle {
 
     module interfaces {
         interface IClosedQueryable<T, TOptions> {
-            then(successCallback: Delegate1<T>, failCallback?: interfaces.Delegate1<Error>, options?: TOptions);
+            then(successCallback: Delegate1<T>, failCallback?: interfaces.Delegate1<Error>, options?: TOptions): PromiseLike<T>;
         }
     }
 
@@ -18,7 +18,8 @@ declare module beetle {
         }
 
         interface EntityQuery<T> {
-            then(callback: interfaces.Delegate1<T[]>, failCallback?: interfaces.Delegate1<Error>, options?: beetle.ManagerOptions);
+            then(callback: interfaces.Delegate1<beetle.interfaces.QueryResultArray<T>>, failCallback?: interfaces.Delegate1<Error>,
+                options?: beetle.ManagerOptions): PromiseLike<beetle.interfaces.QueryResultArray<T>>;
         }
     }
 }

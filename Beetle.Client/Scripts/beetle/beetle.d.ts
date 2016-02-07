@@ -778,7 +778,7 @@ declare module beetle {
             var number: interfaces.DataTypeBase;
             var byte: interfaces.DataTypeBase;
             var binary: interfaces.DataTypeBase;
-            var enumeration : interfaces.DataTypeBase; // enum
+            var enumeration: interfaces.DataTypeBase; // enum
             var geometry: interfaces.DataTypeBase;
             var geography: interfaces.DataTypeBase;
         }
