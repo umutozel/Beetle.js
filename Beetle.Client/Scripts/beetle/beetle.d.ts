@@ -188,6 +188,43 @@ declare module beetle {
             getEntities(): T[];
         }
 
+        interface Query<T> {
+            inlineCount(isEnabled?: boolean): Query<T>;
+            ofType<TResult extends T>(type: string): Query<TResult>;
+            ofType<TResult extends T>(constructor: ParameterlessConstructor<TResult>): Query<TResult>;
+            where(predicate: string, varContext?: any): Query<T>;
+            orderBy(keySelector?: string): Query<T>;
+            orderByDesc(keySelector?: string): Query<T>;
+            select<TResult>(selector: string): Query<TResult>;
+            select(selector: string): Query<any>;
+            select<TResult>(...selectors: string[]): Query<TResult>;
+            select(...selectors: string[]): Query<any>;
+            select<TResult>(selectors: string[]): Query<TResult>;
+            select(selectors: string[]): Query<any>;
+            select<TResult>(selector: Func1<T, TResult>): Query<TResult>;
+            select(selector: Func1<T, any>): Query<any>;
+            skip(count: number): Query<T>;
+            take(count: number): Query<T>;
+            top(count: number): Query<T>;
+            groupBy<TResult>(keySelector: string, valueSelector: string): Query<TResult>;
+            groupBy(keySelector: string, valueSelector: string): Query<any>;
+            groupBy<TKey, TResult>(keySelector: Func1<T, TKey>, valueSelector: Func1<Grouping<T, TKey>, TResult>): Query<TResult>;
+            groupBy<TResult>(keySelector: Func1<T, any>, valueSelector: Func1<Grouping<T, any>, TResult>): Query<TResult>;
+            groupBy(keySelector: Func1<T, any>, valueSelector?: Func1<Grouping<T, any>, any>): Query<any>;
+            distinct(): Query<T>;
+            distinct<TResult>(selector: string): Query<TResult>;
+            distinct(selector: string): Query<any>;
+            distinct<TResult>(selector: Func1<T, TResult>): Query<TResult>;
+            distinct(selector: Func1<T, any>): Query<any>;
+            reverse(): Query<T>;
+            selectMany<TResult>(selector: string): Query<Array<TResult>>;
+            selectMany(selector: string): Query<any>;
+            selectMany<TResult>(selector: Func1<T, Array<TResult>>): Query<Array<TResult>>;
+            selectMany(selector: Func1<T, any>): Query<any>;
+            skipWhile(predicate: string, varContext?: any): Query<T>;
+            takeWhile(predicate: string, varContext?: any): Query<T>;
+        }
+
         interface ClosedQueryable<T, TOptions> {
             execute(options?: TOptions, successCallback?: Delegate1<T>, errorCallback?: Delegate1<Error>): PromiseLike<T>;
             execute<TResult>(options?: TOptions, successCallback?: Delegate1<TResult>, errorCallback?: Delegate1<Error>): PromiseLike<TResult>;
@@ -543,7 +580,7 @@ declare module beetle {
     }
 
     module querying {
-        class ArrayQuery<T> {
+        class ArrayQuery<T> implements interfaces.Query<T> {
             constructor(array: T[]);
 
             array: Array<T>;
@@ -622,7 +659,7 @@ declare module beetle {
             x(options?: Object): T[];
             x<TResult>(options?: Object): TResult;
         }
-        class EntityQuery<T> {
+        class EntityQuery<T> implements interfaces.Query<T> {
             constructor(resource: string, type: interfaces.EntityType, manager: core.EntityManager);
 
             resource: string;
