@@ -77,8 +77,16 @@ namespace System.Linq.Dynamic {
             ExpressionParser parser = new ExpressionParser(parameters, ordering, values);
             IEnumerable<DynamicOrdering> orderings = parser.ParseOrdering();
             Expression queryExpr = source.Expression;
-            string methodAsc = "OrderBy";
-            string methodDesc = "OrderByDescending";
+            string methodAsc;
+            string methodDesc;
+            if (queryExpr.Type.IsGenericType && queryExpr.Type.GetGenericTypeDefinition() == typeof(IOrderedQueryable<>)) {
+                methodAsc = "ThenBy";
+                methodDesc = "ThenByDescending";
+            }
+            else {
+                methodAsc = "OrderBy";
+                methodDesc = "OrderByDescending";
+            }
             foreach (DynamicOrdering o in orderings) {
                 queryExpr = Expression.Call(
                     typeof(Queryable), o.Ascending ? methodAsc : methodDesc,
