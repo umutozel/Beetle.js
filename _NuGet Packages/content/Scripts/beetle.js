@@ -134,12 +134,13 @@
 
                 if (obj1 == null || obj2 == null)
                     return false;
+
                 if (Assert.isObject(obj1) && Assert.isObject(obj2)) {
                     var count1 = 0;
                     var count2 = 0;
                     for (var p in obj1) {
                         if (!obj2.hasOwnProperty(p)) return false;
-                        if (!helper.objEquals(helper.getValue(obj1, p), helper.getValue(obj2, p))) return false;
+                        if (helper.getValue(obj1, p) != helper.getValue(obj2, p)) return false;
                         count1++;
                     }
                     for (var p2 in obj2) count2++;
