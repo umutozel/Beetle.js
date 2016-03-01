@@ -1934,7 +1934,9 @@
 
                     var qc = {};
                     helper.forEach(this.expressions, function (exp) {
+                        qc.expVarContext = exp.varContext;
                         params.push(exp.name + ': ' + exp.toBeetleQuery(qc));
+                        qc.expVarContext = undefined;
                     });
 
                     return params.join(', ');
