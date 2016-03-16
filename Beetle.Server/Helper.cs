@@ -857,7 +857,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// <param name="resourceName">Metadata container resource name.</param>
         /// <param name="displayNameGetter">Metadata container culture name getter.</param>
         public static Metadata GenerateMetadata(Type type, string name = null, string resourceName = null, Func<string> displayNameGetter = null) {
-            var metadata = new Metadata(name ?? type.Name, displayNameGetter) {ResourceName = resourceName};
+            var metadata = new Metadata(name ?? type.Name, displayNameGetter) { ResourceName = resourceName };
             PopulateMetadata(type, metadata);
 
             FixMetadata(metadata);
@@ -873,7 +873,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// <param name="resourceName">Metadata container resource name.</param>
         /// <param name="displayNameGetter">Metadata container culture name getter.</param>
         public static Metadata GenerateMetadata(IEnumerable<Type> types, string name, string resourceName = null, Func<string> displayNameGetter = null) {
-            var metadata = new Metadata(name, displayNameGetter) {ResourceName = resourceName};
+            var metadata = new Metadata(name, displayNameGetter) { ResourceName = resourceName };
             foreach (var type in types)
                 PopulateMetadata(type, metadata);
 
@@ -905,12 +905,11 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                 PopulateMetadata(type.BaseType, metadata);
             }
 
-            DataProperty idProperty = null;
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
             foreach (var propertyInfo in properties) {
                 var propertyType = propertyInfo.PropertyType;
                 var isNullable = false;
-                if ((propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof (Nullable<>))) {
+                if ((propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))) {
                     isNullable = true;
                     propertyType = propertyType.GetGenericArguments().First();
                 }
@@ -925,7 +924,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                 if (dataType == null) {
                     var isScalar = true;
                     var enumerable = propertyType.GetInterfaces()
-                            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof (IEnumerable<>));
+                            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
                     if (enumerable != null) {
                         isScalar = false;
                         propertyType = enumerable.GetGenericArguments().First();
@@ -1001,25 +1000,14 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 
                     if (propertyInfo.GetAttribute<ConcurrencyCheckAttribute>(true) != null
                             || propertyInfo.GetAttribute<TimestampAttribute>(true) != null
-                            || (propertyInfo.Name == "RowVersion" && propertyType == typeof (byte[]))) {
+                            || (propertyInfo.Name == "RowVersion" && propertyType == typeof(byte[]))) {
                         dataProperty.UseForConcurrency = true;
                     }
 
                     PopulateDataPropertyValidations(propertyInfo, propertyInfo.PropertyType, dataProperty);
 
                     entityType.DataProperties.Add(dataProperty);
-
-                    if (dataProperty.Name == "Id")
-                        idProperty = dataProperty;
                 }
-            }
-
-            if (!entityType.Keys.Any() && idProperty != null) {
-                entityType.Keys.Add("Id");
-
-                var dt = idProperty.DataType;
-                if (dt == DataType.Int || dt == DataType.Byte || dt == DataType.Number)
-                    idProperty.GenerationPattern = GenerationPattern.Identity;
             }
         }
 
@@ -1027,6 +1015,18 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
             metadata.FixReferences();
 
             foreach (var entity in metadata.Entities) {
+                if (!entity.Keys.Any()) {
+                    var idProperty = entity.AllDataProperties.FirstOrDefault(dp => dp.Name == "Id");
+
+                    if (idProperty != null) {
+                        entity.Keys.Add("Id");
+
+                        var dt = idProperty.DataType;
+                        if (dt == DataType.Int || dt == DataType.Byte || dt == DataType.Number)
+                            idProperty.GenerationPattern = GenerationPattern.Identity;
+                    }
+                }
+
                 foreach (var navigationProperty in entity.NavigationProperties) {
                     var inverse = navigationProperty.Inverse;
 
@@ -1172,7 +1172,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
         /// <param name="foreignKeys">The foreign keys.</param>
         /// <returns></returns>
         private static IQueryable GetRelationQuery(IEnumerable entities, object keyEntity, Type relationType, IReadOnlyList<string> keys, IReadOnlyList<string> foreignKeys) {
-            if (keys.Count != foreignKeys.Count) return null;
+            if (!keys.Any() || keys.Count != foreignKeys.Count) return null;
 
             const string filter = "{0} == @{1}";
             var ofTypeMethod = typeof(Queryable).GetMethod("OfType");
