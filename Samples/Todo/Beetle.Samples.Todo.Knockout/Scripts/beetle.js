@@ -444,7 +444,7 @@
                         // Example:
                         //  When we create an association between Product and Supplier using Name and Location fields
                         //  we presume Supplier's corresponding primary keys are in exactly same order.
-                        var k = navProperty.entityType.keys[i];
+                        var k = newValue.$tracker.entityType.keys[i];
                         var v = newValue.$tracker.getValue(k.name);
                         tracker.setValue(fk, v);
                     } else {
@@ -7788,6 +7788,18 @@
                             helper.forEach(addedItems, function (newEntity) {
                                 processEntity(newEntity, tracker.manager);
                                 newEntity.$tracker.setValue(inverse.name, entity);
+                            });
+                    }
+                    else {
+                        // Set removed items's foreign key to null.
+                        if (removedItems)
+                            helper.forEach(removedItems, function (removedEntity) {
+                                helper.setForeignKeys(removedEntity, property, null);
+                            });
+                        // Set added items's foreign key.
+                        if (addedItems)
+                            helper.forEach(addedItems, function (newEntity) {
+                                helper.setForeignKeys(newEntity, property, entity);
                             });
                     }
                 }
