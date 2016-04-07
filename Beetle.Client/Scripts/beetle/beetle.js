@@ -385,19 +385,15 @@
                 var localizeFunc = settings.getLocalizeFunction();
                 return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
             },
-            createValidationError: function (entity, value, property, message, validatorObj) {
+            createValidationError: function (entity, value, property, message, validator) {
                 /// <summary>Creates validation error object using given parameters.</summary>
                 /// <param name="entity">The entity.</param>
                 /// <param name="value">Current value.</param>
                 /// <param name="property">The property.</param>
                 /// <param name="message">Validation message.</param>
-                /// <param name="validatorObj">Validator instance.</param>
-                var retVal = { entity: entity, message: message, validator: validatorObj };
-                if (value) retVal.value = value;
-                if (property) retVal.property = property;
-
-                helper.tryFreeze(retVal);
-                return retVal;
+                /// <param name="validator">Validator instance.</param>
+                var retVal = { message: message, entity: entity, validator: validator, value: value, property: property };
+                return this.tryFreeze(retVal);
             },
             createError: function (message, arg1, arg2) {
                 /// <summary>Creates error object with given message and populates with given object's values.</summary>
@@ -8763,8 +8759,7 @@
                                 }
                             });
                         if (validationErrors.length > 0) {
-                            var validationError = new helper.createError(i18N.validationFailed, { entities: changes, validationErrors: validationErrors });
-                            validationError.entitiesInError = validationErrors;
+                            var validationError = helper.createError(i18N.validationFailed, { entities: changes, entitiesInError: validationErrors });
 
                             onError(errorCallback, pp, d, validationError, this);
                         } else {

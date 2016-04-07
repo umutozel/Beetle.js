@@ -89,10 +89,20 @@ declare module beetle {
         }
 
         interface ValidationError {
-            entity: IEntity;
             message: string;
+            entity: IEntity;
             property?: string;
-            value: any;
+            value?: any;
+        }
+        
+        interface EntityValidationError {
+            entity: IEntity;
+            validationErrors: ValidationError[];
+        }
+
+        interface ManagerValidationError extends Error {
+            entities: IEntity[];
+            entitiesInError: EntityValidationError[];
         }
 
         interface DataTypeBase {
