@@ -94,7 +94,7 @@ declare module beetle {
             property?: string;
             value?: any;
         }
-        
+
         interface EntityValidationError {
             entity: IEntity;
             validationErrors: ValidationError[];
@@ -103,6 +103,7 @@ declare module beetle {
         interface ManagerValidationError extends Error {
             entities: IEntity[];
             entitiesInError: EntityValidationError[];
+            manager: core.EntityManager;
         }
 
         interface DataTypeBase {
@@ -218,7 +219,7 @@ declare module beetle {
             distinct<TResult>(selector: string | Func1<T, TResult>): Query<TResult>;
             distinct(selector: string | Func1<T, any>): Query<any>;
             reverse(): Query<T>;
-            selectMany<TResult>(selector: string | Func1<T, Array<TResult>>): Query<Array<TResult>>;
+            selectMany<TResult>(selector: string | Func1<T, Array<TResult>>): Query<TResult>;
             selectMany(selector: string | Func1<T, any>): Query<any>;
             skipWhile(predicate: string, varContext?: any): Query<T>;
             takeWhile(predicate: string, varContext?: any): Query<T>;
@@ -601,7 +602,7 @@ declare module beetle {
             distinct<TResult>(selector: string | beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
             distinct(selector: string | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
             reverse(): beetle.querying.ArrayQuery<T>;
-            selectMany<TResult>(selector: string | beetle.interfaces.Func1<T, Array<TResult>>): beetle.querying.ArrayQuery<Array<TResult>>;
+            selectMany<TResult>(selector: string | beetle.interfaces.Func1<T, Array<TResult>>): beetle.querying.ArrayQuery<TResult>;
             selectMany(selector: string | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
             skipWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
             skipWhile(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
@@ -665,7 +666,7 @@ declare module beetle {
             distinct<TResult>(selector: string | interfaces.Func1<T, TResult>): EntityQuery<TResult>;
             distinct(selector: string | interfaces.Func1<T, any>): EntityQuery<any>;
             reverse(): EntityQuery<T>;
-            selectMany<TResult>(selector: string | interfaces.Func1<T, Array<TResult>>): EntityQuery<Array<TResult>>;
+            selectMany<TResult>(selector: string | interfaces.Func1<T, Array<TResult>>): EntityQuery<TResult>;
             selectMany(selector: string | interfaces.Func1<T, any>): EntityQuery<any>;
             skipWhile(predicate: string | interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
             takeWhile(predicate: string | interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
