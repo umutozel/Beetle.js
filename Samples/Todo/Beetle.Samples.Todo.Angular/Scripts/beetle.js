@@ -10028,13 +10028,13 @@
         var _promiseProvider;
         if (exports.Q)
             _promiseProvider = impls.qPromiseProviderInstance;
-        else if (!exports.$ && exports.angular)
+        else if (exports.angular)
             _promiseProvider = impls.angularPromiseProviderInstance;
         else
             _promiseProvider = impls.jQueryPromiseProviderInstance;
 
         var _ajaxProvider;
-        if (!exports.$ && exports.angular)
+        if (exports.angular)
             _ajaxProvider = impls.angularAjaxProviderInstance;
         else
             _ajaxProvider = impls.jQueryAjaxProviderInstance;
