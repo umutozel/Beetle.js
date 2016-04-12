@@ -5875,8 +5875,8 @@
                         /// <summary>
                         /// Gets default value for type.
                         /// </summary>
-                        /// <returns type="string">Default value: new Date(-6847812000000) - 01/01/1753</returns>
-                        return new Date(-6847812000000);
+                        /// <returns type="string">Default value: 01/01/1753</returns>
+                        return new Date(Date.UTC(1753, 1, 1));
                     };
 
                     proto.isValid = function (value) {
