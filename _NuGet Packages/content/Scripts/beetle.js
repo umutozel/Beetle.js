@@ -3221,7 +3221,7 @@
                     if (o.cache == null) o.cache = false;
                     return $http(o)
                         .success(function (result, status, headers, config, statusText) {
-                            successCallback(result, getHeaderGetter(headers));
+                            successCallback(result, getHeaderGetter(headers()));
                         })
                         .error(function (error, status, headers, config, statusText) {
                             errorCallback(createError(error, status, statusText));
@@ -3247,7 +3247,7 @@
                 function getHeaderGetter(headers) {
                     return function (header) {
                         if (!header) return headers;
-                        return headers[header];
+                        return headers[header.toLowerCase()];
                     }
                 }
 
