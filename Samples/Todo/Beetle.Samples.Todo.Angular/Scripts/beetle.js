@@ -400,11 +400,9 @@
                 /// <param name="message">Error message.</param>
                 /// <param name="arg1">Message format arguments.</param>
                 /// <param name="arg2">Extra informations, will be attached to error object.</param>
-                var args = null, obj = null;
-                if (Assert.isArray(arg1)) {
-                    args = arg1;
-                    obj = arg2;
-                } else if (Assert.isObject(arg1)) obj = arg1;
+                var args = null, obj = arg2;
+                if (Assert.isArray(arg1)) args = arg1;
+                else if (Assert.isObject(arg1)) obj = arg1;
 
                 if (args && args.length > 0) {
                     args.splice(0, 0, message);
@@ -3223,26 +3221,10 @@
                         .success(function (result, status, headers, config, statusText) {
                             successCallback(result, getHeaderGetter(headers()));
                         })
-                        .error(function (error, status, headers, config, statusText) {
-                            errorCallback(createError(error, status, statusText));
+                        .catch(function (error) {
+                            errorCallback(helper.createError(error.statusText, null, error));
                         });
                 };
-
-                function createError(error, status, statusText) {
-                    /// <summary>
-                    /// Creates an error object by parsing XHR result.
-                    /// </summary>
-                    /// <param name="xhr">XML Http Request object.</param>
-                    var obj = { status: status };
-                    if (error) {
-                        try {
-                            obj.detail = JSON.parse(error);
-                        } catch (e) {
-                            obj.detail = error;
-                        }
-                    }
-                    return helper.createError(statusText, obj);
-                }
 
                 function getHeaderGetter(headers) {
                     return function (header) {
