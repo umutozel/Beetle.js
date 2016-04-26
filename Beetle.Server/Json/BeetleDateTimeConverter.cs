@@ -22,15 +22,21 @@ namespace Beetle.Server.Json {
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
             try {
                 // First try to parse as ISO string.
-                return base.ReadJson(reader, objectType, existingValue, serializer);
+                var value = base.ReadJson(reader, objectType, existingValue, serializer);
+                if (value == null) return null;
+
+                var dt = (DateTime)value;
+                return serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local ? dt.ToLocalTime() : dt;
             }
             catch (FormatException) {
                 var value = reader.Value.ToString();
 
                 // when format is not ISO, first try javascript date ticks.
                 long ticks;
-                if (long.TryParse(value, out ticks))
-                    return new DateTime(((ticks * 10000) + 621355968000000000));
+                if (long.TryParse(value, out ticks)) {
+                    var tick = new DateTime(((ticks * 10000) + 621355968000000000));
+                    return serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local ? tick.ToLocalTime() : tick;
+                }
 
                 // and finally try to convert this value as it is a javascript date.
                 var parts = value.Split(' ');
@@ -63,8 +69,9 @@ namespace Beetle.Server.Json {
 
                 var dt = new DateTime(year, month, day, hour, minute, second);
                 if (zone == -1 && (dt - DateTime.MinValue).TotalMinutes < -1 * ((hourZone * 60) + minuteZone)) return DateTime.MinValue;
+
                 var utc = dt.AddHours(hourZone).AddMinutes(minuteZone);
-                return TimeZone.CurrentTimeZone.ToLocalTime(utc);
+                return serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local ? utc.ToLocalTime() : utc;
             }
         }
     }
