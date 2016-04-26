@@ -10304,7 +10304,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.7',
+            version: '2.0.8',
             i18N: i18N,
 
             helper: helper,
