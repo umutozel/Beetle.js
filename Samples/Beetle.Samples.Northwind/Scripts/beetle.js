@@ -3222,7 +3222,8 @@
                             successCallback(result, getHeaderGetter(headers()));
                         })
                         .catch(function (error) {
-                            errorCallback(helper.createError(error.statusText, null, error));
+                            var obj = { status: error.status, config: error.config, detail: error.data, error: error };
+                            errorCallback(helper.createError(error.statusText, obj));
                         });
                 };
 
