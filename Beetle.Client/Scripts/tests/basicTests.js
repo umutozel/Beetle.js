@@ -9,7 +9,7 @@
 /// <reference path="testMetadata.js" />
 
 'use strict';
-
+beetle.setI18N("tr");
 var metadata, observableProvider, service;
 var basicTestViewModel = {
     metadataType: 'MM',

@@ -1,7 +1,7 @@
 ﻿(function (exports) {
     if (!exports) return;
 
-    var beetleI18N = {
+    var tr = {
         argCountMismatch: '"%0" için argüman sayısı uyuşmuyor.',
         arrayEmpty: 'Dizide hiçbir eleman bulunmuyor.',
         arrayNotSingle: 'Dizi sadece tek bir eleman içermiyor.',
@@ -84,7 +84,6 @@
     };
     
     if (exports.beetle)
-        exports.beetle.i18N = beetleI18N;
-    else
-        exports.beetleI18N = beetleI18N;
+        exports.beetle.registerI18N("tr", tr, true);
+    else throw new Error("Beetle must be loaded first to register internalization.");
 })(window);

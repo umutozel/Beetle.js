@@ -7196,11 +7196,18 @@
                     this.entityStateChanged.notify(obj);
                 };
 
+                proto.rejectChanges = function () {
+                    var that = this;
+                    helper.forEach(this.originalValues, function (ov) {
+                        that.setValue(ov.p, ov.v);
+                    });
+                    this.originalValues.length = 0;
+                };
+
                 proto.undoChanges = function () {
                     /// <summary>
                     /// Returns entity's values to last accepted state.
                     /// </summary>
-                    // Undo every property change.
                     var that = this;
                     helper.forEach(this.changedValues, function (cv) {
                         that.setValue(cv.p, cv.v);
@@ -8453,28 +8460,82 @@
                     }
                     else options = {};
                     // Merge entities to cache.
-                    mergeEntities([detachedEntity], null, merge, state, instance, options.autoFixScalar, options.autoFixPlural);
+                    if (!Assert.isArray(detachedEntity)) detachedEntity = [detachedEntity];
+                    mergeEntities(detachedEntity, null, merge, state, instance, options.autoFixScalar, options.autoFixPlural);
                 }
 
-                proto.detachEntity = function (entity) {
+                proto.detachEntity = function (entity, includeRelations) {
                     /// <summary>
                     /// Detaches entity from manager and stops tracking.
                     /// </summary>
                     /// <param name="entity">The entity.</param>
-                    if (entity.$tracker.entityType.isComplexType && entity.$tracker.owners.length > 0)
-                        throw helper.createError(i18N.cannotDetachComplexTypeWithOwners);
+                    var manager = this;
+                    if (!Assert.isArray(entity)) entity = [entity];
+                    var detachList = includeRelations === true ? this.flatEntities(entity) : entity;
 
-                    // check if given entity is being tracked by this manager.
-                    checkEntity(entity, this);
-                    // Clear navigations.
-                    clearNavigations(entity, true);
-                    // remove subscriptions for this entity.
-                    unsubscribeFromEntity(entity, this);
-                    // Set entity state to detached.
-                    entity.$tracker.toDetached();
-                    entity.$tracker.manager = null;
-                    // Remove from cache.
-                    this.entities.remove(entity);
+                    helper.forEach(detachList, function (toDetach) {
+                        if (toDetach.$tracker.entityType.isComplexType && toDetach.$tracker.owners.length > 0)
+                            throw helper.createError(i18N.cannotDetachComplexTypeWithOwners);
+
+                        // check if given entity is being tracked by this manager.
+                        checkEntity(toDetach, manager);
+                        // Clear navigations.
+                        clearNavigations(toDetach, true);
+                        // remove subscriptions for this entity.
+                        unsubscribeFromEntity(toDetach, manager);
+                        // Set entity state to detached.
+                        toDetach.$tracker.toDetached();
+                        toDetach.$tracker.manager = null;
+                        // Remove from cache.
+                        manager.entities.remove(toDetach);
+                    });
+                };
+
+                proto.rejectChanges = function (entity, includeRelations) {
+                    /// <summary>
+                    /// Undo all changes made to this entity and detach from context if its newly added.
+                    /// </summary>
+                    /// <param name="entity">The entity.</param>
+                    /// <param name="includeRelations">If set to true, rejectChanges will be called for all navigation properties too.</param>
+                    var manager = this;
+                    if (!Assert.isArray(entity)) entity = [entity];
+                    var rejectList = includeRelations === true ? this.flatEntities(entity) : entity;
+                    helper.forEach(rejectList, function (toReject) {
+                        var tracker = toReject.$tracker;
+                        // if entity is in Added state, detach it
+                        if (tracker.entityState == enums.entityStates.Added)
+                            manager.detachEntity(toReject);
+                        else if (tracker.entityState == enums.entityStates.Modified) {
+                            tracker.rejectChanges();
+                            tracker.toUnchanged();
+                        }
+                    });
+                };
+
+                proto.undoChanges = function (entity, includeRelations) {
+                    /// <summary>
+                    /// Undo all changes made to this entity.
+                    /// </summary>
+                    /// <param name="entity">The entity.</param>
+                    /// <param name="includeRelations">If set to true, undoChanges will be called for all navigation properties too.</param>
+                    if (!Assert.isArray(entity)) entity = [entity];
+                    var undoList = includeRelations === true ? this.flatEntities(entity) : entity;
+                    helper.forEach(undoList, function (toUndo) {
+                        toUndo.$tracker.undoChanges();
+                    });
+                };
+
+                proto.acceptChanges = function (entity, includeRelations) {
+                    /// <summary>
+                    /// Accept all changes made to this entity (clear changed values).
+                    /// </summary>
+                    /// <param name="entity">The entity.</param>
+                    /// <param name="includeRelations">If set to true, acceptChanges will be called for all navigation properties too.</param>
+                    if (!Assert.isArray(entity)) entity = [entity];
+                    var acceptList = includeRelations === true ? this.flatEntities(entity) : entity;
+                    helper.forEach(acceptList, function (toAccept) {
+                        toAccept.$tracker.acceptChanges();
+                    });
                 };
 
                 proto.createSavePackage = function (entities, options) {
@@ -8495,53 +8556,6 @@
                     var entityList = this.exportEntities(entities || this.getChanges(), options);
                     data.entities = entityList;
                     return data;
-                };
-
-                proto.rejectChanges = function (entity, includeRelations) {
-                    /// <summary>
-                    /// Undo all changes made to this entity and detach from context if its newly added.
-                    /// </summary>
-                    /// <param name="entity">The entity.</param>
-                    /// <param name="includeRelations">If set to true, rejectChanges will be called for all navigation properties too.</param>
-                    var manager = this;
-                    if (!Assert.isArray(entity)) entity = [entity];
-                    var rejectList = includeRelations === true ? this.flatEntities(entity) : entity;
-                    helper.forEach(rejectList, function (rejected) {
-                        var tracker = rejected.$tracker;
-                        // if entity is in Added state, detach it
-                        if (tracker.entityState == enums.entityStates.Added)
-                            manager.detachEntity(rejected);
-                        else if (tracker.entityState == enums.entityStates.Modified) {
-                            tracker.undoChanges(); // Undo all changes.
-                            tracker.toUnchanged();
-                        }
-                    });
-                };
-
-                proto.undoChanges = function (entity, includeRelations) {
-                    /// <summary>
-                    /// Undo all changes made to this entity.
-                    /// </summary>
-                    /// <param name="entity">The entity.</param>
-                    /// <param name="includeRelations">If set to true, undoChanges will be called for all navigation properties too.</param>
-                    if (!Assert.isArray(entity)) entity = [entity];
-                    var undoList = includeRelations === true ? this.flatEntities(entity) : entity;
-                    helper.forEach(undoList, function (toUndo) {
-                        toUndo.$tracker.undoChanges(); // Undo all changes.
-                    });
-                };
-
-                proto.acceptChanges = function (entity, includeRelations) {
-                    /// <summary>
-                    /// Accept all changes made to this entity (clear changed values).
-                    /// </summary>
-                    /// <param name="entity">The entity.</param>
-                    /// <param name="includeRelations">If set to true, acceptChanges will be called for all navigation properties too.</param>
-                    if (!Assert.isArray(entity)) entity = [entity];
-                    var acceptList = includeRelations === true ? this.flatEntities(entity) : entity;
-                    helper.forEach(acceptList, function (toAccept) {
-                        toAccept.$tracker.acceptChanges(); // Accept all changes.
-                    });
                 };
 
                 proto.exportEntities = function (entities, options) {
@@ -10213,99 +10227,105 @@
 
         return expose;
     })();
-    var i18N = (function () {
-        /// <summary>Internationalization.</summary>
-        if (exports.beetleI18N == null)
-            exports.beetleI18N = {
-                argCountMismatch: 'Argument count mismatch for "%0".',
-                arrayEmpty: 'The array does not contain any element.',
-                arrayNotSingle: 'The array does not contain exactly one element.',
-                arrayNotSingleOrEmpty: 'The array does not contain zero or one element.',
-                assignError: 'Cannot set %0 property with %1.',
-                assignErrorNotEntity: 'Cannot set %0 property, value is not an entity.',
-                autoGeneratedCannotBeModified: 'Auto generated properties cannot be modified.',
-                beetleQueryChosenMultiTyped: 'Beetle query string is used because query is multi-typed.',
-                beetleQueryChosenPost: 'Beetle query string is used because query method is POST.',
-                beetleQueryNotSupported: 'Beetle queries are not supported, you may use only OData query parameters (where, orderBy, select, expand, top, skip).',
-                cannotBeEmptyString: '%0 value can not be empty string.',
-                cannotCheckInstanceOnNull: 'Cannot check instance on null value.',
-                cannotDetachComplexTypeWithOwners: 'Complex types with owners cannot be detached.',
-                compareError: '%0 property value must be equal with %1.',
-                complexCannotBeNull: '%0 complex property can not be null.',
-                couldNotLoadMetadata: 'Could not load metadata.',
-                couldNotLocateNavFixer: 'Could not locate any observable provider.',
-                couldNotLocatePromiseProvider: 'Could not locate any promise provider.',
-                couldNotParseToken: 'Could not parse %0.',
-                countDiffCantBeCalculatedForGrouped: 'In-line count difference can not be calculated when query contains a "groupBy" expression',
-                dataPropertyAlreadyExists: 'Data property already exists: %0.',
-                entityAlreadyBeingTracked: 'Entity is already being tracked by another manager.',
-                entityNotBeingTracked: 'Entity is not being tracked by a manager.',
-                executionBothNotAllowedForNoTracking: 'Execution strategy cannot be Both when merge strategy is NoTracking or NoTrackingRaw.',
-                expressionCouldNotBeFound: 'Expression could not be found.',
-                functionNeedsAlias: '%0 function needs alias to work properly. You can set alias like Linq, p => p.Name.',
-                functionNotSupportedForOData: 'OData does not support %0 function.',
-                instanceError: '%0 is not an instance of %1.',
-                invalidArguments: 'Invalid arguments.',
-                invalidDefaultValue: '%0 is not a valid default value for %0.',
-                invalidEnumValue: 'Invalid enum value, %0 cannot be found in %1.',
-                invalidExpression: '%0 can only have %1 type expressions.',
-                invalidPropertyAlias: 'Invalid property alias.',
-                invalidStatement: 'Invalid statement.',
-                invalidValue: 'Invalid value for %0 property.',
-                managerInvalidArgs: 'Invalid arguments. Valid args are: {DataService, [Injections]} or {Uri, [Metadata], [Injections]}.',
-                maxLenError: '%0 property length cannot exceed %1.',
-                maxPrecisionError: 'Value %0 exceeded maximum precision of %1.',
-                mergeStateError: 'Cannot merge entities with %0 state.',
-                minLenError: '%0 property length must be greater than %1.',
-                noMetadataEntityQuery: 'Cannot create entity query when no metadata is available.',
-                noMetadataRegisterCtor: 'Cannot register constructor when no metadata is available.',
-                noOpenGroup: 'Could not find any open group.',
-                notFoundInMetadata: 'Could not find %0 in metadata.',
-                notImplemented: '%0 %1 is not implemented.',
-                notNullable: 'Cannot set %0 with null, property is not nullable.',
-                oDataNotSupportMultiTyped: 'Multi-Typed queries cannot be used for OData services.',
-                odataDoesNotSupportAlias: 'OData services does not support query alias and primitive typed resources.',
-                onlyManagerCreatedCanBeExecuted: 'Only queries which are created from a manager can be directly executed.',
-                onlyManagerCreatedCanAcceptEntityShortName: 'Only queries which are created from a manager can accept entity type short name parameter.',
-                pendingChanges: 'Pending changes',
-                pluralNeedsInverse: 'To load plural relations, navigation property must have inverse.',
-                projectionsMustHaveAlias: 'All projected values must have a property name or alias.',
-                propertyNotFound: 'Could not find property: %0.',
-                queryClosed: 'Query is closed, expression cannot be added. Queries must be executed after some expressions like first, single, any, all etc..',
-                rangeError: '%0 property value must be between %1 and %2.',
-                requiredError: '%0 property is required.',
-                sameKeyExists: 'There is already an entity with same key in the manager.',
-                sameKeyOnDifferentTypesError: 'Two different types of entities cannot have same keys when they are from same inheritance root (%0, %1).',
-                settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behavior).',
-                stringLengthError: '%0 property length must be between %1 and %2.',
-                syncNotSupported: '%0 does not support sync ajax calls.',
-                twoEndCascadeDeleteNotAllowed: 'Two-end cascade deletes are not supported.',
-                typeError: '%0 type is not %1.',
-                typeMismatch: '%0 value type mismatch. expected type: %1, given type: %2, value: %3',
-                typeRequiredForLocalQueries: 'To execute queries locally, entity type must be provided (createQuery("Entities", "Entity") or createEntityQuery("Entity")).',
-                unclosedQuote: 'Unclosed quote in "%0".',
-                unclosedToken: 'Unclosed "%0".',
-                unexpectedProperty: 'Unexpected property "%0".',
-                unexpectedToken: 'Unexpected %0.',
-                unknownDataType: 'Unknown data type: %0.',
-                unknownExpression: 'Unknown expression.',
-                unknownFunction: 'Unknown function: %0.',
-                unknownParameter: 'Unknown parameter: %0.',
-                unknownValidator: 'Unknown validator type: %0.',
-                unsoppertedState: 'Unsupported entity state: %0.',
-                validationErrors: 'Validation errors',
-                validationFailed: 'Validation failed.',
-                valueCannotBeNull: 'Value cannot be null: %0.',
-                operatorNotSupportedForOData: 'Operator is not supported for OData: %0.'
-            };
-        return exports.beetleI18N;
-    })();
+    var i18N = {
+        argCountMismatch: 'Argument count mismatch for "%0".',
+        arrayEmpty: 'The array does not contain any element.',
+        arrayNotSingle: 'The array does not contain exactly one element.',
+        arrayNotSingleOrEmpty: 'The array does not contain zero or one element.',
+        assignError: 'Cannot set %0 property with %1.',
+        assignErrorNotEntity: 'Cannot set %0 property, value is not an entity.',
+        autoGeneratedCannotBeModified: 'Auto generated properties cannot be modified.',
+        beetleQueryChosenMultiTyped: 'Beetle query string is used because query is multi-typed.',
+        beetleQueryChosenPost: 'Beetle query string is used because query method is POST.',
+        beetleQueryNotSupported: 'Beetle queries are not supported, you may use only OData query parameters (where, orderBy, select, expand, top, skip).',
+        cannotBeEmptyString: '%0 value can not be empty string.',
+        cannotCheckInstanceOnNull: 'Cannot check instance on null value.',
+        cannotDetachComplexTypeWithOwners: 'Complex types with owners cannot be detached.',
+        compareError: '%0 property value must be equal with %1.',
+        complexCannotBeNull: '%0 complex property can not be null.',
+        couldNotLoadMetadata: 'Could not load metadata.',
+        couldNotLocateNavFixer: 'Could not locate any observable provider.',
+        couldNotLocatePromiseProvider: 'Could not locate any promise provider.',
+        couldNotParseToken: 'Could not parse %0.',
+        countDiffCantBeCalculatedForGrouped: 'In-line count difference can not be calculated when query contains a "groupBy" expression',
+        dataPropertyAlreadyExists: 'Data property already exists: %0.',
+        entityAlreadyBeingTracked: 'Entity is already being tracked by another manager.',
+        entityNotBeingTracked: 'Entity is not being tracked by a manager.',
+        executionBothNotAllowedForNoTracking: 'Execution strategy cannot be Both when merge strategy is NoTracking or NoTrackingRaw.',
+        expressionCouldNotBeFound: 'Expression could not be found.',
+        functionNeedsAlias: '%0 function needs alias to work properly. You can set alias like Linq, p => p.Name.',
+        functionNotSupportedForOData: 'OData does not support %0 function.',
+        instanceError: '%0 is not an instance of %1.',
+        invalidArguments: 'Invalid arguments.',
+        invalidDefaultValue: '%0 is not a valid default value for %0.',
+        invalidEnumValue: 'Invalid enum value, %0 cannot be found in %1.',
+        invalidExpression: '%0 can only have %1 type expressions.',
+        invalidPropertyAlias: 'Invalid property alias.',
+        invalidStatement: 'Invalid statement.',
+        invalidValue: 'Invalid value for %0 property.',
+        managerInvalidArgs: 'Invalid arguments. Valid args are: {DataService, [Injections]} or {Uri, [Metadata], [Injections]}.',
+        maxLenError: '%0 property length cannot exceed %1.',
+        maxPrecisionError: 'Value %0 exceeded maximum precision of %1.',
+        mergeStateError: 'Cannot merge entities with %0 state.',
+        minLenError: '%0 property length must be greater than %1.',
+        noMetadataEntityQuery: 'Cannot create entity query when no metadata is available.',
+        noMetadataRegisterCtor: 'Cannot register constructor when no metadata is available.',
+        noOpenGroup: 'Could not find any open group.',
+        notFoundInMetadata: 'Could not find %0 in metadata.',
+        notImplemented: '%0 %1 is not implemented.',
+        notNullable: 'Cannot set %0 with null, property is not nullable.',
+        oDataNotSupportMultiTyped: 'Multi-Typed queries cannot be used for OData services.',
+        odataDoesNotSupportAlias: 'OData services does not support query alias and primitive typed resources.',
+        onlyManagerCreatedCanBeExecuted: 'Only queries which are created from a manager can be directly executed.',
+        onlyManagerCreatedCanAcceptEntityShortName: 'Only queries which are created from a manager can accept entity type short name parameter.',
+        pendingChanges: 'Pending changes',
+        pluralNeedsInverse: 'To load plural relations, navigation property must have inverse.',
+        projectionsMustHaveAlias: 'All projected values must have a property name or alias.',
+        propertyNotFound: 'Could not find property: %0.',
+        queryClosed: 'Query is closed, expression cannot be added. Queries must be executed after some expressions like first, single, any, all etc..',
+        rangeError: '%0 property value must be between %1 and %2.',
+        requiredError: '%0 property is required.',
+        sameKeyExists: 'There is already an entity with same key in the manager.',
+        sameKeyOnDifferentTypesError: 'Two different types of entities cannot have same keys when they are from same inheritance root (%0, %1).',
+        settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behavior).',
+        stringLengthError: '%0 property length must be between %1 and %2.',
+        syncNotSupported: '%0 does not support sync ajax calls.',
+        twoEndCascadeDeleteNotAllowed: 'Two-end cascade deletes are not supported.',
+        typeError: '%0 type is not %1.',
+        typeMismatch: '%0 value type mismatch. expected type: %1, given type: %2, value: %3',
+        typeRequiredForLocalQueries: 'To execute queries locally, entity type must be provided (createQuery("Entities", "Entity") or createEntityQuery("Entity")).',
+        unclosedQuote: 'Unclosed quote in "%0".',
+        unclosedToken: 'Unclosed "%0".',
+        unexpectedProperty: 'Unexpected property "%0".',
+        unexpectedToken: 'Unexpected %0.',
+        unknownDataType: 'Unknown data type: %0.',
+        unknownExpression: 'Unknown expression.',
+        unknownFunction: 'Unknown function: %0.',
+        unknownParameter: 'Unknown parameter: %0.',
+        unknownValidator: 'Unknown validator type: %0.',
+        unsoppertedState: 'Unsupported entity state: %0.',
+        validationErrors: 'Validation errors',
+        validationFailed: 'Validation failed.',
+        valueCannotBeNull: 'Value cannot be null: %0.',
+        operatorNotSupportedForOData: 'Operator is not supported for OData: %0.'
+    };
+    var i18Ns = { en: i18N };
 
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.8',
-            i18N: i18N,
+            version: '2.0.9',
+            registerI18N: function (code, i18n, active) {
+                i18Ns[code] = i18n;
+                if (active) i18N = i18n;
+            },
+            setI18N: function (code) {
+                var i18n = i18Ns[code];
+                if (!i18n)
+                    throw new Error("Beetle could not find translation for " + code);
+
+                i18N = i18n;
+            },
 
             helper: helper,
             Assert: Assert,
@@ -10342,8 +10362,6 @@
             serviceTypes: enums.serviceTypes
         };
     })();
-
-    helper.tryFreeze(beetle);
 
     exports.beetle = beetle;
     return beetle;

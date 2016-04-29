@@ -5,7 +5,7 @@
 declare module beetle {
 
     module interfaces {
-        interface IClosedQueryable<T, TOptions> {
+        interface ClosedQueryable<T, TOptions> {
             then(successCallback: Delegate1<T>, failCallback?: interfaces.Delegate1<Error>, options?: TOptions): PromiseLike<T>;
         }
     }
