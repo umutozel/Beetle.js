@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Beetlejs.Mvc5</id>
-        <version>2.0.9</version>
+        <version>2.0.10</version>
         <title>Beetlejs Mvc 5 Controller Api</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
@@ -17,8 +17,7 @@
         <tags>ASP.NET Mvc 5 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle</tags>
         <dependencies>
             <dependency id="Beetlejs.Server" version="2.0" />
-            <dependency id="Beetlejs.Client" version="2.0" />
-			<dependency id="Microsoft.AspNet.Mvc" version="5.0.0" />
+            <dependency id="Microsoft.AspNet.Mvc" version="5.0.0" />
 			<dependency id="Newtonsoft.Json" version="4.5.6" />
         </dependencies>
     </metadata>
