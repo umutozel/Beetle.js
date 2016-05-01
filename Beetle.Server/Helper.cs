@@ -923,7 +923,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                 GetDisplayInfo(propertyInfo, ref resourceName, ref displayNameGetter);
                 if (dataType == null) {
                     var isScalar = true;
-                    var enumerable = propertyType.GetInterfaces()
+                    var enumerable = propertyType.GetInterfaces().Concat(new[] { propertyType })
                             .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
                     if (enumerable != null) {
                         isScalar = false;

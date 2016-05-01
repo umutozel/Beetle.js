@@ -1,11 +1,11 @@
 ﻿// Type definitions for beetle.js query extension 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.0.3
+// File version: 2.0.10
 
 declare module beetle {
 
     module interfaces {
-        interface IClosedQueryable<T, TOptions> {
+        interface ClosedQueryable<T, TOptions> {
             then(successCallback: Delegate1<T>, failCallback?: interfaces.Delegate1<Error>, options?: TOptions): PromiseLike<T>;
         }
     }
@@ -45,7 +45,7 @@ interface Array<T> {
     distinct<TResult>(selector: string | beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
     distinct(selector: string | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
     reverse(): beetle.querying.ArrayQuery<T>;
-    selectMany<TResult>(selector: string | beetle.interfaces.Func1<T, Array<TResult>>): beetle.querying.ArrayQuery<Array<TResult>>;
+    selectMany<TResult>(selector: string | beetle.interfaces.Func1<T, Array<TResult>>): beetle.querying.ArrayQuery<TResult>;
     selectMany(selector: string | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
     skipWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
     skipWhile(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
