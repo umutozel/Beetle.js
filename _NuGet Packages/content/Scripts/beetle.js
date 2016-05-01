@@ -7122,6 +7122,16 @@
                     return this.entityState === enums.entityStates.Added || this.entityState === enums.entityStates.Deleted || this.entityState === enums.entityStates.Modified;
                 };
 
+                proto.delete = function () {
+                    checkManager(this);
+                    this.manager.deleteEntity(this.entity);
+                };
+
+                proto.detach = function () {
+                    checkManager(this);
+                    this.manager.detachEntity(this.entity);
+                };
+
                 proto.toAdded = function () {
                     /// <summary>
                     /// Change entity's state to 'Added'
@@ -7922,6 +7932,11 @@
                     instance.validationErrors = instance.validationErrors.concat(newErrors);
                     if (removed.length > 0 || newErrors.length > 0)
                         instance.validationErrorsChanged.notify({ errors: instance.validationErrors, added: newErrors, removed: removed });
+                }
+
+                function checkManager(instance) {
+                    if (instance.manager == null)
+                        throw helper.createError(i18N.entityNotBeingTracked, { entity: entity, manager: instance });
                 }
 
                 return ctor;

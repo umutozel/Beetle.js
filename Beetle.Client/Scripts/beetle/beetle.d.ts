@@ -274,6 +274,8 @@ declare module beetle {
 
             toString(): string;
             isChanged(): boolean;
+            delete();
+            detach();
             toAdded();
             toModified();
             toDeleted();
