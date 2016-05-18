@@ -6151,8 +6151,9 @@
                     };
 
                     proto.handle = function (value) {
+                        var v = value;
                         if (typeof value !== 'number') value = Number(value);
-                        if (!this.isValid(value)) throwAssignError(this, value);
+                        if (!this.isValid(value)) throwAssignError(this, v);
                         return value;
                     };
 
@@ -6182,8 +6183,9 @@
                     };
 
                     proto.handle = function (value) {
+                        var v = value;
                         if (typeof value !== 'number') value = Number(value);
-                        if (!this.isValid(value)) throwAssignError(this, value);
+                        if (!this.isValid(value)) throwAssignError(this, v);
                         return value;
                     };
 
@@ -6213,8 +6215,9 @@
                     };
 
                     proto.handle = function (value) {
+                        var v = value;
                         if (typeof value !== 'number') value = Number(value);
-                        if (!this.isValid(value)) throwAssignError(this, value);
+                        if (!this.isValid(value)) throwAssignError(this, v);
                         return value;
                     };
 
@@ -7772,6 +7775,7 @@
                         // Set added items's foreign key.
                         if (addedItems)
                             helper.forEach(addedItems, function (newEntity) {
+                                processEntity(newEntity, tracker.manager);
                                 helper.setForeignKeys(newEntity, property, entity);
                             });
                     }
@@ -7850,6 +7854,7 @@
                     /// <param name="manager">Entity manager instance.</param>
                     if (!entity || !manager) return;
                     if (entity.$tracker.entityType.isComplexType || manager.isInManager(entity)) return;
+                    if (entity.$tracker.manager == manager) return;
                     if (entity.$tracker.manager)
                         throw helper.createError(i18N.entityAlreadyBeingTracked, null, { entity: entity, manager: manager });
                     // add to the manager.
