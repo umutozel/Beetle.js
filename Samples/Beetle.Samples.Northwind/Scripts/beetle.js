@@ -6304,6 +6304,10 @@
                             });
                             return flags;
                         }
+
+                        var n = Number(value);
+                        if (!isNaN(n)) value = n;
+
                         if (Assert.isTypeOf(value, 'string')) {
                             var values = value.split(', ');
                             if (values.length == 1)
@@ -9196,6 +9200,8 @@
                         entity.$tracker.toModified();
                     else if (state === enums.entityStates.Added)
                         entity.$tracker.toAdded();
+                    else if (state === enums.entityStates.Deleted)
+                        entity.$tracker.toDeleted();
                     else throw helper.createError(i18N.mergeStateError, [state], { entity: entity, state: state });
                 }
 
