@@ -157,7 +157,7 @@ namespace Beetle.Server.WebApi {
         /// </summary>
         /// <returns>Metadata object.</returns>
         [HttpGet]
-        [BeetleActionFilterAttribute(typeof(SimpleResultConfig))]
+        [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual object Metadata() {
             return ContextHandler.Metadata().ToMinified();
         }
@@ -203,7 +203,6 @@ namespace Beetle.Server.WebApi {
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">Cannot find tracker info.</exception>
         [HttpPost]
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual async Task<SaveResult> SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);

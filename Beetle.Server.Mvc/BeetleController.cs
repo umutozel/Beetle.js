@@ -179,7 +179,6 @@ namespace Beetle.Server.Mvc {
         /// <param name="saveBundle">The save bundle.</param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
         async Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
             IEnumerable<EntityBag> unknowns;
             var entityBags = ResolveEntities(saveBundle, out unknowns);

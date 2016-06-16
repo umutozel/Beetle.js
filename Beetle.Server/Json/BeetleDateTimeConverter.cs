@@ -74,5 +74,20 @@ namespace Beetle.Server.Json {
                 return serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local ? utc.ToLocalTime() : utc;
             }
         }
+
+        /// <summary>
+        /// Writes the json.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="serializer">The serializer.</param>
+        /// <returns></returns>
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
+            if (serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local && value != null && value.GetType() == typeof(DateTime)) {
+                value = ((DateTime)value).ToUniversalTime();
+            }
+
+            base.WriteJson(writer, value, serializer);
+        }
     }
 }
