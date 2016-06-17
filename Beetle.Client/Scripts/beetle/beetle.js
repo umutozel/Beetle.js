@@ -8760,7 +8760,8 @@
                             var validationError = helper.createError(i18N.validationFailed, { entities: changes, entitiesInError: validationErrors });
 
                             onError(errorCallback, pp, d, validationError, this);
-                        } else {
+                        }
+                        else {
                             var that = this;
                             this.dataService.saveChanges(
                                 this.createSavePackage(changes, options),
@@ -8774,6 +8775,8 @@
                                         // set returned generated value to existing entity.
                                         if (result.GeneratedValues) {
                                             helper.forEach(result.GeneratedValues, function (g) {
+                                                if (g.Index < 0) return;
+
                                                 var entity = changes[g.Index];
                                                 var lastProperty;
                                                 var propertyPaths = g.Property.split('.');
@@ -8806,7 +8809,8 @@
                                         notifySaved(that, changes, options);
                                         onSuccess(successCallback, pp, d, result);
                                         if (!pp) retVal = result;
-                                    } catch (e) {
+                                    }
+                                    catch (e) {
                                         e.changes = changes;
                                         onError(errorCallback, pp, d, e, that);
                                     }
@@ -8817,7 +8821,8 @@
                                 }
                             );
                         }
-                    } else
+                    }
+                    else
                         onSuccess(successCallback, pp, d, { AffectedCount: 0, GeneratedValues: [] });
 
                     if (pp) return pp.getPromise(d);

@@ -1045,16 +1045,29 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 
                         if (navigationProperty.IsScalar == false) {
                             var fkName = entity.ShortName + suffix;
-                            if (navigationProperty.EntityType.DataProperties.Any(dp => dp.Name == fkName))
-                                navigationProperty.ForeignKeys = new List<string> { fkName };
+
+                            var fp = navigationProperty.EntityType.DataProperties.FirstOrDefault(dp => dp.Name == fkName);
+                            if (fp != null) {
+                                navigationProperty.ForeignKeys = new List<string> { fp.Name };
+                                if (inverse != null) {
+                                    inverse.ForeignKeys = navigationProperty.ForeignKeys;
+                                }
+                            }
                         }
                         else {
                             if (inverse != null && inverse.IsScalar == true)
                                 navigationProperty.ForeignKeys = entity.Keys.ToList(); // one-to-one
                             else {
-                                var fkName = navigationProperty.EntityTypeName + suffix;
-                                if (entity.DataProperties.Any(dp => dp.Name == fkName))
-                                    navigationProperty.ForeignKeys = new List<string> { fkName };
+                                var fkName1 = navigationProperty.EntityTypeName + suffix;
+                                var fkName2 = navigationProperty.Name + suffix;
+
+                                var fp = entity.DataProperties.FirstOrDefault(dp => dp.Name == fkName1 || dp.Name == fkName2);
+                                if (fp != null) {
+                                    navigationProperty.ForeignKeys = new List<string> { fp.Name };
+                                    if (inverse != null) {
+                                        inverse.ForeignKeys = navigationProperty.ForeignKeys;
+                                    }
+                                }
                             }
                         }
                     }

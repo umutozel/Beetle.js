@@ -58,12 +58,71 @@ declare module beetle {
             new (): T;
         }
 
+        interface ArrayChangeEventArgs {
+            added: Array<any>,
+            removed: Array<any>
+        }
+
+        interface ValidationErrorsChangedEventArgs {
+            errors: ValidationError[];
+            added: ValidationError[];
+            removed: ValidationError[];
+        }
+
+        interface EntityStateChangedEventArgs {
+            entity: IEntity;
+            oldState: enums.entityStates;
+            newState: enums.entityStates;
+            newChanged: boolean;
+        }
+
+        interface PropertyChangedEventArgs {
+            entity: IEntity;
+            property: Property;
+            oldValue: any;
+            newValue: any;
+        }
+
+        interface ArrayChangedEventArgs {
+            entity: IEntity;
+            property: Property;
+            items: Array<IEntity>;
+            removedItems: Array<IEntity>;
+            addedItems: Array<IEntity>;
+        }
+
+        interface HasChangesChangedEventArgs {
+            hasChanges: boolean;
+        }
+
+        interface QueryExecutingEventArgs {
+            manager: core.EntityManager;
+            query: Query<any>;
+            options: ManagerQueryOptions;
+        }
+
+        interface QueryExecutedEventArgs extends QueryExecutingEventArgs {
+            result: any;
+        }
+
+        interface SaveEventArgs {
+            manager: core.EntityManager;
+            changes: IEntity[];
+            options: ManagerSaveOptions;
+        }
+
+        interface MessageEventArgs {
+            message: string;
+            query: Query<any>;
+            options: ManagerQueryOptions;
+        }
+
         interface TrackableArray<T> extends Array<T> {
             object: Object;
             property: string;
             after: interfaces.Delegate5<Object, string, TrackableArray<T>, T[], T[]>;
-            changing: Event;
-            changed: Event;
+            changing: Event<ArrayChangeEventArgs>;
+            changed: Event<ArrayChangeEventArgs>;
 
             remove(...T): T[];
             load(expands: string[], resourceName: string, options: ManagerQueryOptions,
@@ -266,10 +325,10 @@ declare module beetle {
             manager: core.EntityManager;
             owners: OwnerValue[];
             validationErrors: ValidationError[];
-            validationErrorsChanged: core.Event;
-            entityStateChanged: core.Event;
-            propertyChanged: core.Event;
-            arrayChanged: core.Event;
+            validationErrorsChanged: core.Event<ValidationErrorsChangedEventArgs>;
+            entityStateChanged: core.Event<EntityStateChangedEventArgs>;
+            propertyChanged: core.Event<PropertyChangedEventArgs>;
+            arrayChanged: core.Event<ArrayChangedEventArgs>;
             key: string;
 
             toString(): string;
@@ -794,14 +853,14 @@ declare module beetle {
 
             value: any;
         }
-        class Event {
+        class Event<T> {
             constructor(name: string, publisher: Object);
 
             name: string;
 
             toString(): string;
-            subscribe(subscriber: interfaces.Delegate2<any, any>);
-            unsubscribe(subscriber: interfaces.Delegate2<any, any>);
+            subscribe(subscriber: interfaces.Delegate1<T>);
+            unsubscribe(subscriber: interfaces.Delegate1<T>);
             notify(data: any);
         }
         module dataTypes {
@@ -861,13 +920,13 @@ declare module beetle {
             entities: EntityContainer;
             pendingChangeCount: number;
             validationErrors: interfaces.ValidationError[];
-            entityStateChanged: Event;
-            validationErrorsChanged: Event;
-            hasChangesChanged: Event;
-            queryExecuting: Event;
-            queryExecuted: Event;
-            saving: Event;
-            saved: Event;
+            entityStateChanged: Event<interfaces.EntityStateChangedEventArgs>;
+            validationErrorsChanged: Event<interfaces.ValidationErrorsChangedEventArgs>;
+            hasChangesChanged: Event<interfaces.HasChangesChangedEventArgs>;
+            queryExecuting: Event<interfaces.QueryExecutingEventArgs>;
+            queryExecuted: Event<interfaces.QueryExecutedEventArgs>;
+            saving: Event<interfaces.SaveEventArgs>;
+            saved: Event<interfaces.SaveEventArgs>;
 
             autoFixScalar: boolean;
             autoFixPlural: boolean;
@@ -994,13 +1053,13 @@ declare module beetle {
     }
 
     module events {
-        var queryExecuting: core.Event;
-        var queryExecuted: core.Event;
-        var saving: core.Event;
-        var saved: core.Event;
-        var info: core.Event;
-        var warning: core.Event;
-        var error: core.Event;
+        var queryExecuting: core.Event<interfaces.QueryExecutingEventArgs>;
+        var queryExecuted: core.Event<interfaces.QueryExecutedEventArgs>;
+        var saving: core.Event<interfaces.SaveEventArgs>;
+        var saved: core.Event<interfaces.SaveEventArgs>;
+        var info: core.Event<interfaces.MessageEventArgs>;
+        var warning: core.Event<interfaces.MessageEventArgs>;
+        var error: core.Event<Error>;
     }
 
     module settings {
@@ -1045,7 +1104,7 @@ declare module beetle {
     class EntitySet<T extends IEntity> extends core.EntitySet<T> { }
     class WebApiService extends services.WebApiService { }
     class MvcService extends services.MvcService { }
-    class Event extends core.Event { }
+    class Event<T> extends core.Event<T> { }
     class ValueNotifyWrapper extends core.ValueNotifyWrapper { }
     interface TrackableArray<T> extends interfaces.TrackableArray<T> { }
 
