@@ -8507,7 +8507,7 @@
                         // if entity is in Added state, detach it
                         if (tracker.entityState == enums.entityStates.Added)
                             manager.detachEntity(toReject);
-                        else if (tracker.entityState == enums.entityStates.Modified) {
+                        else if (tracker.entityState != enums.entityStates.Detached) {
                             tracker.rejectChanges();
                             tracker.toUnchanged();
                         }
