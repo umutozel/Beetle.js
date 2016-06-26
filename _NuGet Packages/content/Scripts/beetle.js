@@ -9543,7 +9543,7 @@
                     if (errorCallback) errorCallback(error);
                     if (promiseProvider) promiseProvider.reject(deferred, error);
                     error.manager = manager;
-                    if (!errorCallback && !promiseProvider)
+                    if (!errorCallback)
                         throw new error;
                 }
 

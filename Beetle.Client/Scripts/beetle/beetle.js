@@ -9544,7 +9544,7 @@
                     if (promiseProvider) promiseProvider.reject(deferred, error);
                     error.manager = manager;
                     if (!errorCallback && !promiseProvider)
-                        throw new error;
+                        throw error;
                 }
 
                 return ctor;
