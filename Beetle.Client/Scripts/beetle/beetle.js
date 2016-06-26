@@ -9540,9 +9540,9 @@
                     /// <summary>
                     /// Called when a operation is failed.
                     /// </summary>
+                    error.manager = manager;
                     if (errorCallback) errorCallback(error);
                     if (promiseProvider) promiseProvider.reject(deferred, error);
-                    error.manager = manager;
                     if (!errorCallback && !promiseProvider)
                         throw error;
                 }
