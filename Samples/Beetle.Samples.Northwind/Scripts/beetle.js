@@ -7785,7 +7785,7 @@
                     }
                 }
 
-                function arraySet(entity, items, newItems, property) {
+                function arraySet(entity, property, items, newItems) {
                     /// <summary>
                     /// Fires after setting an array property with new array.
                     /// </summary>
@@ -9540,11 +9540,11 @@
                     /// <summary>
                     /// Called when a operation is failed.
                     /// </summary>
+                    error.manager = manager;
                     if (errorCallback) errorCallback(error);
                     if (promiseProvider) promiseProvider.reject(deferred, error);
-                    error.manager = manager;
-                    if (!errorCallback)
-                        throw new error;
+                    if (!errorCallback && !promiseProvider)
+                        throw error;
                 }
 
                 return ctor;

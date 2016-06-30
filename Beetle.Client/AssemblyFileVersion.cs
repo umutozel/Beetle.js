@@ -1,1 +1,1 @@
-﻿[assembly: System.Reflection.AssemblyFileVersion("2.0.2368.0")]
+﻿[assembly: System.Reflection.AssemblyFileVersion("2.0.2372.0")]

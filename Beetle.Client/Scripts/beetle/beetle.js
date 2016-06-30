@@ -7785,7 +7785,7 @@
                     }
                 }
 
-                function arraySet(entity, items, newItems, property) {
+                function arraySet(entity, property, items, newItems) {
                     /// <summary>
                     /// Fires after setting an array property with new array.
                     /// </summary>

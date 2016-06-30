@@ -9,42 +9,6 @@ declare module beetle {
             ();
         }
 
-        interface Delegate1<T> {
-            (t: T);
-        }
-
-        interface Delegate2<T1, T2> {
-            (t1: T1, t2: T2);
-        }
-
-        interface Delegate3<T1, T2, T3> {
-            (t1: T1, t2: T2, t3: T3);
-        }
-
-        interface Delegate4<T1, T2, T3, T4> {
-            (t1: T1, t2: T2, t3: T3, t4: T4);
-        }
-
-        interface Delegate5<T1, T2, T3, T4, T5> {
-            (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5);
-        }
-
-        interface Func<TResult> {
-            (): TResult;
-        }
-
-        interface Func1<T, TResult> {
-            (t: T): TResult;
-        }
-
-        interface Func2<T1, T2, TResult> {
-            (t1: T1, t2: T2): TResult;
-        }
-
-        interface FuncAccessor<T, TResult> {
-            (t?: T): TResult;
-        }
-
         interface Dictionary<T> {
             [key: string]: T;
         }
@@ -120,13 +84,13 @@ declare module beetle {
         interface TrackableArray<T> extends Array<T> {
             object: Object;
             property: string;
-            after: interfaces.Delegate5<Object, string, TrackableArray<T>, T[], T[]>;
+            after: (o: Object, s: string, a: TrackableArray<T>, removed: T[], added: T[]) => void;
             changing: Event<ArrayChangeEventArgs>;
             changed: Event<ArrayChangeEventArgs>;
 
             remove(...T): T[];
             load(expands: string[], resourceName: string, options: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
+                successCallback?: (items: T[]) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.QueryResultArray<T>>;
         }
 
         interface PropertyValidator {
@@ -192,7 +156,7 @@ declare module beetle {
             isComplex: boolean;
             validators: PropertyValidator[];
 
-            addValidation(name: string, func: Func2<any, IEntity, string>, message: string, args?: any);
+            addValidation(name: string, func: (value: any, entity: IEntity) => string, message: string, args?: any);
         }
 
         interface DataProperty extends Property {
@@ -240,16 +204,16 @@ declare module beetle {
             floorType: EntityType;
             baseType: EntityType;
             validators: EntityValidator[];
-            constructor: Delegate1<RawEntity>;
-            initializer: Delegate1<IEntity>;
+            constructor: (entity: RawEntity) => void;
+            initializer: (entity: IEntity) => void;
 
             getProperty(propertyPath: string): Property;
-            registerCtor(ctor?: Delegate1<RawEntity>, initializer?: Delegate1<IEntity>);
+            registerCtor(ctor?: (entity: RawEntity) => void, initializer?: (entity: IEntity) => void);
             createEntity(initialValues: Object): IEntity;
             createRawEntity(initialValues: Object): RawEntity;
             isAssignableWith(otherType: EntityType): boolean;
             isAssignableTo(otherType: EntityType): boolean;
-            addValidation(name: string, func: Func1<IEntity, string>, message: string, args?: any);
+            addValidation(name: string, func: (entity: IEntity) => string, message: string, args?: any);
         }
 
         interface InternalSet<T extends IEntity> {
@@ -264,29 +228,31 @@ declare module beetle {
             where(predicate: string, varContext?: any): Query<T>;
             orderBy(keySelector?: string): Query<T>;
             orderByDesc(keySelector?: string): Query<T>;
-            select<TResult>(selector: string | string[] | Func1<T, TResult>): Query<TResult>;
-            select(selector: string | string[] | Func1<T, any>): Query<any>;
+            select<TResult>(selector: string | string[] | ((entity: T) => TResult)): Query<TResult>;
+            select(selector: string | string[] | ((entity: T) => any)): Query<any>;
             select<TResult>(...selectors: string[]): Query<TResult>;
             select(...selectors: string[]): Query<any>;
             skip(count: number): Query<T>;
             take(count: number): Query<T>;
             top(count: number): Query<T>;
-            groupBy<TResult>(keySelector: string | Func1<T, any>, valueSelector: string | Func1<Grouping<T, any>, TResult>): Query<TResult>;
-            groupBy(keySelector: string | Func1<T, any>, valueSelector?: string | Func1<Grouping<T, any>, any>): Query<any>;
-            groupBy<TKey, TResult>(keySelector: Func1<T, TKey>, valueSelector: Func1<Grouping<T, TKey>, TResult>): Query<TResult>;
+            groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: Grouping<T, any>) => TResult)): Query<TResult>;
+            groupBy(keySelector: string | ((entity: T) => any), valueSelector?: string | ((group: Grouping<T, any>) => any)): Query<any>;
+            groupBy<TKey, TResult>(keySelector: ((entity: T) => TKey), valueSelector: ((group: Grouping<T, TKey>) => TResult)): Query<TResult>;
             distinct(): Query<T>;
-            distinct<TResult>(selector: string | Func1<T, TResult>): Query<TResult>;
-            distinct(selector: string | Func1<T, any>): Query<any>;
+            distinct<TResult>(selector: string | ((entity: T) => TResult)): Query<TResult>;
+            distinct(selector: string | ((entity: T) => any)): Query<any>;
             reverse(): Query<T>;
-            selectMany<TResult>(selector: string | Func1<T, Array<TResult>>): Query<TResult>;
-            selectMany(selector: string | Func1<T, any>): Query<any>;
+            selectMany<TResult>(selector: string | ((entity: T) => Array<TResult>)): Query<TResult>;
+            selectMany(selector: string | ((entity: T) => any)): Query<any>;
             skipWhile(predicate: string, varContext?: any): Query<T>;
             takeWhile(predicate: string, varContext?: any): Query<T>;
         }
 
         interface ClosedQueryable<T, TOptions> {
-            execute(options?: TOptions, successCallback?: Delegate1<T>, errorCallback?: Delegate1<Error>): PromiseLike<T>;
-            execute<TResult>(options?: TOptions, successCallback?: Delegate1<TResult>, errorCallback?: Delegate1<Error>): PromiseLike<TResult>;
+            execute(options?: TOptions, successCallback?: (result: T) => void, errorCallback?: (e: Error) => void): PromiseLike<T>;
+            execute<TResult>(options?: TOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult>;
+            x(options?: TOptions, successCallback?: (result: T) => void, errorCallback?: (e: Error) => void): PromiseLike<T>;
+            x<TResult>(options?: TOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult>;
         }
 
         interface EntityQueryParameter {
@@ -296,7 +262,7 @@ declare module beetle {
 
         interface QueryResultExtra {
             userData: string;
-            headerGetter: Func1<string, string>;
+            headerGetter: (name: string) => string;
             xhr: Object;
         }
 
@@ -349,7 +315,7 @@ declare module beetle {
             foreignKey(navProperty: NavigationProperty): string;
             createLoadQuery<T extends IEntity>(navPropName: string, resourceName: string): querying.EntityQuery<T>;
             loadNavigationProperty(navPropName: string, expands: string[], resourceName: string, options?: ManagerQueryOptions,
-                successCallback?: Delegate1<any>, errorCallback?: Delegate1<Error>): PromiseLike<any>;
+                successCallback?: (result: any) => void, errorCallback?: (e: Error) => void): PromiseLike<any>;
             validate(): ValidationError[];
             toRaw(includeNavigations?: boolean): Object;
         }
@@ -554,12 +520,12 @@ declare module beetle {
     }
 
     interface ObservableProviderCallbackOptions {
-        propertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
-        arrayChange: interfaces.Delegate5<Object, string, Array<any>, Array<any>, Array<any>>;
-        dataPropertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
-        scalarNavigationPropertyChange: interfaces.Delegate4<Object, string, interfaces.FuncAccessor<any, any>, any>;
-        pluralNavigationPropertyChange: interfaces.Delegate5<Object, string, Array<any>, Array<any>, Array<any>>;
-        arraySet: interfaces.Delegate4<Object, Array<any>, Array<any>, string>;
+        propertyChange: (entity: Object, property: string, accessor: (v?: any) => any, newValue: any) => void;
+        arrayChange: (entity: Object, property: string, items: Array<any>, removed: Array<any>, added: Array<any>) => void;
+        dataPropertyChange: (entity: Object, property: interfaces.DataProperty, accessor: (v?: any) => any, newValue) => void;
+        scalarNavigationPropertyChange: (entity: Object, property: interfaces.NavigationProperty, accessor: (v?: any) => any, newValue: any) => void;
+        pluralNavigationPropertyChange: (entity: Object, property: interfaces.NavigationProperty, items: Array<any>, removed: Array<any>, added: Array<any>) => void;
+        arraySet: (entity: Object, property: string, oldArray: Array<any>, newArray: Array<any>) => void;
     }
 
     module helper {
@@ -572,7 +538,7 @@ declare module beetle {
         function createError(message: string, args?: Array<any>, props?: interfaces.Dictionary<any>): Error;
         function getFuncName(func: Function): string;
         function createTrackableArray<T>(initial: Array<T>, object: Object, property: string,
-            after: interfaces.Delegate5<Object, string, TrackableArray<T>, Array<T>, Array<T>>): interfaces.TrackableArray<T>;
+            after: (entity: Object, property: string, instance: interfaces.TrackableArray<T>, removed: Array<T>, added: Array<T>) => void): interfaces.TrackableArray<T>;
     }
 
     class Assert {
@@ -629,8 +595,8 @@ declare module beetle {
             toString(): string;
             doAjax(uri: string, type: string, dataType: string, contentType: string, data: any, async: boolean, timeout: number,
                 extra: interfaces.Dictionary<any>, headers: interfaces.Dictionary<string>,
-                successCallback: interfaces.Delegate3<any, interfaces.Func1<string, string>, Object>,
-                errorCallback: interfaces.Delegate1<Error>);
+                successCallback: (data: any, headerGetter: (name: string) => string, xhr?: JQueryXHR) => void,
+                errorCallback: (e: Error) => void);
         }
         abstract class SerializationServiceBase {
             constructor(name: string);
@@ -672,18 +638,18 @@ declare module beetle {
             createQuery<T extends IEntity>(resourceName: string, type?: string | interfaces.ParameterlessConstructor<T>, manager?: core.EntityManager): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<any>;
             createEntityQuery<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
-            registerCtor<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
 
-            fetchMetadata(options?: ServiceQueryOptions, successCallback?: interfaces.Delegate1<Object>, errorCallback?: interfaces.Delegate1<Error>);
+            fetchMetadata(options?: ServiceQueryOptions, successCallback?: (data: Object) => void, errorCallback?: (e: Error) => void);
             createEntityAsync<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues: Object, options: ServiceQueryOptions,
-                successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
+                successCallback: (entity: T) => void, errorCallback: (e: Error) => void);
             createEntityAsync(shortName: string, initialValues: Object, options: ServiceQueryOptions,
-                successCallback: interfaces.Delegate1<IEntity>, errorCallback: interfaces.Delegate1<Error>);
-            executeQuery<T>(query: querying.EntityQuery<T>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback: interfaces.Delegate1<Error>);
-            executeQuery<T>(query: interfaces.ClosedQueryable<T, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<T>, errorCallback: interfaces.Delegate1<Error>);
-            executeQuery(query: querying.EntityQuery<any>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<any>, errorCallback: interfaces.Delegate1<Error>);
-            executeQuery(query: interfaces.ClosedQueryable<any, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: interfaces.Delegate1<any>, errorCallback: interfaces.Delegate1<Error>);
-            saveChanges(options: ServiceSaveOptions, successCallback: interfaces.Delegate1<interfaces.SaveResult>, errorCallback: interfaces.Delegate1<Error>);
+                successCallback: (entity: IEntity) => void, errorCallback: (e: Error) => void);
+            executeQuery<T>(query: querying.EntityQuery<T>, options: ServiceQueryOptions, successCallback: (result: interfaces.QueryResultArray<T>) => void, errorCallback: (e: Error) => void);
+            executeQuery<T>(query: interfaces.ClosedQueryable<T, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: (result: T) => void, errorCallback: (e: Error) => void);
+            executeQuery(query: querying.EntityQuery<any>, options: ServiceQueryOptions, successCallback: (result: any) => void, errorCallback: (e: Error) => void);
+            executeQuery(query: interfaces.ClosedQueryable<any, ServiceQueryOptions>, options: ServiceQueryOptions, successCallback: (result: any) => void, errorCallback: (e: Error) => void);
+            saveChanges(options: ServiceSaveOptions, successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: Error) => void);
         }
     }
 
@@ -715,7 +681,7 @@ declare module beetle {
             getEntityTypeByFullName(typeName: string, throwIfNotFound?: boolean): interfaces.EntityType;
             getEntityType(shortName: string, throwIfNotFound?: boolean): interfaces.EntityType;
             getEntityType<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, throwIfNotFound?: boolean): interfaces.EntityType;
-            registerCtor<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
             createEntity(shortName: string, initialValues?: Object): IEntity;
             createEntity<T extends IEntity>(constructor: interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
@@ -736,51 +702,51 @@ declare module beetle {
             inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
             ofType<TResult extends T>(type: string | beetle.interfaces.ParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
             where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
-            where(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
-            orderBy(keySelector: string | beetle.interfaces.Func2<T, T, number>): beetle.querying.ArrayQuery<T>;
-            orderByDesc(keySelector: string | beetle.interfaces.Func2<T, T, number>): beetle.querying.ArrayQuery<T>;
-            select<TResult>(selector: string | string[] | beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
+            where(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
+            orderBy(keySelector: string | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
+            orderByDesc(keySelector: string | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
+            select<TResult>(selector: string | string[] | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;
             select<TResult>(...selectors: string[]): beetle.querying.ArrayQuery<TResult>;
-            select(selector: string | string[] | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
+            select(selector: string | string[] | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;
             select(...selectors: string[]): beetle.querying.ArrayQuery<any>;
             skip(count: number): beetle.querying.ArrayQuery<T>;
             take(count: number): beetle.querying.ArrayQuery<T>;
             top(count: number): beetle.querying.ArrayQuery<T>;
-            groupBy<TKey, TResult>(keySelector: beetle.interfaces.Func1<T, TKey>, valueSelector: beetle.interfaces.Func1<beetle.interfaces.Grouping<T, TKey>, TResult>): beetle.querying.ArrayQuery<TResult>;
-            groupBy<TResult>(keySelector: string | beetle.interfaces.Func1<T, any>, valueSelector: string | beetle.interfaces.Func1<beetle.interfaces.Grouping<T, any>, TResult>): beetle.querying.ArrayQuery<TResult>;
-            groupBy(keySelector: string | beetle.interfaces.Func1<T, any>, valueSelector: string | beetle.interfaces.Func1<beetle.interfaces.Grouping<T, any>, any>): beetle.querying.ArrayQuery<any>;
+            groupBy<TKey, TResult>(keySelector: (entity: T) => TKey, valueSelector: (group: beetle.interfaces.Grouping<T, TKey>) => TResult): beetle.querying.ArrayQuery<TResult>;
+            groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => TResult)): beetle.querying.ArrayQuery<TResult>;
+            groupBy(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => any)): beetle.querying.ArrayQuery<any>;
             distinct(): beetle.querying.ArrayQuery<T>;
-            distinct<TResult>(selector: string | beetle.interfaces.Func1<T, TResult>): beetle.querying.ArrayQuery<TResult>;
-            distinct(selector: string | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
+            distinct<TResult>(selector: string | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;
+            distinct(selector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;
             reverse(): beetle.querying.ArrayQuery<T>;
-            selectMany<TResult>(selector: string | beetle.interfaces.Func1<T, Array<TResult>>): beetle.querying.ArrayQuery<TResult>;
-            selectMany(selector: string | beetle.interfaces.Func1<T, any>): beetle.querying.ArrayQuery<any>;
+            selectMany<TResult>(selector: string | ((entity: T) => Array<TResult>)): beetle.querying.ArrayQuery<TResult>;
+            selectMany(selector: string | ((entity:T) => any)): beetle.querying.ArrayQuery<any>;
             skipWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
-            skipWhile(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
+            skipWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
             takeWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
-            takeWhile(predicate: beetle.interfaces.Func1<T, boolean>): beetle.querying.ArrayQuery<T>;
+            takeWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
             all(predicate?: string, varContext?: any): boolean;
-            all(predicate: beetle.interfaces.Func1<T, boolean>): boolean;
+            all(predicate: (entity: T) => boolean): boolean;
             any(predicate?: string, varContext?: any): boolean;
-            any(predicate: beetle.interfaces.Func1<T, boolean>): boolean;
-            avg(selector?: string | beetle.interfaces.Func1<T, number>): number;
-            max(selector?: string | beetle.interfaces.Func1<T, number>): number;
-            min(selector?: string | beetle.interfaces.Func1<T, number>): number;
-            sum(selector?: string | beetle.interfaces.Func1<T, number>): number;
+            any(predicate: (entity: T) => boolean): boolean;
+            avg(selector?: string | ((entity: T) => number)): number;
+            max(selector?: string | ((entity: T) => number)): number;
+            min(selector?: string | ((entity: T) => number)): number;
+            sum(selector?: string | ((entity: T) => number)): number;
             count(predicate?: string, varContext?: any): number;
-            count(predicate: beetle.interfaces.Func1<T, boolean>): number;
+            count(predicate: (entity: T) => boolean): number;
             first(predicate?: string, varContext?: any): T;
-            first(predicate: beetle.interfaces.Func1<T, boolean>): T;
+            first(predicate: (entiyt: T) => boolean): T;
             firstOrDefault(predicate?: string, varContext?: any): T;
-            firstOrDefault(predicate: beetle.interfaces.Func1<T, boolean>): T;
+            firstOrDefault(predicate: (entity: T) => boolean): T;
             single(predicate?: string, varContext?: any): T;
-            single(predicate: beetle.interfaces.Func1<T, boolean>): T;
+            single(predicate: (entity: T) => boolean): T;
             singleOrDefault(predicate?: string, varContext?: any): T;
-            singleOrDefault(predicate: beetle.interfaces.Func1<T, boolean>): T;
+            singleOrDefault(predicate: (entity: T) => boolean): T;
             last(predicate?: string, varContext?: any): T;
-            last(predicate: beetle.interfaces.Func1<T, boolean>): T;
+            last(predicate: (entity: T) => boolean): T;
             lastOrDefault(predicate?: string, varContext?: any): T;
-            lastOrDefault(predicate: beetle.interfaces.Func1<T, boolean>): T;
+            lastOrDefault(predicate: (entity: T) => boolean): T;
 
             execute(options?: Object): T[];
             execute<TResult>(options?: Object): TResult;
@@ -800,45 +766,45 @@ declare module beetle {
 
             inlineCount(isEnabled?: boolean): EntityQuery<T>;
             ofType<TResult extends T>(type: string | interfaces.ParameterlessConstructor<TResult>): EntityQuery<TResult>;
-            where(predicate: string | interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
-            orderBy(keySelector: string | interfaces.Func1<T, any>): EntityQuery<T>;
-            orderByDesc(keySelector: string | interfaces.Func1<T, any>): EntityQuery<T>;
-            select<TResult>(selector: string | string[] | interfaces.Func1<T, TResult>): EntityQuery<TResult>;
-            select(selector: string | string[] | interfaces.Func1<T, any>): EntityQuery<any>;
+            where(predicate: string | ((entity: T) => boolean), varContext?: any): EntityQuery<T>;
+            orderBy(keySelector: string | ((entity: T) => any)): EntityQuery<T>;
+            orderByDesc(keySelector: string | ((entity: T) => any)): EntityQuery<T>;
+            select<TResult>(selector: string | string[] | ((entity: T) => TResult)): EntityQuery<TResult>;
+            select(selector: string | string[] | ((entity: T) => any)): EntityQuery<any>;
             select<TResult>(...selectors: string[]): EntityQuery<TResult>;
             select(...selectors: string[]): EntityQuery<any>;
             skip(count: number): EntityQuery<T>;
             take(count: number): EntityQuery<T>;
             top(count: number): EntityQuery<T>;
-            groupBy<TKey, TResult>(keySelector: interfaces.Func1<T, TKey>, valueSelector: interfaces.Func1<interfaces.Grouping<T, TKey>, TResult>): EntityQuery<TResult>;
-            groupBy<TResult>(keySelector: string | interfaces.Func1<T, any>, valueSelector: string | interfaces.Func1<interfaces.Grouping<T, any>, TResult>): EntityQuery<TResult>;
-            groupBy(keySelector: string | interfaces.Func1<T, any>, valueSelector?: string | interfaces.Func1<interfaces.Grouping<T, any>, any>): EntityQuery<any>;
+            groupBy<TKey, TResult>(keySelector: (entity: T) => TKey, valueSelector: (group: interfaces.Grouping<T, TKey>) => TResult): EntityQuery<TResult>;
+            groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: interfaces.Grouping<T, any>) => TResult)): EntityQuery<TResult>;
+            groupBy(keySelector: string | ((entity: T) => any), valueSelector?: string | ((group: interfaces.Grouping<T, any>) => any)): EntityQuery<any>;
             distinct(): EntityQuery<T>;
-            distinct<TResult>(selector: string | interfaces.Func1<T, TResult>): EntityQuery<TResult>;
-            distinct(selector: string | interfaces.Func1<T, any>): EntityQuery<any>;
+            distinct<TResult>(selector: string | ((entity: T) => TResult)): EntityQuery<TResult>;
+            distinct(selector: string | ((entity: T) => any)): EntityQuery<any>;
             reverse(): EntityQuery<T>;
-            selectMany<TResult>(selector: string | interfaces.Func1<T, Array<TResult>>): EntityQuery<TResult>;
-            selectMany(selector: string | interfaces.Func1<T, any>): EntityQuery<any>;
-            skipWhile(predicate: string | interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
-            takeWhile(predicate: string | interfaces.Func1<T, boolean>, varContext?: any): EntityQuery<T>;
-            all(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
-            any(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
-            avg(selector?: string | interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
-            max(selector?: string | interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
-            min(selector?: string | interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
-            sum(selector?: string | interfaces.Func1<T, number>): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
-            count(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
-            first(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            firstOrDefault(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            single(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            singleOrDefault(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            last(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
-            lastOrDefault(predicate?: string | interfaces.Func1<T, boolean>, varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            selectMany<TResult>(selector: string | ((array: T) => Array<TResult>)): EntityQuery<TResult>;
+            selectMany(selector: string | ((entity: T) => any)): EntityQuery<any>;
+            skipWhile(predicate: string | ((entity: T) => boolean), varContext?: any): EntityQuery<T>;
+            takeWhile(predicate: string | ((entity: T) => boolean), varContext?: any): EntityQuery<T>;
+            all(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            any(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<boolean, ManagerQueryOptions>;
+            avg(selector?: string | ((entity: T) => number)): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            max(selector?: string | ((entity: T) => number)): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            min(selector?: string | ((entity: T) => number)): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            sum(selector?: string | ((entity: T) => number)): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            count(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<number, ManagerQueryOptions>;
+            first(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            firstOrDefault(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            single(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            singleOrDefault(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            last(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
+            lastOrDefault(predicate?: string | ((entity: T) => boolean), varContext?: any): interfaces.ClosedQueryable<T, ManagerQueryOptions>;
 
-            execute(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
-            execute<TResult>(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<TResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<TResult[]>;
-            x(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<interfaces.QueryResultArray<T>>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.QueryResultArray<T>>;
-            x<TResult>(options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<TResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<TResult[]>;
+            execute(options?: ManagerQueryOptions, successCallback?: (result: interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.QueryResultArray<T>>;
+            execute<TResult>(options?: ManagerQueryOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult[]>;
+            x(options?: ManagerQueryOptions, successCallback?: (result: interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.QueryResultArray<T>>;
+            x<TResult>(options?: ManagerQueryOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult[]>;
 
             expand(propertyPath: string): EntityQuery<T>;
             include(propertyPath: string): EntityQuery<T>;
@@ -859,8 +825,8 @@ declare module beetle {
             name: string;
 
             toString(): string;
-            subscribe(subscriber: interfaces.Delegate1<T>);
-            unsubscribe(subscriber: interfaces.Delegate1<T>);
+            subscribe(subscriber: (args: T) => void);
+            unsubscribe(subscriber: (args: T) => void);
             notify(data: any);
         }
         module dataTypes {
@@ -948,7 +914,7 @@ declare module beetle {
             createQuery(resourceName: string, shortName?: string): querying.EntityQuery<any>;
             createEntityQuery<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, resourceName?: string): querying.EntityQuery<T>;
             createEntityQuery(shortName: string, resourceName?: string): querying.EntityQuery<any>;
-            registerCtor<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, ctor?: interfaces.Delegate1<interfaces.RawEntity>, initializer?: interfaces.Delegate1<T>);
+            registerCtor<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
             createEntity<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
             createEntity(shortName: string, initialValues?: Object): IEntity;
             createDetachedEntity<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues?: Object): T;
@@ -956,21 +922,21 @@ declare module beetle {
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
             createRawEntity<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues?: Object): interfaces.RawEntity;
             createEntityAsync<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
+                successCallback?: (entity: T) => void, errorCallback?: (e: Error) => void): PromiseLike<T>;
             createEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<IEntity>;
+                successCallback?: (entity: IEntity) => void, errorCallback?: (e: Error) => void): PromiseLike<IEntity>;
             createDetachedEntityAsync<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
+                successCallback?: (entity: T) => void, errorCallback?: (e: Error) => void): PromiseLike<T>;
             createDetachedEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<IEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<IEntity>;
+                successCallback?: (entity: IEntity) => void, errorCallback?: (e: Error) => void): PromiseLike<IEntity>;
             createRawEntityAsync<T extends IEntity>(type: string | interfaces.ParameterlessConstructor<T>, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<interfaces.RawEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.RawEntity>;
+                successCallback?: (rawEntity: interfaces.RawEntity) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.RawEntity>;
             createRawEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
-                successCallback?: interfaces.Delegate1<interfaces.RawEntity>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.RawEntity>;
-            executeQuery<T>(query: querying.EntityQuery<T>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T[]>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T[]>;
-            executeQuery<T>(query: interfaces.ClosedQueryable<T, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<T>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<T>;
-            executeQuery(query: querying.EntityQuery<any>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<any>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<any>;
-            executeQuery(query: interfaces.ClosedQueryable<any, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: interfaces.Delegate1<any>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<any>;
+                successCallback?: (rawEntity: interfaces.RawEntity) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.RawEntity>;
+            executeQuery<T>(query: querying.EntityQuery<T>, options?: ManagerQueryOptions, successCallback?: (result: T[]) => void, errorCallback?: (e: Error) => void): PromiseLike<T[]>;
+            executeQuery<T>(query: interfaces.ClosedQueryable<T, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: (result: T) => void, errorCallback?: (e: Error) => void): PromiseLike<T>;
+            executeQuery(query: querying.EntityQuery<any>, options?: ManagerQueryOptions, successCallback?: (result: any) => void, errorCallback?: (e: Error) => void): PromiseLike<any>;
+            executeQuery(query: interfaces.ClosedQueryable<any, ManagerQueryOptions>, options?: ManagerQueryOptions, successCallback?: (result: any) => void, errorCallback?: (e: Error) => void): PromiseLike<any>;
             executeQueryLocally<T>(query: querying.EntityQuery<T>, varContext?: any): T[];
             executeQueryLocally<T>(query: interfaces.ClosedQueryable<T, any>, varContext?: any): T;
             getEntityByKey<T extends IEntity>(key: any, type: string | interfaces.EntityType | interfaces.ParameterlessConstructor<T>): T;
@@ -986,7 +952,7 @@ declare module beetle {
             importEntities(exportedEntities: interfaces.ExportEntity[], merge?: enums.mergeStrategy);
             hasChanges(): boolean;
             getChanges(): IEntity[];
-            saveChanges(options?: ManagerSaveOptions, successCallback?: interfaces.Delegate1<interfaces.SaveResult>, errorCallback?: interfaces.Delegate1<Error>): PromiseLike<interfaces.SaveResult>;
+            saveChanges(options?: ManagerSaveOptions, successCallback?: (result: interfaces.SaveResult) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.SaveResult>;
             toEntity<T extends IEntity>(object: interfaces.RawEntity): T;
             toEntity(object: interfaces.RawEntity): IEntity;
             fixNavigations(entity: IEntity);
@@ -1012,7 +978,7 @@ declare module beetle {
             constructor(url: string, metadata: metadata.MetadataManager | Object | string, options?: ServiceOptions);
 
             executeQueryParams(resource: string, queryParams: Object, options: ServiceQueryOptions,
-                successCallback: interfaces.Delegate1<interfaces.SaveResult>, errorCallback: interfaces.Delegate1<Error>);
+                successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: Error) => void);
             fixResults(objects: interfaces.RawEntity[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
         }
         class WebApiService extends MvcService {
@@ -1090,8 +1056,8 @@ declare module beetle {
         function setDefaultServiceType(type: enums.serviceTypes | string);
         function getDateConverter(): baseTypes.DateConverterBase;
         function setDateConverter(converter: baseTypes.DateConverterBase);
-        function getLocalizeFunction(): interfaces.Func1<string, string>;
-        function setLocalizeFunction(func: interfaces.Func1<string, string>);
+        function getLocalizeFunction(): (name: string) => string;
+        function setLocalizeFunction(func: (name: string) => string);
     }
 
     function registerI18N(code: string, i18n: interfaces.I18N, active?: boolean);
