@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js query extension 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.0.10
+// File version: 2.0.13
 
 declare module beetle {
 
@@ -19,14 +19,14 @@ declare module beetle {
 
         interface EntityQuery<T> {
             then(callback: (result: beetle.interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void,
-                options?: beetle.ManagerOptions): PromiseLike<beetle.interfaces.QueryResultArray<T>>;
+                 options?: beetle.ManagerOptions): PromiseLike<beetle.interfaces.QueryResultArray<T>>;
         }
     }
 }
 
 interface Array<T> {
     inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
-    ofType<TResult extends T>(type: string | beetle.interfaces.ParameterlessConstructor<TResult>): beetle.querying.ArrayQuery<TResult>;
+    ofType<TResult extends T>(type: string | (new () => TResult)): beetle.querying.ArrayQuery<TResult>;
     where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
     where(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
     orderBy(keySelector: string | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
