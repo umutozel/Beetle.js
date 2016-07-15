@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Beetle.js")]
 [assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("Beetle.js © 2016")]
-[assembly: AssemblyVersion("2.0.14")]
-[assembly: AssemblyInformationalVersion("2.0.14")]
+[assembly: AssemblyVersion("2.0.15")]
+[assembly: AssemblyInformationalVersion("2.0.15")]
 [assembly: ComVisible(false)]
 
 #if DEBUG

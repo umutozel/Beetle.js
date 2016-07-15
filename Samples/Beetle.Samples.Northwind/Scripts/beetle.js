@@ -6312,24 +6312,22 @@
                         if (!isNaN(n)) value = n;
 
                         if (Assert.isTypeOf(value, 'string')) {
-                            var values = value.split(', ');
-                            if (values.length == 1)
-                                return enumType[value];
-                            for (var i = 0; i < values.length; i++)
-                                if (enumType[values[i]] == null) return null;
+                            var values = value.split(',');
+
+                            value = 0;
+                            for (var i = 0; i < values.length; i++) {
+                                var v = enumType[values[i]];
+                                if (v != null) value |= v.value;
+                                else return null;
+                            }
+
                             return value;
                         }
-                        if (Assert.isTypeOf(value, 'number')) {
-                            var member = value;
-                            helper.forEach(enumType.symbols(), function (s) {
-                                if (s.value == value) {
-                                    member = s;
-                                    return;
-                                }
-                            });
-                            return member;
-                        }
-                        return Assert.isEnum(value, enumType) ? value : null;
+
+                        if (Assert.isTypeOf(value, 'number'))
+                            return value;
+
+                        return Assert.isEnum(value, enumType) ? value.value : null;
                     }
 
                     return ctor;
@@ -10323,7 +10321,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.13',
+            version: '2.0.15',
             registerI18N: function (code, i18n, active) {
                 i18Ns[code] = i18n;
                 if (active) i18N = i18n;

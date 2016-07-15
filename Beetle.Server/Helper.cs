@@ -2,12 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.Spatial;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Reflection;
 using Beetle.Server.Meta;
 using Newtonsoft.Json;
@@ -16,9 +19,6 @@ using Beetle.Server.Properties;
 using Validator = System.ComponentModel.DataAnnotations.Validator;
 using ValidatorType = System.ComponentModel.DataAnnotations.DataType;
 using DataType = Beetle.Server.Meta.DataType;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq.Dynamic;
 
 namespace Beetle.Server {
 
@@ -908,6 +908,8 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
             foreach (var propertyInfo in properties) {
                 var propertyType = propertyInfo.PropertyType;
+                if (propertyType.GetCustomAttribute<NotMappedAttribute>() != null) continue;
+
                 var isNullable = false;
                 if ((propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))) {
                     isNullable = true;
@@ -929,6 +931,9 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
                         isScalar = false;
                         propertyType = enumerable.GetGenericArguments().First();
                     }
+
+                    var propDataType = GetDataType(propertyType);
+                    if (propDataType != null) continue;
 
                     PopulateMetadata(propertyType, metadata);
 
