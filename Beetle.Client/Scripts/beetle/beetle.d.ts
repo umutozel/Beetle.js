@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.0.15
+// File version: 2.0.16
 
 declare module beetle {
 
@@ -465,7 +465,7 @@ declare module beetle {
         contentType?: string;
         registerMetadataTypes?: boolean;
         ajaxProvider: baseTypes.AjaxProviderBase;
-        serializationService: baseTypes.SerializationServiceBase;
+        serializationService?: baseTypes.SerializationServiceBase;
     }
 
     interface ManagerOptions extends ServiceOptions {
@@ -478,7 +478,7 @@ declare module beetle {
         forceUpdate?: boolean;
         workAsync?: boolean;
         minimizePackage?: boolean;
-        promiseProvider: baseTypes.PromiseProviderBase;
+        promiseProvider?: baseTypes.PromiseProviderBase;
     }
 
     interface ExportOptions {

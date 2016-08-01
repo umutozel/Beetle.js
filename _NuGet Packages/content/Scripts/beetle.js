@@ -3407,7 +3407,7 @@
                     /// <summary>
                     /// Gets default value for this type.
                     /// </summary>
-                    if (this.defaultValue) return this.defaultValue;
+                    if (this.defaultValue != null) return this.defaultValue;
                     if (this.isNullable) return null;
                     if (this.generationPattern == enums.generationPattern.Identity && this.isKeyPart === true) return this.dataType.autoValue();
                     return this.dataType.defaultValue();
@@ -3607,7 +3607,7 @@
                     var result = initialValues || {};
                     // create properties with default values for each data property defined in metadata.
                     helper.forEach(this.dataProperties, function (dp) {
-                        if (!result[dp.name])
+                        if (result[dp.name] === undefined)
                             result[dp.name] = dp.getDefaultValue();
                     });
                     // create properties with default values for each navigation property defined in metadata.
@@ -6272,6 +6272,7 @@
                     var proto = ctor.prototype;
 
                     proto.defaultValue = function () {
+                        return 0;
                     };
 
                     proto.isValid = function (value) {
@@ -9778,7 +9779,7 @@
                         if (property === '$type') continue;
                         var value = result[property];
 
-                        if (value) {
+                        if (value != null) {
                             // if its a reference add it to fixup list.
                             if (value.$ref)
                                 result[property] = flatList[value.$ref - 1];
@@ -10321,7 +10322,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.15',
+            version: '2.0.16',
             registerI18N: function (code, i18n, active) {
                 i18Ns[code] = i18n;
                 if (active) i18N = i18n;

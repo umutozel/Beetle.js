@@ -1,6 +1,6 @@
 [
   {
-    "outputFileName": "Scripts/beetle/beetle.js",
+    "outputFileName": "Scripts/beetle/beetle.min.js",
     "inputFiles": [
       "Scripts/beetle/beetle.js"
     ]

@@ -62,7 +62,6 @@ namespace Beetle.Server {
 
             jsonSerializerSettings.Converters.Add(new BeetleDateTimeConverter { DateTimeFormat = "yyyy-MM-dd\\THH:mm:ss.fffK" });
             jsonSerializerSettings.Converters.Add(new TimeSpanConverter());
-            jsonSerializerSettings.Converters.Add(new StringEnumConverter());
             jsonSerializerSettings.Converters.Add(new ByteArrayConverter());
             jsonSerializerSettings.Converters.Add(new DbGeometryConverter());
             jsonSerializerSettings.Converters.Add(new DbGeographyConverter());
