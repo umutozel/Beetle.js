@@ -9693,15 +9693,8 @@
                             data = data.$d;
                         // fix relations and convert to entities.
                         var allEntities = null;
-                        if (data) {
-                            var isSingle = false;
-                            if (!Assert.isArray(data)) {
-                                data = [data];
-                                isSingle = true;
-                            }
+                        if (data)
                             allEntities = that.fixResults(data, makeObservable, handleUnmappedProperties);
-                            if (isSingle) data = data[0];
-                        }
                         successCallback(data, allEntities, headerGetter, xhr);
                     },
                     function (error) {

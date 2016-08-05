@@ -4,5 +4,11 @@
     "inputFiles": [
       "Scripts/beetle/beetle.js"
     ]
+  },
+  {
+    "outputFileName": "Scripts/beetle/beetle.queryExtensions.min.js",
+    "inputFiles": [
+      "Scripts/beetle/beetle.queryExtensions.js"
+    ]
   }
 ]

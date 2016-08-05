@@ -3189,7 +3189,10 @@
                         data: data,
                         timeout: timeout,
                         headers: headers,
-                        responseType: dataType
+                        responseType: dataType,
+                        transformResponse: [function (data) {
+                            return data;
+                        }]
                     };
                     if (extra != null)
                         helper.extend(o, extra);
@@ -9690,8 +9693,15 @@
                             data = data.$d;
                         // fix relations and convert to entities.
                         var allEntities = null;
-                        if (data)
+                        if (data) {
+                            var isSingle = false;
+                            if (!Assert.isArray(data)) {
+                                data = [data];
+                                isSingle = true;
+                            }
                             allEntities = that.fixResults(data, makeObservable, handleUnmappedProperties);
+                            if (isSingle) data = data[0];
+                        }
                         successCallback(data, allEntities, headerGetter, xhr);
                     },
                     function (error) {

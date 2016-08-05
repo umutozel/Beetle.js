@@ -195,6 +195,9 @@
     </Content>
     <Content Include="Scripts\beetle\beetle.queryExtensions.js" />
     <Content Include="Scripts\beetle\beetle.lang-tr-TR.js" />
+    <Content Include="Scripts\beetle\beetle.queryExtensions.min.js">
+      <DependentUpon>beetle.queryExtensions.js</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.8.3.min.js" />
     <Content Include="Scripts\json2.js" />
     <Content Include="Scripts\beetle\beetle.js" />

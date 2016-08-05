@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.0.13
+// File version: 2.0.16
 
 declare module beetle {
 
@@ -464,8 +464,8 @@ declare module beetle {
         dataType?: string;
         contentType?: string;
         registerMetadataTypes?: boolean;
-        ajaxProvider: baseTypes.AjaxProviderBase;
-        serializationService: baseTypes.SerializationServiceBase;
+        ajaxProvider?: baseTypes.AjaxProviderBase;
+        serializationService?: baseTypes.SerializationServiceBase;
     }
 
     interface ManagerOptions extends ServiceOptions {
@@ -478,7 +478,7 @@ declare module beetle {
         forceUpdate?: boolean;
         workAsync?: boolean;
         minimizePackage?: boolean;
-        promiseProvider: baseTypes.PromiseProviderBase;
+        promiseProvider?: baseTypes.PromiseProviderBase;
     }
 
     interface ExportOptions {
@@ -757,7 +757,7 @@ declare module beetle {
             inlineCountEnabled: boolean;
 
             inlineCount(isEnabled?: boolean): EntityQuery<T>;
-            ofType<TResult extends T>(type: string | (new () => TResult)): EntityQuery<TResult>;
+            ofType<TResult extends T>(type: string | (new() => TResult)): EntityQuery<TResult>;
             where(predicate: string | ((entity: T) => boolean), varContext?: any): EntityQuery<T>;
             orderBy(keySelector: string | ((entity: T) => any)): EntityQuery<T>;
             orderByDesc(keySelector: string | ((entity: T) => any)): EntityQuery<T>;
@@ -971,7 +971,7 @@ declare module beetle {
 
             executeQueryParams(resource: string, queryParams: Object, options: ServiceQueryOptions,
                 successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: Error) => void);
-            fixResults(objects: interfaces.RawEntity[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
+            fixResults(objects: any[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
         }
         class WebApiService extends MvcService {
         }

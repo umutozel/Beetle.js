@@ -464,7 +464,7 @@ declare module beetle {
         dataType?: string;
         contentType?: string;
         registerMetadataTypes?: boolean;
-        ajaxProvider: baseTypes.AjaxProviderBase;
+        ajaxProvider?: baseTypes.AjaxProviderBase;
         serializationService?: baseTypes.SerializationServiceBase;
     }
 
@@ -971,7 +971,7 @@ declare module beetle {
 
             executeQueryParams(resource: string, queryParams: Object, options: ServiceQueryOptions,
                 successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: Error) => void);
-            fixResults(objects: interfaces.RawEntity[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
+            fixResults(results: any[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
         }
         class WebApiService extends MvcService {
         }
