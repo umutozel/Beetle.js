@@ -900,12 +900,18 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			metadata.Entities.Add(entityType);
 			entityType.ClrType = type;
 
+			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+
 			if (type.BaseType != null && type.BaseType != typeof(object)) {
-				entityType.BaseTypeName = type.BaseType.Name;
-				PopulateMetadata(type.BaseType, metadata);
+				if (type.BaseType.IsAbstract || type.BaseType.GetAttribute<NotMappedAttribute>() != null) {
+					properties = properties.Union(type.BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
+				}
+				else {
+					entityType.BaseTypeName = type.BaseType.Name;
+					PopulateMetadata(type.BaseType, metadata);
+				}
 			}
 
-			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 			foreach (var propertyInfo in properties) {
 				var propertyType = propertyInfo.PropertyType;
 				if (propertyType.GetCustomAttribute<NotMappedAttribute>() != null) continue;
