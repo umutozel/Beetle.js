@@ -101,6 +101,7 @@
     <Compile Include="BeetleContentResult.cs" />
     <Compile Include="BeetleController.cs" />
     <Compile Include="BeetleJsonResult.cs" />
+    <Compile Include="BeetleValueProviderFactory.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

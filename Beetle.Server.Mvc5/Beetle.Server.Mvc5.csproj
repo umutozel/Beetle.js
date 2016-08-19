@@ -95,6 +95,9 @@
     <Compile Include="..\Beetle.Server.Mvc\BeetleJsonResult.cs">
       <Link>BeetleJsonResult.cs</Link>
     </Compile>
+    <Compile Include="..\Beetle.Server.Mvc\BeetleValueProviderFactory.cs">
+      <Link>BeetleValueProviderFactory.cs</Link>
+    </Compile>
     <Compile Include="..\Beetle.Server.Mvc\Helper.cs">
       <Link>Helper.cs</Link>
     </Compile>

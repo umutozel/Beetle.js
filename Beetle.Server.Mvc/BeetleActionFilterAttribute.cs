@@ -41,6 +41,17 @@ namespace Beetle.Server.Mvc {
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
         public override void OnActionExecuting(ActionExecutingContext filterContext) {
+            var defaultFactory = ValueProviderFactories.Factories.OfType<JsonValueProviderFactory>().SingleOrDefault();
+            if (defaultFactory != null) {
+                ValueProviderFactories.Factories.Remove(defaultFactory);
+            }
+            else {
+                var beetleFactory = ValueProviderFactories.Factories.OfType<BeetleValueProviderFactory>().SingleOrDefault();
+                ValueProviderFactories.Factories.Remove(beetleFactory);
+            }
+
+            ValueProviderFactories.Factories.Add(new BeetleValueProviderFactory(_beetleConfig ?? BeetleConfig.Instance));
+
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
             var service = controller as IBeetleService;

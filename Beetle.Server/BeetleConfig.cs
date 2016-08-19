@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Beetle.Server.Json;
 
 namespace Beetle.Server {
@@ -29,7 +28,8 @@ namespace Beetle.Server {
         public BeetleConfig(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
                             TypeNameHandling typeNameHandling = TypeNameHandling.Objects,
                             PreserveReferencesHandling preserveReferencesHandling = PreserveReferencesHandling.Objects,
-                            Formatting formatting = Formatting.Indented)
+                            Formatting formatting = Formatting.Indented,
+                            DateTimeZoneHandling dateTimeZoneHandling = DateTimeZoneHandling.Local)
             : this(CreateSettings(nullValueHandling, typeNameHandling, preserveReferencesHandling, formatting)) {
         }
 
@@ -50,14 +50,16 @@ namespace Beetle.Server {
         private static JsonSerializerSettings CreateSettings(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
                                                              TypeNameHandling typeNameHandling = TypeNameHandling.Objects,
                                                              PreserveReferencesHandling preserveReferencesHandling = PreserveReferencesHandling.Objects,
-                                                             Formatting formatting = Formatting.Indented) {
+                                                             Formatting formatting = Formatting.Indented,
+                                                             DateTimeZoneHandling dateTimeZoneHandling = DateTimeZoneHandling.Local) {
             var jsonSerializerSettings = new JsonSerializerSettings {
                 NullValueHandling = nullValueHandling,
                 PreserveReferencesHandling = preserveReferencesHandling,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 TypeNameHandling = typeNameHandling,
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
-                Formatting = formatting
+                Formatting = formatting,
+                DateTimeZoneHandling = DateTimeZoneHandling.Local
             };
 
             jsonSerializerSettings.Converters.Add(new BeetleDateTimeConverter { DateTimeFormat = "yyyy-MM-dd\\THH:mm:ss.fffK" });
