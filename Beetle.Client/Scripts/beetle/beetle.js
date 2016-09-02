@@ -10332,7 +10332,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.16',
+            version: '2.0.18',
             registerI18N: function (code, i18n, active) {
                 i18Ns[code] = i18n;
                 if (active) i18N = i18n;
