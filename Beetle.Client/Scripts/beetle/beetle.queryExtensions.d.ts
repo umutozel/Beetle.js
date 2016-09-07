@@ -11,7 +11,7 @@ declare module beetle {
     }
 
     module querying {
-        interface ArrayQuery<T> extends Array<T> {
+        interface ArrayQuery<T> {
             length: number; // also executes query (like GetEnumerator)
 
             forEach(callback: (item: T) => void);
