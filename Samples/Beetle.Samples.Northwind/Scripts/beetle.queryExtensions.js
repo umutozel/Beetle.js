@@ -763,7 +763,7 @@
 
     // Extend Array prototype with beetle query methods.
     function extend(methodName) {
-        Array.prototype[methodName] = function () {
+        arrayProto[methodName] = function () {
             var query = this.asQueryable();
             return query[methodName].apply(query, arguments);
         };

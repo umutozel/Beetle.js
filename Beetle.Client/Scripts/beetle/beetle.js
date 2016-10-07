@@ -3972,12 +3972,12 @@
                         while (base) {
                             type.floorType = base;
                             helper.forEach(base.dataProperties, function (dp) {
-                                if (!helper.findInArray(type.dataProperties, dp)) {
+                                if (!helper.findInArray(type.dataProperties, dp.name, "name")) {
                                     type.dataProperties.push(dp);
                                 }
                             });
                             helper.forEach(base.navigationProperties, function (np) {
-                                if (!helper.findInArray(type.navigationProperties, np)) {
+                                if (!helper.findInArray(type.navigationProperties, np.name, "name")) {
                                     type.navigationProperties.push(np);
                                 }
                             });
@@ -10332,7 +10332,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.18',
+            version: '2.0.19',
             registerI18N: function (code, i18n, active) {
                 i18Ns[code] = i18n;
                 if (active) i18N = i18n;

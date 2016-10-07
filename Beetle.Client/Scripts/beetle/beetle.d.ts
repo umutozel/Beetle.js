@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.0.18
+// File version: 2.0.19
 
 declare module beetle {
 

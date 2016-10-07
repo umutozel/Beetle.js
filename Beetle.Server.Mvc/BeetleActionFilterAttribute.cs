@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using System.Web.Mvc.Async;
 using Beetle.Server.Mvc.Properties;
 
 namespace Beetle.Server.Mvc {
@@ -54,7 +56,31 @@ namespace Beetle.Server.Mvc {
 
             base.OnActionExecuting(filterContext);
 
-            var actionMethod = controller.GetType().GetMethod(action.ActionName, action.GetParameters().Select(pd => pd.ParameterType).ToArray());
+            MethodInfo actionMethod = null;
+
+            var reflectedAction = action as ReflectedActionDescriptor;
+            if (reflectedAction != null) {
+                actionMethod = reflectedAction.MethodInfo;
+            }
+            else {
+                var taskAsyncAction = action as TaskAsyncActionDescriptor;
+                if (taskAsyncAction != null) {
+                    actionMethod = taskAsyncAction.TaskMethodInfo;
+                }
+                else {
+                    if (actionMethod == null) {
+                        actionMethod = controller.GetType().GetMethod(
+                            action.ActionName,
+                            BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod,
+                            null,
+                            action.GetParameters().Select(pd => pd.ParameterType).ToArray(),
+                            null);
+
+                        if (actionMethod == null) return;
+                    }
+                }
+            }
+
             var returnType = actionMethod.ReturnType;
             // check if we can process the result of the action
             if (typeof(ActionResult).IsAssignableFrom(returnType) || typeof(Task).IsAssignableFrom(returnType))

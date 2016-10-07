@@ -51,7 +51,7 @@ namespace Beetle.Server.Mvc {
                 response.ContentEncoding = ContentEncoding;
 
             if (Data != null) {
-                var d = JsonConvert.SerializeObject(Data, Formatting.None, _config.JsonSerializerSettings);
+                var d = JsonConvert.SerializeObject(Data, _config.JsonSerializerSettings);
                 if (!(Data is string) && Data is IEnumerable)
                     d = "{\"$d\" : " + d + "}";
                 response.Write(d);
