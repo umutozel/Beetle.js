@@ -76,14 +76,14 @@ declare module beetle {
 
         interface EntityQuery<T> {
             then(callback: (result: beetle.interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void,
-                 options?: beetle.ManagerOptions): PromiseLike<beetle.interfaces.QueryResultArray<T>>;
+                options?: beetle.ManagerOptions): PromiseLike<beetle.interfaces.QueryResultArray<T>>;
         }
     }
 }
 
 interface Array<T> {
     inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
-    ofType<TResult extends T>(type: string | (new () => TResult)): beetle.querying.ArrayQuery<TResult>;
+    ofType<TResult extends T>(type: string | (new() => TResult)): beetle.querying.ArrayQuery<TResult>;
     where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
     where(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
     orderBy(keySelector: string | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
@@ -96,7 +96,9 @@ interface Array<T> {
     take(count: number): beetle.querying.ArrayQuery<T>;
     top(count: number): beetle.querying.ArrayQuery<T>;
     groupBy<TKey, TResult>(keySelector: (entity: T) => TKey, valueSelector: (group: beetle.interfaces.Grouping<T, TKey>) => TResult): beetle.querying.ArrayQuery<TResult>;
+    groupBy<TKey>(keySelector: (entity: T) => TKey): beetle.querying.ArrayQuery<beetle.interfaces.Grouped<T, TKey>>;
     groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => TResult)): beetle.querying.ArrayQuery<TResult>;
+    groupBy(keySelector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<beetle.interfaces.Grouped<T, any>>;
     groupBy(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => any)): beetle.querying.ArrayQuery<any>;
     distinct(): beetle.querying.ArrayQuery<T>;
     distinct<TResult>(selector: string | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;

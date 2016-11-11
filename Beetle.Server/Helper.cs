@@ -810,10 +810,11 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			if (type.IsEnum)
 				return DataType.Enum;
 
-			if (type == typeof(DbGeography))
+			// Bad code but needed. GetMetadata should be independent from EF but we might want to use DbGeography from EF6.
+			if (type == typeof(DbGeography) || type.FullName == "System.Data.Entity.Spatial.DbGeography")
 				return DataType.Geography;
 
-			if (type == typeof(DbGeometry))
+			if (type == typeof(DbGeometry) || type.FullName == "System.Data.Entity.Spatial.DbGeometry")
 				return DataType.Geometry;
 
 			if (type == typeof(Guid))
@@ -903,8 +904,13 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
 			if (type.BaseType != null && type.BaseType != typeof(object)) {
-				entityType.BaseTypeName = type.BaseType.Name;
-				PopulateMetadata(type.BaseType, metadata);
+				if (type.BaseType.IsGenericType) {
+					properties = properties.Union(type.BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
+				}
+				else {
+					entityType.BaseTypeName = type.BaseType.Name;
+					PopulateMetadata(type.BaseType, metadata);
+				}
 			}
 
 			foreach (var propertyInfo in properties) {

@@ -808,7 +808,7 @@ test('use distinct', 1, function () {
         .fin(start);
 
     function querySucceeded(data) {
-        ok(data.length == 3, 'groupBy succeeded, 3 orders returned with 2 order details.');
+        ok(data.length == 3, 'distinct succeeded, 3 orders returned.');
     }
 });
 

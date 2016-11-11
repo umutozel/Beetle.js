@@ -231,23 +231,25 @@
             funcToLambda: function (func) {
                 helper.assertPrm(func, "func").isFunction().check();
 
-                var f = func.toString();
+                var f = func.toString().replace(/function(.*?){/g, "$1=>").replace(/{|}|;|return /g, "").trim();
 
-                var p1 = f.indexOf("(");
-                var p2 = f.indexOf(")");
-                var p = f.substring(p1 + 1, p2).trim();
+                var l1 = f.indexOf("=>");
+                var p = f.substr(0, l1).trim();
+                f = f.substr(l1 + 2).trim();
 
-                var b1 = f.indexOf("{");
-                var b2 = f.lastIndexOf("}");
-                var b = f.substring(b1 + 1, b2).trim();
+                var xs = f.split(",");
+                var s = [];
+                for (var i = 0; i < xs.length; i++) {
+                    var x = xs[i];
+                    var ps = x.split(":");
+                    if (ps.length > 1) {
+                        s.push(ps[1].trim() + " as " + ps[0].trim());
+                    }
+                    else s.push(x.trim());
+                }
+                f = s.join(", ");
 
-                if (b.substring(0, 7) == "return ")
-                    b = b.substring(7);
-
-                if (b[b.length - 1] == ";")
-                    b = b.substring(0, b.length - 1);
-
-                return p ? (p + " => " + b) : b;
+                return p ? (p + " => " + f) : f;
             },
             getFuncName: function (func) {
                 var funcNameRegex = /function (.{1,})\(/;
@@ -6119,7 +6121,7 @@
 
                     proto.handle = function (value) {
                         if (!this.isValid(value)) {
-                            if (expose.String.isValid(value)) {
+                            if (expose.string.isValid(value)) {
                                 // try to convert string values to boolean
                                 var v = value.toLowerCase();
                                 if (v == 'true' || v == '1')
@@ -8750,7 +8752,7 @@
                         var validateOnSave = options.validateOnSave;
                         if (validateOnSave == null) validateOnSave = this.validateOnSave;
                         if (validateOnSave == null) validateOnSave = settings.validateOnSave;
-                        if (validateOnSave === true)
+                        if (validateOnSave === true) {
                             helper.forEach(changes, function (change) {
                                 if (change.$tracker.entityState != enums.entityStates.Deleted) {
                                     var result = change.$tracker.validate();
@@ -8758,6 +8760,7 @@
                                         validationErrors.push({ entity: change, validationErrors: result });
                                 }
                             });
+                        }
                         if (validationErrors.length > 0) {
                             var validationError = helper.createError(i18N.validationFailed, { entities: changes, entitiesInError: validationErrors });
 
@@ -9922,7 +9925,7 @@
                     this.code = code;
                     this.asFunc = func;
                     this.oData = oData,
-                        this.js = js || code;
+                    this.js = js || code;
                 };
 
                 var ops = [];
@@ -10202,9 +10205,8 @@
             /// <summary>
             /// Sets date converter.
             /// </summary>
-            // check if parameter is DateConverterBase.
-            helper.assertPrm(converter, 'converter').isInstanceOf(converter, baseTypes.DateConverterBase).check();
-            _dateConverter = converter;
+            /// <param name="serviceType">Date converter parameter.</param>
+            _dateConverter = getValue(converter, baseTypes.DateConverterBase);
         };
 
         expose.getLocalizeFunction = function () {
@@ -10383,4 +10385,4 @@
 
     exports.beetle = beetle;
     return beetle;
-})(window);
+})(this);

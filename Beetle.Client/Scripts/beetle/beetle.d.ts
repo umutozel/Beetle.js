@@ -9,7 +9,11 @@ declare module beetle {
             [key: string]: T;
         }
 
-        interface Grouping<T, TKey> {
+        interface Grouping<T, TKey> extends Array<T> {
+            Key: TKey;
+        }
+
+        interface Grouped<T, TKey> {
             Key: TKey;
             Items: Array<T>;
         }
@@ -53,7 +57,7 @@ declare module beetle {
 
         interface QueryExecutingEventArgs {
             manager: core.EntityManager;
-            query: Query<any>;
+            query: querying.EntityQuery<any>;
             options: ManagerQueryOptions;
         }
 
@@ -227,9 +231,11 @@ declare module beetle {
             skip(count: number): Query<T>;
             take(count: number): Query<T>;
             top(count: number): Query<T>;
-            groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: Grouping<T, any>) => TResult)): Query<TResult>;
-            groupBy(keySelector: string | ((entity: T) => any), valueSelector?: string | ((group: Grouping<T, any>) => any)): Query<any>;
             groupBy<TKey, TResult>(keySelector: ((entity: T) => TKey), valueSelector: ((group: Grouping<T, TKey>) => TResult)): Query<TResult>;
+            groupBy<TKey>(keySelector: ((entity: T) => TKey)): Query<Grouped<T, TKey>>;
+            groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: Grouping<T, any>) => TResult)): Query<TResult>;
+            groupBy(keySelector: string | ((entity: T) => any)): Query<Grouped<T, any>>;
+            groupBy(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: Grouping<T, any>) => any)): Query<any>;
             distinct(): Query<T>;
             distinct<TResult>(selector: string | ((entity: T) => TResult)): Query<TResult>;
             distinct(selector: string | ((entity: T) => any)): Query<any>;
@@ -705,7 +711,9 @@ declare module beetle {
             take(count: number): beetle.querying.ArrayQuery<T>;
             top(count: number): beetle.querying.ArrayQuery<T>;
             groupBy<TKey, TResult>(keySelector: (entity: T) => TKey, valueSelector: (group: beetle.interfaces.Grouping<T, TKey>) => TResult): beetle.querying.ArrayQuery<TResult>;
+            groupBy<TKey>(keySelector: (entity: T) => TKey): beetle.querying.ArrayQuery<beetle.interfaces.Grouped<T, TKey>>;
             groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => TResult)): beetle.querying.ArrayQuery<TResult>;
+            groupBy(keySelector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<beetle.interfaces.Grouped<T, any>>;
             groupBy(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => any)): beetle.querying.ArrayQuery<any>;
             distinct(): beetle.querying.ArrayQuery<T>;
             distinct<TResult>(selector: string | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;
@@ -769,7 +777,9 @@ declare module beetle {
             take(count: number): EntityQuery<T>;
             top(count: number): EntityQuery<T>;
             groupBy<TKey, TResult>(keySelector: (entity: T) => TKey, valueSelector: (group: interfaces.Grouping<T, TKey>) => TResult): EntityQuery<TResult>;
+            groupBy<TKey>(keySelector: (entity: T) => TKey): EntityQuery<interfaces.Grouped<T, TKey>>;
             groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: interfaces.Grouping<T, any>) => TResult)): EntityQuery<TResult>;
+            groupBy(keySelector: string | ((entity: T) => any)): EntityQuery<interfaces.Grouped<T, any>>;
             groupBy(keySelector: string | ((entity: T) => any), valueSelector?: string | ((group: interfaces.Grouping<T, any>) => any)): EntityQuery<any>;
             distinct(): EntityQuery<T>;
             distinct<TResult>(selector: string | ((entity: T) => TResult)): EntityQuery<TResult>;
