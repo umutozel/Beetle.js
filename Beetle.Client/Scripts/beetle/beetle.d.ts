@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.0.20
+// File version: 2.0.21
 
 declare module beetle {
 
@@ -442,6 +442,13 @@ declare module beetle {
         $extra?: interfaces.QueryResultExtra;
     }
 
+    interface EntityOptions {
+        merge?: enums.mergeStrategy;
+        state?: enums.entityStates;
+        autoFixScalar?: boolean;
+        autoFixPlural?: boolean;
+    }
+
     interface ServiceQueryOptions {
         handleUnmappedProperties?: boolean;
         usePost?: boolean;
@@ -491,11 +498,10 @@ declare module beetle {
         minimizePackage?: boolean;
     }
 
-    interface EntityOptions {
-        merge?: enums.mergeStrategy;
-        state?: enums.entityStates;
-        autoFixScalar?: boolean;
-        autoFixPlural?: boolean;
+    interface PackageOptions extends ExportOptions {
+        validateOnSave?: boolean;
+        userData?: string;
+        forceUpdate?: boolean;
     }
 
     interface ServiceSaveOptions {
@@ -509,12 +515,13 @@ declare module beetle {
         includeHeaderGetter?: boolean;
     }
 
-    interface ManagerSaveOptions extends ExportOptions, ServiceSaveOptions {
-        entities?: IEntity[];
-        forceUpdate?: boolean;
-        validateOnSave?: boolean;
+    interface PackageSaveOptions extends PackageOptions, ServiceSaveOptions {
         autoFixScalar?: boolean;
         autoFixPlural?: boolean;
+    }
+
+    interface ManagerSaveOptions extends PackageSaveOptions {
+        entities?: IEntity[];
     }
 
     interface ObservableProviderCallbackOptions {
@@ -949,12 +956,13 @@ declare module beetle {
             rejectChanges(entity: IEntity | IEntity[], includeRelations?: boolean);
             undoChanges(entity: IEntity | IEntity[], includeRelations?: boolean);
             acceptChanges(entity: IEntity | IEntity[], includeRelations?: boolean);
-            createSavePackage(entities?: IEntity[], options?: ExportOptions): interfaces.SavePackage;
+            createSavePackage(entities?: IEntity[], options?: PackageOptions): interfaces.SavePackage;
             exportEntities(entities?: IEntity[], options?: ExportOptions): interfaces.ExportEntity[];
             importEntities(exportedEntities: interfaces.ExportEntity[], merge?: enums.mergeStrategy);
             hasChanges(): boolean;
             getChanges(): IEntity[];
             saveChanges(options?: ManagerSaveOptions, successCallback?: (result: interfaces.SaveResult) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.SaveResult>;
+            savePackage(savePackage: interfaces.SavePackage, options?: PackageSaveOptions, successCallback?: (result: interfaces.SaveResult) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.SaveResult>;
             toEntity<T extends IEntity>(object: interfaces.RawEntity): T;
             toEntity(object: interfaces.RawEntity): IEntity;
             fixNavigations(entity: IEntity);

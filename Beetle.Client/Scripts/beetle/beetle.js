@@ -8552,14 +8552,32 @@
                     ///  forceUpdate: When true, each entity with modified state will be updated -even there is no modified property
                     ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
                     /// </summary>
+                    entities = entities || this.getChanges();
                     options = options || {};
+
+                    var validationErrors = [];
+                    var validateOnSave = options.validateOnSave;
+                    if (validateOnSave == null) validateOnSave = this.validateOnSave;
+                    if (validateOnSave == null) validateOnSave = settings.validateOnSave;
+                    if (validateOnSave === true) {
+                        helper.forEach(entities, function (entity) {
+                            if (entity.$tracker.entityState != enums.entityStates.Deleted) {
+                                var result = entity.$tracker.validate();
+                                if (result && result.length > 0)
+                                    validationErrors.push({ entity: entity, validationErrors: result });
+                            }
+                        });
+                    }
+                    if (validationErrors.length > 0)
+                        throw helper.createError(i18N.validationFailed, { entities: entities, entitiesInError: validationErrors });
+
                     var userData = options.userData || null;
                     var forceUpdate = options.forceUpdate;
                     if (forceUpdate == null) forceUpdate = this.forceUpdate;
                     if (forceUpdate == null) forceUpdate = settings.forceUpdate;
                     var data = { userData: userData, forceUpdate: forceUpdate };
 
-                    var entityList = this.exportEntities(entities || this.getChanges(), options);
+                    var entityList = this.exportEntities(entities, options);
                     data.entities = entityList;
                     return data;
                 };
@@ -8732,9 +8750,31 @@
                     /// <param name="successCallback">Function to call after operation succeeded.</param>
                     /// <param name="errorCallback">Function to call when operation fails.</param>
                     /// <returns type="">Returns promise if supported.</returns>
+                    return this.savePackage(null, options, successCallback, errorCallback)
+                }
+
+                proto.savePackage = function (savePackage, options, successCallback, errorCallback) {
+                    /// <summary>
+                    /// Saves all changes made in this manager to server via Data Service instance.
+                    ///  Save options,
+                    ///  entities: Entities to save
+                    ///  userData: Custom user data to post
+                    ///  async: When false, Ajax call will be made synchronously (default: true)
+                    ///  forceUpdate: When true, each entity will be updated -even there is no modified property.
+                    ///  autoFixScalar: Scalar navigations will be fixed for returned entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
+                    ///  autoFixPlural: Plural navigations will be fixed for returned entities (e.g: Order's OrderDetails will be searched in cache)
+                    ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
+                    ///  uri: Overrides dataService's uri.
+                    ///  saveAction: Custom save action on server side (default is SaveChanges).
+                    ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
+                    ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
+                    /// </summary>
+                    /// <param name="savePackage">Save package, when null, options.entities or current changes will be saved.</param>
+                    /// <param name="options">Save options, for details read summary.</param>
+                    /// <param name="successCallback">Function to call after operation succeeded.</param>
+                    /// <param name="errorCallback">Function to call when operation fails.</param>
+                    /// <returns type="">Returns promise if supported.</returns>
                     options = options || {};
-                    var changes = options.entities || this.getChanges();
-                    options = notifySaving(this, changes, options);
 
                     // Create promise if possible.
                     var async = options.async;
@@ -8745,31 +8785,35 @@
                     var d = null;
                     if (pp) d = pp.deferred();
 
-                    var retVal = null;
-                    if (!Assert.isArray(changes)) changes = [changes];
-                    if (changes && changes.length > 0) {
-                        var validationErrors = [];
-                        var validateOnSave = options.validateOnSave;
-                        if (validateOnSave == null) validateOnSave = this.validateOnSave;
-                        if (validateOnSave == null) validateOnSave = settings.validateOnSave;
-                        if (validateOnSave === true) {
-                            helper.forEach(changes, function (change) {
-                                if (change.$tracker.entityState != enums.entityStates.Deleted) {
-                                    var result = change.$tracker.validate();
-                                    if (result && result.length > 0)
-                                        validationErrors.push({ entity: change, validationErrors: result });
-                                }
-                            });
+                    var changes;
+                    if (!savePackage) {
+                        if (options.entities) {
+                            changes = options.entities
+                            if (!Assert.isArray(changes)) changes = [changes];
                         }
-                        if (validationErrors.length > 0) {
-                            var validationError = helper.createError(i18N.validationFailed, { entities: changes, entitiesInError: validationErrors });
+                        else changes = this.getChanges();
 
-                            onError(errorCallback, pp, d, validationError, this);
+                        if (!changes.length) {
+                            onSuccess(successCallback, pp, d, { AffectedCount: 0, GeneratedValues: [] });
                         }
                         else {
+                            try {
+                                savePackage = this.createSavePackage(changes, options);
+                            }
+                            catch (error) {
+                                onError(errorCallback, pp, d, error, this);
+                            }
+                        }
+                    }
+
+                    var retVal = null;
+                    if (savePackage) {
+                        options = notifySaving(this, changes, savePackage, options);
+
+                        try {
                             var that = this;
                             this.dataService.saveChanges(
-                                this.createSavePackage(changes, options),
+                                savePackage,
                                 options,
                                 function (result, headerGetter, xhr) {
                                     try {
@@ -8811,24 +8855,27 @@
                                         if (options.includeXhr === true)
                                             result.xhr = xhr;
 
-                                        notifySaved(that, changes, options);
+                                        notifySaved(that, changes, savePackage, options);
                                         onSuccess(successCallback, pp, d, result);
                                         if (!pp) retVal = result;
                                     }
-                                    catch (e) {
-                                        e.changes = changes;
-                                        onError(errorCallback, pp, d, e, that);
+                                    catch (error) {
+                                        error.changes = changes;
+                                        error.savePackage = savePackage;
+                                        onError(errorCallback, pp, d, error, that);
                                     }
                                 },
                                 function (error) {
                                     error.changes = changes;
+                                    error.savePackage = savePackage;
                                     onError(errorCallback, pp, d, error, that);
                                 }
                             );
                         }
+                        catch (error) {
+                            onError(errorCallback, pp, d, error, this);
+                        }
                     }
-                    else
-                        onSuccess(successCallback, pp, d, { AffectedCount: 0, GeneratedValues: [] });
 
                     if (pp) return pp.getPromise(d);
                     return retVal;
@@ -9514,21 +9561,21 @@
                     return obj.result;
                 }
 
-                function notifySaving(manager, changes, options) {
+                function notifySaving(manager, changes, pkg, options) {
                     /// <summary>
                     /// Notifies subscribers about save operation.
                     /// </summary>
-                    var obj = { manager: manager, changes: changes, options: options };
+                    var obj = { manager: manager, changes: changes, savePackage: pkg, options: options };
                     manager.saving.notify(obj);
                     events.saving.notify(obj);
                     return obj.options;
                 }
 
-                function notifySaved(manager, changes, options) {
+                function notifySaved(manager, changes, pkg, options) {
                     /// <summary>
                     /// Notifies subscribers about save completion.
                     /// </summary>
-                    var obj = { manager: manager, changes: changes, options: options };
+                    var obj = { manager: manager, changes: changes, savePackage: pkg, options: options };
                     manager.saved.notify(obj);
                     events.saved.notify(obj);
                 }
@@ -10334,7 +10381,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.20',
+            version: '2.0.21',
             registerI18N: function (code, i18n, active) {
                 i18Ns[code] = i18n;
                 if (active) i18N = i18n;
