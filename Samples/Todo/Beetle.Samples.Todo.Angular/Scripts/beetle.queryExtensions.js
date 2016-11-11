@@ -1,12 +1,25 @@
-﻿(function (exports) {
+﻿(function (root, factory) {
+    if (typeof define === "function" && define.amd) {
+        define(["beetle"], function (beetle) {
+            factory(root, beetle || root.beetle);
+        });
+    }
+    else if (typeof exports === "object") {
+        module.exports = factory(root, require("beetle"));
+    }
+    else {
+        factory(root, root.beetle);
+    }
+})(this, function (root, beetle) {
+    "use strict";
+
     /// <summary>
     /// Adds javascript arrays c# extension methods like usage.
     /// Query gets executed when someone access it's length property and we can access results on the query object with indexer.
     /// Most of these expressions support only javascript functions (string expressions are not supported, because these are local only so expressions are not necessary)
     /// </summary>
 
-    if (!exports || !exports.beetle) return;
-    var beetle = exports.beetle;
+    if (!beetle) return;
 
     var resources = {
         indexOutOfRange: "Specified argument was out of the range of valid values. Parameter name: %1"
@@ -904,4 +917,4 @@
             configurable: true
         });
     }
-})(window);
+});

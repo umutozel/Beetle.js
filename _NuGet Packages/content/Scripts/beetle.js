@@ -1,4 +1,42 @@
-﻿(function (exports) {
+﻿(function (root, factory) {
+    var deps = {
+        jquery: root.$,
+        angular: root.angular,
+        ko: root.ko,
+        Q: root.Q
+    };
+
+    if (typeof define === "function" && define.amd) {
+        var modules = [];
+        for (var p in deps) {
+            if (require.specified(p)) {
+                modules.push(p);
+            }
+        }
+
+        define(modules, function () {
+            for (var i = 0; i < arguments.length; i++) {
+                var mdl = arguments[i];
+                if (mdl) deps[modules[i]] = mdl;
+            }
+
+            root.beetle = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
+        });
+    }
+    else if (typeof exports === "object") {
+        for (var p in deps) {
+            try {
+                deps[p] = require(p);
+            }
+            catch(e) { /* ignored */ }
+        }
+
+        module.exports = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
+    }
+    else {
+        root.beetle = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
+    }
+})(this, function (root, $, angular, ko, Q) {
     'use strict';
 
     var helper = (function () {
@@ -1114,8 +1152,7 @@
         // custom changes: 
         //      binary_ops: add "'=>': 0" for alias usage like c# lambdas
         //      isIdentifierStart: add "|| (ch === 64)" for variable usage (`@`)
-        expose.jsep = (function (root) {
-            /*global module: true, exports: true, console: true */
+        expose.jsep = (function () {
             'use strict';
             // Node Types
             // ----------
@@ -1627,29 +1664,8 @@
                 return this;
             };
 
-            // In desktop environments, have a way to restore the old value for `jsep`
-            if (typeof exports === 'undefined') {
-                var old_jsep = root.jsep;
-                // The star of the show! It's a function!
-                root.jsep = jsep;
-                // And a courteous function willing to move out of the way for other similarly-named objects!
-                jsep.noConflict = function () {
-                    if (root.jsep === jsep) {
-                        root.jsep = old_jsep;
-                    }
-                    return jsep;
-                };
-            } else {
-                // In Node.JS environments
-                if (typeof module !== 'undefined' && module.exports) {
-                    exports = module.exports = jsep;
-                } else {
-                    exports.parse = jsep;
-                }
-            }
-
             return jsep;
-        }(exports));
+        }());
 
         return expose;
     })();
@@ -2812,8 +2828,8 @@
                         var metadata = instance.metadataManager;
                         if (registerMetadataTypes && metadata) {
                             var managerName = metadata.name;
-                            if (!exports.hasOwnProperty(managerName))
-                                exports[managerName] = core.EntityManager;
+                            if (!root.hasOwnProperty(managerName))
+                                root[managerName] = core.EntityManager;
                         }
 
                         var cs = instance._readyCallbacks.slice(0);
@@ -2861,7 +2877,7 @@
                 return new ctor();
             })(),
             /// <field>Knockout observable provider class. Makes given object's properties observable.</field>
-            koObservableProviderInstance: (function (ko) {
+            koObservableProviderInstance: (function () {
 
                 if (ko) {
                     /// <summary>
@@ -2979,7 +2995,7 @@
                 };
 
                 return new ctor();
-            })(exports.ko),
+            })(),
             /// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
             propertyObservableProviderInstance: (function () {
                 var ctor = function () {
@@ -3098,7 +3114,7 @@
                 return new ctor();
             })(),
             /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
-            jQueryAjaxProviderInstance: (function (jQuery) {
+            jQueryAjaxProviderInstance: (function () {
                 var ctor = function () {
                     baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
                     helper.tryFreeze(this);
@@ -3138,9 +3154,9 @@
                         }
                     };
                     if (extra != null)
-                        jQuery.extend(o, extra);
+                        $.extend(o, extra);
                     if (o.cache == null) o.cache = false;
-                    return jQuery.ajax(o);
+                    return $.ajax(o);
                 };
 
                 function createError(xhr) {
@@ -3165,9 +3181,9 @@
                 }
 
                 return new ctor();
-            })(exports.$),
-            /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
-            angularAjaxProviderInstance: (function (angular) {
+            })(),
+            /// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
+            angularAjaxProviderInstance: (function () {
                 var ctor = function () {
                     baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
                     this.syncSupported = false;
@@ -3217,7 +3233,7 @@
                 }
 
                 return new ctor();
-            })(exports.angular),
+            })(),
             /// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
             jsonSerializationServiceInstance: (function () {
                 var ctor = function () {
@@ -3240,7 +3256,7 @@
                 return new ctor();
             })(),
             /// <field>Q promise provider instance.</field>
-            qPromiseProviderInstance: (function (q) {
+            qPromiseProviderInstance: (function () {
                 var ctor = function () {
                     baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
                     helper.tryFreeze(this);
@@ -3253,7 +3269,7 @@
                 };
 
                 proto.deferred = function () {
-                    return q.defer();
+                    return Q.defer();
                 };
 
                 proto.getPromise = function (deferred) {
@@ -3269,9 +3285,9 @@
                 };
 
                 return new ctor();
-            })(exports.Q),
+            })(),
             /// <field>Angular promise provider instance.</field>
-            angularPromiseProviderInstance: (function (angular) {
+            angularPromiseProviderInstance: (function () {
                 var ctor = function () {
                     baseTypes.PromiseProviderBase.call(this, 'Angular Promise Provider');
                     helper.tryFreeze(this);
@@ -3308,9 +3324,9 @@
                 };
 
                 return new ctor();
-            })(exports.angular),
+            })(),
             /// <field>jQuery promise provider instance.</field>
-            jQueryPromiseProviderInstance: (function (jQuery) {
+            jQueryPromiseProviderInstance: (function () {
                 var ctor = function () {
                     baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
                     helper.tryFreeze(this);
@@ -3323,7 +3339,7 @@
                 };
 
                 proto.deferred = function () {
-                    return jQuery.Deferred();
+                    return $.Deferred();
                 };
 
                 proto.getPromise = function (deferred) {
@@ -3339,7 +3355,7 @@
                 };
 
                 return new ctor();
-            })(exports.$)
+            })()
         };
     })();
     var metadata = (function () {
@@ -9091,15 +9107,15 @@
                                         instance.entitySets[shortName] = set;
                                     }
 
-                                    if (!exports.hasOwnProperty(shortName))
-                                        exports[shortName] = getGlobalEntityClass(type);
+                                    if (!root.hasOwnProperty(shortName))
+                                        root[shortName] = getGlobalEntityClass(type);
                                 }
                             }
                             var enums = metadata.enums;
                             if (enums) {
                                 for (var enumName in enums) {
-                                    if (!exports.hasOwnProperty(enumName))
-                                        exports[enumName] = enums[enumName];
+                                    if (!root.hasOwnProperty(enumName))
+                                        root[enumName] = enums[enumName];
                                 }
                             }
                         }
@@ -10084,21 +10100,21 @@
 
         // set default values backing fields
         var _observableProvider;
-        if (exports.ko)
+        if (ko)
             _observableProvider = impls.koObservableProviderInstance;
         else
             _observableProvider = impls.propertyObservableProviderInstance;
 
         var _promiseProvider;
-        if (exports.Q)
+        if (Q)
             _promiseProvider = impls.qPromiseProviderInstance;
-        else if (exports.angular)
+        else if (angular)
             _promiseProvider = impls.angularPromiseProviderInstance;
         else
             _promiseProvider = impls.jQueryPromiseProviderInstance;
 
         var _ajaxProvider;
-        if (exports.angular)
+        if (angular)
             _ajaxProvider = impls.angularAjaxProviderInstance;
         else
             _ajaxProvider = impls.jQueryAjaxProviderInstance;
@@ -10381,7 +10397,7 @@
     var beetle = (function () {
         return {
             // Export types
-            version: '2.0.21',
+            version: '2.1.0',
             registerI18N: function (code, i18n, active) {
                 i18Ns[code] = i18n;
                 if (active) i18N = i18n;
@@ -10430,6 +10446,5 @@
         };
     })();
 
-    exports.beetle = beetle;
     return beetle;
-})(this);
+});

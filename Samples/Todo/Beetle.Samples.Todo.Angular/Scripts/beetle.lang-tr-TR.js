@@ -1,5 +1,17 @@
-﻿(function (exports) {
-    if (!exports) return;
+﻿(function (root, factory) {
+    if (typeof define === "function" && define.amd) {
+        define(["beetle"], function (beetle) {
+            factory(root, beetle || root.beetle);
+        });
+    }
+    else if (typeof exports === "object") {
+        module.exports = factory(root, require("beetle"));
+    }
+    else {
+        factory(root, root.beetle);
+    }
+})(this, function (root, beetle) {
+    "use strict";
 
     var tr = {
         argCountMismatch: '"%0" için argüman sayısı uyuşmuyor.',
@@ -82,8 +94,8 @@
         valueCannotBeNull: 'Değer null olamaz: %0.',
         operatorNotSupportedForOData: 'Operatör OData sorgularında desteklenmiyor: %0.'
     };
-    
-    if (exports.beetle)
-        exports.beetle.registerI18N("tr", tr, true);
+
+    if (beetle)
+        beetle.registerI18N("tr", tr, true);
     else throw new Error("Beetle must be loaded first to register internalization.");
-})(window);
+});
