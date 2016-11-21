@@ -3264,10 +3264,6 @@
                 helper.inherit(ctor, baseTypes.PromiseProviderBase);
                 var proto = ctor.prototype;
 
-                proto.toString = function () {
-                    return this.name;
-                };
-
                 proto.deferred = function () {
                     return Q.defer();
                 };
@@ -3294,10 +3290,6 @@
                 };
                 helper.inherit(ctor, baseTypes.PromiseProviderBase);
                 var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    return this.name;
-                };
 
                 var ng, $q;
                 if (angular) {
@@ -3334,16 +3326,49 @@
                 helper.inherit(ctor, baseTypes.PromiseProviderBase);
                 var proto = ctor.prototype;
 
-                proto.toString = function () {
-                    return this.name;
-                };
-
                 proto.deferred = function () {
                     return $.Deferred();
                 };
 
                 proto.getPromise = function (deferred) {
                     return deferred.promise();
+                };
+
+                proto.resolve = function (deferred, data) {
+                    deferred.resolve(data);
+                };
+
+                proto.reject = function (deferred, error) {
+                    deferred.reject(error);
+                };
+
+                return new ctor();
+            })(),
+            /// <field>ES6 promise provider instance.</field>
+            es6PromiseProviderInstance: (function () {
+                var ctor = function () {
+                    baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
+                    helper.tryFreeze(this);
+                };
+                helper.inherit(ctor, baseTypes.PromiseProviderBase);
+                var proto = ctor.prototype;
+
+                proto.deferred = function () {
+                    var deferred = {
+                        resolve: null,
+                        reject: null
+                    };
+
+                    deferred.promise = new Promise(function (resolve, reject) {
+                        deferred.resolve = resolve;
+                        deferred.reject = reject;
+                    });
+
+                    return deferred;
+                };
+
+                proto.getPromise = function (deferred) {
+                    return deferred.promise;
                 };
 
                 proto.resolve = function (deferred, data) {
@@ -10110,7 +10135,9 @@
             _promiseProvider = impls.qPromiseProviderInstance;
         else if (angular)
             _promiseProvider = impls.angularPromiseProviderInstance;
-        else
+        else if (Promise)
+            _promiseProvider = impls.es6PromiseProviderInstance;
+        else if (jQuery)
             _promiseProvider = impls.jQueryPromiseProviderInstance;
 
         var _ajaxProvider;
