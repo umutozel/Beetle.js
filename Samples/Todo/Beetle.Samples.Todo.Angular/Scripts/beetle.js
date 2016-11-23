@@ -3218,7 +3218,8 @@
 					if (extra != null)
 						helper.extend(o, extra);
 					if (o.cache == null) o.cache = false;
-					return $http(o)
+					var p = $http(o);
+                    return p
 						.success(function (result, status, headers, config, statusText) {
 							var headers = headers();
 							successCallback(result, function (header) {
@@ -3226,7 +3227,7 @@
 								return headers[header.toLowerCase()];
 							});
 						})
-						.catch(function (error) {
+						.error(function (error) {
 							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
 							errorCallback(helper.createError(error.statusText, obj));
 						});

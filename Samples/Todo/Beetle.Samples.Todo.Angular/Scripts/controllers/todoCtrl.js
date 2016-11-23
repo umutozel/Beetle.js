@@ -14,7 +14,6 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location) {
 		var todos = [];
 		$scope.getTodos = function() {
 			manager.createQuery('Todos')
-				.execute({includeXhr: true})
 				.then(function (result) {
 					todos = $scope.todos = result;
 					updateCounts();

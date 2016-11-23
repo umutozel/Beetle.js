@@ -60,11 +60,9 @@
 		self.todos = ko.observableArray([]);
 		self.getTodos = function () {
 			manager.createQuery('Todos')
-				.execute()
 				.then(function (result) {
 					self.todos(result);
-				})
-				.fail(function (e) {
+				}, function (e) {
 					toastr.error(e.message);
 				});
 		};
@@ -178,8 +176,7 @@
 			manager.saveChanges()
 				.then(function (result) {
 					toastr.success('Affected count: ' + result.AffectedCount, 'Save succeeded.');
-				})
-				.fail(function (e) {
+				}, function (e) {
 					toastr.error(e.message);
 				});
 		}

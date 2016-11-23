@@ -3226,7 +3226,7 @@
 								return headers[header.toLowerCase()];
 							});
 						})
-						.catch(function (error) {
+						.error(function (error) {
 							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
 							errorCallback(helper.createError(error.statusText, obj));
 						});

@@ -83,27 +83,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Beetle.Server.Mvc\BeetleActionFilterAttribute.cs">
-      <Link>BeetleActionFilterAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\Beetle.Server.Mvc\BeetleContentResult.cs">
-      <Link>BeetleContentResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Beetle.Server.Mvc\BeetleController.cs">
-      <Link>BeetleController.cs</Link>
-    </Compile>
-    <Compile Include="..\Beetle.Server.Mvc\BeetleJsonResult.cs">
-      <Link>BeetleJsonResult.cs</Link>
-    </Compile>
-    <Compile Include="..\Beetle.Server.Mvc\BeetleValueProviderFactory.cs">
-      <Link>BeetleValueProviderFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\Beetle.Server.Mvc\Helper.cs">
-      <Link>Helper.cs</Link>
-    </Compile>
-    <Compile Include="..\Beetle.Server.Mvc\ValidateJsonAntiForgeryTokenAttribute.cs">
-      <Link>ValidateJsonAntiForgeryTokenAttribute.cs</Link>
-    </Compile>
     <Compile Include="..\_Shared\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
@@ -112,12 +91,19 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="BeetleActionFilterAttribute.cs" />
+    <Compile Include="BeetleContentResult.cs" />
+    <Compile Include="BeetleController.cs" />
+    <Compile Include="BeetleJsonResult.cs" />
+    <Compile Include="BeetleValueProviderFactory.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ValidateJsonAntiForgeryTokenAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Beetle.snk" />
