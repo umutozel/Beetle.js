@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.1.0
+// File version: 2.2.0
 
 declare module beetle {
 
@@ -251,6 +251,7 @@ declare module beetle {
             execute<TResult>(options?: TOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult>;
             x(options?: TOptions, successCallback?: (result: T) => void, errorCallback?: (e: Error) => void): PromiseLike<T>;
             x<TResult>(options?: TOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult>;
+            then(successCallback: (result: T) => void, errorCallback?: (e: Error) => void, options?: TOptions): PromiseLike<T>;
         }
 
         interface EntityQueryParameter {
@@ -814,6 +815,8 @@ declare module beetle {
             execute<TResult>(options?: ManagerQueryOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult[]>;
             x(options?: ManagerQueryOptions, successCallback?: (result: interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.QueryResultArray<T>>;
             x<TResult>(options?: ManagerQueryOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult[]>;
+            then(callback: (result: interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void,
+                 options?: ManagerOptions): PromiseLike<interfaces.QueryResultArray<T>>;
 
             expand(propertyPath: string): EntityQuery<T>;
             include(propertyPath: string): EntityQuery<T>;

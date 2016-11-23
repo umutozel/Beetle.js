@@ -1,16 +1,10 @@
 ﻿// Type definitions for beetle.js query extension 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.1.0
+// File version: 2.2.0
 
 declare module beetle {
 
-    module interfaces {
-        interface ClosedQueryable<T, TOptions> {
-            then(successCallback: (result: T) => void, errorCallback?: (e: Error) => void, options?: TOptions): PromiseLike<T>;
-        }
-    }
-
-    module querying {
+   module querying {
         interface ArrayQuery<T> {
             length: number; // also executes query (like GetEnumerator)
 
@@ -72,11 +66,6 @@ declare module beetle {
             zip<TOther, TResult>(other: Array<TOther>, selector: (entity: T, other: TOther) => TResult): beetle.querying.ArrayQuery<TResult>;
 
             forEach(callback: (item: T) => void);
-        }
-
-        interface EntityQuery<T> {
-            then(callback: (result: beetle.interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void,
-                options?: beetle.ManagerOptions): PromiseLike<beetle.interfaces.QueryResultArray<T>>;
         }
     }
 }

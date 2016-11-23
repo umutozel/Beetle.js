@@ -882,18 +882,6 @@
         };
     }
 
-    if (!entityQueryProto.hasOwnProperty("then")) {
-        entityQueryProto.then = function (callback, failCallback, options) {
-            var p = this.execute(options);
-            if (failCallback) {
-                if (p.hasOwnProperty("fail"))
-                    return p.then(callback).fail(failCallback);
-                return p.then(callback, failCallback);
-            }
-            return p.then(callback);
-        };
-    }
-
     // Create a length property for query so it can be automatically executed before enumeration (like LINQ).
     if (Object.hasOwnProperty("defineProperty")) {
         arrayQueryProto.length = Object.defineProperty(arrayQueryProto, "length", {
