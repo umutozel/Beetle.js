@@ -28,7 +28,7 @@ The goal is to be able to work with data as easy as Entity Framework and LINQ.
 All dependencies have base types so custom implementations can be made easily.
 * Entity Framework
 * WebApi or Asp.Net Mvc project for service
-* Knockout.js or EcmaScript5 Properties (for Angular) for providing observable objects
+* Knockout.js or EcmaScript5 Properties for providing observable properties
 
 ##Usage
 * Create a Controller and inherit from BeetleApiController, generic argument tells we are using Entity Framework context handler with TestEntities context (DbContext)
