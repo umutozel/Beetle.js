@@ -10,8 +10,8 @@ The goal is to be able to work with data as easy as Entity Framework and LINQ.
 
 ##Features
 * Tracks objects and persists changes to server
-* Can work with Knockout and Angular objects (Backbone soon, and others can be implemented easily)
-* Can work with Q and jQuery promises
+* Can work with Knockout and ES5 properties (others can be implemented easily)
+* Can work with Q, Angular, ES6 and jQuery promises
 * Supports data model inheritance
 * Supports aggregate functions
 * Can work without metadata
