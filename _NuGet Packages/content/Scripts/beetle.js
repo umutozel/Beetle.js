@@ -3218,8 +3218,7 @@
 					if (extra != null)
 						helper.extend(o, extra);
 					if (o.cache == null) o.cache = false;
-					var p = $http(o);
-                    return p
+					return $http(o)
 						.success(function (result, status, headers, config, statusText) {
 							var headers = headers();
 							successCallback(result, function (header) {
