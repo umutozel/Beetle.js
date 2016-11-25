@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.25920.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Shared", "_Shared", "{C70CF31F-C02A-4A6B-A0ED-14B600674D45}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,10 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Shared", "_Shared", "{C70C
 		_Shared\icon.zip = _Shared\icon.zip
 		_Shared\logo.zip = _Shared\logo.zip
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{7079892D-E508-4277-9715-123565986A79}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Todo", "Todo", "{A5A9F3F5-1C10-47BA-A4B2-11897AA2D93E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_NuGet Packages", "_NuGet Packages", "{FC020D39-AB65-4394-B3F8-BF1602C68A65}"
 	ProjectSection(SolutionItems) = preProject
@@ -98,10 +94,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server", "Beetle.Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Client", "Beetle.Client\Beetle.Client.csproj", "{354785D1-97DA-4A51-BCA0-E69D037A4FF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Samples.Todo.Angular", "Samples\Todo\Beetle.Samples.Todo.Angular\Beetle.Samples.Todo.Angular.csproj", "{CEBDF972-2247-4A94-8901-DF39581EE248}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Samples.Todo.Knockout", "Samples\Todo\Beetle.Samples.Todo.Knockout\Beetle.Samples.Todo.Knockout.csproj", "{37B6CA98-7F3A-4808-BF72-658DF253B26B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server.EntityFramework6", "Beetle.Server.EntityFramework6\Beetle.Server.EntityFramework6.csproj", "{1F3AAED6-3477-4729-9E6A-E763FB327FC1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server.WebApi2", "Beetle.Server.WebApi2\Beetle.Server.WebApi2.csproj", "{C7F93A33-D3EC-4A14-B57A-54C2EE2D66E3}"
@@ -122,14 +114,6 @@ Global
 		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CEBDF972-2247-4A94-8901-DF39581EE248}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CEBDF972-2247-4A94-8901-DF39581EE248}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CEBDF972-2247-4A94-8901-DF39581EE248}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CEBDF972-2247-4A94-8901-DF39581EE248}.Release|Any CPU.Build.0 = Release|Any CPU
-		{37B6CA98-7F3A-4808-BF72-658DF253B26B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{37B6CA98-7F3A-4808-BF72-658DF253B26B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{37B6CA98-7F3A-4808-BF72-658DF253B26B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{37B6CA98-7F3A-4808-BF72-658DF253B26B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -147,7 +131,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{A5A9F3F5-1C10-47BA-A4B2-11897AA2D93E} = {7079892D-E508-4277-9715-123565986A79}
 		{EECD6D87-AB15-4624-B0C5-CB43288023D2} = {FC020D39-AB65-4394-B3F8-BF1602C68A65}
 		{F57E712A-343A-4ED8-A199-8159E995FC42} = {FC020D39-AB65-4394-B3F8-BF1602C68A65}
 		{58BFE415-66D6-4A47-99D4-C9ED1012C379} = {F57E712A-343A-4ED8-A199-8159E995FC42}
@@ -160,7 +143,5 @@ Global
 		{A176F157-D4E6-470A-BA94-500675F3D9F7} = {5EA2401F-7FEA-45D3-9323-B3FA5F3FB4AF}
 		{162422A2-D83E-420F-AD86-8D8F96A9B349} = {83816CDD-2340-46EC-A2E5-015DCC329FB7}
 		{440D7CDA-3790-4C31-A431-1E86461A1708} = {83816CDD-2340-46EC-A2E5-015DCC329FB7}
-		{CEBDF972-2247-4A94-8901-DF39581EE248} = {A5A9F3F5-1C10-47BA-A4B2-11897AA2D93E}
-		{37B6CA98-7F3A-4808-BF72-658DF253B26B} = {A5A9F3F5-1C10-47BA-A4B2-11897AA2D93E}
 	EndGlobalSection
 EndGlobal
