@@ -904,7 +904,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
 			if (type.BaseType != null && type.BaseType != typeof(object)) {
-				if (type.IsAbstract || type.BaseType.IsGenericType || type.GetAttribute<NotMappedAttribute>() != null) {
+				if (type.BaseType.IsAbstract || type.BaseType.BaseType.IsGenericType || type.BaseType.GetAttribute<NotMappedAttribute>() != null) {
 					properties = properties.Union(type.BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
 				}
 				else {
@@ -915,7 +915,8 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 
 			foreach (var propertyInfo in properties) {
 				var propertyType = propertyInfo.PropertyType;
-				if (propertyType.GetCustomAttribute<NotMappedAttribute>() != null) continue;
+				if (entityType.DataProperties.Any(dp => dp.Name == propertyInfo.Name) 
+					|| propertyType.GetCustomAttribute<NotMappedAttribute>() != null) continue;
 
 				var isNullable = false;
 				if ((propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))) {

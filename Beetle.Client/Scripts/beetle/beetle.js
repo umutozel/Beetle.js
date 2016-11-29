@@ -10570,7 +10570,7 @@
 
 	return {
 		// Export types
-		version: '2.2.1',
+		version: '2.2.2',
 		registerI18N: function (code, i18n, active) {
 			i18Ns[code] = i18n;
 			if (active) i18N = i18n;
