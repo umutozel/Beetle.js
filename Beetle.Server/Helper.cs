@@ -904,7 +904,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
 			if (type.BaseType != null && type.BaseType != typeof(object)) {
-				if (type.BaseType.IsGenericType) {
+				if (type.IsAbstract || type.BaseType.IsGenericType || type.GetAttribute<NotMappedAttribute>() != null) {
 					properties = properties.Union(type.BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
 				}
 				else {
