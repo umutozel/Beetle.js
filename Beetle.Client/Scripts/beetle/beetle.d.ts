@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.2.2
+// File version: 2.2.3
 
 declare module beetle {
 
@@ -816,7 +816,7 @@ declare module beetle {
             x(options?: ManagerQueryOptions, successCallback?: (result: interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void): PromiseLike<interfaces.QueryResultArray<T>>;
             x<TResult>(options?: ManagerQueryOptions, successCallback?: (result: TResult) => void, errorCallback?: (e: Error) => void): PromiseLike<TResult[]>;
             then(callback: (result: interfaces.QueryResultArray<T>) => void, errorCallback?: (e: Error) => void,
-                 options?: ManagerQueryOptions): PromiseLike<interfaces.QueryResultArray<T>>;
+                options?: ManagerQueryOptions): PromiseLike<interfaces.QueryResultArray<T>>;
 
             expand(propertyPath: string): EntityQuery<T>;
             include(propertyPath: string): EntityQuery<T>;
@@ -1003,10 +1003,10 @@ declare module beetle {
             Knockout, Property
         }
         enum promiseProviders {
-            Q, jQuery, Angular
+            Q, Angular, ES6, jQuery
         }
         enum ajaxProviders {
-            jQuery, Angular
+            Angular, jQuery, Vanillajs, Nodejs
         }
         enum serializationServices {
             JSON

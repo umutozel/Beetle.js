@@ -50,12 +50,10 @@ namespace Beetle.Server.Mvc {
             if (ContentEncoding != null)
                 response.ContentEncoding = ContentEncoding;
 
-            if (Data != null) {
-                var d = JsonConvert.SerializeObject(Data, _config.JsonSerializerSettings);
-                if (!(Data is string) && Data is IEnumerable)
-                    d = "{\"$d\" : " + d + "}";
-                response.Write(d);
-            }
+            var d = JsonConvert.SerializeObject(Data, _config.JsonSerializerSettings);
+            if (!(Data is string) && Data is IEnumerable)
+                d = "{\"$d\" : " + d + "}";
+            response.Write(d);
         }
     }
 }

@@ -3248,6 +3248,8 @@
 					var that = this;
 	
 					var xhr = new XMLHttpRequest();
+					xhr.open(type, uri, async);
+
 					xhr.setRequestHeader("Accept", "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml");
 					xhr.setRequestHeader("Content-Type", contentType);
 					xhr.timeout = timeout;
@@ -3258,8 +3260,6 @@
 						}
 					}
 	
-					xhr.open(type, uri, async);
-	
 					xhr.onload = function() {
 						xhr.onreadystatechange = null;
 						xhr.abort = null;		
@@ -3268,7 +3268,7 @@
 							successCallback(xhr.responseText, that.getHeaderGetter(xhr), xhr);
 						}
 						else {
-							errorCallback(xhr.responseText);
+							errorCallback(that.createError(xhr));
 						}
 					};
 	
@@ -7529,9 +7529,9 @@
 								else if (Assert.isArray(v))
 									helper.forEach(v, function (item) {
 										if (item == null || !item.$tracker)
-											data[p].push(item);
+											data[np.name].push(item);
 										else
-											data[p].push(item.$tracker.toRaw(true));
+											data[np.name].push(item.$tracker.toRaw(true));
 									});
 								else
 									data[np.name] = v.$tracker.toRaw(true);
@@ -10570,7 +10570,7 @@
 
 	return {
 		// Export types
-		version: '2.2.2',
+		version: '2.2.3',
 		registerI18N: function (code, i18n, active) {
 			i18Ns[code] = i18n;
 			if (active) i18N = i18n;
