@@ -10,8 +10,8 @@ The goal is to be able to work with data as easy as Entity Framework and LINQ.
 
 ##Features
 * Tracks objects and persists changes to server
-* Can work with Knockout and Angular objects (Backbone soon, and others can be implemented easily)
-* Can work with Q and jQuery promises
+* Can work with Knockout and ES5 properties (others can be implemented easily)
+* Can work with Q, Angular, ES6 and jQuery promises
 * Supports data model inheritance
 * Supports aggregate functions
 * Can work without metadata
@@ -28,8 +28,7 @@ The goal is to be able to work with data as easy as Entity Framework and LINQ.
 All dependencies have base types so custom implementations can be made easily.
 * Entity Framework
 * WebApi or Asp.Net Mvc project for service
-* Knockout.js or EcmaScript5 Properties (for Angular) for providing observable objects
-* JQuery or Angular for ajax operations
+* Knockout.js or EcmaScript5 Properties for providing observable properties
 
 ##Usage
 * Create a Controller and inherit from BeetleApiController, generic argument tells we are using Entity Framework context handler with TestEntities context (DbContext)
