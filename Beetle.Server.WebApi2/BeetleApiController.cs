@@ -47,7 +47,7 @@ namespace Beetle.Server.WebApi {
         public BeetleApiController(TContextHandler contextHandler, BeetleConfig beetleConfig) {
             ContextHandler = contextHandler;
             _beetleConfig = beetleConfig ?? BeetleConfig.Instance;
-            AutoHandleUnknownActions = true;
+            AutoHandleUnknownActions = false;
         }
 
         /// <summary>

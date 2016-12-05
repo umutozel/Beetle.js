@@ -16,6 +16,11 @@ namespace Beetle.Client.Controllers {
     public class BeetleTestController : BeetleApiController<EFContextHandler<TestEntities>> {
 
         [HttpGet]
+        public IQueryable<Entity> Entities() {
+            return ContextHandler.Context.Entities;
+        }
+
+        [HttpGet]
         public IQueryable<NamedEntity> NamedEntities() {
             return ContextHandler.Context.Entities.OfType<NamedEntity>();
         }

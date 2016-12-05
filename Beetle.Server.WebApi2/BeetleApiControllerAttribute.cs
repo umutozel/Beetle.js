@@ -21,7 +21,7 @@ namespace Beetle.Server.WebApi {
         /// Initializes a new instance of the <see cref="BeetleApiControllerAttribute" /> class.
         /// </summary>
         /// <param name="configType">Type of the config.</param>
-        /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
+        /// <exception cref="ArgumentException">Cannot create config instance.</exception>
         public BeetleApiControllerAttribute(Type configType = null)
             : this(new BeetleQueryableAttribute(configType), configType) {
         }

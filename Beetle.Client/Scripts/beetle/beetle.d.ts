@@ -225,8 +225,8 @@ declare module beetle {
             orderBy(keySelector?: string): Query<T>;
             orderByDesc(keySelector?: string): Query<T>;
             select<TResult>(selector: string | string[] | ((entity: T) => TResult)): Query<TResult>;
-            select(selector: string | string[] | ((entity: T) => any)): Query<any>;
             select<TResult>(...selectors: string[]): Query<TResult>;
+            select(selector: string | string[] | ((entity: T) => any)): Query<any>;
             select(...selectors: string[]): Query<any>;
             skip(count: number): Query<T>;
             take(count: number): Query<T>;
@@ -601,7 +601,7 @@ declare module beetle {
             toString(): string;
             doAjax(uri: string, type: string, dataType: string, contentType: string, data: any, async: boolean, timeout: number,
                 extra: interfaces.Dictionary<any>, headers: interfaces.Dictionary<string>,
-                successCallback: (data: any, headerGetter: (name: string) => string, xhr?: JQueryXHR) => void,
+                successCallback: (data: any, headerGetter: (name: string) => string, xhr?: XMLHttpRequest) => void,
                 errorCallback: (e: Error) => void);
         }
         abstract class SerializationServiceBase {
@@ -778,8 +778,8 @@ declare module beetle {
             orderBy(keySelector: string | ((entity: T) => any)): EntityQuery<T>;
             orderByDesc(keySelector: string | ((entity: T) => any)): EntityQuery<T>;
             select<TResult>(selector: string | string[] | ((entity: T) => TResult)): EntityQuery<TResult>;
-            select(selector: string | string[] | ((entity: T) => any)): EntityQuery<any>;
             select<TResult>(...selectors: string[]): EntityQuery<TResult>;
+            select(selector: string | string[] | ((entity: T) => any)): EntityQuery<any>;
             select(...selectors: string[]): EntityQuery<any>;
             skip(count: number): EntityQuery<T>;
             take(count: number): EntityQuery<T>;
@@ -925,7 +925,7 @@ declare module beetle {
             createQuery<T extends IEntity>(resourceName: string, type?: string | (new() => T)): querying.EntityQuery<T>;
             createQuery(resourceName: string, shortName?: string): querying.EntityQuery<any>;
             createEntityQuery<T extends IEntity>(type: string | (new() => T), resourceName?: string): querying.EntityQuery<T>;
-            createEntityQuery(shortName: string, resourceName?: string): querying.EntityQuery<any>;
+            createEntityQuery(shortName: string, resourceName?: string): querying.EntityQuery<IEntity>;
             registerCtor<T extends IEntity>(type: string | (new() => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
             createEntity<T extends IEntity>(type: string | (new() => T), initialValues?: Object): T;
             createEntity(shortName: string, initialValues?: Object): IEntity;

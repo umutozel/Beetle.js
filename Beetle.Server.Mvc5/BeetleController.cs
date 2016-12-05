@@ -48,7 +48,7 @@ namespace Beetle.Server.Mvc {
         public BeetleController(TContextHandler contextHandler, BeetleConfig beetleConfig) {
             ContextHandler = contextHandler;
             _beetleConfig = beetleConfig ?? BeetleConfig.Instance;
-            AutoHandleUnknownActions = true;
+            AutoHandleUnknownActions = false;
         }
 
         /// <summary>

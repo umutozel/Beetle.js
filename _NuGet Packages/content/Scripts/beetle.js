@@ -570,7 +570,7 @@
 						if (ali) o = ali.value;
 						else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
 
-						if (o[exp.property.name] !== undefined)
+						if (o && o[exp.property.name] !== undefined)
 							return core.dataTypes.toODataValue(o[exp.property.name]);
 						return o ? o + '/' + exp.property.name : exp.property.name;
 					}
