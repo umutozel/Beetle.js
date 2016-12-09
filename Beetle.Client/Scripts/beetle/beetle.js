@@ -30,7 +30,7 @@
 			try {
 				deps[p] = require(p);
 			}
-			catch(e) { /* ignored */ }
+			catch (e) { /* ignored */ }
 		}
 
 		module.exports = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q, deps.http, deps.https);
@@ -3219,14 +3219,13 @@
 						helper.extend(o, extra);
 					if (o.cache == null) o.cache = false;
 					return $http(o)
-						.success(function (result, status, headers, config, statusText) {
-							var headers = headers();
-							successCallback(result, function (header) {
+						.then(function (resp) {
+							var headers = resp.headers();
+							successCallback(resp.data, function (header) {
 								if (!header) return headers;
 								return headers[header.toLowerCase()];
 							});
-						})
-						.error(function (error) {
+						}, function (error) {
 							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
 							errorCallback(helper.createError(error.statusText, obj));
 						});
@@ -3246,7 +3245,7 @@
 
 				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					var that = this;
-	
+
 					var xhr = new XMLHttpRequest();
 					xhr.open(type, uri, async);
 
@@ -3259,11 +3258,11 @@
 							xhr.setRequestHeader(p, headers[p]);
 						}
 					}
-	
-					xhr.onload = function() {
+
+					xhr.onload = function () {
 						xhr.onreadystatechange = null;
-						xhr.abort = null;		
-		
+						xhr.abort = null;
+
 						if (xhr.status === 200) {
 							successCallback(xhr.responseText, that.getHeaderGetter(xhr), xhr);
 						}
@@ -3271,14 +3270,14 @@
 							errorCallback(that.createError(xhr));
 						}
 					};
-	
+
 					xhr.ontimeout = function (e) {
 						xhr.onreadystatechange = null;
-						xhr.abort = null;		
+						xhr.abort = null;
 
 						errorCallback(e);
 					};
-	
+
 					xhr.send(data);
 				}
 
@@ -3296,7 +3295,7 @@
 
 				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					type = type.toUpperCase();
-	
+
 					var reURLInformation = new RegExp([
 						'^(https?:)//', // protocol
 						'(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
@@ -3311,12 +3310,12 @@
 						path = uriParts[5],
 						search = uriParts[6];
 					path += search;
-	
+
 					headers = headers || {};
 					headers["Content-Type"] = contentType;
 					headers["Accept"] = "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml";
 					headers["Content-Length"] = (data && data.length) || 0;
-	
+
 					var options = {
 						host: host,
 						path: path,
@@ -3324,10 +3323,10 @@
 						headers: headers,
 						port: port || 80
 					};
-	
+
 					var req = protocol.request(options, function (res) {
 						res.setEncoding("utf8");
-		
+
 						var body = "";
 						res.on('data', function (chunk) {
 							body += chunk;
@@ -3339,7 +3338,7 @@
 							});
 						});
 					});
-	
+
 					if (data) {
 						req.write(data);
 					}
@@ -3352,11 +3351,11 @@
 							});
 						});
 					}
-	
+
 					req.on('error', function (e) {
 						errorCallback(e);
 					});
-	
+
 					req.end();
 				}
 
@@ -7505,11 +7504,14 @@
 					return this.validationErrors;
 				};
 
-				proto.toRaw = function (includeNavigations) {
+				proto.toRaw = function (includeNavigations, handledList) {
 					/// <summary>
 					/// Creates a raw javascript object representing this entity.
 					/// </summary>
 					// get entity information.
+					handledList = handledList || [];
+					handledList.push(this.entity);
+
 					var type = this.entityType;
 					var data = {};
 					var that = this;
@@ -7519,22 +7521,29 @@
 							if (v == null || !v.$tracker)
 								data[dp.name] = dp.dataType.getRawValue(v);
 							else if (includeNavigations == true || v.$tracker.entityType.isComplexType)
-								data[dp.name] = v.$tracker.toRaw(includeNavigations);
+								data[dp.name] = v.$tracker.toRaw(includeNavigations, handledList);
 						});
 						if (includeNavigations == true) {
 							helper.forEach(type.navigationProperties, function (np) {
 								var v = that.getValue(np.name);
 								if (v == null)
 									data[np.name] = null;
-								else if (Assert.isArray(v))
-									helper.forEach(v, function (item) {
-										if (item == null || !item.$tracker)
-											data[np.name].push(item);
-										else
-											data[np.name].push(item.$tracker.toRaw(true));
-									});
-								else
-									data[np.name] = v.$tracker.toRaw(true);
+								else {
+									if (Assert.isArray(v)) {
+										data[np.name] = [];
+										helper.forEach(v, function (item) {
+											if (item == null || handledList.indexOf(item) >= 0) return;
+
+											if (!item.$tracker)
+												data[np.name].push(item);
+											else
+												data[np.name].push(item.$tracker.toRaw(true, handledList));
+										});
+									}
+									else {
+										data[np.name] = handledList.indexOf(v) >= 0 ? null : v.$tracker.toRaw(true, handledList);
+									}
+								}
 							});
 						}
 					}
@@ -7546,16 +7555,18 @@
 							// create new array property in return data.
 							data[p] = [];
 							helper.forEach(v, function (item) {
-								if (item == null || !item.$tracker)
+								if (item == null || handledList.indexOf(v) >= 0) return;
+
+								if (!item.$tracker)
 									data[p].push(item);
 								else if (includeNavigations == true)
-									data[p].push(item.$tracker.toRaw(true));
+									data[p].push(item.$tracker.toRaw(true, handledList));
 							});
 						} else {
 							if (v == null || !v.$tracker)
 								data[p] = v;
 							else if (includeNavigations == true || v.$tracker.entityType.isComplexType)
-								data[p] = v.$tracker.toRaw(includeNavigations);
+								data[p] = handledList.indexOf(v) >= 0 ? null : v.$tracker.toRaw(includeNavigations, handledList);
 						}
 					});
 					return data;
@@ -9269,11 +9280,11 @@
 										if (!(shortName in root))
 											root[shortName] = getGlobalEntityClass(type);
 									}
-									
+
 									var setName = type.setName;
 									if (setName && !instance.entitySets.hasOwnProperty(setName)) {
-									    var set = instance.createSet(type);
-									    if (registerMetadataTypes) instance[setName] = set;
+										var set = instance.createSet(type);
+										if (registerMetadataTypes) instance[setName] = set;
 										instance.entitySets[shortName] = set;
 									}
 								}
@@ -9281,7 +9292,7 @@
 							var enums = metadata.enums;
 							if (enums) {
 								for (var enumName in enums) {
-								    if (!(enumName in root))
+									if (!(enumName in root))
 										root[enumName] = enums[enumName];
 								}
 							}
@@ -10132,7 +10143,7 @@
 				Angular: { code: 'Angular', instance: impls.angularAjaxProviderInstance },
 				jQuery: { code: 'jQuery', instance: impls.jQueryAjaxProviderInstance },
 				Vanillajs: { code: 'Vanillajs', instance: impls.vanillajsAjaxProviderInstance },
-			    Nodejs: { code: 'Nodejs', instance: impls.nodejsAjaxProviderInstance }
+				Nodejs: { code: 'Nodejs', instance: impls.nodejsAjaxProviderInstance }
 			}),
 			/// <field>
 			/// Ajax providers. Possible values;

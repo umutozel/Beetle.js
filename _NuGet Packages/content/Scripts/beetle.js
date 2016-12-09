@@ -3219,14 +3219,13 @@
 						helper.extend(o, extra);
 					if (o.cache == null) o.cache = false;
 					return $http(o)
-						.success(function (result, status, headers, config, statusText) {
-							var headers = headers();
-							successCallback(result, function (header) {
+						.then(function (resp) {
+							var headers = resp.headers();
+							successCallback(resp.data, function (header) {
 								if (!header) return headers;
 								return headers[header.toLowerCase()];
 							});
-						})
-						.error(function (error) {
+						}, function (error) {
 							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
 							errorCallback(helper.createError(error.statusText, obj));
 						});
