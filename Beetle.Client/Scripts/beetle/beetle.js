@@ -5273,6 +5273,7 @@
 							find = source;
 							source = value;
 						} else source = source(value);
+						if (source && !source.indexOf) source = source.toString();
 						source = helper.handleStrOptions(source, this.varContext);
 						find = helper.handleStrOptions(find(value), this.varContext);
 						return source && source.indexOf(find);
