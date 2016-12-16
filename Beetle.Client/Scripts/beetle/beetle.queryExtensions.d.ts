@@ -75,8 +75,8 @@ interface Array<T> {
     ofType<TResult extends T>(type: string | (new() => TResult)): beetle.querying.ArrayQuery<TResult>;
     where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
     where(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
-    orderBy(keySelector: string | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
-    orderByDesc(keySelector: string | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
+    orderBy(keySelector: string | ((entity: T) => any) | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
+    orderByDesc(keySelector: string | ((entity: T) => any) | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
     select<TResult>(selector: string | string[] | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;
     select<TResult>(...selectors: string[]): beetle.querying.ArrayQuery<TResult>;
     select(selector: string | string[] | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;

@@ -119,8 +119,12 @@
 			handleStrOptions: function (str, options) {
 				/// <summary>Applies current operation context string options to given parameter.</summary>
 				/// <param name="options">Options for the context.</param>
-				if (str == null) return str;
-				if (!helper.isCaseSensitive(options)) str = str.toLowerCase();
+				if (str == null || typeof str !== "string") return str;
+				if (!helper.isCaseSensitive(options)) {
+					str = str.replace("İ", "i");
+					str = str.toLowerCase();
+					str = str.replace("ı", "i");
+				}
 				if (helper.ignoreWhiteSpaces(options)) str = str.trim();
 				return str;
 			},
@@ -4301,7 +4305,7 @@
 						};
 
 						proto.toODataQuery = function (queryContext) {
-							var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+							var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp).replace(" as ", " ") : this.exp;
 							if (this.isDesc) exp = invertExp(exp);
 
 							return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
@@ -4310,25 +4314,35 @@
 						proto.toBeetleQuery = function (queryContext) {
 							if (!this.exp) return '';
 
-							var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+							var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp).replace(" as ", " ") : this.exp;
 							if (this.isDesc) exp = invertExp(exp);
 
 							return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
 						};
 
-
 						proto.execute = function (array, queryContext) {
+							var expStr;
 							if (Assert.isFunction(this.exp)) {
 								var that = this;
-								return array.sort(function (a, b) {
-									var r = that.exp(a, b);
-									return that.isDesc ? (-1 * r) : r;
-								});
-							}
+								if (this.exp.length == 2) {
+									return array.sort(function (a, b) {
+										var r = that.exp(a, b);
+										return that.isDesc ? (-1 * r) : r;
+									});
+								}
+								else expStr = helper.funcToLambda(this.exp).replace(/ as /g, " ");
+							} else expStr = this.exp;
 
 							var comparers = [];
-							var expr = libs.jsep(this.exp);
+							var expr = libs.jsep(expStr);
 							var exps = expr.type == 'Compound' ? expr.body : [expr];
+							var alias;
+							if (exps[0].operator == '=>') {
+							    alias = {};
+							    alias.alias = exps[0].left.name;
+							    queryContext.aliases = [alias];
+							    exps[0] = exps[0].right;
+							}
 							for (var i = 0; i < exps.length; i++) {
 								var isDesc = false;
 								var exp = exps[i];
@@ -4343,8 +4357,10 @@
 								isDesc = isDesc != this.isDesc;
 								var comparer = (function (e, desc) {
 									return function (object1, object2) {
-										var f = helper.jsepToFunction(e, queryContext);
+									    var f = helper.jsepToFunction(e, queryContext);
+									    if (alias) alias.value = object1;
 										var value1 = f(object1);
+										if (alias) alias.value = object2;
 										var value2 = f(object2);
 										if (value1 == value2)
 											return 0;
@@ -9206,6 +9222,12 @@
 				proto.set = function (shortName) {
 					if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
 					return this.entitySets && this.entitySets[shortName];
+				}
+
+				proto.clear = function () {
+					this.pendingChangeCount = 0;
+					this.entities = new core.EntityContainer();
+					this.validationErrors = [];
 				}
 
 				function initialize(args, instance) {
