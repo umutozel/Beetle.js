@@ -534,6 +534,17 @@ declare module beetle {
         arraySet: (entity: Object, property: string, oldArray: Array<any>, newArray: Array<any>) => void;
     }
 
+    interface AjaxError extends Error {
+        status: number;
+        detail: string;
+        xhr?: XMLHttpRequest;
+    }
+
+    interface AngularAjaxError extends AjaxError {
+        config: ng.IRequestConfig;
+        error: any;
+    }
+
     module helper {
         function combine(obj1: Object, obj2: Object): Object;
         function extend(obj1: Object, obj2: Object): Object;
@@ -602,7 +613,7 @@ declare module beetle {
             doAjax(uri: string, type: string, dataType: string, contentType: string, data: any, async: boolean, timeout: number,
                 extra: interfaces.Dictionary<any>, headers: interfaces.Dictionary<string>,
                 successCallback: (data: any, headerGetter: (name: string) => string, xhr?: XMLHttpRequest) => void,
-                errorCallback: (e: Error) => void);
+                errorCallback: (e: AjaxError) => void);
         }
         abstract class SerializationServiceBase {
             constructor(name: string);

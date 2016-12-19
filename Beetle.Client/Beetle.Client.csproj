@@ -343,6 +343,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\beetle\beetle.d.ts" />
     <TypeScriptCompile Include="Scripts\beetle\beetle.queryExtensions.d.ts" />
+    <TypeScriptCompile Include="Scripts\typescript\angular.d.ts" />
     <TypeScriptCompile Include="Scripts\typescript\jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\typescript\Q.d.ts" />
     <TypeScriptCompile Include="Scripts\typescript\qunit.d.ts" />
