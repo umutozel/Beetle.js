@@ -112,3 +112,5 @@ toupper, tolower, substring, substringof, length, trim, concat, replace, startsw
 
 ##License
 See [License](https://github.com/umutozel/Beetle.js/blob/master/LICENSE)
+
+Thanks to [JetBrains](http://www.jetbrains.com/) for providing us with free licenses to their great tools.
