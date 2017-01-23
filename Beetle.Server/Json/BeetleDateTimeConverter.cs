@@ -9,7 +9,7 @@ namespace Beetle.Server.Json {
     /// Custom DateTime converter, it also tries to handle Javascript date format.
     /// </summary>
     public class BeetleDateTimeConverter : IsoDateTimeConverter {
-        public static readonly List<string> _months = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        private static readonly List<string> _months = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
         /// <summary>
         /// Reads the json.

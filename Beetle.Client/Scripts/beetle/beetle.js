@@ -4362,6 +4362,12 @@
 										var value1 = f(object1);
 										if (alias) alias.value = object2;
 										var value2 = f(object2);
+
+										if (typeof value1 === "string" && typeof value2 === "string") {
+										    var cmp = value1.localeCompare(value2);
+										    return desc ? (cmp * -1) : cmp;
+										}
+
 										if (value1 == value2)
 											return 0;
 										else if (value1 > value2)
@@ -5148,7 +5154,7 @@
 						source = (source ? source(value) : value);
 						source = helper.handleStrOptions(source, this.varContext);
 						find = helper.handleStrOptions(find(value), this.varContext);
-						return source && source.indexOf(find) >= 0;
+						return source ? source.indexOf(find) >= 0 : false;
 					};
 
 					return new ctor();
@@ -5250,7 +5256,7 @@
 						} else source = source(value);
 						source = helper.handleStrOptions(source, this.varContext);
 						find = helper.handleStrOptions(find(value), this.varContext);
-						return source && source.indexOf(find, 0) === 0;
+						return source ? source.indexOf(find, 0) === 0 : false;
 					};
 
 					return new ctor();
@@ -5271,7 +5277,7 @@
 						source = helper.handleStrOptions(source, this.varContext);
 						find = helper.handleStrOptions(find(value), this.varContext);
 						var index = source.length - find.length;
-						return source && source.indexOf(find, index) !== -1;
+						return source ? source.indexOf(find, index) !== -1 : false;
 					};
 
 					return new ctor();
@@ -5292,7 +5298,7 @@
 						if (source && !source.indexOf) source = source.toString();
 						source = helper.handleStrOptions(source, this.varContext);
 						find = helper.handleStrOptions(find(value), this.varContext);
-						return source && source.indexOf(find);
+						return source ? source.indexOf(find) : -1;
 					};
 
 					return new ctor();
@@ -5344,7 +5350,7 @@
 						}
 						items = helper.handleStrOptions(items, this.varContext);
 						item = helper.handleStrOptions(item, this.varContext);
-						return items && items.indexOf(item) >= 0;
+						return items ? items.indexOf(item) >= 0 : -1;
 					};
 
 					return new ctor();
