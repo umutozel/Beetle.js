@@ -1,6 +1,6 @@
 ﻿// Type definitions for beetle.js query extension 2.0
 // Project: https://github.com/umutozel/Beetle.js
-// File version: 2.2.3
+// File version: 2.2.4
 
 declare module beetle {
 
