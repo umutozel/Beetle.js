@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata>
 		<id>Beetlejs.WebApi2</id>
-		<version>2.2.4</version>
+		<version>2.2.5</version>
 		<title>Beetlejs WebApi 2 (v5) Controller (OData) Api</title>
 		<authors>Umut Özel</authors>
 		<owners>Umut Özel</owners>
@@ -12,7 +12,7 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Beetle WebApi 2 Controller Api. Simply derive from BeetleWebApiController and manage your data easily. For example check sample project on github.</description>
 		<summary>Manage your data with Javascript easily.</summary>
-		<copyright>Copyright (c) 2016 Umut Özel</copyright>
+		<copyright>Copyright (c) 2017 Umut Özel</copyright>
 		<language>en-US</language>
 		<tags>ASP.NET WebApi 2 Entity Framework 6 OData Single Page Application SPA Unit of Work Client Side Change Tracker Beetle</tags>
 		<dependencies>

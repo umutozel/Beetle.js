@@ -10,6 +10,7 @@ namespace Beetle.Server {
     /// </summary>
     public class BeetleConfig {
         private static readonly Lazy<BeetleConfig> _instance = new Lazy<BeetleConfig>();
+        private static BeetleConfig _defaultInstance;
         private readonly JsonSerializerSettings _settings;
 
         /// <summary>
@@ -77,7 +78,8 @@ namespace Beetle.Server {
         /// The instance.
         /// </value>
         public static BeetleConfig Instance {
-            get { return _instance.Value; }
+            get { return _defaultInstance ?? _instance.Value; }
+            set { _defaultInstance = value; }
         }
 
         /// <summary>

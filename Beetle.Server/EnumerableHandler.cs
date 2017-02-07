@@ -12,6 +12,7 @@ namespace Beetle.Server {
     /// Default implementation only checks for MaxResultCount.
     /// </summary>
     public class EnumerableHandler : IContentHandler<IEnumerable> {
+        private static IContentHandler<IEnumerable> _defaultInstance;
         private static readonly Lazy<EnumerableHandler> _instance = new Lazy<EnumerableHandler>();
 
         /// <summary>
@@ -45,8 +46,9 @@ namespace Beetle.Server {
         /// <value>
         /// The instance.
         /// </value>
-        public static EnumerableHandler Instance {
-            get { return _instance.Value; }
+        public static IContentHandler<IEnumerable> Instance {
+            get { return _defaultInstance ?? _instance.Value; }
+            set { _defaultInstance = value; }
         }
     }
 }
