@@ -6,7 +6,20 @@
 		Q: root.Q
 	};
 
-	if (typeof define === "function" && define.amd) {
+	if (typeof exports === "object") {
+		deps.http = null;
+		deps.https = null;
+		for (var p in deps) {
+			try {
+				deps[p] = require(p);
+			}
+			catch (e) { /* ignored */ }
+		}
+
+		module.exports = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q, deps.http, deps.https);
+		return module.exports;
+	}
+	else if (typeof define === "function" && define.amd) {
 		var modules = [];
 		for (var p in deps) {
 			if (require.specified(p)) {
@@ -23,20 +36,9 @@
 			root.beetle = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
 		});
 	}
-	else if (typeof exports === "object") {
-		deps.http = null;
-		deps.https = null;
-		for (var p in deps) {
-			try {
-				deps[p] = require(p);
-			}
-			catch (e) { /* ignored */ }
-		}
-
-		module.exports = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q, deps.http, deps.https);
-	}
 	else {
 		root.beetle = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
+		return root.beetle;
 	}
 })(this, function (root, $, angular, ko, Q, http, https) {
 	'use strict';

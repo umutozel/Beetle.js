@@ -1,14 +1,17 @@
 ﻿(function (root, factory) {
-    if (typeof define === "function" && define.amd) {
+    if (typeof exports === "object") {
+        var beetle = require("beetle.js");
+        module.exports = factory(root, beetle);
+        return beetle;
+    }
+    else if (typeof define === "function" && define.amd) {
         define(["beetle"], function (beetle) {
             factory(root, beetle || root.beetle);
         });
     }
-    else if (typeof exports === "object") {
-        module.exports = factory(root, require("beetle"));
-    }
     else {
         factory(root, root.beetle);
+        return root.beetle;
     }
 })(this, function (root, beetle) {
     "use strict";
