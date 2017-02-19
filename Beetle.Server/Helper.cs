@@ -353,13 +353,9 @@ namespace Beetle.Server {
 		public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
 															IBeetleService service, IContextHandler contextHandler,
 															BeetleConfig actionConfig) {
-			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
-
 			var queryable = contentValue as IQueryable;
 			if (queryable != null) {
-				var queryableHandler = (config != null ? config.QueryableHandler : null)
-									?? (contextHandler != null ? contextHandler.QueryableHandler : null) 
-									?? QueryableHandler.Instance;
+				var queryableHandler = GetQueryHandler(actionConfig, service);
 
 				return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service, contextHandler);
 			}
@@ -367,15 +363,29 @@ namespace Beetle.Server {
 			if (!(contentValue is string)) {
 				var enumerable = contentValue as IEnumerable;
 				if (enumerable != null) {
-					var enumerableHandler = (config != null ? config.EnumerableHandler : null)
-										??  (contextHandler != null ? contextHandler.EnumerableHandler : null) 
-										??  EnumerableHandler.Instance;
+					var enumerableHandler = GetEnumerableHandler(actionConfig, service);
 
 					return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service, contextHandler);
 				}
 			}
 
 			return new ProcessResult(actionContext) { Result = contentValue };
+		}
+
+		public static IQueryHandler<IQueryable> GetQueryHandler(BeetleConfig actionConfig, IBeetleService service) {
+			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
+			var contextHandler = service != null ? service.ContextHandler : null;
+			return (config != null ? config.QueryableHandler : null)
+				?? (contextHandler != null ? contextHandler.QueryableHandler : null)
+				?? QueryableHandler.Instance;
+		}
+
+		public static IContentHandler<IEnumerable> GetEnumerableHandler(BeetleConfig actionConfig, IBeetleService service) {
+			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
+			var contextHandler = service != null ? service.ContextHandler : null;
+			return (config != null ? config.EnumerableHandler : null)
+				?? (contextHandler != null ? contextHandler.EnumerableHandler : null)
+				?? EnumerableHandler.Instance;
 		}
 
 		/// <summary>
