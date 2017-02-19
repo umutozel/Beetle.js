@@ -2408,7 +2408,7 @@
 					return this.name;
 				};
 
-				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					/// <summary>
 					/// Ajax operation virtual method.
 					/// </summary>
@@ -3151,7 +3151,7 @@
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
 
-				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					var that = this;
 					var o = {
 						url: uri,
@@ -3160,7 +3160,7 @@
 							xml: 'text/xml; application/xhtml+xml;application/xml',
 							text: 'text/xml'
 						},
-						type: type,
+						type: method,
 						dataType: dataType,
 						contentType: contentType,
 						traditional: false,
@@ -3206,12 +3206,12 @@
 				if (angular)
 					$http = angular.injector(["ng"]).get('$http');
 
-				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					if (async === false)
 						throw helper.createError(i18N.syncNotSupported, [this.name]);
 
 					var o = {
-						method: type,
+					    method: method,
 						url: uri,
 						contentType: contentType,
 						data: data,
@@ -3250,11 +3250,11 @@
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
 
-				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					var that = this;
 
 					var xhr = new XMLHttpRequest();
-					xhr.open(type, uri, async);
+					xhr.open(method, uri, async);
 
 					xhr.setRequestHeader("Accept", "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml");
 					xhr.setRequestHeader("Content-Type", contentType);
@@ -3301,11 +3301,9 @@
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
 
-				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 				    if (async === false)
 				        throw helper.createError(i18N.syncNotSupported, [this.name]);
-
-				    type = type.toUpperCase();
 
 					var reURLInformation = new RegExp([
 						'^(https?:)//', // protocol
@@ -3330,7 +3328,7 @@
 					var options = {
 						host: host,
 						path: path,
-						method: type,
+						method: method,
 						headers: headers,
 						port: port || 80
 					};
@@ -9931,27 +9929,26 @@
 				if (async == null) async = settings.workAsync;
 				var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
 				var extra = options.extra;
-				var type, d = null;
+				var type = options.method || 'GET', d = null;
 				var uri = options.uri || this.uri || '';
 				if (uri && uri[uri.length - 1] != '/') uri += '/';
 				uri = uri + resource;
 				var queryString;
-				if (usePost === true) {
-					var prmsObj = {};
-					helper.forEach(queryParams, function (qp) {
-						prmsObj[qp.name] = qp.value;
-					});
+				if (usePost === true) type = 'POST';
+				if (type == 'GET' || type == 'DELETE') {
+				    var prmsArr = [];
+				    helper.forEach(queryParams, function (qp) {
+				        prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
+				    });
+				    queryString = prmsArr.join('&');
+				    uri += '?' + queryString;
+				} else {
+				    var prmsObj = { };
+				    helper.forEach(queryParams, function (qp) {
+				        prmsObj[qp.name]= qp.value;
+				        });
 					d = this.serializationService.serialize(prmsObj);
 					queryString = d;
-					type = 'POST';
-				} else {
-					var prmsArr = [];
-					helper.forEach(queryParams, function (qp) {
-						prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
-					});
-					queryString = prmsArr.join('&');
-					uri += '?' + queryString;
-					type = 'GET';
 				}
 				var hash = createHash(queryString);
 				var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
@@ -10002,10 +9999,11 @@
 				var saveData = this.serializationService.serialize(savePackage);
 				var hash = createHash(saveData);
 				var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': saveData.length };
+				var type = options.method || 'POST';
 				helper.extend(headers, options.headers);
 				this.ajaxProvider.doAjax(
 					uri,
-					'POST', this.dataType, this.contentType, saveData, async, timeout, extra, headers,
+					type, this.dataType, this.contentType, saveData, async, timeout, extra, headers,
 					function (result, headerGetter, xhr) {
 						// deserialize returned data (if deserializable).
 						try {

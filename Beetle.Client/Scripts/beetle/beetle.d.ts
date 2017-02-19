@@ -454,6 +454,7 @@ declare module beetle {
 	interface ServiceQueryOptions {
 		handleUnmappedProperties?: boolean;
 		usePost?: boolean;
+		method?: string;
 		dataType?: string;
 		contentType?: string;
 		async?: boolean;
