@@ -31,6 +31,24 @@ namespace Beetle.Server {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ContextHandler{TContext}"/> class.
+        /// </summary>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        protected ContextHandler(IQueryHandler<IQueryable> queryableHandler)
+            : base(queryableHandler) {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContextHandler{TContext}"/> class.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="queryableHandler">The queryable handler.</param>
+        protected ContextHandler(TContext context, IQueryHandler<IQueryable> queryableHandler)
+            : base(queryableHandler) {
+            Context = context;
+        }
+
+        /// <summary>
         /// Initializes this instance.
         /// </summary>
         public override void Initialize() {
@@ -123,7 +141,7 @@ namespace Beetle.Server {
         /// <returns></returns>
         public virtual ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters,
                                                     ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service) {
-            return Helper.DefaultRequestProcessor(contentValue, queryParameters, actionContext, service, this, QueryableHandler, EnumerableHandler);
+            return Helper.DefaultRequestProcessor(contentValue, queryParameters, actionContext, service, this, actionConfig);
         }
 
         /// <summary>

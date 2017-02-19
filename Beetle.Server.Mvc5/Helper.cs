@@ -112,7 +112,7 @@ namespace Beetle.Server.Mvc {
             if (contextHandler != null)
                 return contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, actionConfig, service);
 
-            return Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service);
+            return Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, actionConfig);
         }
 
         /// <summary>

@@ -183,9 +183,10 @@ namespace Beetle.Server.WebApi {
         /// <param name="service">The service.</param>
         /// <returns></returns>
         public virtual IQueryable FixODataQuery(IQueryable queryable, HttpRequestMessage request, IBeetleService service = null) {
-            var queryableHandler = service != null && service.ContextHandler != null
-                ? service.ContextHandler.QueryableHandler
-                : QueryableHandler.Instance;
+            var config = BeetleConfig ?? (service != null ? service.BeetleConfig : null);
+            var queryableHandler = (config != null ? config.QueryableHandler : null)
+                                    ?? (service != null && service.ContextHandler != null ? service.ContextHandler.QueryableHandler : null)
+                                    ?? QueryableHandler.Instance;
 
             // get OData parameters
             var queryParams = request.GetQueryNameValuePairs().ToList();

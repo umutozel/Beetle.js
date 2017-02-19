@@ -67,7 +67,7 @@ namespace Beetle.Server.WebApi {
         /// <returns></returns>
         /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
-                                                     bool forbidBeetleQueryParams = false, BeetleConfig actionConfig = null, IBeetleService service = null) {
+                                                   bool forbidBeetleQueryParams = false, BeetleConfig actionConfig = null, IBeetleService service = null) {
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
                 if (!actionContext.CheckRequestHash.HasValue)
@@ -94,7 +94,7 @@ namespace Beetle.Server.WebApi {
             // allow context handler to process the value
             var processResult = contextHandler != null 
                 ? contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, actionConfig, service) 
-                : Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service);
+                : Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, actionConfig);
 
             if (processResult.InlineCount == null && inlineCountParam == "allpages") {
                 object inlineCount;

@@ -10,7 +10,6 @@ namespace Beetle.Server {
     /// Applies beetle query parameters to query.
     /// </summary>
     public class QueryableHandler : IQueryHandler<IQueryable> {
-        private static IQueryHandler<IQueryable> _defaultInstance;
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>(() => new QueryableHandler());
 
         /// <summary>
@@ -581,8 +580,7 @@ namespace Beetle.Server {
         /// The instance.
         /// </value>
         public static IQueryHandler<IQueryable> Instance {
-            get { return _defaultInstance ?? _instance.Value; }
-            set { _defaultInstance = value; }
+            get { return _instance.Value; }
         }
     }
 }

@@ -339,19 +339,7 @@ namespace Beetle.Server {
 				})
 				.ToList();
 		}
-
-		/// <summary>
-		/// Default implementation for request process.
-		/// </summary>
-		/// <param name="contentValue">The content value.</param>
-		/// <param name="beetlePrms">The beetle PRMS.</param>
-		/// <param name="actionContext">The action context.</param>
-		/// <param name="service">The service.</param>
-		/// <returns></returns>
-		public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext, IBeetleService service) {
-			return DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, QueryableHandler.Instance, EnumerableHandler.Instance);
-		}
-
+		
 		/// <summary>
 		/// Default implementation for request process.
 		/// </summary>
@@ -360,20 +348,31 @@ namespace Beetle.Server {
 		/// <param name="actionContext">The action context.</param>
 		/// <param name="service">The service.</param>
 		/// <param name="contextHandler">The context handler.</param>
-		/// <param name="queryableHandler">The queryable handler.</param>
-		/// <param name="enumerableHandler">The enumerable handler.</param>
+		/// <param name="actionConfig">The action config (if specified).</param>
 		/// <returns></returns>
 		public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
 															IBeetleService service, IContextHandler contextHandler,
-															IQueryHandler<IQueryable> queryableHandler, IContentHandler<IEnumerable> enumerableHandler) {
+															BeetleConfig actionConfig) {
+			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
+
 			var queryable = contentValue as IQueryable;
-			if (queryable != null)
+			if (queryable != null) {
+				var queryableHandler = (config != null ? config.QueryableHandler : null)
+									?? (contextHandler != null ? contextHandler.QueryableHandler : null) 
+									?? QueryableHandler.Instance;
+
 				return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service, contextHandler);
+			}
 
 			if (!(contentValue is string)) {
 				var enumerable = contentValue as IEnumerable;
-				if (enumerable != null)
+				if (enumerable != null) {
+					var enumerableHandler = (config != null ? config.EnumerableHandler : null)
+										??  (contextHandler != null ? contextHandler.EnumerableHandler : null) 
+										??  EnumerableHandler.Instance;
+
 					return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service, contextHandler);
+				}
 			}
 
 			return new ProcessResult(actionContext) { Result = contentValue };

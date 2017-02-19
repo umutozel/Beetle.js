@@ -2,6 +2,8 @@
 using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json;
 using Beetle.Server.Json;
+using System.Linq;
+using System.Collections;
 
 namespace Beetle.Server {
 
@@ -99,5 +101,15 @@ namespace Beetle.Server {
         public JsonSerializerSettings JsonSerializerSettings {
             get { return _settings; }
         }
+
+        /// <summary>
+        /// Exclusive query handler instance.
+        /// </summary>
+        public IQueryHandler<IQueryable> QueryableHandler { get; set; }
+
+        /// <summary>
+        /// Exclusive enumerable handler instance.
+        /// </summary>
+        public IContentHandler<IEnumerable> EnumerableHandler { get; set; }
     }
 }
