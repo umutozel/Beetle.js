@@ -3166,7 +3166,6 @@
 						traditional: false,
 						data: data,
 						async: async,
-						timeout: timeout,
 						headers: headers,
 						success: function (result, status, xhr) {
 							xhr.onreadystatechange = null;
@@ -3183,6 +3182,8 @@
 							errorCallback(that.createError(xhr));
 						}
 					};
+					if (async !== false)
+					    o.timeout = timeout;
 					if (extra != null)
 						$.extend(o, extra);
 					if (o.cache == null) o.cache = false;
@@ -3257,7 +3258,8 @@
 
 					xhr.setRequestHeader("Accept", "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml");
 					xhr.setRequestHeader("Content-Type", contentType);
-					xhr.timeout = timeout;
+					if (async !== false)
+					    xhr.timeout = timeout;
 
 					if (headers) {
 						for (var p in headers) {
@@ -3300,7 +3302,10 @@
 				var proto = ctor.prototype;
 
 				proto.doAjax = function (uri, type, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-					type = type.toUpperCase();
+				    if (async === false)
+				        throw helper.createError(i18N.syncNotSupported, [this.name]);
+
+				    type = type.toUpperCase();
 
 					var reURLInformation = new RegExp([
 						'^(https?:)//', // protocol
@@ -4340,10 +4345,10 @@
 							var exps = expr.type == 'Compound' ? expr.body : [expr];
 							var alias;
 							if (exps[0].operator == '=>') {
-							    alias = {};
-							    alias.alias = exps[0].left.name;
-							    queryContext.aliases = [alias];
-							    exps[0] = exps[0].right;
+								alias = {};
+								alias.alias = exps[0].left.name;
+								queryContext.aliases = [alias];
+								exps[0] = exps[0].right;
 							}
 							for (var i = 0; i < exps.length; i++) {
 								var isDesc = false;
@@ -4359,15 +4364,15 @@
 								isDesc = isDesc != this.isDesc;
 								var comparer = (function (e, desc) {
 									return function (object1, object2) {
-									    var f = helper.jsepToFunction(e, queryContext);
-									    if (alias) alias.value = object1;
+										var f = helper.jsepToFunction(e, queryContext);
+										if (alias) alias.value = object1;
 										var value1 = f(object1);
 										if (alias) alias.value = object2;
 										var value2 = f(object2);
 
 										if (typeof value1 === "string" && typeof value2 === "string") {
-										    var cmp = value1.localeCompare(value2);
-										    return desc ? (cmp * -1) : cmp;
+											var cmp = value1.localeCompare(value2);
+											return desc ? (cmp * -1) : cmp;
 										}
 
 										if (value1 == value2)
