@@ -15,16 +15,13 @@ using EntityType = System.Data.Entity.Core.Metadata.Edm.EntityType;
 
 namespace Beetle.Server.EntityFramework {
 
-    /// <summary>
-    /// Entity Framework ORM context handler.
-    /// </summary>
-    /// <typeparam name="TContext">The type of the context.</typeparam>
     public class EFContextHandler<TContext> : DbContextHandler<TContext> {
 
         #region Fields, Properties
 
         private DbContext _dbContext;
         private IObjectContextAdapter _objectContextAdapter;
+
         private ObjectContext _objectContext;
         protected ObjectContext ObjectContext {
             get {
@@ -34,7 +31,7 @@ namespace Beetle.Server.EntityFramework {
                 }
             }
         }
-        // ReSharper disable once StaticMemberInGenericType
+
         private static ItemCollection _itemCollection;
         protected ItemCollection ItemCollection {
             get {
@@ -44,7 +41,7 @@ namespace Beetle.Server.EntityFramework {
                 }
             }
         }
-        // ReSharper disable once StaticMemberInGenericType
+
         private static IEnumerable<EntityType> _entityTypes;
         protected IEnumerable<EntityType> EntityTypes {
             get {
@@ -54,7 +51,7 @@ namespace Beetle.Server.EntityFramework {
                 }
             }
         }
-        // ReSharper disable once StaticMemberInGenericType
+
         private static IEnumerable<EntitySetBase> _entitySets;
         protected IEnumerable<EntitySetBase> EntitySets {
             get {
@@ -64,7 +61,7 @@ namespace Beetle.Server.EntityFramework {
                 }
             }
         }
-        // ReSharper disable once StaticMemberInGenericType
+
         private static ObjectItemCollection _objectItemCollection;
         protected ObjectItemCollection ObjectItemCollection {
             get {
@@ -77,7 +74,7 @@ namespace Beetle.Server.EntityFramework {
                 }
             }
         }
-        // ReSharper disable once StaticMemberInGenericType
+
         private static List<EntityType> _objectEntityTypes;
         protected List<EntityType> ObjectEntityTypes {
             get {
@@ -94,41 +91,22 @@ namespace Beetle.Server.EntityFramework {
 
         #endregion
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
-        /// </summary>
         public EFContextHandler()
             : this(EFQueryHandler.Instance) {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
         public EFContextHandler(TContext context)
             : this(context, EFQueryHandler.Instance) {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
-        /// </summary>
-        /// <param name="queryableHandler">The queryable handler.</param>
         public EFContextHandler(IQueryHandler<IQueryable> queryableHandler)
             : base(queryableHandler) {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EFContextHandler{TContext}"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="queryableHandler">The queryable handler.</param>
         public EFContextHandler(TContext context, IQueryHandler<IQueryable> queryableHandler)
             : base(context, queryableHandler) {
         }
 
-        /// <summary>
-        /// Initializes this instance.
-        /// </summary>
         public override void Initialize() {
             base.Initialize();
 
@@ -151,14 +129,7 @@ namespace Beetle.Server.EntityFramework {
             }
         }
 
-        // ReSharper disable once StaticMemberInGenericType
         private static Metadata _metadata;
-        /// <summary>
-        /// Return meta-data about data structure.
-        /// </summary>
-        /// <returns>
-        /// Meta-data object.
-        /// </returns>
         public override Metadata Metadata() {
             if (_metadata != null) return _metadata;
             lock (Lockers.MetadataLocker) {
@@ -167,11 +138,6 @@ namespace Beetle.Server.EntityFramework {
             }
         }
 
-        /// <summary>
-        /// Creates the type by name.
-        /// </summary>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns></returns>
         public override object CreateType(string typeName) {
             if (ObjectEntityTypes != null) {
                 var oType = ObjectEntityTypes.FirstOrDefault(x => x.Name == typeName);
@@ -184,11 +150,6 @@ namespace Beetle.Server.EntityFramework {
             return base.CreateType(typeName);
         }
 
-        /// <summary>
-        /// Creates the queryable.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <returns></returns>
         public override IQueryable<TEntity> CreateQueryable<TEntity>() {
             if (_dbContext != null)
                 return _dbContext.Set<TEntity>();
@@ -198,12 +159,6 @@ namespace Beetle.Server.EntityFramework {
             return query.OfType<TEntity>();
         }
 
-        /// <summary>
-        /// Merges the entities.
-        /// </summary>
-        /// <param name="entities">The entities.</param>
-        /// <param name="unmappedEntities">The unmapped entities.</param>
-        /// <returns>Merges entities.</returns>
         public override IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, out IEnumerable<EntityBag> unmappedEntities) {
             if (entities == null)
                 throw new ArgumentNullException("entities");
@@ -287,13 +242,6 @@ namespace Beetle.Server.EntityFramework {
             return mergeList.Select(m => m.Value);
         }
 
-        /// <summary>
-        /// Populates complex type original values to OriginalValueRecord.
-        /// </summary>
-        /// <param name="originalValues">The original values.</param>
-        /// <param name="propertyName">Name of the property.</param>
-        /// <param name="originalValue">The original value.</param>
-        /// <param name="complexType">ComplexType.</param>
         private static void PopulateComplexType(OriginalValueRecord originalValues, string propertyName, object originalValue, ComplexType complexType) {
             var ordinal = originalValues.GetOrdinal(propertyName);
             originalValues = (OriginalValueRecord) originalValues.GetValue(ordinal);
@@ -310,15 +258,6 @@ namespace Beetle.Server.EntityFramework {
             }
         }
 
-        /// <summary>
-        /// Saves the changes.
-        /// </summary>
-        /// <param name="entityBags">The entity bags.</param>
-        /// <param name="saveContext">The save context.</param>
-        /// <returns>
-        /// Save result.
-        /// </returns>
-        /// <exception cref="EntityValidationException"></exception>
         public override async Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = MergeEntities(entityBags, out unmappeds);
@@ -360,11 +299,6 @@ namespace Beetle.Server.EntityFramework {
             return saveResult;
         }
 
-        /// <summary>
-        /// Finds the entity set.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
         private EntitySetBase FindEntitySet(EdmType entityType) {
             while (entityType != null) {
                 var set = EntitySets.FirstOrDefault(es => es.ElementType == entityType);
@@ -374,11 +308,6 @@ namespace Beetle.Server.EntityFramework {
             return null;
         }
 
-        /// <summary>
-        /// Finds the entity set.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
         private EntitySetBase FindEntitySet(Type entityType) {
             while (entityType != null) {
                 var set = EntitySets.FirstOrDefault(es => es.ElementType.Name == entityType.Name);
@@ -388,34 +317,16 @@ namespace Beetle.Server.EntityFramework {
             return null;
         }
 
-        /// <summary>
-        /// Gets the connection.
-        /// </summary>
-        /// <value>
-        /// The connection.
-        /// </value>
         public override IDbConnection Connection {
             get {
                 return ((EntityConnection)ObjectContext.Connection).StoreConnection;
             }
         }
 
-        /// <summary>
-        /// Gets the model namespace.
-        /// </summary>
-        /// <value>
-        /// The model namespace.
-        /// </value>
         public override string ModelNamespace {
             get { return typeof(TContext).Namespace; }
         }
 
-        /// <summary>
-        /// Gets the model assembly.
-        /// </summary>
-        /// <value>
-        /// The model assembly.
-        /// </value>
         public override string ModelAssembly {
             get { return typeof(TContext).Assembly.GetName().Name; }
         }

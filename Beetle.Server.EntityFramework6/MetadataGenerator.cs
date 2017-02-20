@@ -20,20 +20,9 @@ using NavigationProperty = System.Data.Entity.Core.Metadata.Edm.NavigationProper
 
 namespace Beetle.Server.EntityFramework {
 
-    /// <summary>
-    /// Generates meta-data using .edmx information.
-    /// </summary>
     public static class MetadataGenerator {
         private const string StoreGeneratedPatternAttributeName = @"http://schemas.microsoft.com/ado/2009/02/edm/annotation:StoreGeneratedPattern";
 
-        /// <summary>
-        /// Generates meta-data for given item collection.
-        /// Fetches CLR models from given assembly.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="modelAssembly">The model assembly.</param>
-        /// <param name="modelName">The model name.</param>
-        /// <returns></returns>
         public static Metadata Generate(DbContext context, Assembly modelAssembly, string modelName = null) {
             var objectContext = ((IObjectContextAdapter) context).ObjectContext;
             var metadataWorkspace = objectContext.MetadataWorkspace;
@@ -43,13 +32,6 @@ namespace Beetle.Server.EntityFramework {
             return Generate(metadataWorkspace, itemCollection, objectItemCollection, modelAssembly, modelName);
         }
 
-        /// <summary>
-        /// Generates meta-data for given assembly.
-        /// Fetches CLR models from given assembly.
-        /// </summary>
-        /// <param name="modelAssembly">The model assembly.</param>
-        /// <param name="modelName">The model name.</param>
-        /// <returns></returns>
         public static Metadata Generate(Assembly modelAssembly, string modelName) {
             var conceptualResource = modelAssembly.GetManifestResourceStream(modelName + ".csdl");
             Debug.Assert(conceptualResource != null, "conceptualResource != null");
@@ -77,16 +59,6 @@ namespace Beetle.Server.EntityFramework {
             return Generate(metadataWorkspace, itemCollection, objectItemCollection, modelAssembly, modelName);
         }
 
-        /// <summary>
-        /// Generates meta-data for given item collection.
-        /// Fetches CLR models from object item collection.
-        /// </summary>
-        /// <param name="metadataWorkspace">The meta-data workspace.</param>
-        /// <param name="itemCollection">The item collection.</param>
-        /// <param name="objectItemCollection">The object item collection.</param>
-        /// <param name="assembly">The assembly.</param>
-        /// <param name="modelName">The model name.</param>
-        /// <returns></returns>
         public static Metadata Generate(MetadataWorkspace metadataWorkspace, ItemCollection itemCollection,
                                         ObjectItemCollection objectItemCollection, Assembly assembly, string modelName = null) {
             var container = itemCollection.OfType<EntityContainer>().First();
@@ -192,16 +164,6 @@ namespace Beetle.Server.EntityFramework {
             return Mapping(entityResources, enumResources, itemCollection, container);
         }
 
-        /// <summary>
-        /// Generates mappings.
-        /// </summary>
-        /// <param name="entityResources">The entity resources.</param>
-        /// <param name="enumResources">The enum resources.</param>
-        /// <param name="itemCollection">The item collection.</param>
-        /// <param name="container">The entity container.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">itemCollection</exception>
-        /// <exception cref="BeetleException">Unknown data type</exception>
         private static Metadata Mapping(IEnumerable<EntityResource> entityResources, IEnumerable<EnumResource> enumResources, IEnumerable<GlobalItem> itemCollection, EntityContainer container) {
             if (itemCollection == null)
                 throw new ArgumentNullException("itemCollection");
@@ -377,12 +339,6 @@ namespace Beetle.Server.EntityFramework {
             return retVal;
         }
 
-        /// <summary>
-        /// Gets the entity set.
-        /// </summary>
-        /// <param name="container">The entity container.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
         private static EntitySetBase GetEntitySet(EntityContainer container, EntityType entityType) {
             var baseType = entityType;
             while (baseType != null && baseType.BaseType != null) {
@@ -391,11 +347,6 @@ namespace Beetle.Server.EntityFramework {
             return container.BaseEntitySets.First(set => set.ElementType == baseType);
         }
 
-        /// <summary>
-        /// Gets the length of the max string.
-        /// </summary>
-        /// <param name="edmProperty">The EDM property.</param>
-        /// <returns></returns>
         private static int? GetMaxStringLength(EdmProperty edmProperty) {
             foreach (var facet in edmProperty.TypeUsage.Facets)
                 if (facet.Name == "MaxLength" && facet.Value != null && facet.IsUnbounded == false)
@@ -403,11 +354,6 @@ namespace Beetle.Server.EntityFramework {
             return null;
         }
 
-        /// <summary>
-        /// Gets the precision.
-        /// </summary>
-        /// <param name="edmProperty">The EDM property.</param>
-        /// <returns></returns>
         private static int? GetPrecision(EdmProperty edmProperty) {
             foreach (var facet in edmProperty.TypeUsage.Facets)
                 if (facet.Name == "Precision" && facet.Value != null && facet.IsUnbounded == false)
@@ -415,11 +361,6 @@ namespace Beetle.Server.EntityFramework {
             return null;
         }
 
-        /// <summary>
-        /// Gets the scale.
-        /// </summary>
-        /// <param name="edmProperty">The EDM property.</param>
-        /// <returns></returns>
         private static int? GetScale(EdmProperty edmProperty) {
             foreach (var facet in edmProperty.TypeUsage.Facets)
                 if (facet.Name == "Scale" && facet.Value != null && facet.IsUnbounded == false)
@@ -427,11 +368,6 @@ namespace Beetle.Server.EntityFramework {
             return null;
         }
 
-        /// <summary>
-        /// Determines whether given property is concurrency check property.
-        /// </summary>
-        /// <param name="edmProperty">The edm property.</param>
-        /// <returns></returns>
         private static bool? IsConcurrencyProperty(EdmProperty edmProperty) {
             foreach (var facet in edmProperty.TypeUsage.Facets)
                 if (facet.Name == "ConcurrencyMode" && facet.Value != null && facet.IsUnbounded == false)
@@ -439,11 +375,6 @@ namespace Beetle.Server.EntityFramework {
             return null;
         }
 
-        /// <summary>
-        /// Gets the CLR type for given EDM type.
-        /// </summary>
-        /// <param name="edmType">Type of the EDM.</param>
-        /// <returns></returns>
         private static Type UnderlyingClrType(EdmType edmType) {
             var primitiveType = edmType as PrimitiveType;
             if (primitiveType != null)
@@ -452,7 +383,6 @@ namespace Beetle.Server.EntityFramework {
         }
     }
 
-    // to hold required entity information
     internal class EntityResource {
         public EntityType Entity { get; set; }
         public StructuralType Type { get; set; }
