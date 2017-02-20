@@ -17,11 +17,6 @@ namespace Beetle.Server.Mvc {
         private readonly BeetleConfig _beetleConfig;
         private bool? _checkRequestHash;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute" /> class.
-        /// </summary>
-        /// <param name="configType">Type of the config.</param>
-        /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
         public BeetleActionFilterAttribute(Type configType = null) {
             if (configType != null) {
                 _beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
@@ -30,18 +25,10 @@ namespace Beetle.Server.Mvc {
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute"/> class.
-        /// </summary>
-        /// <param name="config">The configuration.</param>
         public BeetleActionFilterAttribute(BeetleConfig config) {
             _beetleConfig = config;
         }
 
-        /// <summary>
-        /// Called by the ASP.NET MVC framework before the action method executes.
-        /// </summary>
-        /// <param name="filterContext">The filter context.</param>
         public override void OnActionExecuting(ActionExecutingContext filterContext) {
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
@@ -94,10 +81,6 @@ namespace Beetle.Server.Mvc {
             filterContext.Result = HandleResponse(filterContext, processResult, service);
         }
 
-        /// <summary>
-        /// Called by the ASP.NET MVC framework after the action method executed.
-        /// </summary>
-        /// <param name="filterContext">The filter context.</param>
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
             base.OnActionExecuted(filterContext);
 
@@ -119,78 +102,33 @@ namespace Beetle.Server.Mvc {
             filterContext.Result = HandleResponse(filterContext, processResult, service);
         }
 
-        /// <summary>
-        /// Handles the request.
-        /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        /// <param name="service">The beetle service.</param>
-        /// <param name="queryString">The query string.</param>
-        /// <param name="queryParams">The query parameters.</param>
         protected virtual void GetParameters(ActionExecutingContext filterContext, IBeetleService service, out string queryString, out NameValueCollection queryParams) {
             var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
             Helper.GetParameters(out queryString, out queryParams, config, filterContext.ActionDescriptor.GetParameters(), filterContext.ActionParameters);
         }
 
-        /// <summary>
-        /// Processes the request.
-        /// </summary>
-        /// <param name="contentValue">The content value.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="service">The beetle service.</param>
-        /// <returns></returns>
         protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service) {
             return service != null
                 ? service.ProcessRequest(contentValue, actionContext, _beetleConfig)
                 : Helper.ProcessRequest(contentValue, actionContext, _beetleConfig);
         }
 
-        /// <summary>
-        /// Handles the response.
-        /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        /// <param name="result">The process result.</param>
-        /// <param name="service">The beetle service.</param>
-        /// <returns></returns>
         protected virtual ActionResult HandleResponse(ControllerContext filterContext, ProcessResult result, IBeetleService service) {
             var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
             return Helper.HandleResponse(result, config);
         }
 
-        /// <summary>
-        /// Gets the beetle config.
-        /// </summary>
-        /// <value>
-        /// The beetle config.
-        /// </value>
         protected BeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 
-        /// <summary>
-        /// Gets or sets the maximum result count.
-        /// </summary>
-        /// <value>
-        /// The maximum result count.
-        /// </value>
         public int MaxResultCount { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [check request hash].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [check request hash]; otherwise, <c>false</c>.
-        /// </value>
         public bool CheckRequestHash {
             get { return _checkRequestHash.GetValueOrDefault(); }
             set { _checkRequestHash = value; }
         }
 
-        /// <summary>
-        /// Gets the check request hash nullable.
-        /// </summary>
-        /// <value>
-        /// The check request hash nullable.
-        /// </value>
         internal bool? CheckRequestHashNullable {
             get { return _checkRequestHash; }
         }

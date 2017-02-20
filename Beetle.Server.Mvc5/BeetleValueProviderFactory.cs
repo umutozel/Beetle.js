@@ -73,6 +73,4 @@ namespace Beetle.Server.Mvc {
             return (string.IsNullOrEmpty(prefix)) ? propertyName : prefix + "." + propertyName;
         }
     }
-
-
 }

@@ -12,22 +12,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Beetle.Server.Mvc {
 
-    /// <summary>
-    /// Common helper methods for WebApi.
-    /// </summary>
     public static class Helper {
         private static readonly Lazy<JavaScriptSerializer> _javaScriptSerializer = new Lazy<JavaScriptSerializer>();
 
-        /// <summary>
-        /// Handles the request.
-        /// </summary>
-        /// <param name="queryString">The query string.</param>
-        /// <param name="queryParams">The query parameters.</param>
-        /// <param name="config">The beetle configuration.</param>
-        /// <param name="parameterDescriptors">The action parameter descriptors.</param>
-        /// <param name="parameters">The action parameters.</param>
-        /// <param name="request">The request.</param>
-        /// <exception cref="BeetleException">Action must have only one parameter (JsonObject, object or dynamic) to be able called with POST.</exception>
         public static void GetParameters(out string queryString, out NameValueCollection queryParams,
                                            BeetleConfig config = null,
                                            ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
@@ -82,15 +69,6 @@ namespace Beetle.Server.Mvc {
             }
         }
 
-        /// <summary>
-        /// Processes the IQueryable.
-        /// </summary>
-        /// <param name="contentValue">The content value.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="actionConfig">The action config (if specified).</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service = null) {
             // beetle should be used for all content types except mvc actions results. so we check only if content is not an mvc action result
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
@@ -115,13 +93,6 @@ namespace Beetle.Server.Mvc {
             return Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, actionConfig);
         }
 
-        /// <summary>
-        /// Handles the response.
-        /// </summary>
-        /// <param name="processResult">The process result.</param>
-        /// <param name="actionConfig">The action config (if specified).</param>
-        /// <param name="response">The response.</param>
-        /// <returns></returns>
         public static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig actionConfig = null, HttpResponse response = null) {
             var result = processResult.Result;
 
@@ -151,11 +122,6 @@ namespace Beetle.Server.Mvc {
             };
         }
 
-        /// <summary>
-        /// Checks the request hash.
-        /// </summary>
-        /// <param name="queryString">The query string.</param>
-        /// <exception cref="BeetleException"></exception>
         public static void CheckRequestHash(string queryString) {
             var request = HttpContext.Current.Request;
 
