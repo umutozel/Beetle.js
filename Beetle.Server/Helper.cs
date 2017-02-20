@@ -12,9 +12,9 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic;
 using System.Reflection;
-using Beetle.Server.Meta;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Beetle.Server.Meta;
 using Beetle.Server.Properties;
 using Validator = System.ComponentModel.DataAnnotations.Validator;
 using ValidatorType = System.ComponentModel.DataAnnotations.DataType;
@@ -22,30 +22,17 @@ using DataType = Beetle.Server.Meta.DataType;
 
 namespace Beetle.Server {
 
-	/// <summary>
-	/// Common helper methods.
-	/// </summary>
 	public static class Helper {
 		private const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Public;
 		private static readonly object _pluralizationServicesLocker = new object();
 		private static readonly Dictionary<CultureInfo, PluralizationService> _pluralizationServices = new Dictionary<CultureInfo, PluralizationService>();
 
-		/// <summary>
-		/// Pluralizes the specified word.
-		/// </summary>
-		/// <param name="word">The word.</param>
-		/// <param name="culture">The culture.</param>
-		/// <returns></returns>
+		#region General
+
 		public static string Pluralize(string word, string culture = "en-US") {
 			return Pluralize(word, CultureInfo.GetCultureInfo(culture));
 		}
 
-		/// <summary>
-		/// Pluralizes the specified word.
-		/// </summary>
-		/// <param name="word">The word.</param>
-		/// <param name="culture">The culture.</param>
-		/// <returns></returns>
 		public static string Pluralize(string word, CultureInfo culture) {
 			lock (_pluralizationServicesLocker) {
 				if (!_pluralizationServices.ContainsKey(culture))
@@ -54,22 +41,10 @@ namespace Beetle.Server {
 			}
 		}
 
-		/// <summary>
-		/// Singularizes the specified word.
-		/// </summary>
-		/// <param name="word">The word.</param>
-		/// <param name="culture">The culture.</param>
-		/// <returns></returns>
 		public static string Singularize(string word, string culture = "en-US") {
 			return Singularize(word, CultureInfo.GetCultureInfo(culture));
 		}
 
-		/// <summary>
-		/// Singularizes the specified word.
-		/// </summary>
-		/// <param name="word">The word.</param>
-		/// <param name="culture">The culture.</param>
-		/// <returns></returns>
 		public static string Singularize(string word, CultureInfo culture) {
 			lock (_pluralizationServicesLocker) {
 				if (!_pluralizationServices.ContainsKey(culture))
@@ -78,16 +53,6 @@ namespace Beetle.Server {
 			}
 		}
 
-		/// <summary>
-		/// Gets the type of the property.
-		/// </summary>
-		/// <param name="type">The type.</param>
-		/// <param name="propertyName">Name of the property.</param>
-		/// <returns></returns>
-		/// <exception cref="System.ArgumentNullException">obj
-		/// or
-		/// propertyName</exception>
-		/// <exception cref="BeetleException"></exception>
 		public static Type GetPropertyType(Type type, string propertyName) {
 			var property = type.GetProperty(propertyName, Binding);
 			if (property != null) return property.PropertyType;
@@ -98,12 +63,6 @@ namespace Beetle.Server {
 			return null;
 		}
 
-		/// <summary>
-		/// Gets the property value.
-		/// </summary>
-		/// <param name="obj">The object.</param>
-		/// <param name="propertyName">Name of the property.</param>
-		/// <returns></returns>
 		public static object GetPropertyValue(object obj, string propertyName) {
 			if (obj == null) throw new ArgumentNullException("obj");
 			if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentNullException("propertyName");
@@ -119,17 +78,6 @@ namespace Beetle.Server {
 			throw new BeetleException(string.Format(Resources.CannotFindPublicInstanceFieldOrProperty, propertyName));
 		}
 
-		/// <summary>
-		/// Sets the property value.
-		/// </summary>
-		/// <param name="obj">The object.</param>
-		/// <param name="propertyName">Name of the property.</param>
-		/// <param name="value">The value.</param>
-		/// <exception cref="System.ArgumentNullException">obj
-		/// or
-		/// propertyName</exception>
-		/// <exception cref="BeetleException">
-		/// </exception>
 		public static void SetPropertyValue(object obj, string propertyName, object value) {
 			if (obj == null) throw new ArgumentNullException("obj");
 			if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentNullException("propertyName");
@@ -152,90 +100,48 @@ namespace Beetle.Server {
 				throw new BeetleException(string.Format(Resources.CannotFindPublicInstanceFieldOrProperty, propertyName));
 		}
 
-		/// <summary>
-		/// Gets the generated values comparing Entity-ClientEntity for each EntityBag.
-		/// </summary>
-		/// <param name="entityBags">The entity bags.</param>
-		/// <param name="metadata">The metadata.</param>
-		/// <returns>
-		/// Generated-modified values for EntityBags.
-		/// </returns>
-		public static IEnumerable<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags, Metadata metadata) {
-			var generatedValues = new List<Tuple<GeneratedValue, bool>>();
-			// populate auto-generated values
-			foreach (var entityBagTmp in entityBags.Where(el => el.EntityState == EntityState.Added || el.EntityState == EntityState.Modified)) {
-				var entityBag = entityBagTmp;
-				var entityType = entityBag.EntityType;
-				if (entityType == null) {
-					if (metadata == null)
-						throw new BeetleException(Resources.CannotGetGeneratedValues);
+		#endregion
 
-					var type = entityBag.Entity.GetType();
-					var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
-					entityType = metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
-					if (entityType == null)
-						throw new BeetleException(string.Format(Resources.CannotFindMetadata, entityTypeName));
-				}
+		#region Request-Response Operations
 
-				var changedValues = GetGeneratedValues(entityBag.ClientEntity, entityBag.Entity, entityType);
-				if (changedValues != null) {
-					foreach (var changedValue in changedValues) {
-						var isKeyPart = entityType.Keys.Contains(changedValue.Key);
-						generatedValues.Add(new Tuple<GeneratedValue, bool>(new GeneratedValue(entityBag.Index, changedValue.Key, changedValue.Value), isKeyPart));
-					}
-				}
-			}
+		public static List<KeyValuePair<string, string>> GetBeetleParameters(NameValueCollection parameters) {
+			if (parameters == null) return null;
 
-			return generatedValues.OrderByDescending(x => x.Item2).Select(x => x.Item1);
+			return parameters
+				.OfType<string>()
+				.Where(k => !string.IsNullOrWhiteSpace(k) && k.StartsWith("!e"))
+				.Select(k => {
+					var v = parameters[k];
+					var i = v.IndexOf(':');
+					var exp = v.Substring(0, i);
+					var args = v.Substring(i + 1);
+					return new KeyValuePair<string, string>(exp, args);
+				})
+				.ToList();
 		}
 
-		/// <summary>
-		/// Gets the changed values.
-		/// </summary>
-		/// <param name="clientEntity">The client entity.</param>
-		/// <param name="entity">The entity.</param>
-		/// <param name="entityType">Type of the entity.</param>
-		/// <returns></returns>
-		public static IEnumerable<KeyValuePair<string, object>> GetGeneratedValues(object clientEntity, object entity, EntityType entityType) {
-			if (clientEntity == null)
-				throw new ArgumentNullException("clientEntity");
-			if (entity == null)
-				throw new ArgumentNullException("entity");
-			if (entityType == null)
-				throw new ArgumentNullException("entityType");
-			if (entity.GetType() != clientEntity.GetType())
-				throw new BeetleException(Resources.EntityAndClientEntityMustBeSameTypeToCompare);
+		public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
+													IBeetleService service, IContextHandler contextHandler,
+													BeetleConfig actionConfig) {
+			var queryable = contentValue as IQueryable;
+			if (queryable != null) {
+				var queryableHandler = GetQueryHandler(actionConfig, service);
 
-			var retVal = new List<KeyValuePair<string, object>>();
-
-			// detect changed values after the client post.
-			foreach (var property in entityType.AllDataProperties) {
-				var oldValue = GetPropertyValue(clientEntity, property.Name);
-				var newValue = GetPropertyValue(entity, property.Name);
-				if (!Equals(oldValue, newValue))
-					retVal.Add(new KeyValuePair<string, object>(property.Name, newValue));
-			}
-			foreach (var complexProperty in entityType.AllComplexProperties) {
-				var oldValue = GetPropertyValue(clientEntity, complexProperty.Name);
-				var newValue = GetPropertyValue(entity, complexProperty.Name);
-
-				var generatedValues = GetGeneratedValues(oldValue, newValue, complexProperty.ComplexType);
-				foreach (var generatedValue in generatedValues)
-					retVal.Add(new KeyValuePair<string, object>(complexProperty.Name + "." + generatedValue.Key, generatedValue.Value));
+				return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service, contextHandler);
 			}
 
-			return retVal;
+			if (!(contentValue is string)) {
+				var enumerable = contentValue as IEnumerable;
+				if (enumerable != null) {
+					var enumerableHandler = GetEnumerableHandler(actionConfig, service);
+
+					return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service, contextHandler);
+				}
+			}
+
+			return new ProcessResult(actionContext) { Result = contentValue };
 		}
 
-		/// <summary>
-		/// Resolves the entities.
-		/// </summary>
-		/// <param name="bundle">The bundle.</param>
-		/// <param name="config">The config.</param>
-		/// <param name="metadata">The metadata.</param>
-		/// <param name="unknownEntities">The unknown entities.</param>
-		/// <returns></returns>
-		/// <exception cref="InvalidOperationException">Cannot find tracker info.</exception>
 		public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, BeetleConfig config, Metadata metadata, out IEnumerable<EntityBag> unknownEntities) {
 			var jsonSerializer = config.CreateSerializer();
 
@@ -283,12 +189,170 @@ namespace Beetle.Server {
 			return entities;
 		}
 
-		/// <summary>
-		/// Copies the values from serialized json object.
-		/// </summary>
-		/// <param name="source">The source.</param>
-		/// <param name="destination">The destination.</param>
-		/// <param name="config">The config.</param>
+		public static IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, Metadata metadata, out IEnumerable<EntityBag> unmappedEntities) {
+			if (entityBags == null)
+				throw new ArgumentNullException("entityBags");
+
+			var entityBagList = entityBags as IList<EntityBag> ?? entityBags.ToList();
+			var entityList = entityBagList.Where(eb => eb.EntityState != EntityState.Deleted && eb.EntityState != EntityState.Detached).Select(eb => eb.Entity).ToList();
+			var mergedBagList = new List<EntityBag>();
+			var unmappedEntityList = new List<EntityBag>();
+
+			foreach (var entityBag in entityBagList) {
+				if (entityBag.EntityState == EntityState.Deleted || entityBag.EntityState == EntityState.Detached)
+					continue;
+
+				var entity = entityBag.Entity;
+				var type = entity.GetType();
+				var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
+				if (entityBag.EntityType == null)
+					entityBag.EntityType = entityBag.EntityType ?? metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
+				var entityType = entityBag.EntityType;
+				if (entityType == null) {
+					unmappedEntityList.Add(entityBag);
+					continue;
+				}
+
+				foreach (var navigationProperty in entityType.AllNavigationProperties) {
+					var navigationType = GetPropertyType(type, navigationProperty.Name);
+					if (navigationType == null) continue;
+
+					if (navigationProperty.IsScalar == true) {
+						if (!navigationProperty.ForeignKeys.Any()) continue;
+
+						var navigationQuery = GetRelationQuery(entityList, entity, navigationType, entityType.Keys, navigationProperty.ForeignKeys);
+						if (navigationQuery == null) continue;
+
+						var navigationEntity = Enumerable.SingleOrDefault((dynamic)navigationQuery);
+						if (navigationEntity == null) continue;
+
+						SetPropertyValue(entity, navigationProperty.Name, navigationEntity);
+					}
+					else {
+						if (!navigationType.IsGenericType) continue;
+
+						var navigationValue = GetPropertyValue(entity, navigationProperty.Name);
+						if (navigationValue == null && !navigationType.IsInterface) {
+							navigationValue = Activator.CreateInstance(navigationType);
+							SetPropertyValue(entity, navigationProperty.Name, navigationValue);
+						}
+						if (navigationValue == null) continue;
+
+						var navigationQuery = GetRelationQuery(entityList, entity, navigationType.GenericTypeArguments.Single(),
+															   navigationProperty.ForeignKeys, entityType.Keys);
+						if (navigationQuery == null) continue;
+
+						var navigationEntities = Enumerable.ToList((dynamic)navigationQuery);
+						var containsMethod = navigationType.GetMethod("Contains");
+						var addMethod = navigationType.GetMethod("Add");
+						foreach (var navigationEntity in navigationEntities) {
+							if (containsMethod.Invoke(navigationValue, new object[] { navigationEntity }).Equals(false))
+								addMethod.Invoke(navigationValue, new object[] { navigationEntity });
+						}
+					}
+				}
+
+				mergedBagList.Add(entityBag);
+			}
+
+			unmappedEntities = unmappedEntityList;
+			return mergedBagList;
+		}
+
+		private static IQueryable GetRelationQuery(IEnumerable entities, object keyEntity, Type relationType, IReadOnlyList<string> keys, IReadOnlyList<string> foreignKeys) {
+			if (!keys.Any() || keys.Count != foreignKeys.Count) return null;
+
+			const string filter = "{0} == @{1}";
+			var ofTypeMethod = typeof(Queryable).GetMethod("OfType");
+			var navigationQuery = ofTypeMethod.MakeGenericMethod(relationType).Invoke(null, new object[] { entities.AsQueryable() }) as IQueryable;
+			var filters = new List<string>();
+			var parameters = new List<object>();
+
+			for (var i = 0; i < foreignKeys.Count; i++) {
+				var keyName = keys[i];
+				var foreignKeyName = foreignKeys[i];
+				var foreignKeyValue = GetPropertyValue(keyEntity, foreignKeyName);
+				if (foreignKeyValue == null) return null;
+
+				filters.Add(string.Format(filter, keyName, i));
+				parameters.Add(foreignKeyValue);
+			}
+
+			return navigationQuery.Where(string.Join(" && ", filters), parameters.ToArray());
+		}
+
+		public static List<EntityValidationResult> ValidateEntities(IEnumerable entities) {
+			var validationResults = new List<EntityValidationResult>();
+			foreach (var entity in entities) {
+				var results = new List<ValidationResult>();
+				var context = new ValidationContext(entity, null, null);
+				Validator.TryValidateObject(entity, context, results, true);
+				if (results.Any())
+					validationResults.Add(new EntityValidationResult(entity, results));
+			}
+			return validationResults;
+		}
+
+		public static IEnumerable<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags, Metadata metadata) {
+			var generatedValues = new List<Tuple<GeneratedValue, bool>>();
+			// populate auto-generated values
+			foreach (var entityBagTmp in entityBags.Where(el => el.EntityState == EntityState.Added || el.EntityState == EntityState.Modified)) {
+				var entityBag = entityBagTmp;
+				var entityType = entityBag.EntityType;
+				if (entityType == null) {
+					if (metadata == null)
+						throw new BeetleException(Resources.CannotGetGeneratedValues);
+
+					var type = entityBag.Entity.GetType();
+					var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
+					entityType = metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
+					if (entityType == null)
+						throw new BeetleException(string.Format(Resources.CannotFindMetadata, entityTypeName));
+				}
+
+				var changedValues = GetGeneratedValues(entityBag.ClientEntity, entityBag.Entity, entityType);
+				if (changedValues != null) {
+					foreach (var changedValue in changedValues) {
+						var isKeyPart = entityType.Keys.Contains(changedValue.Key);
+						generatedValues.Add(new Tuple<GeneratedValue, bool>(new GeneratedValue(entityBag.Index, changedValue.Key, changedValue.Value), isKeyPart));
+					}
+				}
+			}
+
+			return generatedValues.OrderByDescending(x => x.Item2).Select(x => x.Item1);
+		}
+
+		public static IEnumerable<KeyValuePair<string, object>> GetGeneratedValues(object clientEntity, object entity, EntityType entityType) {
+			if (clientEntity == null)
+				throw new ArgumentNullException("clientEntity");
+			if (entity == null)
+				throw new ArgumentNullException("entity");
+			if (entityType == null)
+				throw new ArgumentNullException("entityType");
+			if (entity.GetType() != clientEntity.GetType())
+				throw new BeetleException(Resources.EntityAndClientEntityMustBeSameTypeToCompare);
+
+			var retVal = new List<KeyValuePair<string, object>>();
+
+			// detect changed values after the client post.
+			foreach (var property in entityType.AllDataProperties) {
+				var oldValue = GetPropertyValue(clientEntity, property.Name);
+				var newValue = GetPropertyValue(entity, property.Name);
+				if (!Equals(oldValue, newValue))
+					retVal.Add(new KeyValuePair<string, object>(property.Name, newValue));
+			}
+			foreach (var complexProperty in entityType.AllComplexProperties) {
+				var oldValue = GetPropertyValue(clientEntity, complexProperty.Name);
+				var newValue = GetPropertyValue(entity, complexProperty.Name);
+
+				var generatedValues = GetGeneratedValues(oldValue, newValue, complexProperty.ComplexType);
+				foreach (var generatedValue in generatedValues)
+					retVal.Add(new KeyValuePair<string, object>(complexProperty.Name + "." + generatedValue.Key, generatedValue.Value));
+			}
+
+			return retVal;
+		}
+
 		public static void CopyValuesFromJson(string source, object destination, BeetleConfig config) {
 			if (string.IsNullOrEmpty(source)) return;
 			var obj = JsonConvert.DeserializeObject<JObject>(source, config.JsonSerializerSettings);
@@ -302,75 +366,6 @@ namespace Beetle.Server {
 			}
 		}
 
-		/// <summary>
-		/// Validates the entities.
-		/// </summary>
-		/// <param name="entities">The entities.</param>
-		/// <returns></returns>
-		public static List<EntityValidationResult> ValidateEntities(IEnumerable entities) {
-			var validationResults = new List<EntityValidationResult>();
-			foreach (var entity in entities) {
-				var results = new List<ValidationResult>();
-				var context = new ValidationContext(entity, null, null);
-				Validator.TryValidateObject(entity, context, results, true);
-				if (results.Any())
-					validationResults.Add(new EntityValidationResult(entity, results));
-			}
-			return validationResults;
-		}
-
-		/// <summary>
-		/// Gets the beetle parameters.
-		/// </summary>
-		/// <param name="parameters">The parameters.</param>
-		/// <returns></returns>
-		public static List<KeyValuePair<string, string>> GetBeetleParameters(NameValueCollection parameters) {
-			if (parameters == null) return null;
-
-			return parameters
-				.OfType<string>()
-				.Where(k => !string.IsNullOrWhiteSpace(k) && k.StartsWith("!e"))
-				.Select(k => {
-					var v = parameters[k];
-					var i = v.IndexOf(':');
-					var exp = v.Substring(0, i);
-					var args = v.Substring(i + 1);
-					return new KeyValuePair<string, string>(exp, args);
-				})
-				.ToList();
-		}
-		
-		/// <summary>
-		/// Default implementation for request process.
-		/// </summary>
-		/// <param name="contentValue">The content value.</param>
-		/// <param name="beetlePrms">The beetle PRMS.</param>
-		/// <param name="actionContext">The action context.</param>
-		/// <param name="service">The service.</param>
-		/// <param name="contextHandler">The context handler.</param>
-		/// <param name="actionConfig">The action config (if specified).</param>
-		/// <returns></returns>
-		public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
-															IBeetleService service, IContextHandler contextHandler,
-															BeetleConfig actionConfig) {
-			var queryable = contentValue as IQueryable;
-			if (queryable != null) {
-				var queryableHandler = GetQueryHandler(actionConfig, service);
-
-				return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service, contextHandler);
-			}
-
-			if (!(contentValue is string)) {
-				var enumerable = contentValue as IEnumerable;
-				if (enumerable != null) {
-					var enumerableHandler = GetEnumerableHandler(actionConfig, service);
-
-					return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service, contextHandler);
-				}
-			}
-
-			return new ProcessResult(actionContext) { Result = contentValue };
-		}
 
 		public static IQueryHandler<IQueryable> GetQueryHandler(BeetleConfig actionConfig, IBeetleService service) {
 			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
@@ -388,13 +383,23 @@ namespace Beetle.Server {
 				?? EnumerableHandler.Instance;
 		}
 
-		/// <summary>
-		/// Gets the metadata.
-		/// </summary>
-		/// <param name="connection">The connection.</param>
-		/// <param name="modelNamespace">The model namespace.</param>
-		/// <param name="modelAssemblyName">Name of the model assembly.</param>
-		/// <returns></returns>
+		public static int CreateQueryHash(string saltStr) {
+			var hash = 0;
+			var len = saltStr.Length;
+			if (saltStr.Length == 0) return hash;
+
+			for (var i = 0; i < len; i++) {
+				var chr = saltStr[i];
+				hash = ((hash << 5) - hash) + chr;
+				hash |= 0;
+			}
+			return hash;
+		}
+
+		#endregion
+
+		#region Metadata
+
 		public static Metadata GetMetadata(IDbConnection connection, string modelNamespace = null, string modelAssemblyName = null) {
 			var metadata = new Metadata(connection.Database);
 			bool closeConnection;
@@ -596,11 +601,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			return metadata;
 		}
 
-		/// <summary>
-		/// Gets the enum for data type.
-		/// </summary>
-		/// <param name="dataType">Type of the data.</param>
-		/// <returns></returns>
 		public static DataType GetDataType(string dataType) {
 			switch (dataType) {
 				case "tinyint":
@@ -647,25 +647,12 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Adds the data property validations.
-		/// </summary>
-		/// <param name="clrType">Type of the entity.</param>
-		/// <param name="dataProperty">The data property.</param>
-		/// <param name="maxLen">The maximum length.</param>
 		public static void PopulateDataPropertyValidations(Type clrType, DataProperty dataProperty, int? maxLen = null) {
 			var clrProperty = clrType.GetMember(dataProperty.Name).First();
 			var clrPropertyType = GetPropertyType(clrType, dataProperty.Name);
 			PopulateDataPropertyValidations(clrProperty, clrPropertyType, dataProperty, maxLen);
 		}
 
-		/// <summary>
-		/// Adds the data property validations.
-		/// </summary>
-		/// <param name="member">Member info.</param>
-		/// <param name="memberType">Type of the member.</param>
-		/// <param name="dataProperty">The data property.</param>
-		/// <param name="maxLen">The maximum length.</param>
 		public static void PopulateDataPropertyValidations(MemberInfo member, Type memberType, DataProperty dataProperty, int? maxLen = null) {
 			var displayName = dataProperty.GetDisplayName() ?? dataProperty.Name;
 			var dataAnnotations = member.GetAttributes<ValidationAttribute>(true);
@@ -742,21 +729,11 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Adds the navigation property validations.
-		/// </summary>
-		/// <param name="clrType">Type of the color.</param>
-		/// <param name="navigationProperty">The navigation property.</param>
 		public static void PopulateNavigationPropertyValidations(Type clrType, NavigationProperty navigationProperty) {
 			var clrProperty = clrType.GetMember(navigationProperty.Name).FirstOrDefault();
 			PopulateNavigationPropertyValidations(clrProperty, navigationProperty);
 		}
 
-		/// <summary>
-		/// Adds the navigation property validations.
-		/// </summary>
-		/// <param name="member">Member information.</param>
-		/// <param name="navigationProperty">The navigation property.</param>
 		public static void PopulateNavigationPropertyValidations(MemberInfo member, NavigationProperty navigationProperty) {
 			var displayName = navigationProperty.GetDisplayName() ?? navigationProperty.Name;
 			var dataAnnotations = member.GetAttributes<ValidationAttribute>(true);
@@ -781,9 +758,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Gets the display info of the member
-		/// </summary>
 		public static void GetDisplayInfo(Type type, string memberName, ref string resourceName, ref Func<string> displayNameGetter) {
 			if (type != null) {
 				var propertyInfo = type.GetMember(memberName).FirstOrDefault();
@@ -793,9 +767,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Gets the display info of the member
-		/// </summary>
 		public static void GetDisplayInfo(MemberInfo propertyInfo, ref string resourceName, ref Func<string> displayNameGetter) {
 			var displayAttribute = propertyInfo.GetAttributes<DisplayAttribute>(true).FirstOrDefault();
 			if (displayAttribute != null) {
@@ -804,9 +775,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Gets the data type of the member
-		/// </summary>
 		public static DataType? GetDataType(Type type) {
 			var typeCode = Type.GetTypeCode(type);
 
@@ -859,13 +827,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Populates metadata with given entity and relation types using reflection
-		/// </summary>
-		/// <param name="type">Aggregate root entity.</param>
-		/// <param name="name">Metadata container name.</param>
-		/// <param name="resourceName">Metadata container resource name.</param>
-		/// <param name="displayNameGetter">Metadata container culture name getter.</param>
 		public static Metadata GenerateMetadata(Type type, string name = null, string resourceName = null, Func<string> displayNameGetter = null) {
 			var metadata = new Metadata(name ?? type.Name, displayNameGetter) { ResourceName = resourceName };
 			PopulateMetadata(type, metadata);
@@ -875,13 +836,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			return metadata;
 		}
 
-		/// <summary>
-		/// Populates metadata with given entity and relation types using reflection
-		/// </summary>
-		/// <param name="types">Entity types.</param>
-		/// <param name="name">Metadata container name.</param>
-		/// <param name="resourceName">Metadata container resource name.</param>
-		/// <param name="displayNameGetter">Metadata container culture name getter.</param>
 		public static Metadata GenerateMetadata(IEnumerable<Type> types, string name, string resourceName = null, Func<string> displayNameGetter = null) {
 			var metadata = new Metadata(name, displayNameGetter) { ResourceName = resourceName };
 			foreach (var type in types)
@@ -892,11 +846,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			return metadata;
 		}
 
-		/// <summary>
-		/// Populates metadata using reflection.
-		/// </summary>
-		/// <param name="type">Entity type.</param>
-		/// <param name="metadata">Metadata to populate.</param>
 		public static void PopulateMetadata(Type type, Metadata metadata) {
 			if (!type.IsClass || metadata.Entities.Any(e => e.ClrType == type)) return;
 
@@ -924,7 +873,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 
 			foreach (var propertyInfo in properties) {
 				var propertyType = propertyInfo.PropertyType;
-				if (entityType.DataProperties.Any(dp => dp.Name == propertyInfo.Name) 
+				if (entityType.DataProperties.Any(dp => dp.Name == propertyInfo.Name)
 					|| propertyType.GetCustomAttribute<NotMappedAttribute>() != null) continue;
 
 				var isNullable = false;
@@ -1097,10 +1046,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			}
 		}
 
-		/// <summary>
-		/// Generates beetle EnumType from given CLR enum type.
-		/// </summary>
-		/// <param name="enumType">CLR enum type.</param>
 		public static EnumType GenerateEnumType(Type enumType) {
 			if (!enumType.IsEnum)
 				throw new ArgumentException(string.Format(Resources.TypeIsNotEnum, enumType.Name));
@@ -1121,129 +1066,6 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			return retVal;
 		}
 
-		/// <summary>
-		/// Merges the entities, fixes relations and sort entities for save operation.
-		/// </summary>
-		/// <param name="entityBags">The entity bags.</param>
-		/// <param name="metadata">The metadata.</param>
-		/// <param name="unmappedEntities">The unmapped entities.</param>
-		public static IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, Metadata metadata, out IEnumerable<EntityBag> unmappedEntities) {
-			if (entityBags == null)
-				throw new ArgumentNullException("entityBags");
-
-			var entityBagList = entityBags as IList<EntityBag> ?? entityBags.ToList();
-			var entityList = entityBagList.Where(eb => eb.EntityState != EntityState.Deleted && eb.EntityState != EntityState.Detached).Select(eb => eb.Entity).ToList();
-			var mergedBagList = new List<EntityBag>();
-			var unmappedEntityList = new List<EntityBag>();
-
-			foreach (var entityBag in entityBagList) {
-				if (entityBag.EntityState == EntityState.Deleted || entityBag.EntityState == EntityState.Detached)
-					continue;
-
-				var entity = entityBag.Entity;
-				var type = entity.GetType();
-				var entityTypeName = string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
-				if (entityBag.EntityType == null)
-					entityBag.EntityType = entityBag.EntityType ?? metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
-				var entityType = entityBag.EntityType;
-				if (entityType == null) {
-					unmappedEntityList.Add(entityBag);
-					continue;
-				}
-
-				foreach (var navigationProperty in entityType.AllNavigationProperties) {
-					var navigationType = GetPropertyType(type, navigationProperty.Name);
-					if (navigationType == null) continue;
-
-					if (navigationProperty.IsScalar == true) {
-						if (!navigationProperty.ForeignKeys.Any()) continue;
-
-						var navigationQuery = GetRelationQuery(entityList, entity, navigationType, entityType.Keys, navigationProperty.ForeignKeys);
-						if (navigationQuery == null) continue;
-
-						var navigationEntity = Enumerable.SingleOrDefault((dynamic)navigationQuery);
-						if (navigationEntity == null) continue;
-
-						SetPropertyValue(entity, navigationProperty.Name, navigationEntity);
-					}
-					else {
-						if (!navigationType.IsGenericType) continue;
-
-						var navigationValue = GetPropertyValue(entity, navigationProperty.Name);
-						if (navigationValue == null && !navigationType.IsInterface) {
-							navigationValue = Activator.CreateInstance(navigationType);
-							SetPropertyValue(entity, navigationProperty.Name, navigationValue);
-						}
-						if (navigationValue == null) continue;
-
-						var navigationQuery = GetRelationQuery(entityList, entity, navigationType.GenericTypeArguments.Single(),
-															   navigationProperty.ForeignKeys, entityType.Keys);
-						if (navigationQuery == null) continue;
-
-						var navigationEntities = Enumerable.ToList((dynamic)navigationQuery);
-						var containsMethod = navigationType.GetMethod("Contains");
-						var addMethod = navigationType.GetMethod("Add");
-						foreach (var navigationEntity in navigationEntities) {
-							if (containsMethod.Invoke(navigationValue, new object[] { navigationEntity }).Equals(false))
-								addMethod.Invoke(navigationValue, new object[] { navigationEntity });
-						}
-					}
-				}
-
-				mergedBagList.Add(entityBag);
-			}
-
-			unmappedEntities = unmappedEntityList;
-			return mergedBagList;
-		}
-
-		/// <summary>
-		/// Gets the relation query.
-		/// </summary>
-		/// <param name="entities">The entities.</param>
-		/// <param name="keyEntity">The key entity.</param>
-		/// <param name="relationType">Type of the relation.</param>
-		/// <param name="keys">The keys.</param>
-		/// <param name="foreignKeys">The foreign keys.</param>
-		/// <returns></returns>
-		private static IQueryable GetRelationQuery(IEnumerable entities, object keyEntity, Type relationType, IReadOnlyList<string> keys, IReadOnlyList<string> foreignKeys) {
-			if (!keys.Any() || keys.Count != foreignKeys.Count) return null;
-
-			const string filter = "{0} == @{1}";
-			var ofTypeMethod = typeof(Queryable).GetMethod("OfType");
-			var navigationQuery = ofTypeMethod.MakeGenericMethod(relationType).Invoke(null, new object[] { entities.AsQueryable() }) as IQueryable;
-			var filters = new List<string>();
-			var parameters = new List<object>();
-
-			for (var i = 0; i < foreignKeys.Count; i++) {
-				var keyName = keys[i];
-				var foreignKeyName = foreignKeys[i];
-				var foreignKeyValue = GetPropertyValue(keyEntity, foreignKeyName);
-				if (foreignKeyValue == null) return null;
-
-				filters.Add(string.Format(filter, keyName, i));
-				parameters.Add(foreignKeyValue);
-			}
-
-			return navigationQuery.Where(string.Join(" && ", filters), parameters.ToArray());
-		}
-
-		/// <summary>
-		/// Creates the client hash for given string.
-		/// </summary>
-		/// <param name="saltStr">The salt string.</param>
-		/// <returns></returns>
-		public static int CreateQueryHash(string saltStr) {
-			var hash = 0;
-			var len = saltStr.Length;
-			if (saltStr.Length == 0) return hash;
-
-			for (var i = 0; i < len; i++) {
-				var chr = saltStr[i];
-				hash = ((hash << 5) - hash) + chr;
-				hash |= 0;
-			}
-			return hash;
-		}
+		#endregion
 	}
 }

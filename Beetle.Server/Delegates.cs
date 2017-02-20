@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Beetle.Server {
 
-    /// <summary>
-    /// Holds query execution event args.
-    /// </summary>
     public class BeforeQueryExecuteEventArgs : EventArgs {
         private readonly ActionContext _actionContext;
 
@@ -47,16 +44,8 @@ namespace Beetle.Server {
         public string UserData { get; set; }
     }
 
-    /// <summary>
-    /// Fired before query execution.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="eventArgs">The <see cref="BeforeQueryExecuteEventArgs"/> instance containing the event data.</param>
     public delegate void BeforeQueryExecuteDelegate(object sender, BeforeQueryExecuteEventArgs eventArgs);
 
-    /// <summary>
-    /// Holds query and result event args.
-    /// </summary>
     public class AfterQueryExecuteEventArgs : EventArgs {
         private readonly ActionContext _actionContext;
         private readonly IQueryable _query;
@@ -112,16 +101,8 @@ namespace Beetle.Server {
         public object UserData { get; set; }
     }
 
-    /// <summary>
-    /// Fired after a query is executed.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="eventArgs">The <see cref="AfterQueryExecuteEventArgs"/> instance containing the event data.</param>
     public delegate void AfterQueryExecuteDelegate(object sender, AfterQueryExecuteEventArgs eventArgs);
 
-    /// <summary>
-    /// Holds before save event args.
-    /// </summary>
     public class BeforeSaveEventArgs : EventArgs {
         private readonly IEnumerable<EntityBag> _entities;
         private readonly SaveContext _saveContext;
@@ -155,16 +136,8 @@ namespace Beetle.Server {
         public SaveContext SaveContext { get { return _saveContext; } }
     }
 
-    /// <summary>
-    /// Fired before save.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="eventArgs">The <see cref="BeforeSaveEventArgs"/> instance containing the event data.</param>
     public delegate void BeforeSaveDelegate(object sender, BeforeSaveEventArgs eventArgs);
 
-    /// <summary>
-    /// Holds after save event args.
-    /// </summary>
     public class AfterSaveEventArgs : EventArgs {
         private readonly IEnumerable<EntityBag> _entities;
         private readonly SaveResult _saveResult;
@@ -200,10 +173,5 @@ namespace Beetle.Server {
         }
     }
 
-    /// <summary>
-    /// Fired after save.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="eventArgs">The <see cref="AfterSaveEventArgs"/> instance containing the event data.</param>
     public delegate void AfterSaveDelegate(object sender, AfterSaveEventArgs eventArgs);
 }

@@ -9,68 +9,33 @@ using System.Threading.Tasks;
 
 namespace Beetle.Server {
 
-    /// <summary>
-    /// Base context handler class for database access. ORM context (manager etc.) proxy.
-    /// Services use this class' implementors to handle data-metadata operations.
-    /// Needed to be implemented for each used ORM.
-    /// </summary>
-    /// <typeparam name="TContext">The type of the context.</typeparam>
     public abstract class DbContextHandler<TContext> : DbContextHandler, IContextHandler<TContext> {
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContextHandler{TContext}"/> class.
-        /// </summary>
         protected DbContextHandler() {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContextHandler{TContext}"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
         protected DbContextHandler(TContext context) {
             Context = context;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContextHandler{TContext}"/> class.
-        /// </summary>
-        /// <param name="queryableHandler">The queryable handler.</param>
         protected DbContextHandler(IQueryHandler<IQueryable> queryableHandler)
             : base(queryableHandler) {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContextHandler{TContext}"/> class.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="queryableHandler">The queryable handler.</param>
         protected DbContextHandler(TContext context, IQueryHandler<IQueryable> queryableHandler)
             : base(queryableHandler) {
             Context = context;
         }
 
-        /// <summary>
-        /// Initializes this instance.
-        /// </summary>
         public override void Initialize() {
             if (Equals(Context, default(TContext)))
                 Context = CreateContext();
         }
 
-        /// <summary>
-        /// Creates the context.
-        /// </summary>
-        /// <returns></returns>
         public virtual TContext CreateContext() {
             return Activator.CreateInstance<TContext>();
         }
 
-        /// <summary>
-        /// Gets the entity framework context.
-        /// </summary>
-        /// <value>
-        /// The context.
-        /// </value>
         public TContext Context { get; private set; }
     }
 
@@ -83,26 +48,13 @@ namespace Beetle.Server {
         private readonly object _metadataLocker = new object();
         private static readonly Dictionary<string, Metadata> _metadataCache = new Dictionary<string, Metadata>();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContextHandler"/> class.
-        /// </summary>
         protected DbContextHandler() {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DbContextHandler"/> class.
-        /// </summary>
-        /// <param name="queryableHandler">The queryable handler.</param>
         protected DbContextHandler(IQueryHandler<IQueryable> queryableHandler)
             : base(queryableHandler) {
         }
 
-        /// <summary>
-        /// Return metadata about data structure.
-        /// </summary>
-        /// <returns>
-        /// Metadata object.
-        /// </returns>
         public override Metadata Metadata() {
             lock (_metadataLocker) {
                 if (_metadataCache.ContainsKey(Connection.ConnectionString))
@@ -115,11 +67,6 @@ namespace Beetle.Server {
             }
         }
 
-        /// <summary>
-        /// Handles the unknown action.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
         public override object HandleUnknownAction(string action) {
             Type type = null;
             var metadata = Metadata();
@@ -139,32 +86,14 @@ namespace Beetle.Server {
             return GetType().GetMethod("CreateQueryable").MakeGenericMethod(type).Invoke(this, null);
         }
 
-        /// <summary>
-        /// Creates the queryable.
-        /// </summary>
-        /// <returns></returns>
         public virtual IQueryable<T> CreateQueryable<T>() where T : class {
             throw new NotImplementedException(); // implement beetle queryable
         }
 
-        /// <summary>
-        /// Merges the entities.
-        /// </summary>
-        /// <param name="entityBags">The entity bags.</param>
-        /// <param name="unmappedEntities">The unmapped entities.</param>
-        /// <returns></returns>
         public virtual IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, out IEnumerable<EntityBag> unmappedEntities) {
             return Helper.MergeEntities(entityBags, Metadata(), out unmappedEntities);
         }
 
-        /// <summary>
-        /// Saves the changes.
-        /// </summary>
-        /// <param name="entities">The entities.</param>
-        /// <param name="saveContext">The save context.</param>
-        /// <returns>
-        /// Save result.
-        /// </returns>
         public override Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext) {
             return SaveChangesBase(entities, saveContext);
         }
@@ -172,10 +101,6 @@ namespace Beetle.Server {
         /// <summary>
         /// Saves the changes directly using SQL queries.
         /// </summary>
-        /// <param name="entityBags">The entity bags.</param>
-        /// <param name="saveContext">The save context.</param>
-        /// <returns></returns>
-        /// <exception cref="EntityValidationException"></exception>
         protected Task<SaveResult> SaveChangesBase(IEnumerable<EntityBag> entityBags, SaveContext saveContext) {
             IEnumerable<EntityBag> unmappeds;
             var merges = Helper.MergeEntities(entityBags, Metadata(), out unmappeds);
@@ -287,16 +212,6 @@ namespace Beetle.Server {
             return Task.FromResult(saveResult);
         }
 
-        /// <summary>
-        /// Saves the entity bag.
-        /// </summary>
-        /// <param name="entityBag">The entity bag.</param>
-        /// <param name="transaction">The transaction.</param>
-        /// <returns>
-        /// Affected count
-        /// </returns>
-        /// <exception cref="System.ArgumentNullException">entityBag</exception>
-        /// <exception cref="System.InvalidOperationException">Cannot save entity with state  + entityBag.EntityState</exception>
         protected virtual int SaveEntityBag(EntityBag entityBag, IDbTransaction transaction = null) {
             if (entityBag == null)
                 throw new ArgumentNullException("entityBag");
@@ -314,16 +229,6 @@ namespace Beetle.Server {
             }
         }
 
-        /// <summary>
-        /// Inserts the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="transaction">The transaction.</param>
-        /// <returns>
-        /// Affected count
-        /// </returns>
-        /// <exception cref="BeetleException">Insert operation should not affect more than one record.</exception>
         protected virtual int InsertEntity(object entity, EntityType entityType = null, IDbTransaction transaction = null) {
             var affectedCount = 0;
             entityType = GetEntityType(entity, entityType);
@@ -386,18 +291,6 @@ namespace Beetle.Server {
             return ++affectedCount;
         }
 
-        /// <summary>
-        /// Updates the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="modifiedProperties">The modified properties.</param>
-        /// <param name="forceUpdate">if set to <c>true</c> [force update].</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="transaction">The transaction.</param>
-        /// <returns>
-        /// Affected count
-        /// </returns>
-        /// <exception cref="BeetleException">Update operation should not affect more than one record.</exception>
         protected virtual int UpdateEntity(object entity, IEnumerable<string> modifiedProperties = null, bool forceUpdate = false,
                                            EntityType entityType = null, IDbTransaction transaction = null) {
             var affectedCount = 0;
@@ -522,16 +415,6 @@ namespace Beetle.Server {
             return ++affectedCount;
         }
 
-        /// <summary>
-        /// Deletes the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="transaction">The transaction.</param>
-        /// <returns>
-        /// Affected count
-        /// </returns>
-        /// <exception cref="BeetleException">Delete operation should not affect more than one record.</exception>
         protected virtual int DeleteEntity(object entity, EntityType entityType = null, IDbTransaction transaction = null) {
             var affectedCount = 0;
             entityType = GetEntityType(entity, entityType);
@@ -569,15 +452,6 @@ namespace Beetle.Server {
             return ++affectedCount;
         }
 
-        /// <summary>
-        /// Populates the complex properties to value parameters for SQL Insert.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="columns">The columns.</param>
-        /// <param name="valueParameters">The value parameters.</param>
-        /// <param name="computedColumns">The computed columns.</param>
-        /// <param name="forInsert">if set to <c>true</c> [for insert].</param>
         private void PopulateComplexProperties(object entity, EntityType entityType,
                                                ICollection<string> columns,
                                                IDictionary<string, object> valueParameters,
@@ -587,15 +461,6 @@ namespace Beetle.Server {
                 PopulateComplexType(entity, complexProperty, columns, valueParameters, computedColumns, forInsert);
         }
 
-        /// <summary>
-        /// Populates complex type properties to command parameters.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="complexProperty">The complex property.</param>
-        /// <param name="columns">The columns.</param>
-        /// <param name="valueParameters">The value parameters.</param>
-        /// <param name="computedColumns">The computed columns.</param>
-        /// <param name="forInsert">if set to <c>true</c> [for insert].</param>
         private void PopulateComplexType(object entity, ComplexProperty complexProperty,
                                          ICollection<string> columns,
                                          IDictionary<string, object> valueParameters,
@@ -621,14 +486,6 @@ namespace Beetle.Server {
             PopulateComplexProperties(complexValue, complexProperty.ComplexType, columns, valueParameters, computedColumns, forInsert);
         }
 
-        /// <summary>
-        /// Populates the computed values.
-        /// </summary>
-        /// <param name="tableName">Name of the table.</param>
-        /// <param name="computedColumns">The computed columns.</param>
-        /// <param name="keyFilters">The key filters.</param>
-        /// <param name="keyParameters">The key parameters.</param>
-        /// <param name="transaction">The transaction.</param>
         private void PopulateComputedValues(string tableName, IDictionary<DataProperty, object> computedColumns, IEnumerable<string> keyFilters,
                                             IEnumerable<KeyValuePair<string, object>> keyParameters, IDbTransaction transaction) {
             // if there is computed or identity columns, get their generated values
@@ -656,16 +513,6 @@ namespace Beetle.Server {
             }
         }
 
-        /// <summary>
-        /// Populates the key properties.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="isInsert">if set to <c>true</c> [is insert].</param>
-        /// <param name="keyFilters">The key filters.</param>
-        /// <param name="keyParameters">The key parameters.</param>
-        /// <param name="ownerProperty">The owner property.</param>
-        /// <exception cref="BeetleException">Cannot find any key for  + entityType.ShortName</exception>
         private void PopulateKeyFilters(object entity, EntityType entityType, bool isInsert,
                                         out IEnumerable<string> keyFilters, out IDictionary<string, object> keyParameters,
                                         ComplexProperty ownerProperty = null) {
@@ -718,15 +565,6 @@ namespace Beetle.Server {
             keyParameters = kp;
         }
 
-        /// <summary>
-        /// Populates the key filter.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="keyProperty">The key property.</param>
-        /// <param name="isInsert">if set to <c>true</c> [is insert].</param>
-        /// <param name="kp">The key parameters.</param>
-        /// <param name="kf">The key filters.</param>
-        /// <param name="ownerProperty">The owner property.</param>
         private void PopulateKeyFilter(object entity, DataProperty keyProperty, bool isInsert,
                                        ICollection<string> kf, IDictionary<string, object> kp,
                                        ComplexProperty ownerProperty = null) {
@@ -752,14 +590,6 @@ namespace Beetle.Server {
             kf.Add(keyFilter);
         }
 
-        /// <summary>
-        /// Checks arguments and gets the metadata type of the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">entity</exception>
-        /// <exception cref="BeetleException">Entity type cannot be found for  + entityTypeName</exception>
         private EntityType GetEntityType(object entity, EntityType entityType) {
             if (entity == null) throw new ArgumentNullException("entity");
             if (entityType != null) return entityType;
@@ -773,11 +603,6 @@ namespace Beetle.Server {
             return entityType;
         }
 
-        /// <summary>
-        /// Adds parameters to the command.
-        /// </summary>
-        /// <param name="command">The command.</param>
-        /// <param name="parameters">The parameters.</param>
         private static void AddCommandParameters(IDbCommand command, IEnumerable<KeyValuePair<string, object>> parameters) {
             foreach (var prm in parameters) {
                 var parameter = command.CreateParameter();
@@ -787,11 +612,6 @@ namespace Beetle.Server {
             }
         }
 
-        /// <summary>
-        /// Gets the identity select SQL.
-        /// </summary>
-        /// <param name="dbType">Type of the database.</param>
-        /// <returns></returns>
         protected virtual string GetIdentitySelectSql(DbType dbType) {
             switch (dbType) {
                 case DbType.SqlCe:
@@ -801,23 +621,10 @@ namespace Beetle.Server {
             }
         }
 
-        /// <summary>
-        /// Escapes the SQL identifier.
-        /// </summary>
-        /// <param name="dbType">Type of the database.</param>
-        /// <param name="sqlIdentifier">The SQL identifier.</param>
-        /// <returns></returns>
         protected virtual string EscapeSqlIdentifier(DbType dbType, string sqlIdentifier) {
             return "[" + sqlIdentifier + "]";
         }
 
-        /// <summary>
-        /// Gets the type of the database.
-        /// </summary>
-        /// <value>
-        /// The type of the database.
-        /// </value>
-        /// <exception cref="System.InvalidOperationException">Connection cannot be null.</exception>
         public virtual DbType DbType {
             get {
                 if (Connection == null)
@@ -841,28 +648,10 @@ namespace Beetle.Server {
             }
         }
 
-        /// <summary>
-        /// Gets the connection.
-        /// </summary>
-        /// <value>
-        /// The connection.
-        /// </value>
         public abstract IDbConnection Connection { get; }
 
-        /// <summary>
-        /// Gets the model namespace.
-        /// </summary>
-        /// <value>
-        /// The model namespace.
-        /// </value>
         public virtual string ModelNamespace { get { return null; } }
 
-        /// <summary>
-        /// Gets the model assembly.
-        /// </summary>
-        /// <value>
-        /// The model assembly.
-        /// </value>
         public virtual string ModelAssembly { get { return null; } }
     }
 }

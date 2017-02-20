@@ -6,24 +6,9 @@ using Beetle.Server.Properties;
 
 namespace Beetle.Server {
 
-    /// <summary>
-    /// Enumerable content handler.
-    /// 
-    /// Default implementation only checks for MaxResultCount.
-    /// </summary>
     public class EnumerableHandler : IContentHandler<IEnumerable> {
         private static readonly Lazy<EnumerableHandler> _instance = new Lazy<EnumerableHandler>();
 
-        /// <summary>
-        /// Handles the content.
-        /// </summary>
-        /// <param name="contentValue">The content value.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="service">The service.</param>
-        /// <param name="contextHandler">The context handler.</param>
-        /// <returns></returns>
-        /// <exception cref="Beetle.Server.BeetleException"></exception>
         public ProcessResult HandleContent(IEnumerable contentValue, IEnumerable<KeyValuePair<string, string>> parameters,
                                            ActionContext actionContext, IBeetleService service = null, IContextHandler contextHandler = null) {
             var maxResultCount = actionContext.MaxResultCount;
@@ -39,12 +24,6 @@ namespace Beetle.Server {
             return new ProcessResult(actionContext) { Result = contentValue };
         }
 
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>
-        /// The instance.
-        /// </value>
         public static IContentHandler<IEnumerable> Instance {
             get { return _instance.Value; }
         }

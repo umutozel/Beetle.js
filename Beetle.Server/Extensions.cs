@@ -8,13 +8,6 @@ namespace Beetle.Server {
 
     public static class Extensions {
 
-        /// <summary>
-        /// Gets the attributes.
-        /// </summary>
-        /// <param name="member">The member.</param>
-        /// <param name="checkMetadataType">if set to <c>true</c> when attribute could not be found for given member,
-        /// also check metadata type defined with MetadataTypeAttribute (if exists).</param>
-        /// <param name="inherit">if set to <c>true</c> [inherit].</param>
         public static List<TAttribute> GetAttributes<TAttribute>(this MemberInfo member, bool checkMetadataType = false, 
                                                                  bool inherit = false) where TAttribute: Attribute {
             var retVal = member.GetCustomAttributes(inherit).OfType<TAttribute>();
@@ -33,13 +26,6 @@ namespace Beetle.Server {
             return retVal.ToList();
         }
 
-        /// <summary>
-        /// Gets the attribute.
-        /// </summary>
-        /// <param name="member">The member.</param>
-        /// <param name="checkMetadataType">if set to <c>true</c> when attribute could not be found for given member,
-        /// also check metadata type defined with MetadataTypeAttribute (if exists).</param>
-        /// <param name="inherit">if set to <c>true</c> [inherit].</param>
         public static TAttribute GetAttribute<TAttribute>(this MemberInfo member, bool checkMetadataType = false,
                                                           bool inherit = false) where TAttribute : Attribute {
             return GetAttributes<TAttribute>(member, checkMetadataType, inherit).FirstOrDefault();
