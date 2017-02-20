@@ -7,20 +7,12 @@ using System.Web.Http.Filters;
 
 namespace Beetle.Server.WebApi {
 
-    /// <summary>
-    /// Can be used to modify serialization before respond is sent.
-    /// </summary>
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
         private BeetleConfig _config;
 
         public BeetleActionFilterAttribute() {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute" /> class.
-        /// </summary>
-        /// <param name="configType">Type of the config.</param>
-        /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
         public BeetleActionFilterAttribute(Type configType) {
             var beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
             if (beetleConfig == null)
@@ -28,10 +20,6 @@ namespace Beetle.Server.WebApi {
             _config = beetleConfig;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleActionFilterAttribute"/> class.
-        /// </summary>
-        /// <param name="config">The configuration.</param>
         public BeetleActionFilterAttribute(BeetleConfig config) {
             _config = config;
         }
@@ -43,10 +31,6 @@ namespace Beetle.Server.WebApi {
             return formatter;
         }
 
-        /// <summary>
-        /// Occurs after the action method is invoked.
-        /// </summary>
-        /// <param name="actionExecutedContext">The action executed context.</param>
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
             if (_config == null) {
                 var service = actionExecutedContext.ActionContext.ControllerContext.Controller as IBeetleService;

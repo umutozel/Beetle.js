@@ -13,19 +13,8 @@ using Newtonsoft.Json;
 
 namespace Beetle.Server.WebApi {
 
-    /// <summary>
-    /// Common helper methods for WebApi.
-    /// </summary>
     public static class Helper {
 
-        /// <summary>
-        /// Handles the request.
-        /// </summary>
-        /// <param name="queryString">The query string.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>
-        /// The query parameters.
-        /// </returns>
         public static NameValueCollection GetParameters(out string queryString, HttpRequest request = null) {
             if (request == null)
                 request = HttpContext.Current.Request;
@@ -55,17 +44,6 @@ namespace Beetle.Server.WebApi {
             return request.QueryString;
         }
 
-        /// <summary>
-        /// Processes the IQueryable.
-        /// </summary>
-        /// <param name="contentValue">The content value.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="request">The request.</param>
-        /// <param name="forbidBeetleQueryParams">if set to <c>true</c> [forbid beetle query params].</param>
-        /// <param name="actionConfig">The action config (if specified).</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        /// <exception cref="BeetleException">Beetle query strings are not allowed.</exception>
         public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
                                                    bool forbidBeetleQueryParams = false, BeetleConfig actionConfig = null, IBeetleService service = null) {
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
@@ -110,13 +88,6 @@ namespace Beetle.Server.WebApi {
             return processResult;
         }
 
-        /// <summary>
-        /// Handles the response.
-        /// </summary>
-        /// <param name="processResult">The process result.</param>
-        /// <param name="config">The configuration.</param>
-        /// <param name="response">The response.</param>
-        /// <returns></returns>
         public static ObjectContent HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
             if (config == null)
                 config = BeetleConfig.Instance;
@@ -144,11 +115,6 @@ namespace Beetle.Server.WebApi {
             return retVal;
         }
 
-        /// <summary>
-        /// Checks the request hash.
-        /// </summary>
-        /// <param name="queryString">The query string.</param>
-        /// <exception cref="BeetleException"></exception>
         public static void CheckRequestHash(string queryString) {
             var request = HttpContext.Current.Request;
 

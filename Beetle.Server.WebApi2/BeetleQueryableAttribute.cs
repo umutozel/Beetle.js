@@ -15,9 +15,6 @@ using System.Web.Http.OData.Query;
 
 namespace Beetle.Server.WebApi {
 
-    /// <summary>
-    /// Interpret OData behavior on top of WebApi.
-    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleQueryableAttribute : QueryableAttribute {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
@@ -25,9 +22,6 @@ namespace Beetle.Server.WebApi {
         private readonly BeetleConfig _beetleConfig;
         private bool? _checkRequestHash;
 
-        /// <summary>
-        /// Initializes the <see cref="BeetleApiController{TContextHandler}"/> class.
-        /// </summary>
         static BeetleQueryableAttribute() {
             _dummyMethodInfo = typeof(BeetleApiController<>).GetMethods().First();
         }
@@ -41,11 +35,6 @@ namespace Beetle.Server.WebApi {
             _beetleConfig = config;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BeetleQueryableAttribute" /> class.
-        /// </summary>
-        /// <param name="configType">Type of the config.</param>
-        /// <exception cref="System.ArgumentException">Cannot create config instance.</exception>
         public BeetleQueryableAttribute(Type configType)
             : this() {
             if (configType != null) {
@@ -55,10 +44,6 @@ namespace Beetle.Server.WebApi {
             }
         }
 
-        /// <summary>
-        /// Called when [action executed].
-        /// </summary>
-        /// <param name="actionExecutedContext">The action executed context.</param>
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
             if (actionExecutedContext.Exception != null || !actionExecutedContext.Response.IsSuccessStatusCode) return;
 
@@ -96,14 +81,6 @@ namespace Beetle.Server.WebApi {
             response.Content = HandleResponse(actionExecutedContext, processResult, service);
         }
 
-        /// <summary>
-        /// Applies the o data query.
-        /// </summary>
-        /// <param name="queryable">The queryable.</param>
-        /// <param name="controller">The controller.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
         public virtual IQueryable ApplyODataQuery(IQueryable queryable, ApiController controller, ActionContext actionContext, HttpRequestMessage request) {
             // if value is a query, first handle OData parameters
             var edmModel = GetModel(queryable.ElementType, request,
@@ -121,14 +98,6 @@ namespace Beetle.Server.WebApi {
             return FixODataQuery(queryable, request, service);
         }
 
-        /// <summary>
-        /// Applies the query.
-        /// </summary>
-        /// <param name="queryable">The queryable.</param>
-        /// <param name="queryOptions">The query options.</param>
-        /// <returns>
-        /// The queryable.
-        /// </returns>
         public override IQueryable ApplyQuery(IQueryable queryable, ODataQueryOptions queryOptions) {
             var request = queryOptions.Request;
             var queryString = request.RequestUri.ParseQueryString();
@@ -175,13 +144,6 @@ namespace Beetle.Server.WebApi {
             return base.ApplyQuery(queryable, queryOptions);
         }
 
-        /// <summary>
-        /// Fixes the o data query.
-        /// </summary>
-        /// <param name="queryable">The queryable.</param>
-        /// <param name="request">The request.</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
         public virtual IQueryable FixODataQuery(IQueryable queryable, HttpRequestMessage request, IBeetleService service = null) {
             var queryableHandler = Server.Helper.GetQueryHandler(BeetleConfig, service);
 
@@ -211,26 +173,10 @@ namespace Beetle.Server.WebApi {
             return queryable;
         }
 
-        /// <summary>
-        /// Handles the request.
-        /// </summary>
-        /// <param name="queryString">The query string.</param>
-        /// <param name="actionExecutedContext">The action executed context.</param>
-        /// <returns>
-        /// The query parameters.
-        /// </returns>
         protected virtual NameValueCollection GetParameters(HttpActionExecutedContext actionExecutedContext, out string queryString) {
             return Helper.GetParameters(out queryString);
         }
 
-        /// <summary>
-        /// Processes the request.
-        /// </summary>
-        /// <param name="contentValue">The content value.</param>
-        /// <param name="actionContext">The action context.</param>
-        /// <param name="request">The request.</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
         protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext,
                                                        HttpRequestMessage request, IBeetleService service) {
             return service != null
@@ -238,62 +184,26 @@ namespace Beetle.Server.WebApi {
                 : Helper.ProcessRequest(contentValue, actionContext, request);
         }
 
-        /// <summary>
-        /// Handles the response.
-        /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="service">The beetle service.</param>
         protected virtual ObjectContent HandleResponse(HttpActionExecutedContext filterContext, ProcessResult result, IBeetleService service) {
             var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
             return Helper.HandleResponse(result, config);
         }
 
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>
-        /// The instance.
-        /// </value>
         internal static BeetleQueryableAttribute Instance {
             get { return _instance.Value; }
         }
 
-        /// <summary>
-        /// Gets the beetle config.
-        /// </summary>
-        /// <value>
-        /// The beetle config.
-        /// </value>
         protected BeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 
-        /// <summary>
-        /// Gets or sets the maximum result count.
-        /// </summary>
-        /// <value>
-        /// The maximum result count.
-        /// </value>
         public int MaxResultCount { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [check request hash].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [check request hash]; otherwise, <c>false</c>.
-        /// </value>
         public bool CheckRequestHash {
             get { return _checkRequestHash.GetValueOrDefault(); }
             set { _checkRequestHash = value; }
         }
 
-        /// <summary>
-        /// Gets the check request hash nullable.
-        /// </summary>
-        /// <value>
-        /// The check request hash nullable.
-        /// </value>
         internal bool? CheckRequestHashNullable {
             get { return _checkRequestHash; }
         }
