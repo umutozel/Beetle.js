@@ -1,8 +1,5 @@
 ﻿namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Supported data types.
-    /// </summary>
     public enum DataType {
         String, 
         Guid, 

@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Entity Type metadata representation.
-    /// </summary>
     public class EntityType : MetadataPart {
 
         public EntityType(string fullName, string shortName, Func<string> displayNameGetter = null)

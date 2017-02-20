@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Enum Type metadata representation.
-    /// </summary>
     public class EnumType: MetadataPart {
 
         public EnumType(string name, Func<string> displayNameGetter = null): base(name, displayNameGetter) {

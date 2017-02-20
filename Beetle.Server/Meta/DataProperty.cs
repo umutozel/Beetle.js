@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Data Property metadata representation.
-    /// </summary>
     public class DataProperty : MetadataPart {
 
         public DataProperty(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {

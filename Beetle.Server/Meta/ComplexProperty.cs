@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Complex Type metadata representation.
-    /// </summary>
     public class ComplexProperty: MetadataPart {
 
         public ComplexProperty(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {
@@ -24,9 +21,6 @@ namespace Beetle.Server.Meta {
         }
     }
 
-    /// <summary>
-    /// Complex type column mapping representation.
-    /// </summary>
     public class ColumnMapping {
         private readonly string _columnName;
         private readonly string _propertyName;

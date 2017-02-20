@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Navigation Property metadata representation.
-    /// </summary>
     public class NavigationProperty: MetadataPart {
 
         public NavigationProperty(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {

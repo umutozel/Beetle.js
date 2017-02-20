@@ -2,9 +2,6 @@
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Enum Member metadata representation.
-    /// </summary>
     public class EnumMember: MetadataPart {
 
         public EnumMember(string name, Func<string> displayNameGetter): base(name, displayNameGetter) {

@@ -5,20 +5,9 @@ using Newtonsoft.Json.Converters;
 
 namespace Beetle.Server.Json {
 
-    /// <summary>
-    /// Custom DateTime converter, it also tries to handle Javascript date format.
-    /// </summary>
     public class BeetleDateTimeConverter : IsoDateTimeConverter {
         private static readonly List<string> _months = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-        /// <summary>
-        /// Reads the json.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="objectType">Type of the object.</param>
-        /// <param name="existingValue">The existing value.</param>
-        /// <param name="serializer">The serializer.</param>
-        /// <returns></returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
             try {
                 // First try to parse as ISO string.
@@ -75,13 +64,6 @@ namespace Beetle.Server.Json {
             }
         }
 
-        /// <summary>
-        /// Writes the json.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        /// <param name="value">The value to convert.</param>
-        /// <param name="serializer">The serializer.</param>
-        /// <returns></returns>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
             if (serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local && value != null && value.GetType() == typeof(DateTime)) {
                 value = ((DateTime)value).ToUniversalTime();

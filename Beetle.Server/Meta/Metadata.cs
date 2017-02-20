@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Beetle.Server.Meta {
 
-    /// <summary>
-    /// Model metadata representation.
-    /// </summary>
     public class Metadata: MetadataPart {
 
         public Metadata(): this(string.Empty) {
@@ -20,9 +17,6 @@ namespace Beetle.Server.Meta {
         public List<EntityType> Entities { get; set; }
         public List<EnumType> Enums { get; set; }
 
-        /// <summary>
-        /// Fixes the references for base type, navigation property links etc..
-        /// </summary>
         public void FixReferences() {
             // fix base type and navigation type references
             foreach (var entityType in Entities) {
