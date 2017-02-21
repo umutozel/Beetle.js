@@ -12,8 +12,6 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Beetle.Server.Meta;
 using Beetle.Server.Properties;
 using Validator = System.ComponentModel.DataAnnotations.Validator;
@@ -122,7 +120,7 @@ namespace Beetle.Server {
 
 		public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<KeyValuePair<string, string>> beetlePrms, ActionContext actionContext,
 													IBeetleService service, IContextHandler contextHandler,
-													BeetleConfig actionConfig) {
+													IBeetleConfig actionConfig) {
 			var queryable = contentValue as IQueryable;
 			if (queryable != null) {
 				var queryableHandler = GetQueryHandler(actionConfig, service);
@@ -142,10 +140,11 @@ namespace Beetle.Server {
 			return new ProcessResult(actionContext) { Result = contentValue };
 		}
 
-		public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, BeetleConfig config, Metadata metadata, out IEnumerable<EntityBag> unknownEntities) {
-			var jsonSerializer = config.CreateSerializer();
+		public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, IBeetleConfig config, Metadata metadata, out IEnumerable<EntityBag> unknownEntities) {
+			if (config == null)
+				config = BeetleConfig.Instance;
 
-			var dynEntities = (JArray)bundle.entities;
+			var dynEntities = (IEnumerable)bundle.entities;
 			var entities = new List<EntityBag>();
 			var unknowns = new List<EntityBag>();
 			bool forceUpdatePackage = bundle.forceUpdate ?? false;
@@ -163,19 +162,20 @@ namespace Beetle.Server {
 				// read original values
 				var ovs = tracker.o != null ? tracker.o as IEnumerable : null;
 				if (ovs != null) {
-					foreach (JProperty ov in ovs) {
-						var loopType = ov.Name.Split('.').Aggregate(type, GetPropertyType);
+					foreach (dynamic ov in ovs) {
+						string name = ov.Name.ToString();
+						var loopType = name.Split('.').Aggregate(type, GetPropertyType);
 						if (loopType == null)
 							throw new BeetleException(string.Format(Resources.OriginalValuePropertyCouldNotBeFound, ov.Name));
-						var value = jsonSerializer.Deserialize(new JTokenReader(ov.Value), loopType);
-						originalValues.Add(ov.Name, value);
+						var value = config.Serializer.ConvertFromDynamic(ov.Value, loopType);
+						originalValues.Add(name, value);
 					}
 				}
 				var forceUpdate = forceUpdatePackage || (bool)(tracker.f ?? false);
 				// deserialize entity
 				if (type != null) {
-					var clientEntity = jsonSerializer.Deserialize(new JTokenReader(dynEntity), type);
-					var entity = jsonSerializer.Deserialize(new JTokenReader(dynEntity), type);
+					var clientEntity = config.Serializer.ConvertFromDynamic(dynEntity, type);
+					var entity = config.Serializer.ConvertFromDynamic(dynEntity, type);
 					EntityType entityType = null;
 					if (metadata != null)
 						entityType = metadata.Entities.FirstOrDefault(e => e.Name == typeName);
@@ -353,21 +353,19 @@ namespace Beetle.Server {
 			return retVal;
 		}
 
-		public static void CopyValuesFromJson(string source, object destination, BeetleConfig config) {
+		public static void CopyValuesFromJson(string source, object destination, IBeetleConfig config) {
 			if (string.IsNullOrEmpty(source)) return;
-			var obj = JsonConvert.DeserializeObject<JObject>(source, config.JsonSerializerSettings);
+			var obj = config.Serializer.DeserializeToDynamic(source);
 			var type = destination.GetType();
-			var serializer = config.CreateSerializer();
 			foreach (var p in obj.Properties()) {
 				var propType = GetPropertyType(type, p.Name);
-				var jValue = obj[p.Name];
-				var value = serializer.Deserialize(jValue.CreateReader(), propType);
+				var value = obj[p.Name];
+				config.Serializer.ConvertFromDynamic(value, propType);
 				SetPropertyValue(destination, p.Name, value);
 			}
 		}
 
-
-		public static IQueryHandler<IQueryable> GetQueryHandler(BeetleConfig actionConfig, IBeetleService service) {
+		public static IQueryHandler<IQueryable> GetQueryHandler(IBeetleConfig actionConfig, IBeetleService service) {
 			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
 			var contextHandler = service != null ? service.ContextHandler : null;
 			return (config != null ? config.QueryableHandler : null)
@@ -375,7 +373,7 @@ namespace Beetle.Server {
 				?? QueryableHandler.Instance;
 		}
 
-		public static IContentHandler<IEnumerable> GetEnumerableHandler(BeetleConfig actionConfig, IBeetleService service) {
+		public static IContentHandler<IEnumerable> GetEnumerableHandler(IBeetleConfig actionConfig, IBeetleService service) {
 			var config = actionConfig ?? (service != null ? service.BeetleConfig : null);
 			var contextHandler = service != null ? service.ContextHandler : null;
 			return (config != null ? config.EnumerableHandler : null)

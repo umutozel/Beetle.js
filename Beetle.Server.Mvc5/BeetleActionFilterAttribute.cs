@@ -14,18 +14,18 @@ namespace Beetle.Server.Mvc {
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
-        private readonly BeetleConfig _beetleConfig;
+        private readonly IBeetleConfig _beetleConfig;
         private bool? _checkRequestHash;
 
         public BeetleActionFilterAttribute(Type configType = null) {
             if (configType != null) {
-                _beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
+                _beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
                 if (_beetleConfig == null)
                     throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
         }
 
-        public BeetleActionFilterAttribute(BeetleConfig config) {
+        public BeetleActionFilterAttribute(IBeetleConfig config) {
             _beetleConfig = config;
         }
 
@@ -103,7 +103,7 @@ namespace Beetle.Server.Mvc {
         }
 
         protected virtual void GetParameters(ActionExecutingContext filterContext, IBeetleService service, out string queryString, out NameValueCollection queryParams) {
-            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
+            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null);
             Helper.GetParameters(out queryString, out queryParams, config, filterContext.ActionDescriptor.GetParameters(), filterContext.ActionParameters);
         }
 
@@ -114,11 +114,11 @@ namespace Beetle.Server.Mvc {
         }
 
         protected virtual ActionResult HandleResponse(ControllerContext filterContext, ProcessResult result, IBeetleService service) {
-            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
+            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null);
             return Helper.HandleResponse(result, config);
         }
 
-        protected BeetleConfig BeetleConfig {
+        protected IBeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 

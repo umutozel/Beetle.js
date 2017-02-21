@@ -23,7 +23,7 @@ namespace Beetle.Server {
 
         object HandleUnknownAction(string action);
 
-        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service);
+        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, ActionContext actionContext, IBeetleConfig actionConfig, IBeetleService service);
 
         /// <summary>
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).

@@ -16,13 +16,13 @@ namespace Beetle.Server {
 
         object CreateType(string typeName, string initialValues);
 
-        ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig);
+        ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleConfig actionConfig);
 
         IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns);
 
         Task<SaveResult> SaveChanges(object saveBundle);
 
-        BeetleConfig BeetleConfig { get; }
+        IBeetleConfig BeetleConfig { get; }
 
         IContextHandler ContextHandler { get; }
 

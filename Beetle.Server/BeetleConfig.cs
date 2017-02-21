@@ -7,10 +7,16 @@ using System.Collections;
 
 namespace Beetle.Server {
 
-    public class BeetleConfig {
+    /// <summary>
+    /// Default config implementation using Newtonsoft.
+    /// We want Beetle to work without any configuration, so here the default implementation and yeah there is dependency to Newtonsoft.
+    /// (Microsoft did it too with their JsonMediaTypeFormatter).
+    /// But it is possible to use another serializer via IBeetleService.
+    /// </summary>
+    public class BeetleConfig: IBeetleConfig {
         private static readonly Lazy<BeetleConfig> _instance = new Lazy<BeetleConfig>();
-        private static BeetleConfig _defaultInstance;
         private readonly JsonSerializerSettings _settings;
+        private readonly NewtonsoftSerializer _serializer;
 
         public BeetleConfig(): this(CreateSettings()) {
         }
@@ -25,6 +31,7 @@ namespace Beetle.Server {
 
         public BeetleConfig(JsonSerializerSettings jsonSerializerSettings) {
             _settings = jsonSerializerSettings;
+            _serializer = new NewtonsoftSerializer(JsonSerializerSettings);
         }
 
         private static JsonSerializerSettings CreateSettings(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
@@ -51,8 +58,7 @@ namespace Beetle.Server {
         }
 
         public static BeetleConfig Instance {
-            get { return _defaultInstance ?? _instance.Value; }
-            set { _defaultInstance = value; }
+            get { return _instance.Value; }
         }
 
         public virtual JsonSerializer CreateSerializer() {
@@ -63,14 +69,33 @@ namespace Beetle.Server {
             get { return _settings; }
         }
 
+        public NewtonsoftSerializer Serializer {
+            get { return _serializer; }
+        }
+
+        public virtual IQueryHandler<IQueryable> QueryableHandler { get; }
+
+        public virtual IContentHandler<IEnumerable> EnumerableHandler { get; }
+
+        ISerializer IBeetleConfig.Serializer {
+            get { return Serializer; }
+        }
+    }
+
+    public interface IBeetleConfig {
+
+        ISerializer Serializer { get; }
+
         /// <summary>
         /// Exclusive query handler instance.
+        /// Will be used even if ContextHandler has one. When not null, we are saying "Use this handler for this config (action) no matter what".
         /// </summary>
-        public IQueryHandler<IQueryable> QueryableHandler { get; set; }
+        IQueryHandler<IQueryable> QueryableHandler { get; }
 
         /// <summary>
         /// Exclusive enumerable handler instance.
+        /// Will be used even if ContextHandler has one. When not null, we are saying "Use this handler for this config (action) no matter what".
         /// </summary>
-        public IContentHandler<IEnumerable> EnumerableHandler { get; set; }
+        IContentHandler<IEnumerable> EnumerableHandler { get; }
     }
 }

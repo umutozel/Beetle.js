@@ -4,11 +4,10 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Beetle.Server.Mvc {
 
@@ -16,9 +15,9 @@ namespace Beetle.Server.Mvc {
         private static readonly Lazy<JavaScriptSerializer> _javaScriptSerializer = new Lazy<JavaScriptSerializer>();
 
         public static void GetParameters(out string queryString, out NameValueCollection queryParams,
-                                           BeetleConfig config = null,
-                                           ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
-                                           HttpRequest request = null) {
+                                         IBeetleConfig config = null,
+                                         ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
+                                         HttpRequest request = null) {
             if (config == null)
                 config = BeetleConfig.Instance;
             if (request == null)
@@ -30,8 +29,8 @@ namespace Beetle.Server.Mvc {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 if (request.ContentType.Contains("application/json")) {
-                    var d = JsonConvert.DeserializeObject<JObject>(queryString, config.JsonSerializerSettings);
-                    postData = d;
+                    var d = config.Serializer.Deserialize<Dictionary<string, object>>(queryString);
+                    postData = config.Serializer.DeserializeToDynamic(queryString);
                     // now there is no query string parameters, we must populate them manually for beetle queries
                     // otherwise beetle cannot use query parameters when using post method
                     queryParams = new NameValueCollection();
@@ -46,15 +45,15 @@ namespace Beetle.Server.Mvc {
                     queryParams = prms;
                     var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
                     var jsonStr = _javaScriptSerializer.Value.Serialize(d);
-                    postData = JsonConvert.DeserializeObject<JObject>(jsonStr, config.JsonSerializerSettings);
+                    postData = config.Serializer.DeserializeToDynamic(jsonStr);
                 }
 
                 // modify the action parameters to allow model binding to object, dynamic and json.net parameters
                 if (parameterDescriptors != null && parameters != null) {
-                    foreach (var parameterDescriptor in parameterDescriptors) {
-                        var t = parameterDescriptor.ParameterType;
-                        if (t.IsAssignableFrom(typeof(object)) || typeof(JToken).IsAssignableFrom(t)) {
-                            parameters[parameterDescriptor.ParameterName] = postData;
+                    foreach (var pd in parameterDescriptors) {
+                        var t = pd.ParameterType;
+                        if (t == typeof(object) || pd.GetCustomAttributes(typeof(DynamicAttribute), false).Any()) {
+                            parameters[pd.ParameterName] = postData;
                         }
                     }
                 }
@@ -69,7 +68,7 @@ namespace Beetle.Server.Mvc {
             }
         }
 
-        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service = null) {
+        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleConfig actionConfig, IBeetleService service = null) {
             // beetle should be used for all content types except mvc actions results. so we check only if content is not an mvc action result
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
@@ -93,11 +92,11 @@ namespace Beetle.Server.Mvc {
             return Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, actionConfig);
         }
 
-        public static ActionResult HandleResponse(ProcessResult processResult, BeetleConfig actionConfig = null, HttpResponse response = null) {
+        public static ActionResult HandleResponse(ProcessResult processResult, IBeetleConfig config = null, HttpResponse response = null) {
             var result = processResult.Result;
 
-            if (actionConfig == null)
-                actionConfig = BeetleConfig.Instance;
+            if (config == null)
+                config = BeetleConfig.Instance;
             if (response == null)
                 response = HttpContext.Current.Response;
 
@@ -106,7 +105,7 @@ namespace Beetle.Server.Mvc {
             if (inlineCount != null && response.Headers["X-InlineCount"] == null)
                 response.Headers.Add("X-InlineCount", inlineCount.ToString());
             if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
-                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, Formatting.None, actionConfig.JsonSerializerSettings);
+                var userDataStr = config.Serializer.Serialize(processResult.UserData);
                 response.Headers.Add("X-UserData", userDataStr);
             }
 
@@ -114,7 +113,7 @@ namespace Beetle.Server.Mvc {
             if (actionResult != null) return actionResult;
 
             // write the result to response content
-            return new BeetleJsonResult(actionConfig, processResult) {
+            return new BeetleJsonResult(config, processResult) {
                 Data = result,
                 ContentEncoding = response.HeaderEncoding,
                 ContentType = "application/json",

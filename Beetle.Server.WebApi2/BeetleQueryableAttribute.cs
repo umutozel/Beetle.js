@@ -19,7 +19,7 @@ namespace Beetle.Server.WebApi {
     public class BeetleQueryableAttribute : QueryableAttribute {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
         private static readonly MethodInfo _dummyMethodInfo;
-        private readonly BeetleConfig _beetleConfig;
+        private readonly IBeetleConfig _beetleConfig;
         private bool? _checkRequestHash;
 
         static BeetleQueryableAttribute() {
@@ -30,7 +30,7 @@ namespace Beetle.Server.WebApi {
             AllowedQueryOptions = AllowedQueryOptions.Supported | AllowedQueryOptions.Expand | AllowedQueryOptions.Select;
         }
 
-        public BeetleQueryableAttribute(BeetleConfig config)
+        public BeetleQueryableAttribute(IBeetleConfig config)
             : this() {
             _beetleConfig = config;
         }
@@ -38,7 +38,7 @@ namespace Beetle.Server.WebApi {
         public BeetleQueryableAttribute(Type configType)
             : this() {
             if (configType != null) {
-                _beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
+                _beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
                 if (_beetleConfig == null)
                     throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
@@ -55,7 +55,7 @@ namespace Beetle.Server.WebApi {
 
             // get query parameters
             string queryString;
-            var queryParams = GetParameters(actionExecutedContext, out queryString);
+            var queryParams = GetParameters(actionExecutedContext, out queryString, service);
             object contentValue;
             if (!response.TryGetContentValue(out contentValue)) return;
 
@@ -173,19 +173,19 @@ namespace Beetle.Server.WebApi {
             return queryable;
         }
 
-        protected virtual NameValueCollection GetParameters(HttpActionExecutedContext actionExecutedContext, out string queryString) {
-            return Helper.GetParameters(out queryString);
+        protected virtual NameValueCollection GetParameters(HttpActionExecutedContext actionExecutedContext, out string queryString, IBeetleService service = null) {
+            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null);
+            return Helper.GetParameters(config, out queryString);
         }
 
-        protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext,
-                                                       HttpRequestMessage request, IBeetleService service) {
+        protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request, IBeetleService service = null) {
             return service != null
                 ? service.ProcessRequest(contentValue, actionContext, _beetleConfig)
-                : Helper.ProcessRequest(contentValue, actionContext, request);
+                : Helper.ProcessRequest(contentValue, actionContext, request, actionConfig: _beetleConfig);
         }
 
-        protected virtual ObjectContent HandleResponse(HttpActionExecutedContext filterContext, ProcessResult result, IBeetleService service) {
-            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null) ?? BeetleConfig.Instance;
+        protected virtual ObjectContent HandleResponse(HttpActionExecutedContext filterContext, ProcessResult result, IBeetleService service = null) {
+            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null);
             return Helper.HandleResponse(result, config);
         }
 
@@ -193,7 +193,7 @@ namespace Beetle.Server.WebApi {
             get { return _instance.Value; }
         }
 
-        protected BeetleConfig BeetleConfig {
+        protected IBeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 

@@ -2,15 +2,14 @@ using Beetle.Server.Mvc.Properties;
 using System;
 using System.Collections;
 using System.Web.Mvc;
-using Newtonsoft.Json;
 
 namespace Beetle.Server.Mvc {
 
     public class BeetleJsonResult: JsonResult {
-        private readonly BeetleConfig _config;
+        private readonly IBeetleConfig _config;
         private readonly ProcessResult _processResult;
 
-        public BeetleJsonResult(BeetleConfig config, ProcessResult processResult) {
+        public BeetleJsonResult(IBeetleConfig config, ProcessResult processResult) {
             _config = config;
             _processResult = processResult;
         }
@@ -32,7 +31,7 @@ namespace Beetle.Server.Mvc {
             if (ContentEncoding != null)
                 response.ContentEncoding = ContentEncoding;
 
-            var d = JsonConvert.SerializeObject(Data, _config.JsonSerializerSettings);
+            var d = _config.Serializer.Serialize(Data);
             if (!(Data is string) && Data is IEnumerable)
                 d = "{\"$d\" : " + d + "}";
             response.Write(d);

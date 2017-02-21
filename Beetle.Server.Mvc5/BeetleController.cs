@@ -11,7 +11,7 @@ namespace Beetle.Server.Mvc {
     [BeetleActionFilter]
     public class BeetleController<TContextHandler> : Controller, IBeetleService<TContextHandler>
             where TContextHandler : class, IContextHandler {
-        private readonly BeetleConfig _beetleConfig;
+        private readonly IBeetleConfig _beetleConfig;
 
         public BeetleController()
             : this(null, null) {
@@ -21,13 +21,13 @@ namespace Beetle.Server.Mvc {
             : this(contextHandler, null) {
         }
 
-        public BeetleController(BeetleConfig beetleConfig)
+        public BeetleController(IBeetleConfig beetleConfig)
             : this(null, beetleConfig) {
         }
 
-        public BeetleController(TContextHandler contextHandler, BeetleConfig beetleConfig) {
+        public BeetleController(TContextHandler contextHandler, IBeetleConfig beetleConfig) {
             ContextHandler = contextHandler;
-            _beetleConfig = beetleConfig ?? BeetleConfig.Instance;
+            _beetleConfig = beetleConfig;
             AutoHandleUnknownActions = false;
         }
 
@@ -78,7 +78,6 @@ namespace Beetle.Server.Mvc {
 
         #region Implementation of IBeetleService
 
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual object Metadata() {
             return ContextHandler.Metadata().ToMinified();
         }
@@ -89,7 +88,7 @@ namespace Beetle.Server.Mvc {
             return retVal;
         }
 
-        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig = null) {
+        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleConfig actionConfig = null) {
             return Helper.ProcessRequest(contentValue, actionContext, actionConfig ?? BeetleConfig, this);
         }
 
@@ -116,7 +115,7 @@ namespace Beetle.Server.Mvc {
             return retVal;
         }
 
-        public virtual BeetleConfig BeetleConfig {
+        public virtual IBeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 

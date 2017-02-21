@@ -11,12 +11,12 @@ using Newtonsoft.Json.Converters;
 namespace Beetle.Server.Mvc {
 
     public class BeetleValueProviderFactory : ValueProviderFactory {
-        private readonly BeetleConfig _config;
+        private readonly JsonSerializerSettings _settings;
 
-        public BeetleValueProviderFactory(BeetleConfig config) {
-            if (config == null) throw new ArgumentNullException(nameof(config));
+        public BeetleValueProviderFactory(JsonSerializerSettings settings) {
+            if (_settings == null) throw new ArgumentNullException(nameof(settings));
 
-            _config = config;
+            _settings = settings;
         }
 
         public override IValueProvider GetValueProvider(ControllerContext controllerContext) {
@@ -27,21 +27,21 @@ namespace Beetle.Server.Mvc {
                 return null;
 
             var streamReader = new StreamReader(controllerContext.HttpContext.Request.InputStream);
-            var JSONReader = new JsonTextReader(streamReader);
-            if (!JSONReader.Read())
+            var jsonReader = new JsonTextReader(streamReader);
+            if (!jsonReader.Read())
                 return null;
 
-            var JSONSerializer = _config.CreateSerializer();
-            JSONSerializer.Converters.Add(new ExpandoObjectConverter());
+            var jsonSerializer = JsonSerializer.Create(_settings);
+            jsonSerializer.Converters.Add(new ExpandoObjectConverter());
 
-            object JSONObject;
-            if (JSONReader.TokenType == JsonToken.StartArray)
-                JSONObject = JSONSerializer.Deserialize<List<ExpandoObject>>(JSONReader);
+            object jsonObject;
+            if (jsonReader.TokenType == JsonToken.StartArray)
+                jsonObject = jsonSerializer.Deserialize<List<ExpandoObject>>(jsonReader);
             else
-                JSONObject = JSONSerializer.Deserialize<ExpandoObject>(JSONReader);
+                jsonObject = jsonSerializer.Deserialize<ExpandoObject>(jsonReader);
 
             var backingStore = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            AddToBackingStore(backingStore, String.Empty, JSONObject);
+            AddToBackingStore(backingStore, string.Empty, jsonObject);
             return new DictionaryValueProvider<object>(backingStore, CultureInfo.CurrentCulture);
         }
 

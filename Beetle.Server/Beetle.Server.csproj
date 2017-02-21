@@ -67,6 +67,8 @@
     </Compile>
     <Compile Include="BeetleConfig.cs" />
     <Compile Include="EnumerableHandler.cs" />
+    <Compile Include="ISerializer.cs" />
+    <Compile Include="NewtonsoftSerializer.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

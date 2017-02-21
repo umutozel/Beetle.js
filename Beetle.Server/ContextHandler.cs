@@ -65,7 +65,7 @@ namespace Beetle.Server {
         }
 
         public virtual ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters,
-                                                    ActionContext actionContext, BeetleConfig actionConfig, IBeetleService service) {
+                                                    ActionContext actionContext, IBeetleConfig actionConfig, IBeetleService service) {
             return Helper.DefaultRequestProcessor(contentValue, queryParameters, actionContext, service, this, actionConfig);
         }
 

@@ -4,39 +4,37 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web.Http.Filters;
+using System.Net.Http.Formatting;
 
 namespace Beetle.Server.WebApi {
 
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
-        private BeetleConfig _config;
+        private readonly IBeetleConfig _config;
 
         public BeetleActionFilterAttribute() {
         }
 
         public BeetleActionFilterAttribute(Type configType) {
-            var beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
+            var beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
             if (beetleConfig == null)
                 throw new ArgumentException(Resources.CannotCreateConfigInstance);
             _config = beetleConfig;
         }
 
-        public BeetleActionFilterAttribute(BeetleConfig config) {
+        public BeetleActionFilterAttribute(IBeetleConfig config) {
             _config = config;
         }
 
-        private BeetleMediaTypeFormatter CreateFormatter(BeetleConfig config) {
-            var formatter = new BeetleMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
-            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
-            formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
-            return formatter;
+        protected IBeetleConfig Config {
+            get { return _config; }
+        }
+
+        protected virtual MediaTypeFormatter CreateFormatter() {
+            return Helper.CreateFormatter(_config);
         }
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
-            if (_config == null) {
-                var service = actionExecutedContext.ActionContext.ControllerContext.Controller as IBeetleService;
-                _config = service != null ? service.BeetleConfig : BeetleConfig.Instance;
-            }
-            var formatter = CreateFormatter(_config);
+            var formatter = CreateFormatter();
 
             base.OnActionExecuted(actionExecutedContext);
 

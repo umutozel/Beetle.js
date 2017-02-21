@@ -13,7 +13,7 @@ namespace Beetle.Server.WebApi {
     [BeetleApiController]
     public class BeetleApiController<TContextHandler> : ApiController, IBeetleService<TContextHandler>, IODataService
             where TContextHandler : class, IContextHandler {
-        private readonly BeetleConfig _beetleConfig;
+        private readonly IBeetleConfig _beetleConfig;
 
         public BeetleApiController(): this(null, null) {
         }
@@ -21,12 +21,12 @@ namespace Beetle.Server.WebApi {
         public BeetleApiController(TContextHandler contextHandler): this(contextHandler, null) {
         }
 
-        public BeetleApiController(BeetleConfig beetleConfig): this(null, beetleConfig) {
+        public BeetleApiController(IBeetleConfig beetleConfig): this(null, beetleConfig) {
         }
 
-        public BeetleApiController(TContextHandler contextHandler, BeetleConfig beetleConfig) {
+        public BeetleApiController(TContextHandler contextHandler, IBeetleConfig beetleConfig) {
             ContextHandler = contextHandler;
-            _beetleConfig = beetleConfig ?? BeetleConfig.Instance;
+            _beetleConfig = beetleConfig;
             AutoHandleUnknownActions = false;
         }
 
@@ -63,7 +63,7 @@ namespace Beetle.Server.WebApi {
             var result = ContextHandler.HandleUnknownAction(action);
             // get beetle parameters
             string queryString;
-            var parameters = Helper.GetParameters(out queryString);
+            var parameters = Helper.GetParameters(BeetleConfig, out queryString);
             var actionContext = new ActionContext(action, result, queryString, parameters, MaxResultCount, CheckRequestHash);
             var queryable = result as IQueryable;
             // if value is a query, first handle OData parameters
@@ -88,7 +88,6 @@ namespace Beetle.Server.WebApi {
         #region Implementation of IBeetleService
 
         [HttpGet]
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual object Metadata() {
             return ContextHandler.Metadata().ToMinified();
         }
@@ -100,7 +99,7 @@ namespace Beetle.Server.WebApi {
             return retVal;
         }
 
-        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, BeetleConfig actionConfig = null) {
+        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleConfig actionConfig = null) {
             return Helper.ProcessRequest(contentValue, actionContext, Request, ForbidBeetleQueryString, actionConfig ?? BeetleConfig, this);
         }
 
@@ -131,7 +130,7 @@ namespace Beetle.Server.WebApi {
             return retVal;
         }
 
-        public virtual BeetleConfig BeetleConfig {
+        public virtual IBeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 

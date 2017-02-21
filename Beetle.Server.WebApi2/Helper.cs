@@ -9,13 +9,15 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
-using Newtonsoft.Json;
+using System.Net.Http.Formatting;
 
 namespace Beetle.Server.WebApi {
 
     public static class Helper {
 
-        public static NameValueCollection GetParameters(out string queryString, HttpRequest request = null) {
+        public static NameValueCollection GetParameters(IBeetleConfig config, out string queryString, HttpRequest request = null) {
+            if (config == null)
+                config = BeetleConfig.Instance;
             if (request == null)
                 request = HttpContext.Current.Request;
 
@@ -25,7 +27,7 @@ namespace Beetle.Server.WebApi {
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 // we read query options from input stream
                 if (request.ContentType.Contains("application/json")) {
-                    var d = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryString);
+                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
                     var queryParams = new NameValueCollection(request.Params);
                     if (d != null) {
                         foreach (var i in d)
@@ -45,7 +47,7 @@ namespace Beetle.Server.WebApi {
         }
 
         public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
-                                                   bool forbidBeetleQueryParams = false, BeetleConfig actionConfig = null, IBeetleService service = null) {
+                                                   bool forbidBeetleQueryParams = false, IBeetleConfig actionConfig = null, IBeetleService service = null) {
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 bool checkHash;
                 if (!actionContext.CheckRequestHash.HasValue)
@@ -88,7 +90,7 @@ namespace Beetle.Server.WebApi {
             return processResult;
         }
 
-        public static ObjectContent HandleResponse(ProcessResult processResult, BeetleConfig config = null, HttpResponse response = null) {
+        public static ObjectContent HandleResponse(ProcessResult processResult, IBeetleConfig config = null, HttpResponse response = null) {
             if (config == null)
                 config = BeetleConfig.Instance;
             if (response == null)
@@ -98,9 +100,7 @@ namespace Beetle.Server.WebApi {
                 ? typeof(object)
                 : processResult.Result.GetType();
 
-            var formatter = new BeetleMediaTypeFormatter { SerializerSettings = config.JsonSerializerSettings };
-            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
-            formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
+            var formatter = CreateFormatter(config);
             var retVal = new ObjectContent(type, processResult.Result, formatter);
 
             // set InlineCount header info if exists
@@ -108,7 +108,7 @@ namespace Beetle.Server.WebApi {
             if (inlineCount != null && response.Headers["X-InlineCount"] == null)
                 response.Headers["X-InlineCount"] = inlineCount.ToString();
             if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
-                var userDataStr = JsonConvert.SerializeObject(processResult.UserData, config.JsonSerializerSettings);
+                var userDataStr = config.Serializer.Serialize(processResult.UserData);
                 response.Headers["X-UserData"] = userDataStr;
             }
 
@@ -132,6 +132,16 @@ namespace Beetle.Server.WebApi {
             }
 
             throw new BeetleException(Server.Properties.Resources.AlteredRequestException);
+        }
+
+        public static MediaTypeFormatter CreateFormatter(IBeetleConfig config) {
+            var beetleConfig = config as BeetleConfig;
+            var settings = beetleConfig != null ? beetleConfig.JsonSerializerSettings : BeetleConfig.Instance.JsonSerializerSettings;
+
+            var formatter = new BeetleMediaTypeFormatter { SerializerSettings = settings };
+            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
+            formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
+            return formatter;
         }
     }
 }

@@ -1,17 +1,16 @@
 using Beetle.Server.WebApi.Properties;
 using System;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Web.Http.OData.Query;
+using System.Net.Http.Formatting;
 
 namespace Beetle.Server.WebApi {
 
     [AttributeUsage(AttributeTargets.Class)]
     public class BeetleApiControllerAttribute : Attribute, IControllerConfiguration {
         private static readonly object _locker = new object();
-        private readonly BeetleConfig _beetleConfig;
+        private readonly IBeetleConfig _beetleConfig;
         private readonly BeetleQueryableAttribute _queryableFilter;
 
         public BeetleApiControllerAttribute(Type configType = null)
@@ -20,11 +19,10 @@ namespace Beetle.Server.WebApi {
 
         public BeetleApiControllerAttribute(BeetleQueryableAttribute defaultFilter, Type configType = null) {
             if (configType != null) {
-                _beetleConfig = Activator.CreateInstance(configType) as BeetleConfig;
+                _beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
                 if (_beetleConfig == null)
                     throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
-            else _beetleConfig = BeetleConfig.Instance;
 
             _queryableFilter = defaultFilter;
         }
@@ -37,18 +35,19 @@ namespace Beetle.Server.WebApi {
 
                 // add Json Formatter
                 settings.Formatters.Remove(settings.Formatters.JsonFormatter);
-                var formatter = new BeetleMediaTypeFormatter { SerializerSettings = _beetleConfig.JsonSerializerSettings };
-                formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
-                formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
-                settings.Formatters.Add(formatter);
+                settings.Formatters.Add(CreateFormatter());
             }
+        }
+
+        protected virtual MediaTypeFormatter CreateFormatter() {
+            return Helper.CreateFormatter(_beetleConfig);
         }
 
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {
             return new BeetleQueryableFilterProvider(defaultFilter);
         }
 
-        protected virtual BeetleConfig BeetleConfig {
+        protected virtual IBeetleConfig BeetleConfig {
             get { return _beetleConfig; }
         }
 
