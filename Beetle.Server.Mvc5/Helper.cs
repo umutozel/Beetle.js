@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -29,14 +30,15 @@ namespace Beetle.Server.Mvc {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 if (request.ContentType.Contains("application/json")) {
-                    var d = config.Serializer.Deserialize<Dictionary<string, object>>(queryString);
-                    postData = config.Serializer.DeserializeToDynamic(queryString);
+                    dynamic d = postData = config.Serializer.DeserializeToDynamic(queryString);
+                    postData = d;
                     // now there is no query string parameters, we must populate them manually for beetle queries
                     // otherwise beetle cannot use query parameters when using post method
                     queryParams = new NameValueCollection();
                     if (d != null) {
-                        foreach (var i in d) {
-                            queryParams.Add(i.Key, i.Value == null ? string.Empty : i.Value.ToString());
+                        foreach (var p in TypeDescriptor.GetProperties(d)) {
+                            var v = d[p.Name];
+                            queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
                         }
                     }
                 }
