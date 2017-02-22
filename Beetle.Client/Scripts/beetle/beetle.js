@@ -1,22 +1,22 @@
 ﻿(function (root, factory) {
 	var deps = {
-		jquery: root.$,
+		jQuery: root.$,
 		angular: root.angular,
 		ko: root.ko,
 		Q: root.Q
 	};
 
 	if (typeof exports === "object") {
-		deps.http = null;
-		deps.https = null;
-		for (var p in deps) {
-			try {
-				deps[p] = require(p);
-			}
-			catch (e) { /* ignored */ }
-		}
+	    try { deps.jQuery = require("jQuery"); } catch (e) { }
+	    try { deps.angular = require("angular"); } catch (e) { }
+	    try { deps.ko = require("ko"); } catch (e) { }
+	    try { deps.Q = require("Q"); } catch (e) { }
+	    try {
+	        deps.http = require("http");
+	        deps.https = require("https");
+	    } catch (e) { }
 
-		module.exports = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q, deps.http, deps.https);
+		module.exports = factory(root, deps.jQuery, deps.angular, deps.ko, deps.Q, deps.http, deps.https);
 		return module.exports;
 	}
 	else if (typeof define === "function" && define.amd) {
@@ -33,11 +33,11 @@
 				if (mdl) deps[modules[i]] = mdl;
 			}
 
-			root.beetle = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
+			root.beetle = factory(root, deps.jQuery, deps.angular, deps.ko, deps.Q);
 		});
 	}
 	else {
-		root.beetle = factory(root, deps.jquery, deps.angular, deps.ko, deps.Q);
+	    root.beetle = factory(root, deps.jQuery, deps.angular, deps.ko, deps.Q);
 		return root.beetle;
 	}
 })(this, function (root, $, angular, ko, Q, http, https) {
