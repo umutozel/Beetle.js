@@ -2875,11 +2875,11 @@
 		};
 	})();
 	var impls = (function () {
-		/// <summary>Base type implementation instances.</summary>
+		/// <summary>Base type implementations.</summary>
 
 		return {
 			/// <field>Default date converter class. Uses browser's default Date object.</field>
-			defaultDateConverterInstance: (function () {
+			defaultDateConverter: (function () {
 				var ctor = function () {
 					baseTypes.DateConverterBase.call(this, 'Default Date Converter');
 				};
@@ -2903,41 +2903,43 @@
 					return value.toISOString();
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>Knockout observable provider class. Makes given object's properties observable.</field>
-			koObservableProviderInstance: (function () {
+			koObservableProvider: (function () {
 
-				if (ko) {
+				var ctor = function (ko) {
+					baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
+					this.ko = ko;
+
 					/// <summary>
 					/// Observable value read-write interceptor. 
 					/// Because ko does not give old and new values together when notifying subscribers, I had to write this extender.
 					/// </summary>
 					/// <param name="target">Observable to extend.</param>
 					/// <param name="interceptor">Extender parameter. We pass before and after callbacks with this.</param>
-					ko.extenders.intercept = function (target, interceptor) {
-						var result = ko.computed({
-							read: target,
-							write: function (newValue) {
-								var callback = interceptor && interceptor.callback;
-								if (callback)
-									callback(interceptor.object, interceptor.property, target, newValue);
-							}
-						});
+					if (ko.extenders.intercept == null) {
+						ko.extenders.intercept = function (target, interceptor) {
+							var result = ko.computed({
+								read: target,
+								write: function (newValue) {
+									var callback = interceptor && interceptor.callback;
+									if (callback)
+										callback(interceptor.object, interceptor.property, target, newValue);
+								}
+							});
 
-						return result;
-					};
-				}
+							return result;
+						};
+					}
 
-				var ctor = function () {
-					baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.ObservableProviderBase);
 				var proto = ctor.prototype;
 
 				proto.isObservable = function (object, property) {
-					return ko.isObservable(object[property]);
+					return this.ko.isObservable(object[property]);
 				};
 
 				proto.toObservable = function (object, type, callbacks) {
@@ -2981,10 +2983,11 @@
 							type.properties.push(p);
 					});
 
+					var that = this;
 					function toObservableProperty(property, value, callback) {
-						var retVal = ko.observable(value);
+					    var retVal = that.ko.observable(value);
 						if (callback)
-							return ko.observable(value).extend({
+						    return that.ko.observable(value).extend({
 								intercept: {
 									object: object,
 									property: property,
@@ -3005,7 +3008,7 @@
 									retVal.$fromKo = false;
 									after(o, p, i, r, a);
 								});
-						retVal = ko.observableArray(value);
+						retVal = that.ko.observableArray(value);
 						retVal.subscribe(function () { retVal.$fromKo = true; }, null, "beforeChange");
 						if (setCallback)
 							retVal.equalityComparer = function (items, newItems) {
@@ -3016,17 +3019,17 @@
 				};
 
 				proto.getValue = function (object, property) {
-					return ko.utils.unwrapObservable(object[property]);
+				    return this.ko.utils.unwrapObservable(object[property]);
 				};
 
 				proto.setValue = function (object, property, value) {
 					object[property](value);
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
-			propertyObservableProviderInstance: (function () {
+			propertyObservableProvider: (function () {
 				var ctor = function () {
 					baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
 					helper.tryFreeze(this);
@@ -3140,12 +3143,13 @@
 					object[property] = value;
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
-			jQueryAjaxProviderInstance: (function () {
-				var ctor = function () {
-					baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
+			jQueryAjaxProvider: (function () {
+				var ctor = function ($) {
+				    baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
+				    this.$ = $;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
@@ -3183,35 +3187,32 @@
 						}
 					};
 					if (async !== false)
-					    o.timeout = timeout;
+						o.timeout = timeout;
 					if (extra != null)
-						$.extend(o, extra);
+						this.$.extend(o, extra);
 					if (o.cache == null) o.cache = false;
-					return $.ajax(o);
+					return this.$.ajax(o);
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
-			angularAjaxProviderInstance: (function () {
-				var ctor = function () {
+			angularAjaxProvider: (function () {
+			    var ctor = function (angular) {
 					baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
 					this.syncSupported = false;
+					this.$http = angular.injector(["ng"]).get('$http');
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
-
-				var $http;
-				if (angular)
-					$http = angular.injector(["ng"]).get('$http');
 
 				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
 					if (async === false)
 						throw helper.createError(i18N.syncNotSupported, [this.name]);
 
 					var o = {
-					    method: method,
+						method: method,
 						url: uri,
 						contentType: contentType,
 						data: data,
@@ -3225,7 +3226,7 @@
 					if (extra != null)
 						helper.extend(o, extra);
 					if (o.cache == null) o.cache = false;
-					return $http(o)
+					return this.$http(o)
 						.then(function (resp) {
 							var headers = resp.headers();
 							successCallback(resp.data, function (header) {
@@ -3238,10 +3239,10 @@
 						});
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>Pure javascript ajax provider class.</field>
-			vanillajsAjaxProviderInstance: (function () {
+			vanillajsAjaxProvider: (function () {
 				var ctor = function () {
 					baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
 					this.syncSupported = true;
@@ -3259,7 +3260,7 @@
 					xhr.setRequestHeader("Accept", "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml");
 					xhr.setRequestHeader("Content-Type", contentType);
 					if (async !== false)
-					    xhr.timeout = timeout;
+						xhr.timeout = timeout;
 
 					if (headers) {
 						for (var p in headers) {
@@ -3289,21 +3290,23 @@
 					xhr.send(data);
 				}
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>Node.js ajax provider class.</field>
-			nodejsAjaxProviderInstance: (function () {
-				var ctor = function () {
+			nodejsAjaxProvider: (function () {
+				var ctor = function (http, https) {
 					baseTypes.AjaxProviderBase.call(this, 'Node.js Ajax Provider');
 					this.syncSupported = false;
+					this.http = http;
+					this.https = https;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
 
 				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-				    if (async === false)
-				        throw helper.createError(i18N.syncNotSupported, [this.name]);
+					if (async === false)
+						throw helper.createError(i18N.syncNotSupported, [this.name]);
 
 					var reURLInformation = new RegExp([
 						'^(https?:)//', // protocol
@@ -3313,7 +3316,7 @@
 						'(#.*|)$' // hash
 					].join(''));
 					var uriParts = uri.match(reURLInformation),
-						protocol = uriParts[1] == "https:" ? https : http,
+						protocol = uriParts[1] == "https:" ? this.https : this.http,
 						host = uriParts[3],
 						port = uriParts[4],
 						path = uriParts[5],
@@ -3368,10 +3371,10 @@
 					req.end();
 				}
 
-				return new ctor();
+				return ctor;
 			})(),
 			/// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
-			jsonSerializationServiceInstance: (function () {
+			jsonSerializationService: (function () {
 				var ctor = function () {
 					baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
 					helper.tryFreeze(this);
@@ -3389,19 +3392,20 @@
 					return value;
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
-			/// <field>Q promise provider instance.</field>
-			qPromiseProviderInstance: (function () {
-				var ctor = function () {
+			/// <field>Q promise provider class.</field>
+			qPromiseProvider: (function () {
+				var ctor = function (Q) {
 					baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
+					this.Q = Q;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
 
 				proto.deferred = function () {
-					return Q.defer();
+					return this.Q.defer();
 				};
 
 				proto.getPromise = function (deferred) {
@@ -3416,25 +3420,22 @@
 					deferred.reject(error);
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
-			/// <field>Angular promise provider instance.</field>
-			angularPromiseProviderInstance: (function () {
-				var ctor = function () {
-					baseTypes.PromiseProviderBase.call(this, 'Angular Promise Provider');
+			/// <field>Angular promise provider.</field>
+			angularPromiseProvider: (function () {
+				var ctor = function (angular) {
+				    baseTypes.PromiseProviderBase.call(this, 'Angular Promise Provider');
+				    this.ng = angular.injector(['ng']);
+					this.$q = this.ng.get('$q');
+					this.$rootScope = this.ng.get('$rootScope');
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
 
-				var ng, $q;
-				if (angular) {
-					ng = angular.injector(['ng']);
-					$q = ng.get('$q');
-				}
-
 				proto.deferred = function () {
-					return $q.defer();
+					return this.$q.defer();
 				};
 
 				proto.getPromise = function (deferred) {
@@ -3443,27 +3444,28 @@
 
 				proto.resolve = function (deferred, data) {
 					deferred.resolve(data);
-					ng.get('$rootScope').$apply();
+					this.$rootScope.$apply();
 				};
 
 				proto.reject = function (deferred, error) {
 					deferred.reject(error);
-					ng.get('$rootScope').$apply();
+					this.$rootScope.$apply();
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
-			/// <field>jQuery promise provider instance.</field>
-			jQueryPromiseProviderInstance: (function () {
-				var ctor = function () {
-					baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
+			/// <field>jQuery promise provider.</field>
+			jQueryPromiseProvider: (function () {
+				var ctor = function ($) {
+				    baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
+				    this.$ = $;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
 
 				proto.deferred = function () {
-					return $.Deferred();
+					return this.$.Deferred();
 				};
 
 				proto.getPromise = function (deferred) {
@@ -3478,10 +3480,10 @@
 					deferred.reject(error);
 				};
 
-				return new ctor();
+				return ctor;
 			})(),
-			/// <field>ES6 promise provider instance.</field>
-			es6PromiseProviderInstance: (function () {
+			/// <field>ES6 promise provider.</field>
+			es6PromiseProvider: (function () {
 				var ctor = function () {
 					baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
 					helper.tryFreeze(this);
@@ -3515,7 +3517,7 @@
 					deferred.reject(error);
 				};
 
-				return new ctor();
+				return ctor;
 			})()
 		};
 	})();
@@ -9936,17 +9938,17 @@
 				var queryString;
 				if (usePost === true) type = 'POST';
 				if (type == 'GET' || type == 'DELETE') {
-				    var prmsArr = [];
-				    helper.forEach(queryParams, function (qp) {
-				        prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
-				    });
-				    queryString = prmsArr.join('&');
-				    uri += '?' + queryString;
+					var prmsArr = [];
+					helper.forEach(queryParams, function (qp) {
+						prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
+					});
+					queryString = prmsArr.join('&');
+					uri += '?' + queryString;
 				} else {
-				    var prmsObj = { };
-				    helper.forEach(queryParams, function (qp) {
-				        prmsObj[qp.name]= qp.value;
-				        });
+					var prmsObj = {};
+					helper.forEach(queryParams, function (qp) {
+						prmsObj[qp.name] = qp.value;
+					});
 					d = this.serializationService.serialize(prmsObj);
 					queryString = d;
 				}
@@ -10152,41 +10154,6 @@
 
 		return {
 			/// <field>
-			/// Observable providers. Possible values;
-			///  ko, prop
-			/// </field>
-			observableProviders: new libs.Enum({
-				Knockout: { code: 'ko', instance: impls.koObservableProviderInstance },
-				Property: { code: 'prop', instance: impls.propertyObservableProviderInstance }
-			}),
-			/// <field>
-			/// Promise providers. Possible values;
-			///  Q, Angular, ES6, jQuery
-			/// </field>
-			promiseProviders: new libs.Enum({
-				Q: { code: 'Q', instance: impls.qPromiseProviderInstance },
-				Angular: { code: 'Angular', instance: impls.angularPromiseProviderInstance },
-				ES6: { code: 'ES6', instance: impls.angularPromiseProviderInstance },
-				jQuery: { code: 'jQuery', instance: impls.jQueryPromiseProviderInstance }
-			}),
-			/// <field>
-			/// Ajax providers. Possible values;
-			///  Angular, jQuery, Vanillajs (pure javascript)
-			/// </field>
-			ajaxProviders: new libs.Enum({
-				Angular: { code: 'Angular', instance: impls.angularAjaxProviderInstance },
-				jQuery: { code: 'jQuery', instance: impls.jQueryAjaxProviderInstance },
-				Vanillajs: { code: 'Vanillajs', instance: impls.vanillajsAjaxProviderInstance },
-				Nodejs: { code: 'Nodejs', instance: impls.nodejsAjaxProviderInstance }
-			}),
-			/// <field>
-			/// Ajax providers. Possible values;
-			///  jQuery, Angular
-			/// </field>
-			serializationServices: new libs.Enum({
-				JSON: { code: 'JSON', instance: impls.jsonSerializationServiceInstance },
-			}),
-			/// <field>
 			/// Entity states. Possible values;
 			///  Detached, Unchanged, Added, Deleted, Modified
 			/// </field>
@@ -10314,35 +10281,35 @@
 		// set default values backing fields
 		var _observableProvider;
 		if (ko)
-			_observableProvider = impls.koObservableProviderInstance;
+			_observableProvider = new impls.koObservableProvider(ko);
 		else
-			_observableProvider = impls.propertyObservableProviderInstance;
+			_observableProvider = new impls.propertyObservableProvider();
 
 		var _promiseProvider;
 		if (Q)
-			_promiseProvider = impls.qPromiseProviderInstance;
+			_promiseProvider = new impls.qPromiseProvider(Q);
 		else if (angular)
-			_promiseProvider = impls.angularPromiseProviderInstance;
+		    _promiseProvider = new impls.angularPromiseProvider(angular);
 		else if (Promise)
-			_promiseProvider = impls.es6PromiseProviderInstance;
+			_promiseProvider = new impls.es6PromiseProvider();
 		else if ($)
-			_promiseProvider = impls.jQueryPromiseProviderInstance;
+			_promiseProvider = new impls.jQueryPromiseProvider($);
 
 		var _ajaxProvider;
 		if (angular)
-			_ajaxProvider = impls.angularAjaxProviderInstance;
+			_ajaxProvider = new impls.angularAjaxProvider(angular);
 		else if ($)
-			_ajaxProvider = impls.jQueryAjaxProviderInstance;
+			_ajaxProvider = new impls.jQueryAjaxProvider($);
 		else if (http)
-			_ajaxProvider = impls.nodejsAjaxProviderInstance;
+			_ajaxProvider = new impls.nodejsAjaxProvider(http, https);
 		else
-			_ajaxProvider = impls.vanillajsAjaxProviderInstance;
+			_ajaxProvider = new impls.vanillajsAjaxProvider();
 
-		var _serializationService = impls.jsonSerializationServiceInstance;
+		var _serializationService = new impls.jsonSerializationService();
 
 		var _arraySetBehaviour = enums.arraySetBehaviour.NotAllowed;
 		var _defaultServiceType = enums.serviceTypes.WebApi;
-		var _dateConverter = impls.defaultDateConverterInstance;
+		var _dateConverter = new impls.defaultDateConverter();
 
 		var _localizeFunction;
 
@@ -10398,7 +10365,7 @@
 			/// Sets static observable provider instance. All generated entities after this call will use given observable provider instance.
 			/// </summary>
 			/// <param name="provider">Observable provider parameter.</param>
-			_observableProvider = getValue(provider, baseTypes.ObservableProviderBase, enums.observableProviders);
+			_observableProvider = getValue(provider, baseTypes.ObservableProviderBase);
 		};
 
 		expose.getPromiseProvider = function () {
@@ -10413,7 +10380,7 @@
 			/// Sets static promise provider instance. All async operations after this call will use given promise provider instance.
 			/// </summary>
 			/// <param name="provider">Promise provider parameter.</param>
-			_promiseProvider = getValue(provider, baseTypes.PromiseProviderBase, enums.promiseProviders);
+			_promiseProvider = getValue(provider, baseTypes.PromiseProviderBase);
 		};
 
 		expose.getAjaxProvider = function () {
@@ -10428,7 +10395,7 @@
 			/// Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
 			/// </summary>
 			/// <param name="provider">Ajax provider parameter.</param>
-			_ajaxProvider = getValue(provider, baseTypes.AjaxProviderBase, enums.ajaxProviders);
+			_ajaxProvider = getValue(provider, baseTypes.AjaxProviderBase);
 		};
 
 		expose.getSerializationService = function () {
@@ -10443,7 +10410,7 @@
 			/// Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
 			/// </summary>
 			/// <param name="provider">Serialization service parameter.</param>
-			_serializationService = getValue(service, baseTypes.SerializationServiceBase, enums.serializationServices);
+			_serializationService = getValue(service, baseTypes.SerializationServiceBase);
 		};
 
 		expose.getArraySetBehaviour = function () {

@@ -673,15 +673,43 @@ declare module beetle {
 	}
 
 	namespace impls {
-		var defaultDateConverterInstance: baseTypes.DateConverterBase;
-		var koObservableProviderInstance: baseTypes.ObservableProviderBase;
-		var propertyObservableProviderInstance: baseTypes.ObservableProviderBase;
-		var jQueryAjaxProviderInstance: baseTypes.AjaxProviderBase;
-		var angularAjaxProviderInstance: baseTypes.AjaxProviderBase;
-		var jsonSerializationServiceInstance: baseTypes.SerializationServiceBase;
-		var qPromiseProviderInstance: baseTypes.PromiseProviderBase;
-		var angularPromiseProviderInstance: baseTypes.PromiseProviderBase;
-		var jQueryPromiseProviderInstance: baseTypes.PromiseProviderBase;
+		class defaultDateConverter extends baseTypes.DateConverterBase { }
+
+		class koObservableProvider extends baseTypes.ObservableProviderBase {
+			constructor(ko);
+		}
+
+		class propertyObservableProvider extends baseTypes.ObservableProviderBase { }
+
+		class jQueryAjaxProvider extends baseTypes.AjaxProviderBase {
+			constructor($);
+		}
+
+		class angularAjaxProvider extends baseTypes.AjaxProviderBase {
+			constructor(angular);
+		}
+
+		class vanillajsAjaxProviderInstance extends baseTypes.AjaxProviderBase { }
+
+		class nodejsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
+			constructor(http, https);
+		}
+
+		class jsonSerializationService extends baseTypes.SerializationServiceBase { }
+
+		class qPromiseProvider extends baseTypes.PromiseProviderBase {
+			constructor(Q);
+		}
+
+		class angularPromiseProvider extends baseTypes.PromiseProviderBase {
+			constructor(angular);
+		}
+
+		class jQueryPromiseProvider extends baseTypes.PromiseProviderBase {
+			constructor($);
+		}
+
+		class es6PromiseProviderInstance extends baseTypes.PromiseProviderBase { }
 	}
 
 	namespace metadata {
@@ -1013,18 +1041,6 @@ declare module beetle {
 	}
 
 	namespace enums {
-		enum observableProviders {
-			Knockout, Property
-		}
-		enum promiseProviders {
-			Q, Angular, ES6, jQuery
-		}
-		enum ajaxProviders {
-			Angular, jQuery, Vanillajs, Nodejs
-		}
-		enum serializationServices {
-			JSON
-		}
 		enum entityStates {
 			Detached, Unchanged, Added, Deleted, Modified
 		}
@@ -1072,11 +1088,11 @@ declare module beetle {
 		var minimizePackage: boolean;
 
 		function getObservableProvider(): baseTypes.ObservableProviderBase;
-		function setObservableProvider(type: enums.observableProviders | string | baseTypes.ObservableProviderBase);
+		function setObservableProvider(type: baseTypes.ObservableProviderBase);
 		function getAjaxProvider(): baseTypes.AjaxProviderBase;
-		function setAjaxProvider(type: enums.ajaxProviders | string | baseTypes.AjaxProviderBase);
+		function setAjaxProvider(type: baseTypes.AjaxProviderBase);
 		function getSerializationService(): baseTypes.SerializationServiceBase;
-		function setSerializationService(type: enums.serializationServices | string | baseTypes.SerializationServiceBase);
+		function setSerializationService(type: baseTypes.SerializationServiceBase);
 		function getArraySetBehaviour(): enums.arraySetBehaviour;
 		function setArraySetBehaviour(type: enums.arraySetBehaviour | string);
 		function getDefaultServiceType(): enums.serviceTypes;

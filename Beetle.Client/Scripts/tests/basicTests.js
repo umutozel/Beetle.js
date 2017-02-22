@@ -50,14 +50,11 @@ var basicTestViewModel = {
         basicTestViewModel.metadataType = metadataType;
 
         var observableProviderType = urlVars['observableProviderType'];
-        if (observableProviderType == 'PR')
-            observableProvider = beetle.enums.observableProviders.Property;
-        else {
+        if (observableProviderType != 'PR') {
             observableProviderType = 'KO';
-            observableProvider = beetle.enums.observableProviders.Knockout;
         }
         basicTestViewModel.observableProviderType = observableProviderType;
-        beetle.settings.setObservableProvider(observableProvider);
+        beetle.settings.setObservableProvider(observableProviderType == 'KO' ? new beetle.impls.koObservableProvider(ko) : new beetle.impls.propertyObservableProvider());
 
         var serviceType = urlVars['serviceType'];
         if (serviceType == 'MV')
