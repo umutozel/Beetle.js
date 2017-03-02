@@ -1,22 +1,37 @@
 ﻿(function (root, factory) {
 	var deps = {
 		jQuery: root.$,
-		angular: root.angular,
+		angularjs: root.angular,
 		ko: root.ko,
 		Q: root.Q
 	};
 
 	if (typeof exports === "object") {
 	    try { deps.jQuery = require("jQuery"); } catch (e) { }
-	    try { deps.angular = require("angular"); } catch (e) { }
+	    try { deps.angularjs = require("angular"); } catch (e) { }
 	    try { deps.ko = require("ko"); } catch (e) { }
 	    try { deps.Q = require("Q"); } catch (e) { }
 	    try {
 	        deps.http = require("http");
 	        deps.https = require("https");
 	    } catch (e) { }
+		try { 
+			var aCore = require("@angular/core");
+			var aHttp = require("@angular/http");
 
-		module.exports = factory(root, deps.jQuery, deps.angular, deps.ko, deps.Q, deps.http, deps.https);
+			deps.angularHttp =  aCore.ReflectiveInjector.resolveAndCreate([
+        		aHttp.Http, aHttp.BrowserXhr, 
+				{ provide: aHttp.ConnectionBackend, useClass: aHttp.XHRBackend },
+				{ provide: aHttp.RequestOptions, useClass: aHttp.BaseRequestOptions },
+				{ provide: aHttp.ResponseOptions, useClass: aHttp.BaseResponseOptions },
+				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
+      		]).get(aHttp.Http);
+			deps.AngularHeaders = aHttp.Headers;
+		} catch (e) { 
+			console.log(e);
+		}
+
+		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, deps.http, deps.https, deps.angularHttp, deps.AngularHeaders);
 		return module.exports;
 	}
 	else if (typeof define === "function" && define.amd) {
@@ -33,14 +48,14 @@
 				if (mdl) deps[modules[i]] = mdl;
 			}
 
-			root.beetle = factory(root, deps.jQuery, deps.angular, deps.ko, deps.Q);
+			root.beetle = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q);
 		});
 	}
 	else {
-	    root.beetle = factory(root, deps.jQuery, deps.angular, deps.ko, deps.Q);
+	    root.beetle = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q);
 		return root.beetle;
 	}
-})(this, function (root, $, angular, ko, Q, http, https) {
+})(this, function (root, $, angularjs, ko, Q, http, https, angularHttp, AngularHeaders) {
 	'use strict';
 
 	var helper = (function () {
@@ -2879,7 +2894,7 @@
 
 		return {
 			/// <field>Default date converter class. Uses browser's default Date object.</field>
-			defaultDateConverter: (function () {
+			DefaultDateConverter: (function () {
 				var ctor = function () {
 					baseTypes.DateConverterBase.call(this, 'Default Date Converter');
 				};
@@ -2906,7 +2921,7 @@
 				return ctor;
 			})(),
 			/// <field>Knockout observable provider class. Makes given object's properties observable.</field>
-			koObservableProvider: (function () {
+			KoObservableProvider: (function () {
 
 				var ctor = function (ko) {
 					baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
@@ -3029,7 +3044,7 @@
 				return ctor;
 			})(),
 			/// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
-			propertyObservableProvider: (function () {
+			PropertyObservableProvider: (function () {
 				var ctor = function () {
 					baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
 					helper.tryFreeze(this);
@@ -3146,7 +3161,7 @@
 				return ctor;
 			})(),
 			/// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
-			jQueryAjaxProvider: (function () {
+			JQueryAjaxProvider: (function () {
 				var ctor = function ($) {
 				    baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
 				    this.$ = $;
@@ -3196,12 +3211,12 @@
 
 				return ctor;
 			})(),
-			/// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
-			angularAjaxProvider: (function () {
-			    var ctor = function (angular) {
-					baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
+			/// <field>Angularjs ajax provider class. Operates ajax operations via angularjs.</field>
+			AngularjsAjaxProvider: (function () {
+			    var ctor = function (angularjs) {
+					baseTypes.AjaxProviderBase.call(this, 'Angular.js Ajax Provider');
 					this.syncSupported = false;
-					this.$http = angular.injector(["ng"]).get('$http');
+					this.$http = angularjs.injector(["ng"]).get('$http');
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
@@ -3241,8 +3256,54 @@
 
 				return ctor;
 			})(),
+			/// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
+			AngularAjaxProvider: (function () {
+			    var ctor = function (http) {
+					baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
+					this.syncSupported = false;
+					this.http = http;
+					helper.tryFreeze(this);
+				};
+				helper.inherit(ctor, baseTypes.AjaxProviderBase);
+				var proto = ctor.prototype;
+
+				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+					var hs = new AngularHeaders();
+
+					hs.append("Content-Type", contentType);
+					if (headers != null) {
+						for (var p in headers) {
+							hs.append(p, headers[p]);
+						}
+					}
+					
+					var requestOptions = {
+						url: uri,
+						method: method,
+						body: data,
+						headers: hs,
+						timeout: timeout
+					};
+
+					if (extra != null) {
+						helper.extend(requestOptions, extra);
+					}
+
+					var request = new Request(requestOptions);
+
+					this.http.request(request).toPromise()
+						.then(resp => {
+							successCallback(resp.text(), name => { 
+								return resp.headers[name];
+							});
+						},
+						e => errorCallback(e));
+				};
+
+				return ctor;
+			})(),
 			/// <field>Pure javascript ajax provider class.</field>
-			vanillajsAjaxProvider: (function () {
+			VanillajsAjaxProvider: (function () {
 				var ctor = function () {
 					baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
 					this.syncSupported = true;
@@ -3293,7 +3354,7 @@
 				return ctor;
 			})(),
 			/// <field>Node.js ajax provider class.</field>
-			nodejsAjaxProvider: (function () {
+			NodejsAjaxProvider: (function () {
 				var ctor = function (http, https) {
 					baseTypes.AjaxProviderBase.call(this, 'Node.js Ajax Provider');
 					this.syncSupported = false;
@@ -3374,7 +3435,7 @@
 				return ctor;
 			})(),
 			/// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
-			jsonSerializationService: (function () {
+			JsonSerializationService: (function () {
 				var ctor = function () {
 					baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
 					helper.tryFreeze(this);
@@ -3395,7 +3456,7 @@
 				return ctor;
 			})(),
 			/// <field>Q promise provider class.</field>
-			qPromiseProvider: (function () {
+			QPromiseProvider: (function () {
 				var ctor = function (Q) {
 					baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
 					this.Q = Q;
@@ -3422,11 +3483,11 @@
 
 				return ctor;
 			})(),
-			/// <field>Angular promise provider.</field>
-			angularPromiseProvider: (function () {
-				var ctor = function (angular) {
-				    baseTypes.PromiseProviderBase.call(this, 'Angular Promise Provider');
-				    this.ng = angular.injector(['ng']);
+			/// <field>Angular.js promise provider.</field>
+			AngularjsPromiseProvider: (function () {
+				var ctor = function (angularjs) {
+				    baseTypes.PromiseProviderBase.call(this, 'Angular.js Promise Provider');
+				    this.ng = angularjs.injector(['ng']);
 					this.$q = this.ng.get('$q');
 					this.$rootScope = this.ng.get('$rootScope');
 					helper.tryFreeze(this);
@@ -3455,7 +3516,7 @@
 				return ctor;
 			})(),
 			/// <field>jQuery promise provider.</field>
-			jQueryPromiseProvider: (function () {
+			JQueryPromiseProvider: (function () {
 				var ctor = function ($) {
 				    baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
 				    this.$ = $;
@@ -3483,7 +3544,7 @@
 				return ctor;
 			})(),
 			/// <field>ES6 promise provider.</field>
-			es6PromiseProvider: (function () {
+			Es6PromiseProvider: (function () {
 				var ctor = function () {
 					baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
 					helper.tryFreeze(this);
@@ -10281,35 +10342,37 @@
 		// set default values backing fields
 		var _observableProvider;
 		if (ko)
-			_observableProvider = new impls.koObservableProvider(ko);
+			_observableProvider = new impls.KoObservableProvider(ko);
 		else
-			_observableProvider = new impls.propertyObservableProvider();
+			_observableProvider = new impls.PropertyObservableProvider();
 
 		var _promiseProvider;
 		if (Q)
-			_promiseProvider = new impls.qPromiseProvider(Q);
-		else if (angular)
-		    _promiseProvider = new impls.angularPromiseProvider(angular);
+			_promiseProvider = new impls.QPromiseProvider(Q);
+		else if (angularjs)
+		    _promiseProvider = new impls.AngularjsPromiseProvider(angularjs);
 		else if (Promise)
-			_promiseProvider = new impls.es6PromiseProvider();
+			_promiseProvider = new impls.Es6PromiseProvider();
 		else if ($)
-			_promiseProvider = new impls.jQueryPromiseProvider($);
+			_promiseProvider = new impls.JQueryPromiseProvider($);
 
 		var _ajaxProvider;
-		if (angular)
-			_ajaxProvider = new impls.angularAjaxProvider(angular);
+		if (angularjs)
+			_ajaxProvider = new impls.AngularjsAjaxProvider(angularjs);
+		else if (angularHttp)
+			_ajaxProvider = new impls.AngularAjaxProvider(angularHttp);
 		else if ($)
-			_ajaxProvider = new impls.jQueryAjaxProvider($);
+			_ajaxProvider = new impls.JQueryAjaxProvider($);
 		else if (http)
-			_ajaxProvider = new impls.nodejsAjaxProvider(http, https);
+			_ajaxProvider = new impls.NodejsAjaxProvider(http, https);
 		else
-			_ajaxProvider = new impls.vanillajsAjaxProvider();
+			_ajaxProvider = new impls.VanillajsAjaxProvider();
 
-		var _serializationService = new impls.jsonSerializationService();
+		var _serializationService = new impls.JsonSerializationService();
 
 		var _arraySetBehaviour = enums.arraySetBehaviour.NotAllowed;
 		var _defaultServiceType = enums.serviceTypes.WebApi;
-		var _dateConverter = new impls.defaultDateConverter();
+		var _dateConverter = new impls.DefaultDateConverter();
 
 		var _localizeFunction;
 

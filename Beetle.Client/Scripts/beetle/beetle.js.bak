@@ -2894,7 +2894,7 @@
 
 		return {
 			/// <field>Default date converter class. Uses browser's default Date object.</field>
-			DefaultDateConverter: (function () {
+			defaultDateConverter: (function () {
 				var ctor = function () {
 					baseTypes.DateConverterBase.call(this, 'Default Date Converter');
 				};
@@ -2921,7 +2921,7 @@
 				return ctor;
 			})(),
 			/// <field>Knockout observable provider class. Makes given object's properties observable.</field>
-			KoObservableProvider: (function () {
+			koObservableProvider: (function () {
 
 				var ctor = function (ko) {
 					baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
@@ -3044,7 +3044,7 @@
 				return ctor;
 			})(),
 			/// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
-			PropertyObservableProvider: (function () {
+			propertyObservableProvider: (function () {
 				var ctor = function () {
 					baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
 					helper.tryFreeze(this);
@@ -3161,7 +3161,7 @@
 				return ctor;
 			})(),
 			/// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
-			JQueryAjaxProvider: (function () {
+			jQueryAjaxProvider: (function () {
 				var ctor = function ($) {
 				    baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
 				    this.$ = $;
@@ -3303,7 +3303,7 @@
 				return ctor;
 			})(),
 			/// <field>Pure javascript ajax provider class.</field>
-			VanillajsAjaxProvider: (function () {
+			vanillajsAjaxProvider: (function () {
 				var ctor = function () {
 					baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
 					this.syncSupported = true;
@@ -3354,7 +3354,7 @@
 				return ctor;
 			})(),
 			/// <field>Node.js ajax provider class.</field>
-			NodejsAjaxProvider: (function () {
+			nodejsAjaxProvider: (function () {
 				var ctor = function (http, https) {
 					baseTypes.AjaxProviderBase.call(this, 'Node.js Ajax Provider');
 					this.syncSupported = false;
@@ -3435,7 +3435,7 @@
 				return ctor;
 			})(),
 			/// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
-			JsonSerializationService: (function () {
+			jsonSerializationService: (function () {
 				var ctor = function () {
 					baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
 					helper.tryFreeze(this);
@@ -3456,7 +3456,7 @@
 				return ctor;
 			})(),
 			/// <field>Q promise provider class.</field>
-			QPromiseProvider: (function () {
+			qPromiseProvider: (function () {
 				var ctor = function (Q) {
 					baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
 					this.Q = Q;
@@ -3516,7 +3516,7 @@
 				return ctor;
 			})(),
 			/// <field>jQuery promise provider.</field>
-			JQueryPromiseProvider: (function () {
+			jQueryPromiseProvider: (function () {
 				var ctor = function ($) {
 				    baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
 				    this.$ = $;
@@ -3544,7 +3544,7 @@
 				return ctor;
 			})(),
 			/// <field>ES6 promise provider.</field>
-			Es6PromiseProvider: (function () {
+			es6PromiseProvider: (function () {
 				var ctor = function () {
 					baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
 					helper.tryFreeze(this);
@@ -10342,19 +10342,19 @@
 		// set default values backing fields
 		var _observableProvider;
 		if (ko)
-			_observableProvider = new impls.KoObservableProvider(ko);
+			_observableProvider = new impls.koObservableProvider(ko);
 		else
-			_observableProvider = new impls.PropertyObservableProvider();
+			_observableProvider = new impls.propertyObservableProvider();
 
 		var _promiseProvider;
 		if (Q)
-			_promiseProvider = new impls.QPromiseProvider(Q);
+			_promiseProvider = new impls.qPromiseProvider(Q);
 		else if (angularjs)
 		    _promiseProvider = new impls.AngularjsPromiseProvider(angularjs);
 		else if (Promise)
-			_promiseProvider = new impls.Es6PromiseProvider();
+			_promiseProvider = new impls.es6PromiseProvider();
 		else if ($)
-			_promiseProvider = new impls.JQueryPromiseProvider($);
+			_promiseProvider = new impls.jQueryPromiseProvider($);
 
 		var _ajaxProvider;
 		if (angularjs)
@@ -10362,17 +10362,17 @@
 		else if (angularHttp)
 			_ajaxProvider = new impls.AngularAjaxProvider(angularHttp);
 		else if ($)
-			_ajaxProvider = new impls.JQueryAjaxProvider($);
+			_ajaxProvider = new impls.jQueryAjaxProvider($);
 		else if (http)
-			_ajaxProvider = new impls.NodejsAjaxProvider(http, https);
+			_ajaxProvider = new impls.nodejsAjaxProvider(http, https);
 		else
-			_ajaxProvider = new impls.VanillajsAjaxProvider();
+			_ajaxProvider = new impls.vanillajsAjaxProvider();
 
-		var _serializationService = new impls.JsonSerializationService();
+		var _serializationService = new impls.jsonSerializationService();
 
 		var _arraySetBehaviour = enums.arraySetBehaviour.NotAllowed;
 		var _defaultServiceType = enums.serviceTypes.WebApi;
-		var _dateConverter = new impls.DefaultDateConverter();
+		var _dateConverter = new impls.defaultDateConverter();
 
 		var _localizeFunction;
 

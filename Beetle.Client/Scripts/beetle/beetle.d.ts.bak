@@ -6,7 +6,7 @@ declare module beetle {
 
 	namespace interfaces {
 
-		interface Dictionary<T> {
+		interface dictionary<T> {
 			[key: string]: T;
 		}
 
@@ -668,15 +668,15 @@ declare module beetle {
 	}
 
 	namespace impls {
-		class DefaultDateConverter extends baseTypes.DateConverterBase { }
+		class defaultDateConverter extends baseTypes.DateConverterBase { }
 
-		class KoObservableProvider extends baseTypes.ObservableProviderBase {
+		class koObservableProvider extends baseTypes.ObservableProviderBase {
 			constructor(ko);
 		}
 
-		class PropertyObservableProvider extends baseTypes.ObservableProviderBase { }
+		class propertyObservableProvider extends baseTypes.ObservableProviderBase { }
 
-		class JQueryAjaxProvider extends baseTypes.AjaxProviderBase {
+		class jQueryAjaxProvider extends baseTypes.AjaxProviderBase {
 			constructor($);
 		}
 
@@ -688,15 +688,15 @@ declare module beetle {
 			constructor(http);
 		}
 
-		class VanillajsAjaxProviderInstance extends baseTypes.AjaxProviderBase { }
+		class vanillajsAjaxProviderInstance extends baseTypes.AjaxProviderBase { }
 
-		class NodejsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
+		class nodejsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
 			constructor(http, https);
 		}
 
-		class JsonSerializationService extends baseTypes.SerializationServiceBase { }
+		class jsonSerializationService extends baseTypes.SerializationServiceBase { }
 
-		class QPromiseProvider extends baseTypes.PromiseProviderBase {
+		class qPromiseProvider extends baseTypes.PromiseProviderBase {
 			constructor(Q);
 		}
 
@@ -704,11 +704,11 @@ declare module beetle {
 			constructor(angularjs);
 		}
 
-		class JQueryPromiseProvider extends baseTypes.PromiseProviderBase {
+		class jQueryPromiseProvider extends baseTypes.PromiseProviderBase {
 			constructor($);
 		}
 
-		class Es6PromiseProviderInstance extends baseTypes.PromiseProviderBase { }
+		class es6PromiseProviderInstance extends baseTypes.PromiseProviderBase { }
 	}
 
 	namespace metadata {

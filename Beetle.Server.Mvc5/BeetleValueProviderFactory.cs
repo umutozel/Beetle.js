@@ -14,7 +14,7 @@ namespace Beetle.Server.Mvc {
         private readonly JsonSerializerSettings _settings;
 
         public BeetleValueProviderFactory(JsonSerializerSettings settings) {
-            if (_settings == null) throw new ArgumentNullException(nameof(settings));
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
 
             _settings = settings;
         }
