@@ -54,7 +54,7 @@ var basicTestViewModel = {
             observableProviderType = 'KO';
         }
         basicTestViewModel.observableProviderType = observableProviderType;
-        beetle.settings.setObservableProvider(observableProviderType == 'KO' ? new beetle.impls.koObservableProvider(ko) : new beetle.impls.propertyObservableProvider());
+        beetle.settings.setObservableProvider(observableProviderType == 'KO' ? new beetle.impls.KoObservableProvider(ko) : new beetle.impls.PropertyObservableProvider());
 
         var serviceType = urlVars['serviceType'];
         if (serviceType == 'MV')
