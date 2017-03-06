@@ -11,28 +11,31 @@
 		try { deps.angularjs = require("angular"); } catch (e) { }
 		try { deps.ko = require("ko"); } catch (e) { }
 		try { deps.Q = require("Q"); } catch (e) { }
+		var node;
 		try {
-			deps.http = require("http");
-			deps.https = require("https");
+			var http = require("http");
+			var https = require("https");
+			node = {http,https};
 		} catch (e) { }
-		try { 
+		var angular;
+		try {
 			var aCore = require("@angular/core");
 			var aHttp = require("@angular/http");
 			require("rxjs/add/operator/toPromise");
 
-			deps.angularHttp =  aCore.ReflectiveInjector.resolveAndCreate([
+			var angularHttp =  aCore.ReflectiveInjector.resolveAndCreate([
 				aHttp.Http, aHttp.BrowserXhr, 
 				{ provide: aHttp.ConnectionBackend, useClass: aHttp.XHRBackend },
 				{ provide: aHttp.RequestOptions, useClass: aHttp.BaseRequestOptions },
 				{ provide: aHttp.ResponseOptions, useClass: aHttp.BaseResponseOptions },
 				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
 			]).get(aHttp.Http);
-			deps.AngularHeaders = aHttp.Headers;
+			angular = {angularHttp, Request: aHttp.Request, Headers: aHttp.Headers};
 		} catch (e) { 
 			console.log(e);
 		}
 
-		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, deps.http, deps.https, deps.angularHttp, aHttp.Request, deps.AngularHeaders);
+		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, node, angular);
 		return module.exports;
 	}
 	else if (typeof define === "function" && define.amd) {
@@ -56,7 +59,7 @@
 		root.beetle = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q);
 		return root.beetle;
 	}
-})(this, function (root, $, angularjs, ko, Q, http, https, angularHttp, AngularRequest, AngularHeaders) {
+})(this, function (root, $, angularjs, ko, Q, node, angular) {
 	'use strict';
 
 	var helper = (function () {
@@ -314,7 +317,7 @@
 				return p ? (p + " => " + f) : f;
 			},
 			getFuncName: function (func) {
-			    var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
+				var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
 				var results = funcNameRegex.exec(func.toString());
 				return results[1] || results[2];
 			},
@@ -3259,17 +3262,19 @@
 			})(),
 			/// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
 			AngularAjaxProvider: (function () {
-				var ctor = function (http) {
+				var ctor = function (http, RequestConstructor, HeadersConstructor) {
 					baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
 					this.syncSupported = false;
 					this.http = http;
+					this.RequestConstructor = RequestConstructor;
+					this.HeadersConstructor = HeadersConstructor;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
 
 				proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-					var hs = new AngularHeaders();
+					var hs = new this.HeadersConstructor();
 
 					hs.append("Content-Type", contentType);
 					if (headers != null) {
@@ -3290,7 +3295,7 @@
 						helper.extend(requestOptions, extra);
 					}
 
-					var request = new AngularRequest(requestOptions);
+					var request = new this.RequestConstructor(requestOptions);
 
 					this.http.request(request).toPromise()
 						.then(resp => {
@@ -10360,12 +10365,12 @@
 		var _ajaxProvider;
 		if (angularjs)
 			_ajaxProvider = new impls.AngularjsAjaxProvider(angularjs);
-		else if (angularHttp)
-			_ajaxProvider = new impls.AngularAjaxProvider(angularHttp);
+		else if (angular)
+			_ajaxProvider = new impls.AngularAjaxProvider(angular.Http, angular.Request, angular.Headers);
 		else if ($)
 			_ajaxProvider = new impls.JQueryAjaxProvider($);
-		else if (http)
-			_ajaxProvider = new impls.NodejsAjaxProvider(http, https);
+		else if (node)
+			_ajaxProvider = new impls.NodejsAjaxProvider(node.http, node.https);
 		else
 			_ajaxProvider = new impls.VanillajsAjaxProvider();
 
@@ -10646,7 +10651,7 @@
 
 	return {
 		// Export types
-		version: '2.3.1',
+		version: '2.3.0',
 		registerI18N: function (code, i18n, active) {
 			i18Ns[code] = i18n;
 			if (active) i18N = i18n;
