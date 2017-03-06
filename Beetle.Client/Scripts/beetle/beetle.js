@@ -15,7 +15,7 @@
 		try {
 			var http = require("http");
 			var https = require("https");
-			node = {http,https};
+			node = { http, https };
 		} catch (e) { }
 		var angular;
 		try {
@@ -23,14 +23,14 @@
 			var aHttp = require("@angular/http");
 			require("rxjs/add/operator/toPromise");
 
-			var angularHttp =  aCore.ReflectiveInjector.resolveAndCreate([
+			var http =  aCore.ReflectiveInjector.resolveAndCreate([
 				aHttp.Http, aHttp.BrowserXhr, 
 				{ provide: aHttp.ConnectionBackend, useClass: aHttp.XHRBackend },
 				{ provide: aHttp.RequestOptions, useClass: aHttp.BaseRequestOptions },
 				{ provide: aHttp.ResponseOptions, useClass: aHttp.BaseResponseOptions },
 				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
 			]).get(aHttp.Http);
-			angular = {angularHttp, Request: aHttp.Request, Headers: aHttp.Headers};
+			angular = { http, Request: aHttp.Request, Headers: aHttp.Headers };
 		} catch (e) { 
 			console.log(e);
 		}
@@ -10366,7 +10366,7 @@
 		if (angularjs)
 			_ajaxProvider = new impls.AngularjsAjaxProvider(angularjs);
 		else if (angular)
-			_ajaxProvider = new impls.AngularAjaxProvider(angular.Http, angular.Request, angular.Headers);
+			_ajaxProvider = new impls.AngularAjaxProvider(angular.http, angular.Request, angular.Headers);
 		else if ($)
 			_ajaxProvider = new impls.JQueryAjaxProvider($);
 		else if (node)
