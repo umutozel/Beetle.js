@@ -7,25 +7,26 @@
 	};
 
 	if (typeof exports === "object") {
-	    try { deps.jQuery = require("jQuery"); } catch (e) { }
-	    try { deps.angularjs = require("angular"); } catch (e) { }
-	    try { deps.ko = require("ko"); } catch (e) { }
-	    try { deps.Q = require("Q"); } catch (e) { }
-	    try {
-	        deps.http = require("http");
-	        deps.https = require("https");
-	    } catch (e) { }
+		try { deps.jQuery = require("jQuery"); } catch (e) { }
+		try { deps.angularjs = require("angular"); } catch (e) { }
+		try { deps.ko = require("ko"); } catch (e) { }
+		try { deps.Q = require("Q"); } catch (e) { }
+		try {
+			deps.http = require("http");
+			deps.https = require("https");
+		} catch (e) { }
 		try { 
 			var aCore = require("@angular/core");
 			var aHttp = require("@angular/http");
+			require("rxjs/add/operator/toPromise");
 
 			deps.angularHttp =  aCore.ReflectiveInjector.resolveAndCreate([
-        		aHttp.Http, aHttp.BrowserXhr, 
+				aHttp.Http, aHttp.BrowserXhr, 
 				{ provide: aHttp.ConnectionBackend, useClass: aHttp.XHRBackend },
 				{ provide: aHttp.RequestOptions, useClass: aHttp.BaseRequestOptions },
 				{ provide: aHttp.ResponseOptions, useClass: aHttp.BaseResponseOptions },
 				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
-      		]).get(aHttp.Http);
+			]).get(aHttp.Http);
 			deps.AngularHeaders = aHttp.Headers;
 		} catch (e) { 
 			console.log(e);
@@ -52,10 +53,10 @@
 		});
 	}
 	else {
-	    root.beetle = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q);
+		root.beetle = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q);
 		return root.beetle;
 	}
-})(this, function (root, $, angularjs, ko, Q, http, https, angularHttp, AngularHeaders) {
+})(this, function (root, $, angularjs, ko, Q, http, https, angularHttp, AngularRequest, AngularHeaders) {
 	'use strict';
 
 	var helper = (function () {
@@ -313,9 +314,9 @@
 				return p ? (p + " => " + f) : f;
 			},
 			getFuncName: function (func) {
-				var funcNameRegex = /function (.{1,})\(/;
+			    var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
 				var results = funcNameRegex.exec(func.toString());
-				return results[1];
+				return results[1] || results[2];
 			},
 			inherit: function (derivedClass, baseClass) {
 				/// <summary>
@@ -3000,9 +3001,9 @@
 					});
 
 					function toObservableProperty(property, value, callback) {
-					    var retVal = that.ko.observable(value);
+						var retVal = that.ko.observable(value);
 						if (callback)
-						    return that.ko.observable(value).extend({
+							return that.ko.observable(value).extend({
 								intercept: {
 									object: object,
 									property: property,
@@ -3034,7 +3035,7 @@
 				};
 
 				proto.getValue = function (object, property) {
-				    return this.ko.utils.unwrapObservable(object[property]);
+					return this.ko.utils.unwrapObservable(object[property]);
 				};
 
 				proto.setValue = function (object, property, value) {
@@ -3163,8 +3164,8 @@
 			/// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
 			JQueryAjaxProvider: (function () {
 				var ctor = function ($) {
-				    baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
-				    this.$ = $;
+					baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
+					this.$ = $;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
@@ -3213,7 +3214,7 @@
 			})(),
 			/// <field>Angularjs ajax provider class. Operates ajax operations via angularjs.</field>
 			AngularjsAjaxProvider: (function () {
-			    var ctor = function (angularjs) {
+				var ctor = function (angularjs) {
 					baseTypes.AjaxProviderBase.call(this, 'Angular.js Ajax Provider');
 					this.syncSupported = false;
 					this.$http = angularjs.injector(["ng"]).get('$http');
@@ -3258,7 +3259,7 @@
 			})(),
 			/// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
 			AngularAjaxProvider: (function () {
-			    var ctor = function (http) {
+				var ctor = function (http) {
 					baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
 					this.syncSupported = false;
 					this.http = http;
@@ -3289,7 +3290,7 @@
 						helper.extend(requestOptions, extra);
 					}
 
-					var request = new Request(requestOptions);
+					var request = new AngularRequest(requestOptions);
 
 					this.http.request(request).toPromise()
 						.then(resp => {
@@ -3486,8 +3487,8 @@
 			/// <field>Angular.js promise provider.</field>
 			AngularjsPromiseProvider: (function () {
 				var ctor = function (angularjs) {
-				    baseTypes.PromiseProviderBase.call(this, 'Angular.js Promise Provider');
-				    this.ng = angularjs.injector(['ng']);
+					baseTypes.PromiseProviderBase.call(this, 'Angular.js Promise Provider');
+					this.ng = angularjs.injector(['ng']);
 					this.$q = this.ng.get('$q');
 					this.$rootScope = this.ng.get('$rootScope');
 					helper.tryFreeze(this);
@@ -3518,8 +3519,8 @@
 			/// <field>jQuery promise provider.</field>
 			JQueryPromiseProvider: (function () {
 				var ctor = function ($) {
-				    baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
-				    this.$ = $;
+					baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
+					this.$ = $;
 					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
@@ -10350,7 +10351,7 @@
 		if (Q)
 			_promiseProvider = new impls.QPromiseProvider(Q);
 		else if (angularjs)
-		    _promiseProvider = new impls.AngularjsPromiseProvider(angularjs);
+			_promiseProvider = new impls.AngularjsPromiseProvider(angularjs);
 		else if (Promise)
 			_promiseProvider = new impls.Es6PromiseProvider();
 		else if ($)
