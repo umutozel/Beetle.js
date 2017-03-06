@@ -32,7 +32,7 @@
 			console.log(e);
 		}
 
-		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, deps.http, deps.https, deps.angularHttp, deps.AngularHeaders);
+		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, deps.http, deps.https, deps.angularHttp, aHttp.Request, deps.AngularHeaders);
 		return module.exports;
 	}
 	else if (typeof define === "function" && define.amd) {
@@ -10646,7 +10646,7 @@
 
 	return {
 		// Export types
-		version: '2.2.5',
+		version: '2.3.1',
 		registerI18N: function (code, i18n, active) {
 			i18Ns[code] = i18n;
 			if (active) i18N = i18n;
