@@ -19,6 +19,5 @@
     <files>
         <file src="content\Scripts\beetle.queryExtensions.js" target="content\Scripts\beetle.queryExtensions.js" />
         <file src="content\Scripts\beetle.js" target="content\Scripts\beetle.js" />
-        <file src="content\Scripts\beetle.min.js" target="content\Scripts\beetle.min.js" />
     </files>
 </package>

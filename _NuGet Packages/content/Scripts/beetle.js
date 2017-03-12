@@ -21,7 +21,8 @@
 		try {
 			var aCore = require("@angular/core");
 			var aHttp = require("@angular/http");
-			require("rxjs/add/operator/toPromise");
+			require('rxjs/add/operator/map');
+			require('rxjs/add/operator/catch');
 
 			var http =  aCore.ReflectiveInjector.resolveAndCreate([
 				aHttp.Http, aHttp.BrowserXhr, 
@@ -3248,13 +3249,15 @@
 					return this.$http(o)
 						.then(function (resp) {
 							var headers = resp.headers();
-							successCallback(resp.data, function (header) {
+							return successCallback(resp.data, function (header) {
 								if (!header) return headers;
 								return headers[header.toLowerCase()];
 							});
 						}, function (error) {
 							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
-							errorCallback(helper.createError(error.statusText, obj));
+							var e = helper.createError(error.statusText, obj);
+							errorCallback(e);
+							return e;
 						});
 				};
 
@@ -3297,13 +3300,18 @@
 
 					var request = new this.RequestConstructor(requestOptions);
 
-					this.http.request(request).toPromise()
-						.then(resp => {
-							successCallback(resp.text(), name => { 
+					return this.http.request(request)
+						.map(resp => {
+							return successCallback(resp.text(), name => { 
 								return resp.headers[name];
 							});
-						},
-						e => errorCallback(e));
+						})
+						.catch(error => {
+							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
+							var e = helper.createError(error.statusText, obj);
+							errorCallback(e);
+							return e;
+						});
 				};
 
 				return ctor;
@@ -3355,6 +3363,8 @@
 					};
 
 					xhr.send(data);
+
+					return xhr;
 				}
 
 				return ctor;
@@ -3436,6 +3446,8 @@
 					});
 
 					req.end();
+
+					return req;
 				}
 
 				return ctor;
@@ -8422,8 +8434,7 @@
 					var makeObservable = options.makeObservable;
 					if (makeObservable == null) makeObservable = true;
 					var detached = options.state == enums.entityStates.Detached;
-					var retVal = null;
-					instance.dataService.createEntityAsync(
+					var retVal = instance.dataService.createEntityAsync(
 						typeName, initialValues, options,
 						function (entity, allEntities, headerGetter, xhr) {
 							try {
@@ -8454,7 +8465,6 @@
 									entity.$extra = extra;
 
 								onSuccess(successCallback, pp, d, entity);
-								if (!pp) retVal = entity;
 							} catch (e) {
 								onError(errorCallback, pp, d, entity, instance);
 							}
@@ -8542,7 +8552,7 @@
 						onSuccess(successCallback, pp, d, locals);
 					} else {
 						var that = this;
-						this.dataService.executeQuery(
+						retVal = this.dataService.executeQuery(
 							query, options,
 							function (newEntities, allEntities, headerGetter, xhr) {
 								try {
@@ -8594,7 +8604,6 @@
 									}
 									newEntities = notifyExecuted(that, query, options, newEntities);
 									onSuccess(successCallback, pp, d, newEntities);
-									if (!pp) retVal = newEntities;
 								} catch (e) {
 									onError(errorCallback, pp, d, e, that);
 								}
@@ -9101,7 +9110,7 @@
 
 						try {
 							var that = this;
-							this.dataService.saveChanges(
+							retVal = this.dataService.saveChanges(
 								savePackage,
 								options,
 								function (result, headerGetter, xhr) {
@@ -9146,7 +9155,6 @@
 
 										notifySaved(that, changes, savePackage, options);
 										onSuccess(successCallback, pp, d, result);
-										if (!pp) retVal = result;
 									}
 									catch (error) {
 										error.changes = changes;
@@ -9939,17 +9947,18 @@
 				if (async == null) async = !this.ajaxProvider.syncSupported;
 				var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
 				var extra = options.extra;
-				this.ajaxProvider.doAjax(
+				var call = this.ajaxProvider.doAjax(
 					this.uri + 'Metadata',
 					'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
 					function (data, headerGetter, xhr) {
 						// deserialize return value to object.
 						retVal = that.serializationService.deserialize(data); // parse string
 						successCallback(retVal, headerGetter, xhr);
+						return retVal;
 					},
 					errorCallback
 				);
-				return retVal;
+				return async ? call : retVal;
 			};
 
 			proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
@@ -9965,8 +9974,9 @@
 				// if type could not be found in metadata request it from server.
 				var uri = that.uri + 'CreateType?typeName=' + typeName + "&initialValues=";
 				if (initialValues != null)
-					uri += that.serializationService.serialize(initialValues);
-				this.ajaxProvider.doAjax(
+				    uri += that.serializationService.serialize(initialValues);
+				var retVal;
+				var call = this.ajaxProvider.doAjax(
 					uri,
 					'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
 					function (data, headerGetter, xhr) {
@@ -9974,12 +9984,15 @@
 						data = that.serializationService.deserialize(data);
 						// Fix the relations between object (using $ref and $id values)
 						var allEntities = that.fixResults(data, makeObservable);
+						retVal = data;
 						successCallback(data, allEntities, headerGetter, xhr);
+						return retVal;
 					},
 					function (error) {
 						errorCallback(error);
 					}
 				);
+				return async ? call : retVal;
 			};
 
 			proto.executeQuery = function (query, options, successCallback, errorCallback) {
@@ -10023,8 +10036,9 @@
 				var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
 				helper.extend(headers, options.headers);
 				var that = this;
-				// execute query using ajax provider
-				this.ajaxProvider.doAjax(
+			    // execute query using ajax provider
+				var retVal;
+				var call = this.ajaxProvider.doAjax(
 					uri,
 					type, dataType, contentType, d, async, timeout, extra, headers,
 					function (data, headerGetter, xhr) {
@@ -10046,12 +10060,15 @@
 							allEntities = that.fixResults(data, makeObservable, handleUnmappedProperties);
 							if (isSingle) data = data[0];
 						}
+						retVal = data;
 						successCallback(data, allEntities, headerGetter, xhr);
+						return retVal;
 					},
 					function (error) {
 						errorCallback(error);
 					}
 				);
+				return async ? call : retVal;
 			};
 
 			proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
@@ -10070,7 +10087,8 @@
 				var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': saveData.length };
 				var type = options.method || 'POST';
 				helper.extend(headers, options.headers);
-				this.ajaxProvider.doAjax(
+				var retVal;
+				var call = this.ajaxProvider.doAjax(
 					uri,
 					type, this.dataType, this.contentType, saveData, async, timeout, extra, headers,
 					function (result, headerGetter, xhr) {
@@ -10085,12 +10103,15 @@
 							delete result.$id;
 							delete result.$type;
 						}
+						retVal = result;
 						successCallback(result, headerGetter, xhr);
+						return retVal;
 					},
 					function (error) {
 						errorCallback(error);
 					}
 				);
+				return async ? call : retVal;
 			};
 
 			proto.fixResults = function (results, makeObservable, handleUnmappedProperties) {
@@ -10449,7 +10470,7 @@
 			/// Sets static promise provider instance. All async operations after this call will use given promise provider instance.
 			/// </summary>
 			/// <param name="provider">Promise provider parameter.</param>
-			_promiseProvider = getValue(provider, baseTypes.PromiseProviderBase);
+		    _promiseProvider = provider != null ? getValue(provider, baseTypes.PromiseProviderBase) : null;
 		};
 
 		expose.getAjaxProvider = function () {
@@ -10651,7 +10672,7 @@
 
 	return {
 		// Export types
-		version: '2.3.0',
+		version: '2.3.1',
 		registerI18N: function (code, i18n, active) {
 			i18Ns[code] = i18n;
 			if (active) i18N = i18n;
