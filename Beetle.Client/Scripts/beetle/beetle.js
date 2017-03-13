@@ -21,8 +21,6 @@
 		try {
 			var aCore = require("@angular/core");
 			var aHttp = require("@angular/http");
-			require('rxjs/add/operator/map');
-			require('rxjs/add/operator/catch');
 
 			var http =  aCore.ReflectiveInjector.resolveAndCreate([
 				aHttp.Http, aHttp.BrowserXhr, 
@@ -2451,13 +2449,7 @@
 					/// Creates an error object by parsing XHR result.
 					/// </summary>
 					/// <param name="xhr">XML Http Request object.</param>
-					var obj = { status: xhr.status, xhr: xhr };
-					if (xhr.responseText) {
-						try {
-							obj.detail = JSON.parse(xhr.responseText);
-						} catch (e) {
-						}
-					}
+					var obj = { status: xhr.status, xhr: xhr, detail: xhr.responseText };
 					return helper.createError(xhr.statusText, obj);
 				}
 
@@ -3254,7 +3246,7 @@
 								return headers[header.toLowerCase()];
 							});
 						}, function (error) {
-							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
+							var obj = { status: error.status, detail: error.data, error: error };
 							var e = helper.createError(error.statusText, obj);
 							errorCallback(e);
 							return e;
@@ -3301,13 +3293,13 @@
 					var request = new this.RequestConstructor(requestOptions);
 
 					return this.http.request(request)
-						.map(resp => {
+						.subscribe(resp => {
 							return successCallback(resp.text(), name => { 
 								return resp.headers[name];
 							});
-						})
-						.catch(error => {
-							var obj = { status: error.status, config: error.config, detail: error.data, error: error };
+						},
+						error => {
+							var obj = { status: error.status, detail: error._body, error: error };
 							var e = helper.createError(error.statusText, obj);
 							errorCallback(e);
 							return e;
@@ -3355,11 +3347,11 @@
 						}
 					};
 
-					xhr.ontimeout = function (e) {
+					xhr.ontimeout = function () {
 						xhr.onreadystatechange = null;
 						xhr.abort = null;
 
-						errorCallback(e);
+						errorCallback(that.createError(xhr));
 					};
 
 					xhr.send(data);
@@ -3421,10 +3413,17 @@
 							body += chunk;
 						});
 						res.on("end", function () {
-							successCallback(body, function (name) {
-								if (!name) return res.headers;
-								return res.headers[name.toLowerCase()];
-							});
+							if (res.statusCode == 200) {
+								successCallback(body, function (name) {
+									if (!name) return res.headers;
+									return res.headers[name.toLowerCase()];
+								});
+							}
+							else {
+								var obj = { status: res.statusCode, detail: body };
+								var e = helper.createError(res.statusMessage, obj);
+								errorCallback(e);
+							}
 						});
 					});
 
@@ -10387,7 +10386,7 @@
 		if (angularjs)
 			_ajaxProvider = new impls.AngularjsAjaxProvider(angularjs);
 		else if (angular)
-			_ajaxProvider = new impls.AngularAjaxProvider(angular.http, angular.Request, angular.Headers);
+		 	_ajaxProvider = new impls.AngularAjaxProvider(angular.http, angular.Request, angular.Headers);
 		else if ($)
 			_ajaxProvider = new impls.JQueryAjaxProvider($);
 		else if (node)
