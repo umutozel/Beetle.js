@@ -9312,6 +9312,10 @@
 				}
 
 				proto.clear = function () {
+				    helper.forEach(this.entities.allEntities, function (e) {
+				        e.$tracker.manager = null;
+				    });
+
 					this.pendingChangeCount = 0;
 					this.entities = new core.EntityContainer();
 					this.validationErrors = [];
