@@ -371,14 +371,6 @@
 				events.error.notify(retVal);
 				return retVal;
 			},
-			runSelectExp: function (array, exp, queryContext) {
-				if (array.length == 0) return array;
-
-				exp = libs.jsep(exp);
-				var exps = exp.type == 'Compound' ? exp.body : [exp];
-				var projector = helper.jsepToProjector(exps, queryContext);
-				return helper.mapArray(array, projector);
-			},
 			setForeignKeys: function (entity, navProperty, newValue) {
 				/// <summary>Updates foreign keys of given navigation property with new values.</summary>
 				/// <param name="entity">The entity.</param>
@@ -510,6 +502,14 @@
 				}
 
 				return array;
+			},
+			runSelectExp: function (array, exp, queryContext) {
+			    if (array.length == 0) return array;
+
+			    exp = libs.jsep(exp);
+			    var exps = exp.type == 'Compound' ? exp.body : [exp];
+			    var projector = helper.jsepToProjector(exps, queryContext);
+			    return helper.mapArray(array, projector);
 			},
 			jsepToODataQuery: function (exp, queryContext, firstExp) {
 				/// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
