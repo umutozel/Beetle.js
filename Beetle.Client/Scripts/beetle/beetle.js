@@ -181,31 +181,6 @@
 						return args[Number(index) + 1] || '';
 					});
 			},
-			tryFreeze: function (obj, withChildren) {
-				/// <summary>Calls Object.freeze() method if available. Old browsers does not support this.</summary>
-				/// <param name="obj">Object to freeze.</param>
-				/// <param name="withChildren">When 'true', all object parameters, and all items of array parameters will be freezed also.</param>
-				if (!obj || !Object.freeze) return obj;
-				Object.freeze(obj);
-				if (withChildren === true) {
-					for (var p in obj) {
-						var v = obj[p];
-						if (Assert.isArray(v))
-							this.tryFreezeArray(v, withChildren);
-						else if (Assert.isObject(v))
-							this.tryFreeze(v, withChildren);
-					}
-				}
-				return obj;
-			},
-			tryFreezeArray: function (array, withChildren) {
-				/// <summary>Tries to freeze all items of an array.</summary>
-				/// <param name="array">Array to freeze.</param>
-				/// <param name="withChildren">When 'true', all object parameters, and all items of array parameters will be freezed also.</param>
-				if (!array || !Object.freeze) return;
-				for (var i = 0; i < array.length; i++)
-					this.tryFreeze(array[i], withChildren);
-			},
 			indexOf: function (array, item, index) {
 				/// <summary>Finds the index of the given item in the array.</summary>
 				/// <param name="array">Array to search.</param>
@@ -373,8 +348,7 @@
 				/// <param name="property">The property.</param>
 				/// <param name="message">Validation message.</param>
 				/// <param name="validator">Validator instance.</param>
-				var retVal = { message: message, entity: entity, validator: validator, value: value, property: property };
-				return this.tryFreeze(retVal);
+				return { message: message, entity: entity, validator: validator, value: value, property: property };
 			},
 			createError: function (message, arg1, arg2) {
 				/// <summary>Creates error object with given message and populates with given object's values.</summary>
@@ -947,7 +921,6 @@
 			this.value = value;
 			this.name = name;
 			this.errors = [];
-			helper.tryFreeze(this);
 		};
 		var proto = ctor.prototype;
 
@@ -1126,7 +1099,6 @@
 				this.name = name;
 				if (props)
 					copyOwnFrom(this, props);
-				helper.tryFreeze(this);
 			}
 
 			/** We don’t want the mutable Object.prototype in the prototype chain */
@@ -1139,7 +1111,6 @@
 			symbol.prototype.toString = function () {
 				return this.name;
 			};
-			helper.tryFreeze(symbol.prototype);
 
 			var x = function (obj) {
 				/// <summary>
@@ -1155,7 +1126,6 @@
 						self[name] = new symbol(name);
 					});
 				}
-				helper.tryFreeze(this);
 			};
 			x.prototype.symbols = function () {
 				var retVal = [];
@@ -2944,8 +2914,6 @@
 							return result;
 						};
 					}
-
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.ObservableProviderBase);
 				var proto = ctor.prototype;
@@ -3044,7 +3012,6 @@
 			PropertyObservableProvider: (function () {
 				var ctor = function () {
 					baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.ObservableProviderBase);
 				var proto = ctor.prototype;
@@ -3162,7 +3129,6 @@
 				var ctor = function ($) {
 					baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
 					this.$ = $;
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
@@ -3214,7 +3180,6 @@
 					baseTypes.AjaxProviderBase.call(this, 'Angular.js Ajax Provider');
 					this.syncSupported = false;
 					this.$http = angularjs.injector(["ng"]).get('$http');
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
@@ -3263,7 +3228,6 @@
 					this.http = http;
 					this.RequestConstructor = RequestConstructor;
 					this.HeadersConstructor = HeadersConstructor;
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
@@ -3313,7 +3277,6 @@
 				var ctor = function () {
 					baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
 					this.syncSupported = true;
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
@@ -3368,7 +3331,6 @@
 					this.syncSupported = false;
 					this.http = http;
 					this.https = https;
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.AjaxProviderBase);
 				var proto = ctor.prototype;
@@ -3455,7 +3417,6 @@
 			JsonSerializationService: (function () {
 				var ctor = function () {
 					baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.SerializationServiceBase);
 				var proto = ctor.prototype;
@@ -3477,7 +3438,6 @@
 				var ctor = function (Q) {
 					baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
 					this.Q = Q;
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
@@ -3507,7 +3467,6 @@
 					this.ng = angularjs.injector(['ng']);
 					this.$q = this.ng.get('$q');
 					this.$rootScope = this.ng.get('$rootScope');
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
@@ -3537,7 +3496,6 @@
 				var ctor = function ($) {
 					baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
 					this.$ = $;
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
@@ -3564,7 +3522,6 @@
 			Es6PromiseProvider: (function () {
 				var ctor = function () {
 					baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
-					helper.tryFreeze(this);
 				};
 				helper.inherit(ctor, baseTypes.PromiseProviderBase);
 				var proto = ctor.prototype;
@@ -6060,7 +6017,6 @@
 					/// </summary>
 					this.value = value;
 					this.fromBeetle = fromBeetle === true;
-					helper.tryFreeze(this);
 				};
 
 				return ctor;
@@ -6200,7 +6156,6 @@
 				expose.object = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'object');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6219,7 +6174,6 @@
 				expose.array = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'array');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6255,7 +6209,6 @@
 				expose.func = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'function');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 
@@ -6267,7 +6220,6 @@
 
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'string');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6299,7 +6251,6 @@
 				expose.guid = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'guid');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6335,7 +6286,6 @@
 				expose.date = (function () {
 					var ctor = function () {
 						dateBase.call(this, 'date');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, dateBase);
 
@@ -6345,7 +6295,6 @@
 				expose.dateTimeOffset = (function () {
 					var ctor = function () {
 						dateBase.call(this, 'dateTimeOffset');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, dateBase);
 					var proto = ctor.prototype;
@@ -6361,7 +6310,6 @@
 				expose.time = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'time');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6398,7 +6346,6 @@
 				expose.boolean = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'boolean');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6430,7 +6377,6 @@
 
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'int');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6462,7 +6408,6 @@
 
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'number');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6494,7 +6439,6 @@
 
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'byte');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6524,7 +6468,6 @@
 				expose.binary = (function () {
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'binary');
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6559,7 +6502,6 @@
 						this.enumType = enumType;
 						this.enumTypeName = enumTypeName;
 						this.displayName = displayName || enumTypeName;
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6631,7 +6573,6 @@
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'geometry');
 						this.isComplex = true;
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6657,7 +6598,6 @@
 					var ctor = function () {
 						baseTypes.DataTypeBase.call(this, 'geography');
 						this.isComplex = true;
-						helper.tryFreeze(this);
 					};
 					helper.inherit(ctor, baseTypes.DataTypeBase);
 					var proto = ctor.prototype;
@@ -6760,7 +6700,6 @@
 					this.func = func;
 					this.message = message;
 					this.args = args;
-					helper.tryFreeze(this);
 				};
 				var proto = ctor.prototype;
 
@@ -6990,7 +6929,6 @@
 						/// <param name="type">Entity type for the set.</param>
 						this.typeName = type.name;
 						this.keyIndex = [];
-						helper.tryFreeze(this);
 					};
 					var p = c.prototype;
 
@@ -7137,7 +7075,6 @@
 					this.entitySets = [];
 					// To hold all entities.
 					this.allEntities = [];
-					helper.tryFreeze(this);
 				};
 				var proto = ctor.prototype;
 
