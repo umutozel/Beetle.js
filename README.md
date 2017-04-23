@@ -1,15 +1,16 @@
 Beetle.js 
 =========
 
-[![Join the chat at https://gitter.im/umutozel/Beetle.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/umutozel/Beetle.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build status](https://ci.appveyor.com/api/projects/status/chugsi3ye1ufa5n2?svg=true)](https://ci.appveyor.com/project/umutozel/beetle-js)
+[![npm version](https://badge.fury.io/js/beetle.js.svg)](https://badge.fury.io/js/beetle.js)
 <a href="https://snyk.io/test/npm/beetle.js"><img src="https://snyk.io/test/npm/beetle.js/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/beetle.js" style="max-width:100%;"></a>
+[![Join the chat at https://gitter.im/umutozel/Beetle.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/umutozel/Beetle.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Beetle is a data manager for Javascript.
 The goal is to be able to work with data as easy as Entity Framework and LINQ.
 
 
-##Features
+## Features
 * Tracks objects and persists changes to server
 * Can work with Knockout and ES5 properties (others can be implemented easily)
 * Can work with Q, Angular, ES6 and jQuery promises
@@ -25,13 +26,13 @@ The goal is to be able to work with data as easy as Entity Framework and LINQ.
 * Can check-auto convert values for its proper data types
 * Can be internationalized (for internal messages, validation messages etc..)
 
-##Current prerequisities
+## Current prerequisities
 All dependencies have base types so custom implementations can be made easily.
 * Entity Framework
 * WebApi or Asp.Net Mvc project for service
 * Knockout.js or EcmaScript5 Properties for providing observable properties
 
-##Usage
+## Usage
 * Create a Controller and inherit from BeetleApiController, generic argument tells we are using Entity Framework context handler with TestEntities context (DbContext)
 ```cs
 public class BeetleTestController : BeetleApiController<EFContextHandler<TestEntities>> {
@@ -98,20 +99,20 @@ manager.saveChanges()
     })
 ```
 
-##Supported Data Types
+## Supported Data Types
 string, guid, date, dateTimeOffset, time, boolean, int, number (for float, decimal, etc..), byte, enum, binary, geometry, geography (spatial types are supported partially, can be fully supported once we decide how to represent them at client side)
 
-##Validators
+## Validators
 required, stringLength, maximumLength, minimumLength, range, emailAddress, creditCard, url, phone, postalCode, time, regularExpression, compare
 
-##Supported Query Expressions
+## Supported Query Expressions
 ofType, where, orderBy, expand (include), select, skip, top (take), groupBy, distinct, reverse, selectMany, skipWhile, takeWhile, all, any, avg, max, min, sum, count, first, firstOrDefault, single, singleOrDefault, last, lastOrDefault
 
-##Supported Query Functions
+## Supported Query Functions
 toupper, tolower, substring, substringof, length, trim, concat, replace, startswith, endswith, indexof, round, ceiling, floor, second, minute, hour, day, month, year, max, min, sum, count, avg, any, all, contains
 (can be used in expression strings, some are not supported by OData but can be used with beetle query string format)
 
-##License
+## License
 See [License](https://github.com/umutozel/Beetle.js/blob/master/LICENSE)
 
 Thanks to [JetBrains](http://www.jetbrains.com/) for providing us with free licenses to their great tools.
