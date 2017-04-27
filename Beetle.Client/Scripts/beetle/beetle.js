@@ -1871,10 +1871,7 @@
 						++i;
 					}
 
-					var args = [];
-					for (i; i < arguments.length; i++)
-						args.push(arguments[i]);
-
+					var args = Array.prototype.slice.call(arguments, i);
 					return source + this.beetleName + '(' + args.join(', ') + ')';
 				};
 
