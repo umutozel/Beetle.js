@@ -683,13 +683,17 @@ declare module beetle {
 	}
 
 	namespace impls {
-		class DefaultDateConverter extends baseTypes.DateConverterBase { }
+		class DefaultDateConverter extends baseTypes.DateConverterBase {
+			constructor();
+		}
 
 		class KoObservableProvider extends baseTypes.ObservableProviderBase {
 			constructor(ko);
 		}
 
-		class PropertyObservableProvider extends baseTypes.ObservableProviderBase { }
+		class PropertyObservableProvider extends baseTypes.ObservableProviderBase {
+			constructor();
+		}
 
 		class JQueryAjaxProvider extends baseTypes.AjaxProviderBase {
 			constructor($);
@@ -703,13 +707,17 @@ declare module beetle {
 			constructor(http, RequestConstructor, HeadersConstructor);
 		}
 
-		class VanillajsAjaxProviderInstance extends baseTypes.AjaxProviderBase { }
+		class VanillajsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
+			constructor();
+		}
 
 		class NodejsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
 			constructor(http, https);
 		}
 
-		class JsonSerializationService extends baseTypes.SerializationServiceBase { }
+		class JsonSerializationService extends baseTypes.SerializationServiceBase {
+			constructor();
+		}
 
 		class QPromiseProvider extends baseTypes.PromiseProviderBase {
 			constructor(Q);
@@ -723,7 +731,9 @@ declare module beetle {
 			constructor($);
 		}
 
-		class Es6PromiseProviderInstance extends baseTypes.PromiseProviderBase { }
+		class Es6PromiseProviderInstance extends baseTypes.PromiseProviderBase {
+			constructor();
+		}
 	}
 
 	namespace metadata {
