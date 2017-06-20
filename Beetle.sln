@@ -11,8 +11,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{97EB5D81-F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{54244F42-E28E-41BA-8558-2CD952E0DCB7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server", "src\Beetle.Server\Beetle.Server.csproj", "{CEE6067A-D3C5-4869-897A-13EB6090051A}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CEE6067A-D3C5-4869-897A-13EB6090051A} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 	EndGlobalSection
 EndGlobal
