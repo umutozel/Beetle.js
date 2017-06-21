@@ -4,7 +4,7 @@ namespace Beetle.Server.Interface {
 
     public interface IQueryHandler<T>: IContentHandler<T> {
 
-        HandledQuery HandleQuery(T query, IEnumerable<KeyValuePair<string, string>> parameters);
+        HandledQuery HandleQuery(T query, IDictionary<string, string> parameters);
 
         /// <summary>
         /// Handles executer expression (any, all, first, single etc..).

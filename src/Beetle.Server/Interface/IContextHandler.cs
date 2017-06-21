@@ -23,7 +23,7 @@ namespace Beetle.Server.Interface {
 
         object HandleUnknownAction(string action);
 
-        ProcessResult ProcessRequest(object contentValue, IEnumerable<KeyValuePair<string, string>> queryParameters, 
+        ProcessResult ProcessRequest(object contentValue, IDictionary<string, string> queryParameters, 
                                      ActionContext actionContext, IBeetleConfig actionConfig, IBeetleService service);
 
         /// <summary>

@@ -82,7 +82,7 @@ namespace Beetle.Server {
             return queryable;
         }
 
-        public virtual HandledQuery HandleQuery(IQueryable query, IEnumerable<KeyValuePair<string, string>> parameters) {
+        public virtual HandledQuery HandleQuery(IQueryable query, IDictionary<string, string> parameters) {
             var inlineCount = false;
             int? takeCount = null;
             IQueryable inlineCountQuery = null;
