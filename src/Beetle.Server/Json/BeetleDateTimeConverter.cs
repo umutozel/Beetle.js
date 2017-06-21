@@ -74,8 +74,8 @@ namespace Beetle.Server.Json {
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-            if (serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local && value != null && value.GetType() == typeof(DateTime)) {
-                value = ((DateTime)value).ToUniversalTime();
+            if (serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local && value is DateTime dateValue) {
+                value = dateValue.ToUniversalTime();
             }
 
             base.WriteJson(writer, value, serializer);
