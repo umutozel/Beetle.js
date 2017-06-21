@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Beetle.Server.Meta;
 
 namespace Beetle.Server.Interface {
+    using Meta;
 
     public interface IContextHandler<out TContext>: IContextHandler {
 

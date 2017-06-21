@@ -26,9 +26,9 @@ namespace Beetle.Server.Interface {
 
         IContextHandler ContextHandler { get; }
 
-        int MaxResultCount { get; set; }
+        int? MaxResultCount { get; set; }
 
-        bool CheckRequestHash { get; set; }
+        bool? CheckRequestHash { get; set; }
 
         event BeforeQueryExecuteDelegate BeforeHandleQuery;
 

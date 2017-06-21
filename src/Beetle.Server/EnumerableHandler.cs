@@ -12,10 +12,7 @@ namespace Beetle.Server {
 
         public ProcessResult HandleContent(IEnumerable contentValue, IDictionary<string, string> parameters,
                                            ActionContext actionContext, IBeetleService service = null) {
-            var maxResultCount = actionContext.MaxResultCount;
-            if (maxResultCount <= 0 && service != null && service.MaxResultCount > 0)
-                maxResultCount = service.MaxResultCount;
-
+            var maxResultCount = actionContext.MaxResultCount ?? service?.MaxResultCount;
             if (maxResultCount > 0) {
                 var count = Enumerable.Count((dynamic)contentValue);
                 if (count > maxResultCount)

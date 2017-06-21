@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Beetle.Server.Meta;
 
 namespace Beetle.Server {
+    using Meta;
 
     public class EntityBag {
 
