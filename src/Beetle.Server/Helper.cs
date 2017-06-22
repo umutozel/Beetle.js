@@ -84,24 +84,24 @@ namespace Beetle.Server {
 
         #region Request-Response Operations
 
-        public static List<BeetleParameter> GetBeetleParameters(IDictionary<string, string> parameters) {
-            return parameters?.Keys
+        public static List<BeetleParameter> GetBeetleParameters(IDictionary<string, string> queryParameters) {
+            return queryParameters?.Keys
                 .Where(k => !string.IsNullOrWhiteSpace(k) && k.StartsWith("!e"))
                 .Select(k => {
-                    var v = parameters[k];
+                    var v = queryParameters[k];
                     var i = v.IndexOf(':');
                     return new BeetleParameter(v.Substring(0, i), v.Substring(i + 1));
                 })
                 .ToList();
         }
 
-        public static ProcessResult DefaultRequestProcessor(object contentValue, IDictionary<string, string> beetlePrms, 
+        public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<BeetleParameter> parameters, 
                                                             ActionContext actionContext, IBeetleService service, 
                                                             IContextHandler contextHandler, IBeetleConfig actionConfig) {
             var queryable = contentValue as IQueryable;
             if (queryable != null) {
                 var queryableHandler = GetQueryHandler(actionConfig, service);
-                return queryableHandler.HandleContent(queryable, beetlePrms, actionContext, service);
+                return queryableHandler.HandleContent(queryable, parameters, actionContext, service);
             }
 
             if (contentValue is string) return new ProcessResult(actionContext) { Result = contentValue };
@@ -110,7 +110,7 @@ namespace Beetle.Server {
             if (enumerable == null) return new ProcessResult(actionContext) { Result = contentValue };
 
             var enumerableHandler = GetEnumerableHandler(actionConfig, service);
-            return enumerableHandler.HandleContent(enumerable, beetlePrms, actionContext, service);
+            return enumerableHandler.HandleContent(enumerable, parameters, actionContext, service);
         }
 
         public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, IBeetleConfig config, Metadata metadata,

@@ -2,15 +2,15 @@
 
 namespace Beetle.Server {
 
-    public struct ActionContext {
+    public class ActionContext {
 
-        public ActionContext(string name, object value, string queryString, 
-                             IDictionary<string, string> queryParameters,
+        public ActionContext(string name, object value, string queryString,
+                             IEnumerable<BeetleParameter>  parameters,
                              int? maxResultCount = null, bool? checkRequestHash = null) {
             Name = name;
             Value = value;
             QueryString = queryString;
-            QueryParameters = queryParameters;
+            QueryParameters = parameters;
             MaxResultCount = maxResultCount;
             CheckRequestHash = checkRequestHash;
         }
@@ -21,7 +21,7 @@ namespace Beetle.Server {
 
         public string QueryString { get; }
 
-        public IDictionary<string, string> QueryParameters { get; }
+        public IEnumerable<BeetleParameter> QueryParameters { get; }
 
         public int? MaxResultCount { get; }
 

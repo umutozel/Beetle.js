@@ -4,7 +4,7 @@ namespace Beetle.Server.Interface {
 
     public interface IQueryHandler<T>: IContentHandler<T> {
 
-        HandledQuery HandleQuery(T query, IDictionary<string, string> parameters);
+        HandledQuery HandleQuery(T query, IEnumerable<BeetleParameter> parameters);
 
         /// <summary>
         /// Handles executer expression (any, all, first, single etc..).
@@ -15,7 +15,7 @@ namespace Beetle.Server.Interface {
         /// <exception cref="BeetleException">Invalid group by expression:  + prm.Value
         /// or
         /// Unknown beetle query parameter:  + prm.Key</exception>
-        object HandleExecuter(T query, KeyValuePair<string, string> executer);
+        object HandleExecuter(T query, BeetleParameter executer);
 
         T OfType(T query, string ofType);
 

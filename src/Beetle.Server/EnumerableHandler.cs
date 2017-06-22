@@ -10,7 +10,7 @@ namespace Beetle.Server {
     public class EnumerableHandler : IContentHandler<IEnumerable> {
         private static readonly Lazy<EnumerableHandler> _instance = new Lazy<EnumerableHandler>();
 
-        public ProcessResult HandleContent(IEnumerable contentValue, IDictionary<string, string> parameters,
+        public ProcessResult HandleContent(IEnumerable contentValue, IEnumerable<BeetleParameter> parameters,
                                            ActionContext actionContext, IBeetleService service = null) {
             var maxResultCount = actionContext.MaxResultCount ?? service?.MaxResultCount;
             if (maxResultCount > 0) {

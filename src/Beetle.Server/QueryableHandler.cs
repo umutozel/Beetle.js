@@ -11,7 +11,7 @@ namespace Beetle.Server {
     public class QueryableHandler : IQueryHandler<IQueryable> {
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>(() => new QueryableHandler());
 
-        public virtual ProcessResult HandleContent(IQueryable queryable, IDictionary<string, string> parameters, 
+        public virtual ProcessResult HandleContent(IQueryable queryable, IEnumerable<BeetleParameter> parameters, 
                                                    ActionContext actionContext, IBeetleService service = null) {
             if (queryable == null) throw new ArgumentNullException(nameof(queryable));
 
@@ -25,12 +25,15 @@ namespace Beetle.Server {
             contextHandler?.OnBeforeHandleQuery(beforeArgs);
             queryable = beforeArgs.Query;
 
-            if (parameters != null && parameters.Count > 0) {
-                var executer = parameters.SingleOrDefault(b => b.Key.StartsWith("exec;"));
-                if (!executer.Equals(default(KeyValuePair<string, string>))) parameters.Remove(executer);
+            if (parameters != null) {
+                var parameterList = parameters as IList<BeetleParameter> ?? parameters.ToList();
+                var executer = parameterList.SingleOrDefault(b => b.Name.StartsWith("exec;"));
+                if (executer != null) {
+                    parameterList.Remove(executer);
+                }
 
                 // handle query
-                var handledQuery = HandleQuery(queryable, parameters);
+                var handledQuery = HandleQuery(queryable, parameterList);
                 beforeArgs.Query = handledQuery.Query;
 
                 // make before execute callbacks
@@ -39,12 +42,14 @@ namespace Beetle.Server {
                 queryable = beforeArgs.Query;
 
                 // get in-line count
-                if (handledQuery.InlineCountQuery != null)
+                if (handledQuery.InlineCountQuery != null) {
                     inlineCount = Queryable.Count((dynamic)handledQuery.InlineCountQuery);
+                }
 
                 // execute query
-                if (!string.IsNullOrWhiteSpace(executer.Key))
+                if (executer != null) {
                     result = HandleExecuter(queryable, executer);
+                }
                 else {
                     queryable = ValidateQuery(actionContext, queryable, handledQuery.TakeCount, service, contextHandler);
                     result = Enumerable.ToList((dynamic)queryable);
@@ -82,12 +87,12 @@ namespace Beetle.Server {
             return queryable;
         }
 
-        public virtual HandledQuery HandleQuery(IQueryable query, IDictionary<string, string> parameters) {
+        public virtual HandledQuery HandleQuery(IQueryable query, IEnumerable<BeetleParameter> parameters) {
             var inlineCount = false;
             int? takeCount = null;
             IQueryable inlineCountQuery = null;
             foreach (var prm in parameters) {
-                switch (prm.Key.ToLowerInvariant()) {
+                switch (prm.Name.ToLowerInvariant()) {
                     case "inlinecount":
                         inlineCount = prm.Value == "allpages";
                         break;
@@ -152,7 +157,7 @@ namespace Beetle.Server {
                         query = TakeWhile(query, prm.Value);
                         break;
                     default:
-                        throw new BeetleException(string.Format(Resources.UnknownBeetleQueryParameter, prm.Key));
+                        throw new BeetleException(string.Format(Resources.UnknownBeetleQueryParameter, prm.Name));
                 }
             }
 
@@ -167,8 +172,8 @@ namespace Beetle.Server {
         /// or
         /// Unknown beetle query parameter:  + prm.Key
         /// </exception>
-        public virtual object HandleExecuter(IQueryable query, KeyValuePair<string, string> executer) {
-            var exp = executer.Key.Substring(executer.Key.IndexOf(';') + 1);
+        public virtual object HandleExecuter(IQueryable query, BeetleParameter executer) {
+            var exp = executer.Name.Substring(executer.Name.IndexOf(';') + 1);
             switch (exp.ToLowerInvariant()) {
                 case "all":
                     return All(query, executer.Value);
@@ -197,7 +202,7 @@ namespace Beetle.Server {
                 case "lastod":
                     return LastOrDefault(query, executer.Value);
                 default:
-                    throw new BeetleException(string.Format(Resources.UnknownBeetleQueryExecuterParameter, executer.Key));
+                    throw new BeetleException(string.Format(Resources.UnknownBeetleQueryExecuterParameter, executer.Name));
             }
         }
 

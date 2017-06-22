@@ -2,7 +2,7 @@
 
 namespace Beetle.Server {
 
-    public struct HandledQuery {
+    public class HandledQuery {
 
         public HandledQuery(IQueryable query, IQueryable inlineCountQuery, int? takeCount = null) {
             Query = query;

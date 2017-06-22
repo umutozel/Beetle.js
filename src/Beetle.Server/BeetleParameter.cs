@@ -1,6 +1,6 @@
 ﻿namespace Beetle.Server {
 
-    public struct BeetleParameter {
+    public class BeetleParameter {
 
         public BeetleParameter(string name, string value) {
             Name = name;

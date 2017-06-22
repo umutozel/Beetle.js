@@ -63,11 +63,11 @@ namespace Beetle.Server {
             throw new NotImplementedException();
         }
 
-        public virtual ProcessResult ProcessRequest(object contentValue, IDictionary<string, string> queryParameters,
+        public virtual ProcessResult ProcessRequest(object contentValue, IEnumerable<BeetleParameter> parameters,
                                                     ActionContext actionContext, IBeetleConfig actionConfig, 
                                                     IBeetleService service) {
             return Helper.DefaultRequestProcessor(
-                contentValue, queryParameters, 
+                contentValue, parameters, 
                 actionContext, service, 
                 this, actionConfig
             );
