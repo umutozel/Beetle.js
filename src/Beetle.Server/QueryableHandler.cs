@@ -101,6 +101,7 @@ namespace Beetle.Server {
                         query = OfType(query, prm.Value);
                         break;
                     case "filter":
+                    case "where":
                         inlineCountQuery = null;
                         query = Where(query, prm.Value);
                         break;
@@ -108,6 +109,7 @@ namespace Beetle.Server {
                         query = OrderBy(query, prm.Value);
                         break;
                     case "expand":
+                    case "include":
                         query = Include(query, prm.Value);
                         break;
                     case "select":
