@@ -28,7 +28,7 @@ namespace Beetle.Server.Interface {
 
         int? MaxResultCount { get; set; }
 
-        bool? CheckRequestHash { get; set; }
+        bool CheckRequestHash { get; set; }
 
         event BeforeQueryExecuteDelegate BeforeHandleQuery;
 

@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Server", "src\Beetle
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Server.Tests", "tests\Beetle.Server.Tests\Beetle.Server.Tests.csproj", "{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Meta", "src\Beetle.Meta\Beetle.Meta.csproj", "{28D5CBD9-D5CD-4100-8B06-45040868DDDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Meta", "src\Beetle.Meta\Beetle.Meta.csproj", "{28D5CBD9-D5CD-4100-8B06-45040868DDDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Mvc", "src\Beetle.Mvc\Beetle.Mvc.csproj", "{F1BB57BE-8859-49BF-A9C6-95446C132D69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,5 +49,6 @@ Global
 		{CEE6067A-D3C5-4869-897A-13EB6090051A} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 		{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
 		{28D5CBD9-D5CD-4100-8B06-45040868DDDB} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 	EndGlobalSection
 EndGlobal

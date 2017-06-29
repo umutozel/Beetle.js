@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Beetle.Server {
@@ -42,12 +41,9 @@ namespace Beetle.Server {
 
     public class BeforeSaveEventArgs : EventArgs {
 
-        public BeforeSaveEventArgs(IEnumerable<EntityBag> entities, SaveContext saveContext) {
-            Entities = entities;
+        public BeforeSaveEventArgs(SaveContext saveContext) {
             SaveContext = saveContext;
         }
-
-        public IEnumerable<EntityBag> Entities { get; }
 
         public SaveContext SaveContext { get; }
     }
@@ -56,12 +52,9 @@ namespace Beetle.Server {
 
     public class AfterSaveEventArgs : EventArgs {
 
-        public AfterSaveEventArgs(IEnumerable<EntityBag> entities, SaveResult saveResult) {
-            Entities = entities;
+        public AfterSaveEventArgs(SaveResult saveResult) {
             SaveResult = saveResult;
         }
-
-        public IEnumerable<EntityBag> Entities { get; }
 
         public SaveResult SaveResult { get; }
     }

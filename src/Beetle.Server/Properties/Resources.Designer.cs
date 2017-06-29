@@ -23,7 +23,7 @@ namespace Beetle.Server.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -37,7 +37,7 @@ namespace Beetle.Server.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Beetle.Server.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
@@ -52,7 +52,7 @@ namespace Beetle.Server.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -64,7 +64,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot process request, it has been sent or modified from outside of Beetle..
         /// </summary>
-        internal static string AlteredRequestException {
+        public static string AlteredRequestException {
             get {
                 return ResourceManager.GetString("AlteredRequestException", resourceCulture);
             }
@@ -73,7 +73,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot change query type for non-generic queries..
         /// </summary>
-        internal static string CannotChangeQueryType {
+        public static string CannotChangeQueryType {
             get {
                 return ResourceManager.GetString("CannotChangeQueryType", resourceCulture);
             }
@@ -82,7 +82,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot find any key for &apos;{0}&apos;..
         /// </summary>
-        internal static string CannotFindAnyKey {
+        public static string CannotFindAnyKey {
             get {
                 return ResourceManager.GetString("CannotFindAnyKey", resourceCulture);
             }
@@ -91,7 +91,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot find metadata for &apos;{0}&apos;..
         /// </summary>
-        internal static string CannotFindMetadata {
+        public static string CannotFindMetadata {
             get {
                 return ResourceManager.GetString("CannotFindMetadata", resourceCulture);
             }
@@ -100,7 +100,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot find public &apos;{0}&apos; instance field or property..
         /// </summary>
-        internal static string CannotFindPublicInstanceFieldOrProperty {
+        public static string CannotFindPublicInstanceFieldOrProperty {
             get {
                 return ResourceManager.GetString("CannotFindPublicInstanceFieldOrProperty", resourceCulture);
             }
@@ -109,7 +109,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot find tracker info..
         /// </summary>
-        internal static string CannotFindTrackerInfo {
+        public static string CannotFindTrackerInfo {
             get {
                 return ResourceManager.GetString("CannotFindTrackerInfo", resourceCulture);
             }
@@ -118,7 +118,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot find type information for &apos;{0}&apos;..
         /// </summary>
-        internal static string CannotFindTypeInformation {
+        public static string CannotFindTypeInformation {
             get {
                 return ResourceManager.GetString("CannotFindTypeInformation", resourceCulture);
             }
@@ -127,7 +127,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot get generated values, when EntityType is not available in EntityBag, Metadata parameter must be given..
         /// </summary>
-        internal static string CannotGetGeneratedValues {
+        public static string CannotGetGeneratedValues {
             get {
                 return ResourceManager.GetString("CannotGetGeneratedValues", resourceCulture);
             }
@@ -136,7 +136,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot save entity with state &apos;{0}&apos;..
         /// </summary>
-        internal static string CannotSaveEntityWithState {
+        public static string CannotSaveEntityWithState {
             get {
                 return ResourceManager.GetString("CannotSaveEntityWithState", resourceCulture);
             }
@@ -145,7 +145,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot set read-only &apos;{0}&apos; property..
         /// </summary>
-        internal static string CannotSetReadOnlyProperty {
+        public static string CannotSetReadOnlyProperty {
             get {
                 return ResourceManager.GetString("CannotSetReadOnlyProperty", resourceCulture);
             }
@@ -154,7 +154,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Connection cannot be null..
         /// </summary>
-        internal static string ConnectionCannotBeNull {
+        public static string ConnectionCannotBeNull {
             get {
                 return ResourceManager.GetString("ConnectionCannotBeNull", resourceCulture);
             }
@@ -163,7 +163,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Delete command affected an unexpected number of rows. Entities may have been modified or deleted since last read..
         /// </summary>
-        internal static string DeleteAffectedUnexpectedNumberOfRows {
+        public static string DeleteAffectedUnexpectedNumberOfRows {
             get {
                 return ResourceManager.GetString("DeleteAffectedUnexpectedNumberOfRows", resourceCulture);
             }
@@ -172,7 +172,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Entity and ClientEntity must be same type to compare..
         /// </summary>
-        internal static string EntityAndClientEntityMustBeSameTypeToCompare {
+        public static string EntityAndClientEntityMustBeSameTypeToCompare {
             get {
                 return ResourceManager.GetString("EntityAndClientEntityMustBeSameTypeToCompare", resourceCulture);
             }
@@ -181,7 +181,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Entity type cannot be found for &apos;{0}&apos;..
         /// </summary>
-        internal static string EntityTypeCannotBeFound {
+        public static string EntityTypeCannotBeFound {
             get {
                 return ResourceManager.GetString("EntityTypeCannotBeFound", resourceCulture);
             }
@@ -190,7 +190,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Insert command affected an unexpected number of rows..
         /// </summary>
-        internal static string InsertAffectedUnexpectedNumberOfRows {
+        public static string InsertAffectedUnexpectedNumberOfRows {
             get {
                 return ResourceManager.GetString("InsertAffectedUnexpectedNumberOfRows", resourceCulture);
             }
@@ -199,7 +199,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid group by expression: &apos;{0}&apos;..
         /// </summary>
-        internal static string InvalidGroupByExpression {
+        public static string InvalidGroupByExpression {
             get {
                 return ResourceManager.GetString("InvalidGroupByExpression", resourceCulture);
             }
@@ -208,7 +208,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to {0} property length cannot exceed {1}..
         /// </summary>
-        internal static string MaxLenError {
+        public static string MaxLenError {
             get {
                 return ResourceManager.GetString("MaxLenError", resourceCulture);
             }
@@ -217,7 +217,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Original value property could not be found for &apos;{0}&apos;..
         /// </summary>
-        internal static string OriginalValuePropertyCouldNotBeFound {
+        public static string OriginalValuePropertyCouldNotBeFound {
             get {
                 return ResourceManager.GetString("OriginalValuePropertyCouldNotBeFound", resourceCulture);
             }
@@ -226,7 +226,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to %1 property is required..
         /// </summary>
-        internal static string RequiredError {
+        public static string RequiredError {
             get {
                 return ResourceManager.GetString("RequiredError", resourceCulture);
             }
@@ -235,7 +235,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Result count exceeded the allowed limit..
         /// </summary>
-        internal static string ResultCountExceeded {
+        public static string ResultCountExceeded {
             get {
                 return ResourceManager.GetString("ResultCountExceeded", resourceCulture);
             }
@@ -244,7 +244,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Type could not be found: {0}.
         /// </summary>
-        internal static string TypeCouldNotBeFound {
+        public static string TypeCouldNotBeFound {
             get {
                 return ResourceManager.GetString("TypeCouldNotBeFound", resourceCulture);
             }
@@ -253,7 +253,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; type is not enum..
         /// </summary>
-        internal static string TypeIsNotEnum {
+        public static string TypeIsNotEnum {
             get {
                 return ResourceManager.GetString("TypeIsNotEnum", resourceCulture);
             }
@@ -262,7 +262,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Unknown beetle query executer parameter: &apos;{0}&apos;..
         /// </summary>
-        internal static string UnknownBeetleQueryExecuterParameter {
+        public static string UnknownBeetleQueryExecuterParameter {
             get {
                 return ResourceManager.GetString("UnknownBeetleQueryExecuterParameter", resourceCulture);
             }
@@ -271,7 +271,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Unknown beetle query parameter: &apos;{0}&apos;..
         /// </summary>
-        internal static string UnknownBeetleQueryParameter {
+        public static string UnknownBeetleQueryParameter {
             get {
                 return ResourceManager.GetString("UnknownBeetleQueryParameter", resourceCulture);
             }
@@ -280,7 +280,7 @@ namespace Beetle.Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Update command affected an unexpected number of rows. Entities may have been modified or deleted since last read..
         /// </summary>
-        internal static string UpdateAffectedUnexpectedNumberOfRows {
+        public static string UpdateAffectedUnexpectedNumberOfRows {
             get {
                 return ResourceManager.GetString("UpdateAffectedUnexpectedNumberOfRows", resourceCulture);
             }
