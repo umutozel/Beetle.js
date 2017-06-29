@@ -11,13 +11,10 @@ namespace Beetle.Server {
     /// Default config implementation using Newtonsoft.
     /// We want Beetle to work without any configuration, so here the default implementation and yeah there is dependency to Newtonsoft.
     /// (Microsoft did it too with their JsonMediaTypeFormatter).
-    /// But it is possible to use another serializer via IBeetleService.
+    /// But it is possible to use another serializer.
     /// </summary>
     public class BeetleConfig: IBeetleConfig {
         private static readonly Lazy<BeetleConfig> _instance = new Lazy<BeetleConfig>();
-
-        public BeetleConfig(): this(CreateSettings()) {
-        }
 
         public BeetleConfig(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
                             TypeNameHandling typeNameHandling = TypeNameHandling.Objects,

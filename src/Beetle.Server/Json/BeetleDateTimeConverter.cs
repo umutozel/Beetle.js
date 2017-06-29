@@ -21,9 +21,8 @@ namespace Beetle.Server.Json {
                 var value = reader.Value.ToString();
 
                 // when format is not ISO, first try javascript date ticks.
-                long ticks;
-                if (long.TryParse(value, out ticks)) {
-                    var tick = new DateTime(((ticks * 10000) + 621355968000000000));
+                if (long.TryParse(value, out long ticks)) {
+                    var tick = new DateTime(ticks * 10000 + 621355968000000000);
                     return serializer.DateTimeZoneHandling == DateTimeZoneHandling.Local ? tick.ToLocalTime() : tick;
                 }
 
@@ -38,7 +37,7 @@ namespace Beetle.Server.Json {
             }
         }
 
-        private DateTime ParseJavascriptDate(string value) {
+        private static DateTime ParseJavascriptDate(string value) {
             var parts = value.Split(' ');
 
             var day = Convert.ToInt32(parts[2]);

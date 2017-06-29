@@ -23,15 +23,14 @@ namespace Beetle.Server.Interface {
 
         object HandleUnknownAction(string action);
 
-        ProcessResult ProcessRequest(object contentValue, IEnumerable<BeetleParameter> parameters, 
-                                     ActionContext actionContext, IBeetleConfig actionConfig, IBeetleService service);
+        ProcessResult ProcessRequest(ActionContext actionContext);
 
         /// <summary>
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).
         /// </summary>
         IEnumerable<EntityBag> HandleUnmappeds(IEnumerable<EntityBag> unmappeds);
 
-        Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
+        Task<SaveResult> SaveChanges(SaveContext saveContext);
 
         IContentHandler<IEnumerable> EnumerableHandler { get; }
 

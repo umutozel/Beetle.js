@@ -18,15 +18,6 @@ namespace Beetle.Server {
             Context = context;
         }
 
-        protected ContextHandler(IQueryHandler<IQueryable> queryableHandler)
-            : base(queryableHandler) {
-        }
-
-        protected ContextHandler(TContext context, IQueryHandler<IQueryable> queryableHandler)
-            : base(queryableHandler) {
-            Context = context;
-        }
-
         public override void Initialize() {
             if (Equals(Context, default(TContext)))
                 Context = CreateContext();
@@ -40,13 +31,6 @@ namespace Beetle.Server {
     }
 
     public abstract class ContextHandler : IContextHandler {
-
-        protected ContextHandler() : this(Server.QueryableHandler.Instance) {
-        }
-
-        protected ContextHandler(IQueryHandler<IQueryable> queryableHandler) {
-            QueryableHandler = queryableHandler;
-        }
 
         public virtual void Initialize() {
         }
@@ -63,64 +47,22 @@ namespace Beetle.Server {
             throw new NotImplementedException();
         }
 
-        public virtual ProcessResult ProcessRequest(object contentValue, IEnumerable<BeetleParameter> parameters,
-                                                    ActionContext actionContext, IBeetleConfig actionConfig, 
-                                                    IBeetleService service) {
-            return Helper.DefaultRequestProcessor(
-                contentValue, parameters, 
-                actionContext, service, 
-                this, actionConfig
-            );
+        public virtual ProcessResult ProcessRequest(ActionContext actionContext) {
+            return Helper.DefaultRequestProcessor(actionContext);
         }
 
         /// <summary>
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).
         /// </summary>
         public virtual IEnumerable<EntityBag> HandleUnmappeds(IEnumerable<EntityBag> unmappeds) {
-            var retVal = new List<EntityBag>();
-            foreach (var unmapped in unmappeds) {
-                var client = MapToEntity(unmapped.ClientEntity);
-                if (client == null) continue;
-
-                var server = MapToEntity(unmapped.Entity);
-                if (server == null) continue;
-
-                var originalValues = unmapped.OriginalValues == null 
-                    ? null 
-                    : MapProperties(unmapped.Entity, unmapped.OriginalValues);
-                var bag = new EntityBag(
-                    client, server, unmapped.EntityState, 
-                    originalValues, unmapped.Index, null,
-                    unmapped.ForceUpdate);
-                retVal.Add(bag);
-            }
-            return retVal;
+            return Enumerable.Empty<EntityBag>();
         }
 
-        public virtual object MapToEntity(object unmapped) {
-            return null;
-        }
-
-        /// <summary>
-        /// Maps unknown objects original value properties to entity properties.
-        /// </summary>
-        /// <returns>New dictionary which represents values for mapped entity.</returns>
-        public virtual IDictionary<string, object> MapProperties(object unmapped, IDictionary<string, object> unmappedOriginalValues) {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the generated values for handled unmapped objects.
-        /// </summary>
-        public virtual IEnumerable<GeneratedValue> GetHandledUnmappedGeneratedValues(IEnumerable<EntityBag> handledUnmappeds) {
-            return Enumerable.Empty<GeneratedValue>();
-        }
-
-        public abstract Task<SaveResult> SaveChanges(IEnumerable<EntityBag> entities, SaveContext saveContext);
+        public abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
 
         public virtual IContentHandler<IEnumerable> EnumerableHandler => Server.EnumerableHandler.Instance;
 
-        public virtual IQueryHandler<IQueryable> QueryableHandler { get; }
+        public virtual IQueryHandler<IQueryable> QueryableHandler => Server.QueryableHandler.Instance;
 
         public virtual IEnumerable<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags) {
             return Helper.GetGeneratedValues(entityBags, Metadata());
@@ -167,7 +109,5 @@ namespace Beetle.Server {
         protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
             AfterSaveChanges?.Invoke(this, args);
         }
-
-        public bool ValidateOnSaveEnabled { get; set; }
     }
 }

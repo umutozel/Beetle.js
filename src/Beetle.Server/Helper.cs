@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
@@ -12,8 +11,6 @@ namespace Beetle.Server {
 
     public static class Helper {
         private const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Public;
-
-        #region General
 
         public static Type GetMemberType(Type type, string memberName) {
             if (string.IsNullOrWhiteSpace(memberName)) throw new ArgumentNullException(nameof(memberName));
@@ -79,10 +76,6 @@ namespace Beetle.Server {
             }
         }
 
-        #endregion
-
-        #region Request-Response Operations
-
         public static List<BeetleParameter> GetBeetleParameters(IDictionary<string, string> queryParameters) {
             return queryParameters?.Keys
                 .Where(k => !string.IsNullOrWhiteSpace(k) && k.StartsWith("!e"))
@@ -94,22 +87,21 @@ namespace Beetle.Server {
                 .ToList();
         }
 
-        public static ProcessResult DefaultRequestProcessor(object contentValue, IEnumerable<BeetleParameter> parameters, 
-                                                            ActionContext actionContext, IBeetleService service, 
-                                                            IContextHandler contextHandler, IBeetleConfig actionConfig) {
-            var queryable = contentValue as IQueryable;
+        public static ProcessResult DefaultRequestProcessor(ActionContext actionContext) {
+            var value = actionContext.Value;
+            var queryable = actionContext.Value as IQueryable;
             if (queryable != null) {
-                var queryableHandler = GetQueryHandler(actionConfig, service);
-                return queryableHandler.HandleContent(queryable, parameters, actionContext, service);
+                var queryableHandler = GetQueryHandler(actionContext);
+                return queryableHandler.HandleContent(queryable, actionContext);
             }
 
-            if (contentValue is string) return new ProcessResult(actionContext) { Result = contentValue };
+            if (value is string) return new ProcessResult(actionContext) { Result = value };
 
-            var enumerable = contentValue as IEnumerable;
-            if (enumerable == null) return new ProcessResult(actionContext) { Result = contentValue };
+            var enumerable = value as IEnumerable;
+            if (enumerable == null) return new ProcessResult(actionContext) { Result = value };
 
-            var enumerableHandler = GetEnumerableHandler(actionConfig, service);
-            return enumerableHandler.HandleContent(enumerable, parameters, actionContext, service);
+            var enumerableHandler = GetEnumerableHandler(actionContext);
+            return enumerableHandler.HandleContent(enumerable, actionContext);
         }
 
         public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, IBeetleConfig config, Metadata metadata,
@@ -172,19 +164,6 @@ namespace Beetle.Server {
             return entities;
         }
 
-        public static List<EntityValidationResult> ValidateEntities(IEnumerable entities) {
-            var validationResults = new List<EntityValidationResult>();
-            foreach (var entity in entities) {
-                var results = new List<ValidationResult>();
-                var context = new ValidationContext(entity, null, null);
-                System.ComponentModel.DataAnnotations.Validator.TryValidateObject(entity, context, results, true);
-                if (results.Any()) {
-                    validationResults.Add(new EntityValidationResult(entity, results));
-                }
-            }
-            return validationResults;
-        }
-
         public static List<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags, Metadata metadata) {
             var retVal = new List<GeneratedValue>();
 
@@ -198,7 +177,7 @@ namespace Beetle.Server {
                         throw new BeetleException(Resources.CannotGetGeneratedValues);
 
                     var type = entityBag.Entity.GetType();
-                    var typeName = string.Format("{0}, {1}", type.FullName, type.GetTypeInfo().Assembly.GetName().Name);
+                    var typeName = $"{type.FullName}, {type.GetTypeInfo().Assembly.GetName().Name}";
                     entityType = metadata.Entities.FirstOrDefault(e => e.Name == typeName);
                     entityBag.EntityType = entityType 
                         ?? throw new BeetleException(string.Format(Resources.CannotFindMetadata, typeName));
@@ -252,33 +231,22 @@ namespace Beetle.Server {
             return retVal;
         }
 
-        public static IQueryHandler<IQueryable> GetQueryHandler(IBeetleConfig actionConfig, IBeetleService service) {
-            var config = actionConfig ?? service?.BeetleConfig;
+        public static IQueryHandler<IQueryable> GetQueryHandler(ActionContext actionContext) {
+            var actionConfig = actionContext.Config;
+            var service = actionContext.Service;
+            var config = actionConfig ?? service?.Config;
             return config?.QueryableHandler
                 ?? service?.ContextHandler?.QueryableHandler
                 ?? QueryableHandler.Instance;
         }
 
-        public static IContentHandler<IEnumerable> GetEnumerableHandler(IBeetleConfig actionConfig, IBeetleService service) {
-            var config = actionConfig ?? service?.BeetleConfig;
+        public static IContentHandler<IEnumerable> GetEnumerableHandler(ActionContext actionContext) {
+            var actionConfig = actionContext.Config;
+            var service = actionContext.Service;
+            var config = actionConfig ?? service?.Config;
             return config?.EnumerableHandler
                 ?? service?.ContextHandler?.EnumerableHandler
                 ?? EnumerableHandler.Instance;
         }
-
-        public static int CreateQueryHash(string saltStr) {
-            var hash = 0;
-            var len = saltStr.Length;
-            if (saltStr.Length == 0) return hash;
-
-            for (var i = 0; i < len; i++) {
-                var chr = saltStr[i];
-                hash = (hash << 5) - hash + chr;
-                hash |= 0;
-            }
-            return hash;
-        }
-
-        #endregion
     }
 }

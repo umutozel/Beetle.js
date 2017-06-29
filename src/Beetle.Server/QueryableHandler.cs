@@ -11,10 +11,10 @@ namespace Beetle.Server {
     public class QueryableHandler : IQueryHandler<IQueryable> {
         private static readonly Lazy<QueryableHandler> _instance = new Lazy<QueryableHandler>(() => new QueryableHandler());
 
-        public virtual ProcessResult HandleContent(IQueryable queryable, IEnumerable<BeetleParameter> parameters, 
-                                                   ActionContext actionContext, IBeetleService service = null) {
+        public virtual ProcessResult HandleContent(IQueryable queryable, ActionContext actionContext) {
             if (queryable == null) throw new ArgumentNullException(nameof(queryable));
 
+            var service = actionContext.Service;
             var contextHandler = service?.ContextHandler;
             object result;
             int? inlineCount = null;
@@ -25,6 +25,7 @@ namespace Beetle.Server {
             contextHandler?.OnBeforeHandleQuery(beforeArgs);
             queryable = beforeArgs.Query;
 
+            var parameters = actionContext.Parameters;
             if (parameters != null) {
                 var parameterList = parameters as IList<BeetleParameter> ?? parameters.ToList();
                 var executer = parameterList.SingleOrDefault(b => b.Name.StartsWith("exec;"));
