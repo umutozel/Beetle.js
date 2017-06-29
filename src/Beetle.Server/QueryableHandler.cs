@@ -216,7 +216,7 @@ namespace Beetle.Server {
             if (elementType == null) throw new ArgumentException(Resources.CannotChangeQueryType);
 
             // use this type's namespace and assembly information to find wanted type
-            var ofTypeFullName = string.Format("{0}.{1}, {2}", elementType.Namespace, ofType, elementType.GetTypeInfo().Assembly.GetName());
+            var ofTypeFullName = $"{elementType.Namespace}.{ofType}, {elementType.GetTypeInfo().Assembly.GetName()}";
             var ofTypeType = Type.GetType(ofTypeFullName);
             if (ofTypeType == null)
                 throw new ArgumentException(string.Format(Resources.CannotFindTypeInformation, ofTypeFullName));
@@ -252,7 +252,7 @@ namespace Beetle.Server {
         public virtual IQueryable Select(IQueryable query, string projection) {
             if (string.IsNullOrWhiteSpace(projection)) return query;
 
-            return projection.Contains(",") || projection.Contains(" as ") ? query.Select(string.Format("New({0})", projection)) : query.Select(projection);
+            return projection.Contains(",") || projection.Contains(" as ") ? query.Select($"New({projection})") : query.Select(projection);
         }
 
         public virtual IQueryable Skip(IQueryable query, int count) {
@@ -267,13 +267,13 @@ namespace Beetle.Server {
             if (string.IsNullOrWhiteSpace(keySelector))
                 keySelector = "true";
             else if (keySelector.Contains(",") || keySelector.Contains(" as "))
-                keySelector = string.Format("New({0})", keySelector);
+                keySelector = $"New({keySelector})";
             query = query.GroupBy(keySelector, "it");
 
             if (string.IsNullOrWhiteSpace(elementSelector))
                 elementSelector = "New(Key, it as Items)";
             else if (elementSelector.Contains(",") || elementSelector.Contains(" as "))
-                elementSelector = string.Format("New({0})", elementSelector);
+                elementSelector = $"New({elementSelector})";
             return query.Select(elementSelector);
         }
 

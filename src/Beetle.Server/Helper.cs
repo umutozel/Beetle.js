@@ -95,13 +95,10 @@ namespace Beetle.Server {
                 return queryableHandler.HandleContent(queryable, actionContext);
             }
 
-            if (value is string) return new ProcessResult(actionContext) { Result = value };
-
-            var enumerable = value as IEnumerable;
-            if (enumerable == null) return new ProcessResult(actionContext) { Result = value };
+            if (value is string || !(value is IEnumerable)) return new ProcessResult(actionContext) { Result = value };
 
             var enumerableHandler = GetEnumerableHandler(actionContext);
-            return enumerableHandler.HandleContent(enumerable, actionContext);
+            return enumerableHandler.HandleContent((IEnumerable)value, actionContext);
         }
 
         public static IEnumerable<EntityBag> ResolveEntities(dynamic bundle, IBeetleConfig config, Metadata metadata,
@@ -201,8 +198,6 @@ namespace Beetle.Server {
         }
 
         public static Dictionary<string, object> GetGeneratedValues(object clientEntity, object entity, EntityType entityType) {
-            if (clientEntity == null) throw new ArgumentNullException(nameof(clientEntity));
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
             if (entityType == null) throw new ArgumentNullException(nameof(entityType));
             if (entity.GetType() != clientEntity.GetType())
                 throw new BeetleException(Resources.EntityAndClientEntityMustBeSameTypeToCompare);

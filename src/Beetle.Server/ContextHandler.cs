@@ -55,7 +55,7 @@ namespace Beetle.Server {
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).
         /// </summary>
         public virtual IEnumerable<EntityBag> HandleUnmappeds(IEnumerable<EntityBag> unmappeds) {
-            return Enumerable.Empty<EntityBag>();
+            throw new NotImplementedException();
         }
 
         public abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
