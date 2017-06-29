@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3720FAF1-AC43-443C-A787-E4D955EB1D90}"
 EndProject
@@ -11,9 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{97EB5D81-F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{54244F42-E28E-41BA-8558-2CD952E0DCB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server", "src\Beetle.Server\Beetle.Server.csproj", "{CEE6067A-D3C5-4869-897A-13EB6090051A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Server", "src\Beetle.Server\Beetle.Server.csproj", "{CEE6067A-D3C5-4869-897A-13EB6090051A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server.Tests", "tests\Beetle.Server.Tests\Beetle.Server.Tests.csproj", "{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Server.Tests", "tests\Beetle.Server.Tests\Beetle.Server.Tests.csproj", "{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Meta", "src\Beetle.Meta\Beetle.Meta.csproj", "{28D5CBD9-D5CD-4100-8B06-45040868DDDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,10 @@ Global
 		{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,5 +42,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{CEE6067A-D3C5-4869-897A-13EB6090051A} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 		{38C4289C-3EE2-4C3C-BB6B-2CF1435CC916} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 	EndGlobalSection
 EndGlobal

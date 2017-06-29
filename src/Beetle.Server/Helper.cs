@@ -4,12 +4,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using Beetle.Server.Meta;
-using Beetle.Server.Properties;
-using Validator = System.ComponentModel.DataAnnotations.Validator;
 
 namespace Beetle.Server {
     using Interface;
+    using Meta;
+    using Properties;
 
     public static class Helper {
         private const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Public;
@@ -178,7 +177,7 @@ namespace Beetle.Server {
             foreach (var entity in entities) {
                 var results = new List<ValidationResult>();
                 var context = new ValidationContext(entity, null, null);
-                Validator.TryValidateObject(entity, context, results, true);
+                System.ComponentModel.DataAnnotations.Validator.TryValidateObject(entity, context, results, true);
                 if (results.Any()) {
                     validationResults.Add(new EntityValidationResult(entity, results));
                 }
