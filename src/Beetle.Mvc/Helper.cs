@@ -20,10 +20,12 @@ namespace Beetle.Mvc {
                                          IBeetleConfig config = null,
                                          ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
                                          HttpRequest request = null) {
-            if (config == null)
+            if (config == null) {
                 config = BeetleConfig.Instance;
-            if (request == null)
+            }
+            if (request == null) {
                 request = HttpContext.Current.Request;
+            }
 
             if (request.HttpMethod == "POST") {
                 object postData;
@@ -95,15 +97,18 @@ namespace Beetle.Mvc {
         public static ActionResult HandleResponse(ProcessResult processResult, IBeetleConfig config = null, HttpResponse response = null) {
             var result = processResult.Result;
 
-            if (config == null)
+            if (config == null) {
                 config = BeetleConfig.Instance;
-            if (response == null)
+            }
+            if (response == null) {
                 response = HttpContext.Current.Response;
+            }
 
             // set InlineCount header info if exists
             object inlineCount = processResult.InlineCount;
-            if (inlineCount != null && response.Headers["X-InlineCount"] == null)
+            if (inlineCount != null && response.Headers["X-InlineCount"] == null) {
                 response.Headers.Add("X-InlineCount", inlineCount.ToString());
+            }
             if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
                 var userDataStr = config.Serializer.Serialize(processResult.UserData);
                 response.Headers.Add("X-UserData", userDataStr);

@@ -35,8 +35,9 @@ namespace Beetle.WebApi {
         protected override void Initialize(HttpControllerContext controllerContext) {
             base.Initialize(controllerContext);
 
-            if (ContextHandler == null)
+            if (ContextHandler == null) {
                 ContextHandler = CreateContextHandler();
+            }
             ContextHandler.Initialize();
         }
 

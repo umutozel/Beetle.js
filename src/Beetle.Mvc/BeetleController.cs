@@ -33,8 +33,9 @@ namespace Beetle.Mvc {
         protected override void Initialize(RequestContext requestContext) {
             base.Initialize(requestContext);
 
-            if (ContextHandler == null)
+            if (ContextHandler == null) {
                 ContextHandler = CreateContextHandler();
+            }
             ContextHandler.Initialize();
         }
 

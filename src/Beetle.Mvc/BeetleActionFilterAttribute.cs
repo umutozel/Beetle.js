@@ -20,8 +20,7 @@ namespace Beetle.Mvc {
         public BeetleActionFilterAttribute(Type configType = null) {
             if (configType != null) {
                 Config = Activator.CreateInstance(configType) as IBeetleConfig;
-                if (Config == null)
-                    throw new ArgumentException(Resources.CannotCreateConfigInstance);
+                if (Config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
         }
 
@@ -33,11 +32,6 @@ namespace Beetle.Mvc {
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
             var service = controller as IBeetleService;
-
-            // handle request message
-            GetParameters(filterContext, service, out string queryString, out IDictionary<string, string> queryParams);
-            filterContext.HttpContext.Items["BeetleQueryString"] = queryString;
-            filterContext.HttpContext.Items["BeetleQueryParams"] = queryParams;
 
             base.OnActionExecuting(filterContext);
 
@@ -68,8 +62,10 @@ namespace Beetle.Mvc {
             if (typeof(ActionResult).IsAssignableFrom(returnType) || typeof(Task).IsAssignableFrom(returnType))
                 return;
 
-            var parameters = filterContext.ActionParameters;
+            // translate the request query
+            GetParameters(filterContext, service, out string queryString, out IDictionary<string, string> queryParams);
             // execute the action method
+            var parameters = filterContext.ActionParameters;
             var beetleParameters = Server.Helper.GetBeetleParameters(queryParams);
             var contentValue = action.Execute(filterContext.Controller.ControllerContext, parameters);
             var actionContext = new ActionContext(action.ActionName, contentValue, 
@@ -93,8 +89,8 @@ namespace Beetle.Mvc {
             var action = filterContext.ActionDescriptor;
             var service = controller as IBeetleService;
 
-            var queryString = (string)filterContext.HttpContext.Items["BeetleQueryString"];
-            var queryParams = (Dictionary<string, string>)filterContext.HttpContext.Items["BeetleQueryParams"];
+            // translate the request query
+            GetParameters(filterContext, service, out string queryString, out IDictionary<string, string> queryParams);
 
             var beetlePrms = Server.Helper.GetBeetleParameters(queryParams);
             var actionContext = new ActionContext(action.ActionName, contentValue, 
@@ -105,9 +101,14 @@ namespace Beetle.Mvc {
             filterContext.Result = HandleResponse(filterContext, processResult, service);
         }
 
-        protected virtual void GetParameters(ActionExecutingContext filterContext, IBeetleService service, out string queryString, out IDictionary<string, string> queryParams) {
+        protected virtual void GetParameters(ActionExecutingContext filterContext, IBeetleService service, 
+                                             out string queryString, out IDictionary<string, string> queryParams) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(out queryString, out queryParams, config, filterContext.ActionDescriptor.GetParameters(), filterContext.ActionParameters);
+            Helper.GetParameters(
+                out queryString, out queryParams, config, 
+                filterContext.ActionDescriptor.GetParameters(), 
+                filterContext.ActionParameters
+            );
         }
 
         protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service) {

@@ -21,8 +21,7 @@ namespace Beetle.WebApi {
         public BeetleApiControllerAttribute(BeetleQueryableAttribute defaultFilter, Type configType = null) {
             if (configType != null) {
                 _beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
-                if (_beetleConfig == null)
-                    throw new ArgumentException(Resources.CannotCreateConfigInstance);
+                if (_beetleConfig == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
 
             _queryableFilter = defaultFilter;

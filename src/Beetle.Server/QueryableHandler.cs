@@ -117,14 +117,16 @@ namespace Beetle.Server {
                         query = Select(query, prm.Value);
                         break;
                     case "skip":
-                        if (inlineCountQuery == null)
+                        if (inlineCountQuery == null) {
                             inlineCountQuery = query;
+                        }
                         query = Skip(query, Convert.ToInt32(prm.Value));
                         break;
                     case "top":
                     case "take":
-                        if (inlineCountQuery == null)
+                        if (inlineCountQuery == null) {
                             inlineCountQuery = query;
+                        }
                         var take = Convert.ToInt32(prm.Value);
                         query = Take(query, take);
                         takeCount = take;
@@ -150,13 +152,15 @@ namespace Beetle.Server {
                         query = SelectMany(query, prm.Value);
                         break;
                     case "skipwhile":
-                        if (inlineCountQuery == null)
+                        if (inlineCountQuery == null) {
                             inlineCountQuery = query;
+                        }
                         query = SkipWhile(query, prm.Value);
                         break;
                     case "takewhile":
-                        if (inlineCountQuery == null)
+                        if (inlineCountQuery == null) {
                             inlineCountQuery = query;
+                        }
                         query = TakeWhile(query, prm.Value);
                         break;
                     default:
