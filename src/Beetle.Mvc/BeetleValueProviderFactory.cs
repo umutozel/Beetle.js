@@ -21,10 +21,11 @@ namespace Beetle.Mvc {
             if (controllerContext == null)
                 throw new ArgumentNullException(nameof(controllerContext));
 
-            if (!controllerContext.HttpContext.Request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
+            var request = controllerContext.HttpContext.Request;
+            if (!request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
                 return null;
 
-            var streamReader = new StreamReader(controllerContext.HttpContext.Request.InputStream);
+            var streamReader = new StreamReader(request.InputStream);
             var jsonReader = new JsonTextReader(streamReader);
             if (!jsonReader.Read())
                 return null;
@@ -33,27 +34,27 @@ namespace Beetle.Mvc {
             jsonSerializer.Converters.Add(new ExpandoObjectConverter());
 
             object jsonObject;
-            if (jsonReader.TokenType == JsonToken.StartArray)
+            if (jsonReader.TokenType == JsonToken.StartArray) {
                 jsonObject = jsonSerializer.Deserialize<List<ExpandoObject>>(jsonReader);
-            else
+            }
+            else {
                 jsonObject = jsonSerializer.Deserialize<ExpandoObject>(jsonReader);
+            }
 
             var backingStore = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             AddToBackingStore(backingStore, string.Empty, jsonObject);
             return new DictionaryValueProvider<object>(backingStore, CultureInfo.CurrentCulture);
         }
 
-        private static void AddToBackingStore(Dictionary<string, object> backingStore, string prefix, object value) {
-            var d = value as IDictionary<string, object>;
-            if (d != null) {
+        private static void AddToBackingStore(IDictionary<string, object> backingStore, string prefix, object value) {
+            if (value is IDictionary<string, object> d) {
                 foreach (var entry in d) {
                     AddToBackingStore(backingStore, MakePropertyKey(prefix, entry.Key), entry.Value);
                 }
                 return;
             }
 
-            var l = value as IList;
-            if (l != null) {
+            if (value is IList l) {
                 for (var i = 0; i < l.Count; i++) {
                     AddToBackingStore(backingStore, MakeArrayKey(prefix, i), l[i]);
                 }
@@ -68,7 +69,7 @@ namespace Beetle.Mvc {
         }
 
         private static string MakePropertyKey(string prefix, string propertyName) {
-            return (string.IsNullOrEmpty(prefix)) ? propertyName : prefix + "." + propertyName;
+            return string.IsNullOrEmpty(prefix) ? propertyName : prefix + "." + propertyName;
         }
     }
 }

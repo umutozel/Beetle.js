@@ -3,9 +3,9 @@ using System.Collections;
 using System.Web.Mvc;
 
 namespace Beetle.Mvc {
-    using Properties;
     using Server;
     using Server.Interface;
+    using Properties;
 
     public class BeetleJsonResult: JsonResult {
         private readonly IBeetleConfig _config;

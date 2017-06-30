@@ -132,6 +132,10 @@ namespace Beetle.Mvc {
             return Helper.ProcessRequest(actionContext);
         }
 
+        Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
+            throw new NotImplementedException();
+        }
+
         public virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) {
             return Enumerable.Empty<EntityBag>();
         }
