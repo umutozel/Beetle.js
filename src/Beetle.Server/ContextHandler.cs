@@ -32,6 +32,10 @@ namespace Beetle.Server {
 
     public abstract class ContextHandler : IContextHandler {
 
+        public virtual IContentHandler<IEnumerable> EnumerableHandler => Server.EnumerableHandler.Instance;
+
+        public virtual IQueryHandler<IQueryable> QueryableHandler => Server.QueryableHandler.Instance;
+
         public virtual void Initialize() {
         }
 
@@ -59,10 +63,6 @@ namespace Beetle.Server {
         }
 
         public abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
-
-        public virtual IContentHandler<IEnumerable> EnumerableHandler => Server.EnumerableHandler.Instance;
-
-        public virtual IQueryHandler<IQueryable> QueryableHandler => Server.QueryableHandler.Instance;
 
         public virtual IEnumerable<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags) {
             return Helper.GetGeneratedValues(entityBags, Metadata());

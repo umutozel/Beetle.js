@@ -4,36 +4,26 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Script.Serialization;
 
 namespace Beetle.Mvc {
     using Server;
     using Server.Interface;
 
     public static class Helper {
-        private static readonly Lazy<JavaScriptSerializer> _javaScriptSerializer = new Lazy<JavaScriptSerializer>();
 
-        public static void GetParameters(out string queryString, out IDictionary<string, string> queryParams,
-                                         IBeetleConfig config = null,
-                                         ParameterDescriptor[] parameterDescriptors = null, IDictionary<string, object> parameters = null,
-                                         HttpRequest request = null) {
+        public static void GetParameters(IBeetleConfig config, out string queryString, out IDictionary<string, string> queryParams) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
-            if (request == null) {
-                request = HttpContext.Current.Request;
-            }
-
+            var request = HttpContext.Current.Request;
             if (request.HttpMethod == "POST") {
-                object postData;
                 // read post data
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 if (request.ContentType.Contains("application/json")) {
-                    dynamic d = postData = config.Serializer.DeserializeToDynamic(queryString);
+                    var d = config.Serializer.DeserializeToDynamic(queryString);
                     // now there is no query string parameters, we must populate them manually for beetle queries
                     // otherwise beetle cannot use query parameters when using post method
                     queryParams = new Dictionary<string, string>();
@@ -48,18 +38,6 @@ namespace Beetle.Mvc {
                     var prms = request.Params;
                     var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
                     queryParams = d;
-                    var jsonStr = _javaScriptSerializer.Value.Serialize(d);
-                    postData = config.Serializer.DeserializeToDynamic(jsonStr);
-                }
-
-                // modify the action parameters to allow model binding to object, dynamic and json.net parameters
-                if (parameterDescriptors != null && parameters != null) {
-                    foreach (var pd in parameterDescriptors) {
-                        var t = pd.ParameterType;
-                        if (t == typeof(object) || pd.GetCustomAttributes(typeof(DynamicAttribute), false).Any()) {
-                            parameters[pd.ParameterName] = postData;
-                        }
-                    }
                 }
             }
             else {
@@ -88,21 +66,18 @@ namespace Beetle.Mvc {
 
             var contextHandler = service?.ContextHandler;
             // allow context handler to process the value
-            if (contextHandler != null)
-                return contextHandler.ProcessRequest(actionContext);
-
-            return Server.Helper.DefaultRequestProcessor(actionContext);
+            return contextHandler != null 
+                ? contextHandler.ProcessRequest(actionContext) 
+                : Server.Helper.DefaultRequestProcessor(actionContext);
         }
 
-        public static ActionResult HandleResponse(ProcessResult processResult, IBeetleConfig config = null, HttpResponse response = null) {
+        public static ActionResult HandleResponse(ProcessResult processResult) {
             var result = processResult.Result;
 
-            if (config == null) {
-                config = BeetleConfig.Instance;
-            }
-            if (response == null) {
-                response = HttpContext.Current.Response;
-            }
+            var actionContext = processResult.ActionContext;
+            var service = actionContext.Service;
+            var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
+            var response = HttpContext.Current.Response;
 
             // set InlineCount header info if exists
             object inlineCount = processResult.InlineCount;
@@ -114,8 +89,7 @@ namespace Beetle.Mvc {
                 response.Headers.Add("X-UserData", userDataStr);
             }
 
-            var actionResult = result as ActionResult;
-            if (actionResult != null) return actionResult;
+            if (result is ActionResult actionResult) return actionResult;
 
             // write the result to response content
             return new BeetleJsonResult(config, processResult) {

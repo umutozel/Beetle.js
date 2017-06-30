@@ -63,6 +63,15 @@ namespace Beetle.Server {
                 throw new BeetleException(string.Format(Resources.CannotFindPublicInstanceFieldOrProperty, memberName));
         }
 
+        public static object CreateType(string typeName, string initialValues, IBeetleConfig config) {
+            var type = Type.GetType(typeName);
+            if (type == null) throw new ArgumentException(string.Format(Resources.TypeCouldNotBeFound, typeName));
+
+            var obj = Activator.CreateInstance(type);
+            CopyValuesFromJson(initialValues, obj, config);
+            return obj;
+        }
+
         public static void CopyValuesFromJson(string source, object destination, IBeetleConfig config) {
             if (string.IsNullOrEmpty(source)) return;
 

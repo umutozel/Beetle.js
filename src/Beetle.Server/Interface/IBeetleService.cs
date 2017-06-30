@@ -2,25 +2,16 @@
 using System.Threading.Tasks;
 
 namespace Beetle.Server.Interface {
+    using Meta;
 
     public interface IBeetleService<out TContextHandler>: IBeetleService where TContextHandler: IContextHandler {
 
-        TContextHandler CreateContextHandler();
-
         new TContextHandler ContextHandler { get; }
+
+        TContextHandler CreateContextHandler();
     }
 
     public interface IBeetleService {
-
-        object Metadata();
-
-        object CreateType(string typeName, string initialValues);
-
-        ProcessResult ProcessRequest(ActionContext actionContext);
-
-        IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns);
-
-        Task<SaveResult> SaveChanges(object saveBundle);
 
         IBeetleConfig Config { get; }
 
@@ -30,6 +21,16 @@ namespace Beetle.Server.Interface {
 
         bool CheckRequestHash { get; set; }
 
+        Metadata Metadata();
+
+        object CreateType(string typeName, string initialValues);
+
+        ProcessResult ProcessRequest(ActionContext actionContext);
+
+        IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns);
+
+        Task<SaveResult> SaveChanges(object saveBundle);
+        
         event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
         void OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args);

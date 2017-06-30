@@ -13,6 +13,8 @@ namespace Beetle.Server.Json {
             Settings.Converters.Add(new ExpandoObjectConverter());
         }
 
+        public JsonSerializerSettings Settings { get; }
+
         public string Serialize(object obj) {
             return JsonConvert.SerializeObject(obj, Settings);
         }
@@ -33,7 +35,5 @@ namespace Beetle.Server.Json {
             var reader = new JTokenReader(value);
             return JsonSerializer.Create(Settings).Deserialize(reader, type);
         }
-
-        public JsonSerializerSettings Settings { get; }
     }
 }

@@ -7,8 +7,8 @@ namespace Beetle.Server {
 
         public ActionContext(string name, object value, string queryString, 
                              IEnumerable<BeetleParameter> parameters,
-                             int? maxResultCount = null, bool? checkRequestHash = null,
-                             IBeetleConfig config = null, IBeetleService service = null) {
+                             int? maxResultCount, bool? checkRequestHash,
+                             IBeetleConfig config, IBeetleService service) {
             Name = name;
             Value = value;
             QueryString = queryString;

@@ -18,31 +18,35 @@ namespace Beetle.Mvc {
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
 
         public BeetleActionFilterAttribute(Type configType = null) {
-            if (configType != null) {
-                Config = Activator.CreateInstance(configType) as IBeetleConfig;
-                if (Config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
-            }
+            if (configType == null) return;
+
+            Config = Activator.CreateInstance(configType) as IBeetleConfig;
+            if (Config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
         }
 
         public BeetleActionFilterAttribute(IBeetleConfig config) {
             Config = config;
         }
 
+        protected IBeetleConfig Config { get; }
+
+        public int MaxResultCount { get; set; }
+
+        public bool? CheckRequestHash { get; set; }
+
         public override void OnActionExecuting(ActionExecutingContext filterContext) {
+            base.OnActionExecuting(filterContext);
+
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
             var service = controller as IBeetleService;
 
-            base.OnActionExecuting(filterContext);
-
             MethodInfo actionMethod;
-            var reflectedAction = action as ReflectedActionDescriptor;
-            if (reflectedAction != null) {
+            if (action is ReflectedActionDescriptor reflectedAction) {
                 actionMethod = reflectedAction.MethodInfo;
             }
             else {
-                var taskAsyncAction = action as TaskAsyncActionDescriptor;
-                if (taskAsyncAction != null) {
+                if (action is TaskAsyncActionDescriptor taskAsyncAction) {
                     actionMethod = taskAsyncAction.TaskMethodInfo;
                 }
                 else {
@@ -58,79 +62,59 @@ namespace Beetle.Mvc {
             }
 
             var returnType = actionMethod.ReturnType;
-            // check if we can process the result of the action
+            // check if we should process the result of the action
             if (typeof(ActionResult).IsAssignableFrom(returnType) || typeof(Task).IsAssignableFrom(returnType))
                 return;
 
             // translate the request query
-            GetParameters(filterContext, service, out string queryString, out IDictionary<string, string> queryParams);
-            // execute the action method
-            var parameters = filterContext.ActionParameters;
+            GetParameters(service, out string queryString, out IDictionary<string, string> queryParams);
             var beetleParameters = Server.Helper.GetBeetleParameters(queryParams);
-            var contentValue = action.Execute(filterContext.Controller.ControllerContext, parameters);
+            // execute the action method
+            var contentValue = action.Execute(filterContext.Controller.ControllerContext, filterContext.ActionParameters);
             var actionContext = new ActionContext(action.ActionName, contentValue, 
                                                   queryString, beetleParameters, 
-                                                  MaxResultCount, CheckRequestHashNullable, 
+                                                  MaxResultCount, CheckRequestHash, 
                                                   Config, service);
-            var processResult = ProcessRequest(contentValue, actionContext, service);
-            filterContext.Result = HandleResponse(filterContext, processResult, service);
+            var processResult = ProcessRequest(actionContext);
+            filterContext.Result = HandleResponse(processResult);
         }
 
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
             base.OnActionExecuted(filterContext);
 
-            object contentValue;
-            var contentResult = filterContext.Result as BeetleContentResult;
-            if (contentResult != null)
-                contentValue = contentResult.Value;
-            else return;
+            if (!(filterContext.Result is BeetleContentResult contentResult)) return;
 
-            var controller = filterContext.Controller;
+            var contentValue = contentResult.Value;
             var action = filterContext.ActionDescriptor;
-            var service = controller as IBeetleService;
+            var service = filterContext.Controller as IBeetleService;
 
             // translate the request query
-            GetParameters(filterContext, service, out string queryString, out IDictionary<string, string> queryParams);
-
+            GetParameters(service, out string queryString, out IDictionary<string, string> queryParams);
             var beetlePrms = Server.Helper.GetBeetleParameters(queryParams);
             var actionContext = new ActionContext(action.ActionName, contentValue, 
                                                   queryString, beetlePrms, 
-                                                  MaxResultCount, CheckRequestHashNullable,
+                                                  MaxResultCount, CheckRequestHash,
                                                   Config, service);
-            var processResult = ProcessRequest(contentValue, actionContext, service);
-            filterContext.Result = HandleResponse(filterContext, processResult, service);
+            var processResult = ProcessRequest(actionContext);
+            filterContext.Result = HandleResponse(processResult);
         }
 
-        protected virtual void GetParameters(ActionExecutingContext filterContext, IBeetleService service, 
-                                             out string queryString, out IDictionary<string, string> queryParams) {
+        protected virtual void GetParameters(IBeetleService service, 
+                                             out string queryString, 
+                                             out IDictionary<string, string> queryParams) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(
-                out queryString, out queryParams, config, 
-                filterContext.ActionDescriptor.GetParameters(), 
-                filterContext.ActionParameters
-            );
+            Helper.GetParameters(config, out queryString, out queryParams);
         }
 
-        protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleService service) {
+        protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
+            var service = actionContext.Service;
             return service != null
                 ? service.ProcessRequest(actionContext)
                 : Helper.ProcessRequest(actionContext);
         }
 
-        protected virtual ActionResult HandleResponse(ControllerContext filterContext, ProcessResult result, IBeetleService service) {
-            var config = Config ?? service?.Config;
-            return Helper.HandleResponse(result, config);
+        protected virtual ActionResult HandleResponse(ProcessResult result) {
+            return Helper.HandleResponse(result);
         }
-
-        protected IBeetleConfig Config { get; }
-
-        public int MaxResultCount { get; set; }
-
-        public bool CheckRequestHash {
-            get => CheckRequestHashNullable.GetValueOrDefault();
-            set => CheckRequestHashNullable = value;
-        }
-
-        internal bool? CheckRequestHashNullable { get; private set; }
     }
 }

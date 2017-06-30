@@ -52,10 +52,6 @@ namespace Beetle.Server {
 
         public static BeetleConfig Instance => _instance.Value;
 
-        public virtual JsonSerializer CreateSerializer() {
-            return JsonSerializer.Create(JsonSerializerSettings);
-        }
-
         public JsonSerializerSettings JsonSerializerSettings { get; }
 
         public NewtonsoftSerializer Serializer { get; }
@@ -65,5 +61,9 @@ namespace Beetle.Server {
         public virtual IContentHandler<IEnumerable> EnumerableHandler { get; } = null;
 
         ISerializer IBeetleConfig.Serializer => Serializer;
+
+        public virtual JsonSerializer CreateSerializer() {
+            return JsonSerializer.Create(JsonSerializerSettings);
+        }
     }
 }

@@ -15,6 +15,10 @@ namespace Beetle.Server.Interface {
 
     public interface IContextHandler {
 
+        IContentHandler<IEnumerable> EnumerableHandler { get; }
+
+        IQueryHandler<IQueryable> QueryableHandler { get; }
+
         void Initialize();
 
         Metadata Metadata();
@@ -31,10 +35,6 @@ namespace Beetle.Server.Interface {
         IEnumerable<EntityBag> HandleUnmappeds(IEnumerable<EntityBag> unmappeds);
 
         Task<SaveResult> SaveChanges(SaveContext saveContext);
-
-        IContentHandler<IEnumerable> EnumerableHandler { get; }
-
-        IQueryHandler<IQueryable> QueryableHandler { get; }
 
         event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
