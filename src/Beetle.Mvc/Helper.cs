@@ -35,9 +35,7 @@ namespace Beetle.Mvc {
                     }
                 }
                 else {
-                    var prms = request.Params;
-                    var d = prms.AllKeys.ToDictionary(k => k, k => prms[k]);
-                    queryParams = d;
+                    queryParams = request.Params.AllKeys.ToDictionary(k => k, k => request.Params[k]);
                 }
             }
             else {
