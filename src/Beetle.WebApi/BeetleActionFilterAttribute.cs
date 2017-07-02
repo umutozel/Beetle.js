@@ -8,6 +8,7 @@ namespace Beetle.WebApi {
     using Properties;
 
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
+
         public BeetleActionFilterAttribute() {
         }
 

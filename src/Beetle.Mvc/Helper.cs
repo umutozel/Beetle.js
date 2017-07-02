@@ -20,23 +20,23 @@ namespace Beetle.Mvc {
             }
             var request = HttpContext.Current.Request;
 
+            IDictionary<string, string> queryParams;
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
-                var queryParams = request.Params.ToDictionary();
+                queryParams = request.Params.ToDictionary();
                 if (request.ContentType.Contains("application/json")) {
                     var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
                     foreach (var i in d) {
                         queryParams.Add(i.Key, i.Value.ToString());
                     }
                 }
-                parameters = Server.Helper.GetBeetleParameters(queryParams);
             }
             else {
                 queryString = HttpUtility.UrlDecode(request.Url.Query);
-                var queryParams = request.QueryString.ToDictionary();
-                parameters = Server.Helper.GetBeetleParameters(queryParams);
+                queryParams = request.QueryString.ToDictionary();
             }
+            parameters = Server.Helper.GetBeetleParameters(queryParams);
         }
 
         public static ActionResult HandleResponse(ProcessResult processResult) {
