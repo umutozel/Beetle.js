@@ -3,6 +3,7 @@ using System.Linq;
 using System.Web.Http.OData.Query;
 
 namespace Beetle.WebApi {
+    using Server;
 
     /// <summary>
     /// Interface to be able to intercept before OData applies query.
@@ -15,24 +16,17 @@ namespace Beetle.WebApi {
     }
 
     public class BeforeODataQueryHandleEventArgs : EventArgs {
-        private readonly ActionContext _actionContext;
-        private readonly ODataQueryOptions _queryOptions;
-
         public BeforeODataQueryHandleEventArgs(ActionContext actionContext, IQueryable query, ODataQueryOptions queryOptions) {
-            _actionContext = actionContext;
+            ActionContext = actionContext;
             Query = query;
-            _queryOptions = queryOptions;
+            QueryOptions = queryOptions;
         }
 
-        public ActionContext ActionContext {
-            get { return _actionContext; }
-        }
+        public ActionContext ActionContext { get; }
 
         public IQueryable Query { get; set; }
 
-        public ODataQueryOptions QueryOptions {
-            get { return _queryOptions; }
-        }
+        public ODataQueryOptions QueryOptions { get; }
     }
 
     public delegate void BeforeODataQueryHandleDelegate(object sender, BeforeODataQueryHandleEventArgs args);

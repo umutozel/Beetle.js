@@ -17,35 +17,33 @@ namespace Beetle.WebApi {
 
     public static class Helper {
 
-        public static NameValueCollection GetParameters(IBeetleConfig config, out string queryString, HttpRequest request = null) {
+        public static NameValueCollection GetParameters(IBeetleConfig config, out string queryString) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
-            if (request == null) {
-                request = HttpContext.Current.Request;
-            }
+            var request = HttpContext.Current.Request;
 
             // beetle also supports post http method
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 // we read query options from input stream
-                if (request.ContentType.Contains("application/json")) {
-                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                    var queryParams = new NameValueCollection(request.Params);
-                    if (d != null) {
-                        foreach (var i in d) {
-                            queryParams.Add(i.Key, i.Value.ToString());
-                        }
-                    }
-                    return queryParams;
+                if (!request.ContentType.Contains("application/json")) return request.Params;
+
+                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                var queryParams = new NameValueCollection(request.Params);
+                if (d == null) return queryParams;
+
+                foreach (var i in d) {
+                    queryParams.Add(i.Key, i.Value.ToString());
                 }
-                return request.Params;
+                return queryParams;
             }
 
             queryString = request.Url.Query;
-            if (queryString.StartsWith("?"))
+            if (queryString.StartsWith("?")) {
                 queryString = queryString.Substring(1);
+            }
             queryString = queryString.Replace(":", "%3A");
 
             return request.QueryString;
@@ -75,30 +73,29 @@ namespace Beetle.WebApi {
             var contextHandler = service?.ContextHandler;
             // allow context handler to process the value
             var processResult = contextHandler != null
-                ? contextHandler.ProcessRequest(contentValue, beetlePrms, actionContext, actionConfig, service)
-                : Server.Helper.DefaultRequestProcessor(contentValue, beetlePrms, actionContext, service, null, actionConfig);
+                ? contextHandler.ProcessRequest(actionContext)
+                : Server.Helper.DefaultRequestProcessor(actionContext);
 
             if (processResult.InlineCount == null && inlineCountParam == "allpages") {
-                object inlineCount;
-                if (!request.Properties.TryGetValue("MS_InlineCount", out inlineCount)) {
-                    object inlineCountQueryObj;
-                    request.Properties.TryGetValue("BeetleInlineCountQuery", out inlineCountQueryObj);
-                    var inlineCountQuery = inlineCountQueryObj as IQueryable;
-                    if (inlineCountQuery != null)
-                        processResult.InlineCount = Queryable.Count((dynamic)inlineCountQuery);
+                if (!request.Properties.TryGetValue("MS_InlineCount", out object inlineCount)) {
+                    request.Properties.TryGetValue("BeetleInlineCountQuery", out object inlineCountQueryObj);
+                    if (inlineCountQueryObj is IQueryable inlineCountQuery) {
+                        processResult.InlineCount = Queryable.Count((dynamic) inlineCountQuery);
+                    }
+                }
+                else {
+                    processResult.InlineCount = (int)inlineCount;
                 }
             }
 
             return processResult;
         }
 
-        public static ObjectContent HandleResponse(ProcessResult processResult, IBeetleConfig config = null, HttpResponse response = null) {
+        public static ObjectContent HandleResponse(ProcessResult processResult, IBeetleConfig config = null) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
-            if (response == null) {
-                response = HttpContext.Current.Response;
-            }
+            var response = HttpContext.Current.Response;
 
             var type = processResult.Result?.GetType() ?? typeof(object);
 

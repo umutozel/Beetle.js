@@ -19,8 +19,9 @@ namespace Beetle.WebApi {
                     sw.Write("}");
                 }
             }
-            else
+            else {
                 await base.WriteToStreamAsync(type, value, writeStream, content, transportContext);
+            }
         }
     }
 }

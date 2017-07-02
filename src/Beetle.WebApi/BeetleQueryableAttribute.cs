@@ -21,8 +21,6 @@ namespace Beetle.WebApi {
     public class BeetleQueryableAttribute : EnableQueryAttribute {
         private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
         private static readonly MethodInfo _dummyMethodInfo;
-        private readonly IBeetleConfig _beetleConfig;
-        private bool? _checkRequestHash;
 
         static BeetleQueryableAttribute() {
             _dummyMethodInfo = typeof(BeetleApiController<>).GetMethods().First();
@@ -32,18 +30,23 @@ namespace Beetle.WebApi {
             AllowedQueryOptions = AllowedQueryOptions.Supported | AllowedQueryOptions.Expand | AllowedQueryOptions.Select;
         }
 
-        public BeetleQueryableAttribute(IBeetleConfig config)
-            : this() {
-            _beetleConfig = config;
+        public BeetleQueryableAttribute(IBeetleConfig config): this() {
+            Config = config;
         }
 
         public BeetleQueryableAttribute(Type configType)
             : this() {
             if (configType != null) {
-                _beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
-                if (_beetleConfig == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
+                BeetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
+                if (BeetleConfig == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
         }
+
+        protected IBeetleConfig Config { get; }
+
+        public int? MaxResultCount { get; set; }
+
+        public bool CheckRequestHash { get; set; }
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
             if (actionExecutedContext.Exception != null || !actionExecutedContext.Response.IsSuccessStatusCode) return;
@@ -55,12 +58,10 @@ namespace Beetle.WebApi {
             var service = controller as IBeetleService;
 
             // get query parameters
-            string queryString;
-            var queryParams = GetParameters(actionExecutedContext, out queryString, service);
-            object contentValue;
-            if (!response.TryGetContentValue(out contentValue)) return;
+            var queryParams = GetParameters(actionExecutedContext, out string queryString, service);
+            if (!response.TryGetContentValue(out object contentValue)) return;
 
-            var actionContext = new ActionContext(action, contentValue, queryString, queryParams, MaxResultCount, CheckRequestHashNullable);
+            var actionContext = new ActionContext(action, contentValue, queryString, queryParams, MaxResultCount, CheckRequestHash, Config, service);
 
             request.Properties["BeetleService"] = service;
             request.Properties["BeetleActionContext"] = actionContext;
@@ -73,8 +74,9 @@ namespace Beetle.WebApi {
             var queryable = contentValue as IQueryable;
 
             // apply OData parameters
-            if (queryable != null)
+            if (queryable != null) {
                 contentValue = FixODataQuery(queryable, request, service);
+            }
 
             // process the request and return the result
             var processResult = ProcessRequest(contentValue, actionContext, request, service);
@@ -106,12 +108,10 @@ namespace Beetle.WebApi {
 
             // WebApi cannot process these query string options
             var skipParams = new List<string> { "$expand", "$select", "$skip", "$top" };
-            if (queryOptions.OrderBy != null) {
-                var orderBy = queryOptions.OrderBy.RawValue;
-                if (!string.IsNullOrWhiteSpace(orderBy) && orderBy.IndexOf('/') != -1) {
-                    queryable = queryable.OrderBy(orderBy.Replace('/', '.'));
-                    skipParams.Add("$orderby");
-                }
+            var orderBy = queryOptions.OrderBy?.RawValue;
+            if (!string.IsNullOrWhiteSpace(orderBy) && orderBy.IndexOf('/') != -1) {
+                queryable = queryable.OrderBy(orderBy.Replace('/', '.'));
+                skipParams.Add("$orderby");
             }
 
             // we create new query options
@@ -124,13 +124,11 @@ namespace Beetle.WebApi {
             }
 
             // trigger the event on the service
-            object serviceObj;
-            if (request.Properties.TryGetValue("BeetleService", out serviceObj)) {
+            if (request.Properties.TryGetValue("BeetleService", out object serviceObj)) {
                 var odataService = serviceObj as IODataService;
                 if (odataService != null) {
-                    object actionObj;
                     ActionContext actionContext;
-                    if (request.Properties.TryGetValue("BeetleActionContext", out actionObj) && actionObj != null)
+                    if (request.Properties.TryGetValue("BeetleActionContext", out object actionObj) && actionObj != null)
                         actionContext = (ActionContext)actionObj;
                     else
                         actionContext = new ActionContext();
@@ -146,7 +144,7 @@ namespace Beetle.WebApi {
         }
 
         public virtual IQueryable FixODataQuery(IQueryable queryable, HttpRequestMessage request, IBeetleService service = null) {
-            var queryableHandler = Server.Helper.GetQueryHandler(BeetleConfig, service);
+            var queryableHandler = Server.Helper.GetQueryHandler(Config, service);
 
             // get OData parameters
             var queryParams = request.GetQueryNameValuePairs().ToList();
@@ -175,38 +173,21 @@ namespace Beetle.WebApi {
         }
 
         protected virtual NameValueCollection GetParameters(HttpActionExecutedContext actionExecutedContext, out string queryString, IBeetleService service = null) {
-            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null);
+            var config = Config ?? service?.Config;
             return Helper.GetParameters(config, out queryString);
         }
 
         protected virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request, IBeetleService service = null) {
             return service != null
-                ? service.ProcessRequest(contentValue, actionContext, _beetleConfig)
-                : Helper.ProcessRequest(contentValue, actionContext, request, actionConfig: _beetleConfig);
+                ? service.ProcessRequest(contentValue, actionContext, Config)
+                : Helper.ProcessRequest(contentValue, actionContext, request, Config);
         }
 
         protected virtual ObjectContent HandleResponse(HttpActionExecutedContext filterContext, ProcessResult result, IBeetleService service = null) {
-            var config = _beetleConfig ?? (service != null ? service.BeetleConfig : null);
+            var config = BeetleConfig ?? (service != null ? service.BeetleConfig : null);
             return Helper.HandleResponse(result, config);
         }
 
-        internal static BeetleQueryableAttribute Instance {
-            get { return _instance.Value; }
-        }
-
-        protected IBeetleConfig BeetleConfig {
-            get { return _beetleConfig; }
-        }
-
-        public int MaxResultCount { get; set; }
-
-        public bool CheckRequestHash {
-            get { return _checkRequestHash.GetValueOrDefault(); }
-            set { _checkRequestHash = value; }
-        }
-
-        internal bool? CheckRequestHashNullable {
-            get { return _checkRequestHash; }
-        }
+        internal static BeetleQueryableAttribute Instance => _instance.Value;
     }
 }

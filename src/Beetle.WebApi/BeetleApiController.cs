@@ -9,28 +9,32 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 
 namespace Beetle.WebApi {
+    using Meta;
     using Server;
     using Server.Interface;
+    using ServerHelper = Server.Helper;
 
-    [BeetleApiController]
-    public class BeetleApiController<TContextHandler> : ApiController, IBeetleService<TContextHandler>, IODataService
-            where TContextHandler : class, IContextHandler {
-        private readonly IBeetleConfig _beetleConfig;
+    public abstract class BeetleApiController<TContextHandler> : BeetleApiController, IBeetleService<TContextHandler>
+        where TContextHandler : class, IContextHandler {
 
-        public BeetleApiController(): this(null, null) {
+        protected BeetleApiController() {
         }
 
-        public BeetleApiController(TContextHandler contextHandler): this(contextHandler, null) {
+        protected BeetleApiController(TContextHandler contextHandler)
+            : this(contextHandler, null) {
         }
 
-        public BeetleApiController(IBeetleConfig beetleConfig): this(null, beetleConfig) {
+        protected BeetleApiController(IBeetleConfig config)
+            : this(null, config) {
         }
 
-        public BeetleApiController(TContextHandler contextHandler, IBeetleConfig beetleConfig) {
+        protected BeetleApiController(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
             ContextHandler = contextHandler;
-            _beetleConfig = beetleConfig;
-            AutoHandleUnknownActions = false;
         }
+
+        public TContextHandler ContextHandler { get; private set; }
+
+        IContextHandler IBeetleService.ContextHandler => ContextHandler;
 
         protected override void Initialize(HttpControllerContext controllerContext) {
             base.Initialize(controllerContext);
@@ -41,8 +45,39 @@ namespace Beetle.WebApi {
             ContextHandler.Initialize();
         }
 
-        public virtual TContextHandler CreateContextHandler() {
+        protected virtual TContextHandler CreateContextHandler() {
             return Activator.CreateInstance<TContextHandler>();
+        }
+
+        protected override Metadata GetMetadata() {
+            return ContextHandler.Metadata();
+        }
+
+        protected override Task<SaveResult> SaveChanges(SaveContext saveContext) {
+            return ContextHandler.SaveChanges(saveContext);
+        }
+    }
+
+    [BeetleApiController]
+    public abstract class BeetleApiController : ApiController, IBeetleService, IODataService {
+
+        protected BeetleApiController(): this(null) {
+        }
+
+        protected BeetleApiController(IBeetleConfig config) {
+            Config = config;
+        }
+
+        protected bool ForbidBeetleQueryString { get; set; }
+
+        protected bool AutoHandleUnknownActions { get; set; }
+
+        protected abstract Metadata GetMetadata();
+
+        [HttpGet]
+        [BeetleActionFilter(typeof(SimpleResultConfig))]
+        public virtual object Metadata() {
+            return GetMetadata().ToMinified();
         }
 
         public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken) {
@@ -50,74 +85,74 @@ namespace Beetle.WebApi {
                 return base.ExecuteAsync(controllerContext, cancellationToken);
             }
             catch (HttpResponseException ex) {
-                if (ex.Response.StatusCode == HttpStatusCode.NotFound && AutoHandleUnknownActions) {
-                    var action = controllerContext.Request.GetRouteData().Values["action"].ToString();
-                    var content = HandleUnknownAction(action);
-                    // execute response
-                    var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = content };
-                    return Task.FromResult(responseMessage);
-                }
-                throw;
+                if (ex.Response.StatusCode != HttpStatusCode.NotFound || !AutoHandleUnknownActions) throw;
+
+                var action = controllerContext.Request.GetRouteData().Values["action"].ToString();
+                var content = HandleUnknownAction(action);
+                // execute response
+                var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = content };
+                return Task.FromResult(responseMessage);
             }
         }
 
         protected virtual ObjectContent HandleUnknownAction(string action) {
-            // get value for action
-            var result = ContextHandler.HandleUnknownAction(action);
-            // get beetle parameters
-            string queryString;
-            var parameters = Helper.GetParameters(BeetleConfig, out queryString);
-            var actionContext = new ActionContext(action, result, queryString, parameters, MaxResultCount, CheckRequestHash);
-            var queryable = result as IQueryable;
+            var svc = (IBeetleService) this;
+            var contextHandler = svc.ContextHandler;
+            if (contextHandler == null)
+                throw new NotSupportedException();
+
+            var result = contextHandler.HandleUnknownAction(action);
+            var parameters = Helper.GetParameters(Config, out string queryString);
+
             // if value is a query, first handle OData parameters
-            if (queryable != null) {
+            if (result is IQueryable queryable) {
                 result = BeetleQueryableAttribute.Instance.ApplyODataQuery(queryable, this, actionContext, Request);
             }
-            // and process the request
-            var processResult = ProcessRequest(result, actionContext);
-            // create response
-            return Helper.HandleResponse(processResult, BeetleConfig);
+
+            var actionContext = new ActionContext(action, result, queryString, parameters, MaxResultCount, CheckRequestHash, null, this);
+            var processResult = ProcessRequest(actionContext);
+            return Helper.HandleResponse(processResult, Config);
         }
 
-        public virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, out IEnumerable<EntityBag> unknownEntities) {
-            return Server.Helper.ResolveEntities(saveBundle, BeetleConfig, ContextHandler.Metadata(), out unknownEntities);
+        protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, out IEnumerable<EntityBag> unknownEntities) {
+            return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
         }
 
-        public TContextHandler ContextHandler { get; private set; }
-
-        public bool ForbidBeetleQueryString { get; set; }
-
-        protected bool AutoHandleUnknownActions { get; set; }
-
-        #region Implementation of IBeetleService
-
-        [HttpGet]
-        public virtual object Metadata() {
-            return ContextHandler.Metadata().ToMinified();
-        }
-
-        [HttpGet]
-        public virtual object CreateType(string typeName, string initialValues) {
-            var retVal = ContextHandler.CreateType(typeName);
-            Server.Helper.CopyValuesFromJson(initialValues, retVal, BeetleConfig);
-            return retVal;
-        }
-
-        public virtual ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, IBeetleConfig actionConfig = null) {
-            return Helper.ProcessRequest(contentValue, actionContext, Request, ForbidBeetleQueryString, actionConfig ?? BeetleConfig, this);
-        }
-
-        /// <summary>
-        /// Handles the unknowns objects (which does not have $type).
-        /// </summary>
-        public virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) {
+        protected virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) {
             return Enumerable.Empty<EntityBag>();
         }
 
+        protected abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
+
+        #region Implementation of IBeetleService
+
+        public virtual IBeetleConfig Config { get; }
+
+        IContextHandler IBeetleService.ContextHandler => null;
+
+        public int? MaxResultCount { get; set; }
+
+        public bool CheckRequestHash { get; set; }
+
+        Metadata IBeetleService.Metadata() {
+            return GetMetadata();
+        }
+
+        public virtual object CreateType(string typeName, string initialValues) {
+            return ServerHelper.CreateType(typeName, initialValues, Config);
+        }
+
+        ProcessResult IBeetleService.ProcessRequest(ActionContext actionContext) {
+            return ProcessRequest(actionContext);
+        }
+
+        protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
+            return Helper.ProcessRequest(actionContext);
+        }
+
         [HttpPost]
-        public virtual async Task<SaveResult> SaveChanges(object saveBundle) {
-            IEnumerable<EntityBag> unknowns;
-            var entityBags = ResolveEntities(saveBundle, out unknowns);
+        public async Task<SaveResult> SaveChanges(object saveBundle) {
+            var entityBags = ResolveEntities(saveBundle, out IEnumerable<EntityBag> unknowns);
             var entityBagList = entityBags == null
                 ? new List<EntityBag>()
                 : entityBags as List<EntityBag> ?? entityBags.ToList();
@@ -126,23 +161,15 @@ namespace Beetle.WebApi {
             if (handledUnknowns != null) entityBagList.AddRange(handledUnknowns);
             if (!entityBagList.Any()) return SaveResult.Empty;
 
-            var saveContext = new SaveContext();
-            OnBeforeSaveChanges(new BeforeSaveEventArgs(entityBagList, saveContext));
-            var retVal = await ContextHandler.SaveChanges(entityBagList, saveContext);
-            OnAfterSaveChanges(new AfterSaveEventArgs(entityBagList, retVal));
+            var saveContext = new SaveContext(entityBagList);
+            OnBeforeSaveChanges(new BeforeSaveEventArgs(saveContext));
+            var retVal = await SaveChanges(saveContext);
+            OnAfterSaveChanges(new AfterSaveEventArgs(retVal));
 
             return retVal;
         }
 
-        public virtual IBeetleConfig BeetleConfig {
-            get { return _beetleConfig; }
-        }
-
-        IContextHandler IBeetleService.ContextHandler { get { return ContextHandler; } }
-
-        public int MaxResultCount { get; set; }
-
-        public bool CheckRequestHash { get; set; }
+        #region Event-Handlers
 
         public event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
@@ -151,9 +178,7 @@ namespace Beetle.WebApi {
         }
 
         protected virtual void OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) {
-            var handler = BeforeHandleQuery;
-            if (handler != null)
-                handler(this, args);
+            BeforeHandleQuery?.Invoke(this, args);
         }
 
         public event BeforeQueryExecuteDelegate BeforeQueryExecute;
@@ -163,9 +188,7 @@ namespace Beetle.WebApi {
         }
 
         protected virtual void OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) {
-            var handler = BeforeQueryExecute;
-            if (handler != null)
-                handler(this, args);
+            BeforeQueryExecute?.Invoke(this, args);
         }
 
         public event AfterQueryExecuteDelegate AfterQueryExecute;
@@ -175,24 +198,22 @@ namespace Beetle.WebApi {
         }
 
         protected virtual void OnAfterQueryExecute(AfterQueryExecuteEventArgs args) {
-            var handler = AfterQueryExecute;
-            if (handler != null)
-                handler(this, args);
+            AfterQueryExecute?.Invoke(this, args);
         }
 
         public event BeforeSaveDelegate BeforeSaveChanges;
 
         protected virtual void OnBeforeSaveChanges(BeforeSaveEventArgs args) {
-            var handler = BeforeSaveChanges;
-            if (handler != null) handler(this, args);
+            BeforeSaveChanges?.Invoke(this, args);
         }
 
         public event AfterSaveDelegate AfterSaveChanges;
 
         protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
-            var handler = AfterSaveChanges;
-            if (handler != null) handler(this, args);
+            AfterSaveChanges?.Invoke(this, args);
         }
+
+        #endregion
 
         #endregion
 
@@ -201,9 +222,7 @@ namespace Beetle.WebApi {
         public event BeforeODataQueryHandleDelegate BeforeODataQueryHandle;
 
         void IODataService.OnBeforeODataQueryHandle(BeforeODataQueryHandleEventArgs args) {
-            var handler = BeforeODataQueryHandle;
-            if (handler != null)
-                handler(this, args);
+            BeforeODataQueryHandle?.Invoke(this, args);
         }
 
         protected void OnBeforeODataHandleQuery(BeforeODataQueryHandleEventArgs args) {

@@ -32,11 +32,11 @@ namespace Beetle.WebApi {
             base.OnActionExecuted(actionExecutedContext);
 
             var response = actionExecutedContext.Response;
-            object contentValue;
-            if (!response.TryGetContentValue(out contentValue)) return;
+            if (!response.TryGetContentValue(out object contentValue)) return;
 
-            if (contentValue != null)
+            if (contentValue != null) {
                 response.Content = new ObjectContent(contentValue.GetType(), contentValue, formatter);
+            }
         }
     }
 }

@@ -44,12 +44,11 @@ namespace Beetle.Mvc {
             ContextHandler.Initialize();
         }
 
-        [NonAction]
-        public virtual TContextHandler CreateContextHandler() {
+        protected virtual TContextHandler CreateContextHandler() {
             return Activator.CreateInstance<TContextHandler>();
         }
 
-        public override Metadata Metadata() {
+        protected override Metadata GetMetadata() {
             return ContextHandler.Metadata();
         }
 
@@ -62,7 +61,7 @@ namespace Beetle.Mvc {
                 var result = ContextHandler.HandleUnknownAction(action);
                 var beetleParameters = ServerHelper.GetBeetleParameters(queryParams);
                 var actionContext = new ActionContext(action, result, queryString, beetleParameters, 
-                                                      MaxResultCount, CheckRequestHash, Config, this);
+                                                      MaxResultCount, CheckRequestHash, null, this);
                 var processResult = ProcessRequest(actionContext);
                 var response = Helper.HandleResponse(processResult);
                 response.ExecuteResult(ControllerContext);
@@ -70,6 +69,71 @@ namespace Beetle.Mvc {
             else {
                 base.HandleUnknownAction(action);
             }
+        }
+
+        protected override Task<SaveResult> SaveChanges(SaveContext saveContext) {
+            return ContextHandler.SaveChanges(saveContext);
+        }
+    }
+
+    [BeetleActionFilter]
+    public abstract class BeetleController: Controller, IBeetleService {
+
+        protected BeetleController(): this(null) {
+        }
+
+        protected BeetleController(IBeetleConfig config) {
+            Config = config;
+        }
+
+        protected abstract Metadata GetMetadata();
+
+        [BeetleActionFilter(typeof(SimpleResultConfig))]
+        public virtual object Metadata() {
+            return GetMetadata().ToMinified();
+        }
+
+        protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, 
+                                                                 out IEnumerable<EntityBag> unknownEntities) {
+            return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
+        }
+
+        protected virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) {
+            return Enumerable.Empty<EntityBag>();
+        }
+
+        public async Task<BeetleContentResult<SaveResult>> SaveChanges(object saveBundle) {
+            var svc = (IBeetleService) this;
+            var result = await svc.SaveChanges(saveBundle);
+            return new BeetleContentResult<SaveResult>(result);
+        }
+
+        protected abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
+
+        #region Implementation of IBeetleService
+
+        public virtual IBeetleConfig Config { get; }
+
+        IContextHandler IBeetleService.ContextHandler => null;
+
+        public int? MaxResultCount { get; set; }
+
+        public bool CheckRequestHash { get; set; }
+
+        Metadata IBeetleService.Metadata() {
+            return GetMetadata();
+        }
+
+        public virtual object CreateType(string typeName, string initialValues) {
+            return ServerHelper.CreateType(typeName, initialValues, Config);
+        }
+
+        ProcessResult IBeetleService.ProcessRequest(ActionContext actionContext) {
+            return ProcessRequest(actionContext);
+        }
+
+        protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
+            return Helper.ProcessRequest(actionContext);
         }
 
         async Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
@@ -84,61 +148,13 @@ namespace Beetle.Mvc {
 
             var saveContext = new SaveContext(entityBagList);
             OnBeforeSaveChanges(new BeforeSaveEventArgs(saveContext));
-            var retVal = await ContextHandler.SaveChanges(saveContext);
+            var retVal = await SaveChanges(saveContext);
             OnAfterSaveChanges(new AfterSaveEventArgs(retVal));
 
             return retVal;
         }
-    }
 
-    [BeetleActionFilter]
-    public abstract class BeetleController: Controller, IBeetleService {
-
-        protected BeetleController(): this(null) {
-        }
-
-        protected BeetleController(IBeetleConfig config) {
-            Config = config;
-        }
-
-        public virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, 
-                                                              out IEnumerable<EntityBag> unknownEntities) {
-            return ServerHelper.ResolveEntities(saveBundle, Config, Metadata(), out unknownEntities);
-        }
-
-        public async Task<BeetleContentResult<SaveResult>> SaveChanges(object saveBundle) {
-            var svc = (IBeetleService) this;
-            var result = await svc.SaveChanges(saveBundle);
-            return new BeetleContentResult<SaveResult>(result);
-        }
-
-        #region Implementation of IBeetleService
-
-        public virtual IBeetleConfig Config { get; }
-
-        IContextHandler IBeetleService.ContextHandler => null;
-
-        public int? MaxResultCount { get; set; }
-
-        public bool CheckRequestHash { get; set; }
-
-        public abstract Metadata Metadata();
-
-        public virtual object CreateType(string typeName, string initialValues) {
-            return ServerHelper.CreateType(typeName, initialValues, Config);
-        }
-
-        public virtual ProcessResult ProcessRequest(ActionContext actionContext) {
-            return Helper.ProcessRequest(actionContext);
-        }
-
-        Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
-            throw new NotImplementedException();
-        }
-
-        public virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) {
-            return Enumerable.Empty<EntityBag>();
-        }
+        #region Event-Handlers
 
         public event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
@@ -181,6 +197,8 @@ namespace Beetle.Mvc {
         protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
             AfterSaveChanges?.Invoke(this, args);
         }
+
+        #endregion
 
         #endregion
     }

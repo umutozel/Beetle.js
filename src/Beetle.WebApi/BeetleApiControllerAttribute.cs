@@ -27,6 +27,8 @@ namespace Beetle.WebApi {
             _queryableFilter = defaultFilter;
         }
 
+        protected virtual IBeetleConfig BeetleConfig => _beetleConfig;
+
         public void Initialize(HttpControllerSettings settings, HttpControllerDescriptor descriptor) {
             lock (_locker) {
                 // Add queryable filter provider
@@ -46,8 +48,6 @@ namespace Beetle.WebApi {
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {
             return new BeetleQueryableFilterProvider(defaultFilter);
         }
-
-        protected virtual IBeetleConfig BeetleConfig => _beetleConfig;
 
         #region Exposed Queryable Filter Properties
 

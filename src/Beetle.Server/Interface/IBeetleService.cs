@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Beetle.Server.Interface {
     using Meta;
@@ -7,8 +6,6 @@ namespace Beetle.Server.Interface {
     public interface IBeetleService<out TContextHandler>: IBeetleService where TContextHandler: IContextHandler {
 
         new TContextHandler ContextHandler { get; }
-
-        TContextHandler CreateContextHandler();
     }
 
     public interface IBeetleService {
@@ -26,8 +23,6 @@ namespace Beetle.Server.Interface {
         object CreateType(string typeName, string initialValues);
 
         ProcessResult ProcessRequest(ActionContext actionContext);
-
-        IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns);
 
         Task<SaveResult> SaveChanges(object saveBundle);
         
