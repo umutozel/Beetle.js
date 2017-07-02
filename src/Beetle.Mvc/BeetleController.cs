@@ -134,7 +134,10 @@ namespace Beetle.Mvc {
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
-            return ServerHelper.DefaultRequestProcessor(actionContext);
+            var svc = (IBeetleService)this;
+            return svc.ContextHandler != null
+                ? svc.ContextHandler.ProcessRequest(actionContext)
+                : ServerHelper.DefaultRequestProcessor(actionContext);
         }
 
         async Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
