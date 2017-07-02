@@ -16,90 +16,50 @@ namespace Beetle.WebApi {
 
     public static class Helper {
 
-        public static IDictionary<string, string> GetParameters(IBeetleConfig config, out string queryString) {
+        public static void GetParameters(IBeetleConfig config, out string queryString,
+                                         out IList<BeetleParameter> parameters) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
             var request = HttpContext.Current.Request;
 
-            // beetle also supports post http method
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
-                // read query options from input stream
-                if (!request.ContentType.Contains("application/json")) return request.Params;
-
-                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                var queryParams = new NameValueCollection(request.Params);
-                if (d == null) return queryParams;
-
-                foreach (var i in d) {
-                    queryParams.Add(i.Key, i.Value.ToString());
-                }
-                return queryParams;
-            }
-
-            queryString = request.Url.Query;
-            if (queryString.StartsWith("?")) {
-                queryString = queryString.Substring(1);
-            }
-            queryString = queryString.Replace(":", "%3A");
-
-            return request.QueryString;
-        }
-
-        public static ProcessResult ProcessRequest(ActionContext actionContext, HttpRequestMessage request) {
-            var service = actionContext.Service;
-            if (!string.IsNullOrEmpty(actionContext.QueryString)) {
-                var checkHash = actionContext.CheckRequestHash ?? service?.CheckRequestHash;
-                if (checkHash == true) {
-                    CheckRequestHash(actionContext.QueryString);
-                }
-            }
-
-            var queryParams = actionContext.Parameters;
-            var inlineCountParam = queryParams["$inlineCount"];
-
-            var contextHandler = service?.ContextHandler;
-            // allow context handler to process the value
-            var processResult = contextHandler != null
-                ? contextHandler.ProcessRequest(actionContext)
-                : Server.Helper.DefaultRequestProcessor(actionContext);
-
-            if (processResult.InlineCount == null && inlineCountParam == "allpages") {
-                if (!request.Properties.TryGetValue("MS_InlineCount", out object inlineCount)) {
-                    request.Properties.TryGetValue("BeetleInlineCountQuery", out object inlineCountQueryObj);
-                    if (inlineCountQueryObj is IQueryable inlineCountQuery) {
-                        processResult.InlineCount = Queryable.Count((dynamic) inlineCountQuery);
+                var queryParams = request.Params.ToDictionary();
+                if (request.ContentType.Contains("application/json")) {
+                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                    foreach (var i in d) {
+                        queryParams.Add(i.Key, i.Value.ToString());
                     }
                 }
-                else {
-                    processResult.InlineCount = (int)inlineCount;
-                }
+                parameters = Server.Helper.GetBeetleParameters(queryParams);
             }
-
-            return processResult;
+            else {
+                queryString = HttpUtility.UrlDecode(request.Url.Query);
+                var queryParams = request.QueryString.ToDictionary();
+                parameters = Server.Helper.GetBeetleParameters(queryParams);
+            }
         }
 
-        public static ObjectContent HandleResponse(ProcessResult processResult, IBeetleConfig config = null) {
-            if (config == null) {
-                config = BeetleConfig.Instance;
-            }
+        public static ObjectContent HandleResponse(ProcessResult processResult) {
+            var actionContext = processResult.ActionContext;
+            var service = actionContext.Service;
+            var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var response = HttpContext.Current.Response;
 
             var type = processResult.Result?.GetType() ?? typeof(object);
-
             var formatter = CreateFormatter(config);
             var retVal = new ObjectContent(type, processResult.Result, formatter);
 
             // set InlineCount header info if exists
             object inlineCount = processResult.InlineCount;
             if (inlineCount != null && response.Headers["X-InlineCount"] == null) {
-                response.Headers["X-InlineCount"] = inlineCount.ToString();
+                response.Headers.Add("X-InlineCount", inlineCount.ToString());
             }
             if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
                 var userDataStr = config.Serializer.Serialize(processResult.UserData);
-                response.Headers["X-UserData"] = userDataStr;
+                response.Headers.Add("X-UserData", userDataStr);
             }
 
             return retVal;
@@ -131,6 +91,10 @@ namespace Beetle.WebApi {
             formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
             formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
             return formatter;
+        }
+
+        public static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection) {
+            return nameValueCollection.AllKeys.ToDictionary(k => k, k => nameValueCollection[k]);
         }
     }
 }

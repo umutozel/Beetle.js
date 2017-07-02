@@ -102,16 +102,11 @@ namespace Beetle.WebApi {
                 throw new NotSupportedException();
 
             var result = contextHandler.HandleUnknownAction(action);
-            var parameters = Helper.GetParameters(Config, out string queryString);
-
-            // if value is a query, first handle OData parameters
-            if (result is IQueryable queryable) {
-                result = BeetleQueryableAttribute.Instance.ApplyODataQuery(queryable, this, actionContext, Request);
-            }
+            Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters);
 
             var actionContext = new ActionContext(action, result, queryString, parameters, MaxResultCount, CheckRequestHash, null, this);
             var processResult = ProcessRequest(actionContext);
-            return Helper.HandleResponse(processResult, Config);
+            return Helper.HandleResponse(processResult);
         }
 
         protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, out IEnumerable<EntityBag> unknownEntities) {
@@ -147,7 +142,10 @@ namespace Beetle.WebApi {
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
-            return Helper.ProcessRequest(actionContext);
+            var svc = (IBeetleService) this;
+            return svc.ContextHandler != null
+                ? svc.ContextHandler.ProcessRequest(actionContext)
+                : ServerHelper.DefaultRequestProcessor(actionContext);
         }
 
         [HttpPost]

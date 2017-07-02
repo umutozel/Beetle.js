@@ -80,28 +80,33 @@ namespace Beetle.Mvc {
         private ActionResult ProcessAction(object contentValue, ActionDescriptor action, ControllerBase controller) {
             var service = controller as IBeetleService;
             // translate the request query
-            GetParameters(service, out string queryString, out IDictionary<string, string> queryParams);
-            var beetleParams = Server.Helper.GetBeetleParameters(queryParams);
-            var actionContext = new ActionContext(action.ActionName, contentValue,
-                queryString, beetleParams,
-                MaxResultCount, CheckRequestHash,
-                Config, service);
+            GetParameters(service, out string queryString, out IList<BeetleParameter> parameters);
+            var actionContext = new ActionContext(
+                action.ActionName, contentValue, queryString, parameters,
+                MaxResultCount, CheckRequestHash, Config, service
+            );
             var processResult = ProcessRequest(actionContext);
             return HandleResponse(processResult);
         }
 
         protected virtual void GetParameters(IBeetleService service, 
                                              out string queryString, 
-                                             out IDictionary<string, string> queryParams) {
+                                             out IList<BeetleParameter> parameters) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(config, out queryString, out queryParams);
+            Helper.GetParameters(config, out queryString, out parameters);
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
             var service = actionContext.Service;
+
+            if (!string.IsNullOrEmpty(actionContext.QueryString)
+                    && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
+                Helper.CheckRequestHash(actionContext.QueryString);
+            }
+
             return service != null
                 ? service.ProcessRequest(actionContext)
-                : Helper.ProcessRequest(actionContext);
+                : Server.Helper.DefaultRequestProcessor(actionContext);
         }
 
         protected virtual ActionResult HandleResponse(ProcessResult result) {

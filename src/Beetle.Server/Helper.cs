@@ -85,11 +85,11 @@ namespace Beetle.Server {
             }
         }
 
-        public static List<BeetleParameter> GetBeetleParameters(IDictionary<string, string> queryParameters) {
-            return queryParameters?.Keys
+        public static List<BeetleParameter> GetBeetleParameters(IDictionary<string, string> queryParams) {
+            return queryParams?.Keys
                 .Where(k => !string.IsNullOrWhiteSpace(k) && k.StartsWith("!e"))
                 .Select(k => {
-                    var v = queryParameters[k];
+                    var v = queryParams[k];
                     var i = v.IndexOf(':');
                     return new BeetleParameter(v.Substring(0, i), v.Substring(i + 1));
                 })
@@ -100,13 +100,14 @@ namespace Beetle.Server {
             var value = actionContext.Value;
             var queryable = actionContext.Value as IQueryable;
             if (queryable != null) {
-                var queryableHandler = GetQueryHandler(actionContext);
+                var queryableHandler = GetQueryHandler(actionContext.Config, actionContext.Service);
                 return queryableHandler.HandleContent(queryable, actionContext);
             }
 
-            if (value is string || !(value is IEnumerable)) return new ProcessResult(actionContext) { Result = value };
+            if (value is string || !(value is IEnumerable))
+                return new ProcessResult(actionContext) { Result = value };
 
-            var enumerableHandler = GetEnumerableHandler(actionContext);
+            var enumerableHandler = GetEnumerableHandler(actionContext.Config, actionContext.Service);
             return enumerableHandler.HandleContent((IEnumerable)value, actionContext);
         }
 

@@ -57,11 +57,12 @@ namespace Beetle.Mvc {
         /// </summary>
         protected override void HandleUnknownAction(string action) {
             if (AutoHandleUnknownActions) {
-                Helper.GetParameters(Config, out string queryString, out IDictionary<string, string> queryParams);
+                Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters);
                 var result = ContextHandler.HandleUnknownAction(action);
-                var beetleParameters = ServerHelper.GetBeetleParameters(queryParams);
-                var actionContext = new ActionContext(action, result, queryString, beetleParameters, 
-                                                      MaxResultCount, CheckRequestHash, null, this);
+                var actionContext = new ActionContext(
+                    action, result, queryString, parameters, 
+                    MaxResultCount, CheckRequestHash, null, this
+                );
                 var processResult = ProcessRequest(actionContext);
                 var response = Helper.HandleResponse(processResult);
                 response.ExecuteResult(ControllerContext);
@@ -133,7 +134,7 @@ namespace Beetle.Mvc {
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
-            return Helper.ProcessRequest(actionContext);
+            return ServerHelper.DefaultRequestProcessor(actionContext);
         }
 
         async Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {

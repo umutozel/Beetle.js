@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,54 +13,30 @@ namespace Beetle.Mvc {
 
     public static class Helper {
 
-        public static void GetParameters(IBeetleConfig config, out string queryString, out IDictionary<string, string> queryParams) {
+        public static void GetParameters(IBeetleConfig config, out string queryString,
+                                         out IList<BeetleParameter> parameters) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
             var request = HttpContext.Current.Request;
+
             if (request.HttpMethod == "POST") {
-                // read post data
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
+                var queryParams = request.Params.ToDictionary();
                 if (request.ContentType.Contains("application/json")) {
-                    var d = config.Serializer.DeserializeToDynamic(queryString);
-                    queryParams = new Dictionary<string, string>();
-                    if (d == null) return;
-                    
-                    // now there is no query string parameters, we must populate them manually for beetle queries
-                    // otherwise beetle cannot use query parameters when using post method
-                    foreach (var p in TypeDescriptor.GetProperties(d)) {
-                        var v = d[p.Name];
-                        queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
+                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                    foreach (var i in d) {
+                        queryParams.Add(i.Key, i.Value.ToString());
                     }
                 }
-                else {
-                    queryParams = request.Params.AllKeys.ToDictionary(k => k, k => request.Params[k]);
-                }
+                parameters = Server.Helper.GetBeetleParameters(queryParams);
             }
             else {
-                queryString = request.Url.Query;
-                if (queryString.StartsWith("?")) {
-                    queryString = queryString.Substring(1);
-                }
-                queryString = queryString.Replace(":", "%3A");
-                queryParams = request.QueryString.AllKeys.ToDictionary(k => k, k => request.QueryString[k]);
+                queryString = HttpUtility.UrlDecode(request.Url.Query);
+                var queryParams = request.QueryString.ToDictionary();
+                parameters = Server.Helper.GetBeetleParameters(queryParams);
             }
-        }
-
-        public static ProcessResult ProcessRequest(ActionContext actionContext) {
-            var service = actionContext.Service;
-
-            if (!string.IsNullOrEmpty(actionContext.QueryString) 
-                    && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
-                CheckRequestHash(actionContext.QueryString);
-            }
-
-            var contextHandler = service?.ContextHandler;
-            // allow context handler to process the value
-            return contextHandler != null 
-                ? contextHandler.ProcessRequest(actionContext) 
-                : Server.Helper.DefaultRequestProcessor(actionContext);
         }
 
         public static ActionResult HandleResponse(ProcessResult processResult) {
@@ -108,6 +84,10 @@ namespace Beetle.Mvc {
             }
 
             throw new BeetleException(Server.Properties.Resources.AlteredRequestException);
+        }
+
+        public static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection) {
+            return nameValueCollection.AllKeys.ToDictionary(k => k, k => nameValueCollection[k]);
         }
     }
 }
