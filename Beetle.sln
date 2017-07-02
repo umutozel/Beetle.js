@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Mvc", "src\Beetle.Mv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.WebApi", "src\Beetle.WebApi\Beetle.WebApi.csproj", "{4324C4BB-2B27-4656-8B23-C93023B5FDC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.EntityFramework", "src\Beetle.EntityFramework\Beetle.EntityFramework.csproj", "{C7052C0A-05B3-486A-B518-BFB45E23DF16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,5 +63,6 @@ Global
 		{28D5CBD9-D5CD-4100-8B06-45040868DDDB} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 		{F1BB57BE-8859-49BF-A9C6-95446C132D69} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 		{4324C4BB-2B27-4656-8B23-C93023B5FDC6} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 	EndGlobalSection
 EndGlobal
