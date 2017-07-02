@@ -13,11 +13,10 @@ using System.Net.Http.Formatting;
 namespace Beetle.WebApi {
     using Server;
     using Server.Interface;
-    using Properties;
 
     public static class Helper {
 
-        public static NameValueCollection GetParameters(IBeetleConfig config, out string queryString) {
+        public static IDictionary<string, string> GetParameters(IBeetleConfig config, out string queryString) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
@@ -27,7 +26,7 @@ namespace Beetle.WebApi {
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
-                // we read query options from input stream
+                // read query options from input stream
                 if (!request.ContentType.Contains("application/json")) return request.Params;
 
                 var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
@@ -49,8 +48,7 @@ namespace Beetle.WebApi {
             return request.QueryString;
         }
 
-        public static ProcessResult ProcessRequest(object contentValue, ActionContext actionContext, HttpRequestMessage request,
-                                                   bool forbidBeetleQueryParams = false) {
+        public static ProcessResult ProcessRequest(ActionContext actionContext, HttpRequestMessage request) {
             var service = actionContext.Service;
             if (!string.IsNullOrEmpty(actionContext.QueryString)) {
                 var checkHash = actionContext.CheckRequestHash ?? service?.CheckRequestHash;
@@ -61,14 +59,6 @@ namespace Beetle.WebApi {
 
             var queryParams = actionContext.Parameters;
             var inlineCountParam = queryParams["$inlineCount"];
-            // get beetle query parameters (supported parameters by default)
-            var beetlePrms = Server.Helper.GetBeetleParameters(queryParams);
-            if (beetlePrms.Count > 0) {
-                if (forbidBeetleQueryParams) throw new BeetleException(Resources.BeetleQueryStringsAreNotAllowed);
-                // if inlineCount parameter is given with OData format, add it to beetle parameters to return correct in-line count
-                if (!string.IsNullOrWhiteSpace(inlineCountParam))
-                    beetlePrms.Add(new BeetleParameter("inlineCount", inlineCountParam));
-            }
 
             var contextHandler = service?.ContextHandler;
             // allow context handler to process the value

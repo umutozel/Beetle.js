@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using System.Web.Http.OData;
 using System.Web.Http.OData.Query;
 
 namespace Beetle.WebApi {
@@ -17,7 +18,7 @@ namespace Beetle.WebApi {
         public IEnumerable<FilterInfo> GetFilters(HttpConfiguration configuration, HttpActionDescriptor actionDescriptor) {
             if (actionDescriptor == null ||
                 (!IsIQueryable(actionDescriptor.ReturnType)) ||
-                actionDescriptor.GetCustomAttributes<QueryableAttribute>().Any() ||
+                actionDescriptor.GetCustomAttributes<EnableQueryAttribute>().Any() ||
                 actionDescriptor.GetParameters().Any(parameter => typeof (ODataQueryOptions).IsAssignableFrom(parameter.ParameterType)))
                 return Enumerable.Empty<FilterInfo>();
 

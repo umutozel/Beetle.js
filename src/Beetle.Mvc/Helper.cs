@@ -49,17 +49,11 @@ namespace Beetle.Mvc {
         }
 
         public static ProcessResult ProcessRequest(ActionContext actionContext) {
-            // beetle should be used for all content types except mvc actions results. so we check only if content is not an mvc action result
             var service = actionContext.Service;
-            if (!string.IsNullOrEmpty(actionContext.QueryString)) {
-                bool checkHash;
-                if (!actionContext.CheckRequestHash.HasValue)
-                    checkHash = service != null && service.CheckRequestHash;
-                else
-                    checkHash = actionContext.CheckRequestHash.Value;
 
-                if (checkHash)
-                    CheckRequestHash(actionContext.QueryString);
+            if (!string.IsNullOrEmpty(actionContext.QueryString) 
+                    && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
+                CheckRequestHash(actionContext.QueryString);
             }
 
             var contextHandler = service?.ContextHandler;
@@ -109,8 +103,7 @@ namespace Beetle.Mvc {
                     queryString = queryString.Substring(0, queryLen);
                     var serverHash = Meta.Helper.CreateQueryHash(queryString).ToString(CultureInfo.InvariantCulture);
 
-                    if (serverHash == clientHash)
-                        return;
+                    if (serverHash == clientHash) return;
                 }
             }
 

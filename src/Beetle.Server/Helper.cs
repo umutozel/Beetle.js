@@ -235,18 +235,14 @@ namespace Beetle.Server {
             return retVal;
         }
 
-        public static IQueryHandler<IQueryable> GetQueryHandler(ActionContext actionContext) {
-            var actionConfig = actionContext.Config;
-            var service = actionContext.Service;
+        public static IQueryHandler<IQueryable> GetQueryHandler(IBeetleConfig actionConfig, IBeetleService service) {
             var config = actionConfig ?? service?.Config;
             return config?.QueryableHandler
                 ?? service?.ContextHandler?.QueryableHandler
                 ?? QueryableHandler.Instance;
         }
 
-        public static IContentHandler<IEnumerable> GetEnumerableHandler(ActionContext actionContext) {
-            var actionConfig = actionContext.Config;
-            var service = actionContext.Service;
+        public static IContentHandler<IEnumerable> GetEnumerableHandler(IBeetleConfig actionConfig, IBeetleService service) {
             var config = actionConfig ?? service?.Config;
             return config?.EnumerableHandler
                 ?? service?.ContextHandler?.EnumerableHandler

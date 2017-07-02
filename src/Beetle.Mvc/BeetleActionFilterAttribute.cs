@@ -81,9 +81,9 @@ namespace Beetle.Mvc {
             var service = controller as IBeetleService;
             // translate the request query
             GetParameters(service, out string queryString, out IDictionary<string, string> queryParams);
-            var beetlePrms = Server.Helper.GetBeetleParameters(queryParams);
+            var beetleParams = Server.Helper.GetBeetleParameters(queryParams);
             var actionContext = new ActionContext(action.ActionName, contentValue,
-                queryString, beetlePrms,
+                queryString, beetleParams,
                 MaxResultCount, CheckRequestHash,
                 Config, service);
             var processResult = ProcessRequest(actionContext);
