@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Data.Entity.Core.Objects;
@@ -12,31 +11,18 @@ using EFEntityType = System.Data.Entity.Core.Metadata.Edm.EntityType;
 namespace Beetle.EntityFramework {
     using Meta;
     using Server;
-    using Server.Interface;
 
-    public class EFContextHandler<TContext> : ContextHandler<TContext> {
+    public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
+        private ObjectContext _objectContext;
 
         #region Fields, Properties
-
-        private DbContext _dbContext;
-        private IObjectContextAdapter _objectContextAdapter;
-
-        private ObjectContext _objectContext;
-        protected ObjectContext ObjectContext {
-            get {
-                if (_objectContext != null) return _objectContext;
-                lock (Lockers.ObjectContextLocker) {
-                    return _objectContext ?? (_objectContext = _objectContextAdapter.ObjectContext);
-                }
-            }
-        }
 
         private static ItemCollection _itemCollection;
         protected ItemCollection ItemCollection {
             get {
                 if (_itemCollection != null) return _itemCollection;
                 lock (Lockers.ItemCollectionLocker) {
-                    return _itemCollection ?? (_itemCollection = ObjectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace));
+                    return _itemCollection ?? (_itemCollection = _objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace));
                 }
             }
         }
@@ -67,21 +53,21 @@ namespace Beetle.EntityFramework {
                 if (_objectItemCollection != null) return _objectItemCollection;
                 lock (Lockers.ObjectItemCollectionLocker) {
                     if (typeof(ObjectContext).IsAssignableFrom(typeof(TContext)))
-                        ObjectContext.MetadataWorkspace.LoadFromAssembly(ObjectContext.GetType().Assembly);
+                        _objectContext.MetadataWorkspace.LoadFromAssembly(_objectContext.GetType().Assembly);
                     return _objectItemCollection ??
-                        (_objectItemCollection = (ObjectItemCollection)ObjectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace));
+                        (_objectItemCollection = (ObjectItemCollection)_objectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace));
                 }
             }
         }
 
-        private static List<EntityType> _objectEntityTypes;
-        protected List<EntityType> ObjectEntityTypes {
+        private static List<EFEntityType> _objectEntityTypes;
+        protected List<EFEntityType> ObjectEntityTypes {
             get {
                 if (_objectEntityTypes != null) return _objectEntityTypes;
                 lock (ObjectItemCollection) {
                     if (_objectEntityTypes == null) {
-                        var objectEntityTypes = _objectItemCollection.GetItems<EntityType>();
-                        _objectEntityTypes = objectEntityTypes != null ? objectEntityTypes.ToList() : new List<EntityType>();
+                        var objectEntityTypes = _objectItemCollection.GetItems<EFEntityType>();
+                        _objectEntityTypes = objectEntityTypes?.ToList() ?? new List<EFEntityType>();
                     }
                     return _objectEntityTypes;
                 }
@@ -90,32 +76,23 @@ namespace Beetle.EntityFramework {
 
         #endregion
 
-        public EFContextHandler(): this(EFQueryHandler.Instance) {
+        public EFContextHandler() {
         }
 
-        public EFContextHandler(TContext context): this(context) {
+        public EFContextHandler(TContext context) : base(context) {
         }
+
+        public bool ValidateOnSaveEnabled { get; set; }
 
         public override void Initialize() {
             base.Initialize();
 
-            _objectContext = Context as ObjectContext;
-            if (_objectContext == null) {
-                _objectContextAdapter = Context as IObjectContextAdapter;
-                _dbContext = Context as DbContext;
-            }
-            if (_objectContext == null && _objectContextAdapter == null)
-                throw new InvalidOperationException("Type parameter must inherit from ObjectContext or implement IObjectContextAdapter.");
+            _dbContext = Context ?? throw new ArgumentNullException(nameof(Context));
+            _dbContext = Context;
 
             ValidateOnSaveEnabled = _dbContext == null;
-            if (_objectContext != null) {
-                _objectContext.ContextOptions.LazyLoadingEnabled = false;
-                _objectContext.ContextOptions.ProxyCreationEnabled = false;
-            }
-            else if (_dbContext != null) {
-                _dbContext.Configuration.ProxyCreationEnabled = false;
-                _dbContext.Configuration.LazyLoadingEnabled = false;
-            }
+            _dbContext.Configuration.ProxyCreationEnabled = false;
+            _dbContext.Configuration.LazyLoadingEnabled = false;
         }
 
         private static Metadata _metadata;
@@ -128,29 +105,19 @@ namespace Beetle.EntityFramework {
         }
 
         public override object CreateType(string typeName) {
-            if (ObjectEntityTypes != null) {
-                var oType = ObjectEntityTypes.FirstOrDefault(x => x.Name == typeName);
-                if (oType != null) {
-                    var clrType = ObjectItemCollection.GetClrType(oType);
-                    return Activator.CreateInstance(clrType);
-                }
-            }
-
-            return base.CreateType(typeName);
+            var oType = ObjectEntityTypes?.FirstOrDefault(x => x.Name == typeName);
+            if (oType == null) return base.CreateType(typeName);
+            var clrType = ObjectItemCollection.GetClrType(oType);
+            return Activator.CreateInstance(clrType);
         }
 
         public IQueryable<TEntity> CreateQueryable<TEntity>() {
-            if (_dbContext != null)
-                return _dbContext.Set<TEntity>();
-
-            var setName = FindEntitySet(typeof(TEntity));
-            IQueryable<TEntity> query = ObjectContext.CreateQuery<TEntity>($"[{setName}]");
-            return query.OfType<TEntity>();
+            return _dbContext.Set<TEntity>();
         }
 
         public virtual IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, out IEnumerable<EntityBag> unmappedEntities) {
             if (entities == null)
-                throw new ArgumentNullException("entities");
+                throw new ArgumentNullException(nameof(entities));
 
             var unmappeds = new List<EntityBag>();
             var entityList = entities as IList<EntityBag> ?? entities.ToList();
@@ -191,8 +158,8 @@ namespace Beetle.EntityFramework {
                                     if (property == null) break;
 
                                     var ordinal = loopOriginalValues.GetOrdinal(propertyName);
-                                    loopOriginalValues = (OriginalValueRecord) loopOriginalValues.GetValue(ordinal);
-                                    loopType = (StructuralType) property.TypeUsage.EdmType;
+                                    loopOriginalValues = (OriginalValueRecord)loopOriginalValues.GetValue(ordinal);
+                                    loopType = (StructuralType)property.TypeUsage.EdmType;
                                 }
                                 if (property == null) continue;
 
@@ -233,7 +200,7 @@ namespace Beetle.EntityFramework {
 
         private static void PopulateComplexType(OriginalValueRecord originalValues, string propertyName, object originalValue, ComplexType complexType) {
             var ordinal = originalValues.GetOrdinal(propertyName);
-            originalValues = (OriginalValueRecord) originalValues.GetValue(ordinal);
+            originalValues = (OriginalValueRecord)originalValues.GetValue(ordinal);
             foreach (var cp in complexType.Properties) {
                 var value = Helper.GetPropertyValue(originalValue, cp.Name);
 
@@ -255,8 +222,8 @@ namespace Beetle.EntityFramework {
 
             var saveList = mergeList;
             var handledUnmappeds = HandleUnmappeds(unmappeds);
-            var handledUnmappedList = handledUnmappeds == null 
-                ? null 
+            var handledUnmappedList = handledUnmappeds == null
+                ? null
                 : handledUnmappeds as IList<EntityBag> ?? handledUnmappeds.ToList();
             if (handledUnmappedList != null && handledUnmappedList.Any()) {
                 MergeEntities(handledUnmappedList, out IEnumerable<EntityBag> _);
@@ -272,18 +239,17 @@ namespace Beetle.EntityFramework {
                 if (validationResults.Any())
                     throw new EntityValidationException(validationResults);
             }
-            var affectedCount = _dbContext != null ? await _dbContext.SaveChangesAsync() : await ObjectContext.SaveChangesAsync();
+            var affectedCount = await Context.SaveChangesAsync();
             var generatedValues = GetGeneratedValues(mergeList);
             if (handledUnmappedList != null && handledUnmappedList.Any()) {
                 var generatedValueList = generatedValues == null
                     ? new List<GeneratedValue>()
                     : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
-                generatedValueList.AddRange(GetHandledUnmappedGeneratedValues(handledUnmappedList));
                 generatedValues = generatedValueList;
             }
 
             var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
-            OnAfterSaveChanges(new AfterSaveEventArgs(saveList, saveResult));
+            OnAfterSaveChanges(new AfterSaveEventArgs(saveResult));
 
             return saveResult;
         }
