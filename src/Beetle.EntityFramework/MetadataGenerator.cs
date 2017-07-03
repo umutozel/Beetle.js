@@ -91,7 +91,7 @@ namespace Beetle.EntityFramework {
                         .Descendants(mappingNs.GetName("EntityTypeMapping"))
                         .First(mf => {
                             var typeName = mf.Attribute("TypeName").Value;
-                            return typeName == et.FullName || typeName == string.Format("IsTypeOf({0})", et.FullName);
+                            return typeName == et.FullName || typeName == $"IsTypeOf({et.FullName})";
                         })
                         .Descendants(mappingNs.GetName("MappingFragment"))
                         .Single();
@@ -157,14 +157,14 @@ namespace Beetle.EntityFramework {
 
         private static Metadata Mapping(IEnumerable<EntityResource> entityResources, IEnumerable<EnumResource> enumResources, IEnumerable<GlobalItem> itemCollection, EntityContainer container) {
             if (itemCollection == null)
-                throw new ArgumentNullException("itemCollection");
+                throw new ArgumentNullException(nameof(itemCollection));
 
             var globalItems = itemCollection as IList<GlobalItem> ?? itemCollection.ToList();
             var retVal = new Metadata(container.Name);
 
             // entity types
             foreach (var er in entityResources) {
-                var fullName = string.Format("{0}, {1}", er.ClrType.FullName, er.ClrType.Assembly.GetName().Name);
+                var fullName = $"{er.ClrType.FullName}, {er.ClrType.Assembly.GetName().Name}";
                 var et = new Meta.EntityType(fullName, er.Name) { TableName = er.TableName };
 
                 // entity informations

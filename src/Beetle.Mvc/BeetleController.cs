@@ -11,7 +11,7 @@ namespace Beetle.Mvc {
     using Server.Interface;
     using ServerHelper = Server.Helper;
 
-    public abstract class BeetleController<TContextHandler> : BeetleController, IBeetleService<TContextHandler> 
+    public abstract class BeetleController<TContextHandler> : BeetleController, IBeetleService<TContextHandler>
             where TContextHandler : class, IContextHandler {
 
         protected BeetleController() {
@@ -33,8 +33,6 @@ namespace Beetle.Mvc {
 
         IContextHandler IBeetleService.ContextHandler => ContextHandler;
 
-        protected bool AutoHandleUnknownActions { get; set; }
-
         protected override void Initialize(RequestContext requestContext) {
             base.Initialize(requestContext);
 
@@ -46,34 +44,6 @@ namespace Beetle.Mvc {
 
         protected virtual TContextHandler CreateContextHandler() {
             return Activator.CreateInstance<TContextHandler>();
-        }
-
-        protected override Metadata GetMetadata() {
-            return ContextHandler.Metadata();
-        }
-
-        /// <summary>
-        /// Called when a request matches this controller, but no method with the specified action name is found in the controller.
-        /// </summary>
-        protected override void HandleUnknownAction(string action) {
-            if (AutoHandleUnknownActions) {
-                Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters);
-                var result = ContextHandler.HandleUnknownAction(action);
-                var actionContext = new ActionContext(
-                    action, result, queryString, parameters, 
-                    MaxResultCount, CheckRequestHash, null, this
-                );
-                var processResult = ProcessRequest(actionContext);
-                var response = Helper.HandleResponse(processResult);
-                response.ExecuteResult(ControllerContext);
-            }
-            else {
-                base.HandleUnknownAction(action);
-            }
-        }
-
-        protected override Task<SaveResult> SaveChanges(SaveContext saveContext) {
-            return ContextHandler.SaveChanges(saveContext);
         }
     }
 
@@ -87,11 +57,38 @@ namespace Beetle.Mvc {
             Config = config;
         }
 
-        protected abstract Metadata GetMetadata();
+        protected bool AutoHandleUnknownActions { get; set; }
+
+        protected virtual Metadata GetMetadata() {
+            var svc = (IBeetleService)this;
+            return svc.ContextHandler?.Metadata();
+        }
 
         [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual object Metadata() {
-            return GetMetadata().ToMinified();
+            return GetMetadata()?.ToMinified();
+        }
+
+        protected override void HandleUnknownAction(string action) {
+            if (AutoHandleUnknownActions) {
+                var contextHandler = ((IBeetleService)this).ContextHandler;
+                if (contextHandler == null)
+                    throw new NotSupportedException();
+
+                var result = contextHandler.HandleUnknownAction(action);
+                Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters);
+
+                var actionContext = new ActionContext(
+                    action, result, queryString, parameters,
+                    MaxResultCount, CheckRequestHash, null, this
+                );
+                var processResult = ProcessRequest(actionContext);
+                var response = Helper.HandleResponse(processResult);
+                response.ExecuteResult(ControllerContext);
+            }
+            else {
+                base.HandleUnknownAction(action);
+            }
         }
 
         protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, 
@@ -109,7 +106,11 @@ namespace Beetle.Mvc {
             return new BeetleContentResult<SaveResult>(result);
         }
 
-        protected abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
+        protected virtual Task<SaveResult> SaveChanges(SaveContext saveContext) {
+            var svc = (IBeetleService) this;
+            return svc.ContextHandler?.SaveChanges(saveContext)
+                   ?? throw new NotSupportedException();
+        }
 
         #region Implementation of IBeetleService
 
@@ -147,7 +148,9 @@ namespace Beetle.Mvc {
                 : entityBags as List<EntityBag> ?? entityBags.ToList();
 
             var handledUnknowns = HandleUnknowns(unknowns);
-            if (handledUnknowns != null) entityBagList.AddRange(handledUnknowns);
+            if (handledUnknowns != null) {
+                entityBagList.AddRange(handledUnknowns);
+            }
             if (!entityBagList.Any()) return SaveResult.Empty;
 
             var saveContext = new SaveContext(entityBagList);

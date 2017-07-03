@@ -13,9 +13,10 @@ namespace Beetle.WebApi {
     using Server;
     using Server.Interface;
     using ServerHelper = Server.Helper;
+    using Properties;
 
     public abstract class BeetleApiController<TContextHandler> : BeetleApiController, IBeetleService<TContextHandler>
-        where TContextHandler : class, IContextHandler {
+            where TContextHandler : class, IContextHandler {
 
         protected BeetleApiController() {
         }
@@ -48,20 +49,12 @@ namespace Beetle.WebApi {
         protected virtual TContextHandler CreateContextHandler() {
             return Activator.CreateInstance<TContextHandler>();
         }
-
-        protected override Metadata GetMetadata() {
-            return ContextHandler.Metadata();
-        }
-
-        protected override Task<SaveResult> SaveChanges(SaveContext saveContext) {
-            return ContextHandler.SaveChanges(saveContext);
-        }
     }
 
     [BeetleApiController]
     public abstract class BeetleApiController : ApiController, IBeetleService, IODataService {
 
-        protected BeetleApiController(): this(null) {
+        protected BeetleApiController() : this(null) {
         }
 
         protected BeetleApiController(IBeetleConfig config) {
@@ -72,15 +65,22 @@ namespace Beetle.WebApi {
 
         protected bool AutoHandleUnknownActions { get; set; }
 
-        protected abstract Metadata GetMetadata();
+        protected virtual Metadata GetMetadata() {
+            var svc = (IBeetleService)this;
+            return svc.ContextHandler?.Metadata();
+        }
 
         [HttpGet]
         [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual object Metadata() {
-            return GetMetadata().ToMinified();
+            return GetMetadata()?.ToMinified();
         }
 
-        public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken) {
+        public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext,
+                                                               CancellationToken cancellationToken) {
+            if (!AutoHandleUnknownActions)
+                return base.ExecuteAsync(controllerContext, cancellationToken);
+
             try {
                 return base.ExecuteAsync(controllerContext, cancellationToken);
             }
@@ -96,20 +96,23 @@ namespace Beetle.WebApi {
         }
 
         protected virtual ObjectContent HandleUnknownAction(string action) {
-            var svc = (IBeetleService) this;
-            var contextHandler = svc.ContextHandler;
+            var contextHandler = ((IBeetleService)this).ContextHandler;
             if (contextHandler == null)
                 throw new NotSupportedException();
 
             var result = contextHandler.HandleUnknownAction(action);
             Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters);
 
-            var actionContext = new ActionContext(action, result, queryString, parameters, MaxResultCount, CheckRequestHash, null, this);
+            var actionContext = new ActionContext(
+                action, result, queryString, parameters,
+                MaxResultCount, CheckRequestHash, null, this
+            );
             var processResult = ProcessRequest(actionContext);
             return Helper.HandleResponse(processResult);
         }
 
-        protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, out IEnumerable<EntityBag> unknownEntities) {
+        protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle,
+                                                                 out IEnumerable<EntityBag> unknownEntities) {
             return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
         }
 
@@ -117,7 +120,11 @@ namespace Beetle.WebApi {
             return Enumerable.Empty<EntityBag>();
         }
 
-        protected abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
+        protected virtual Task<SaveResult> SaveChanges(SaveContext saveContext) {
+            var svc = (IBeetleService)this;
+            return svc.ContextHandler?.SaveChanges(saveContext)
+                   ?? throw new NotSupportedException();
+        }
 
         #region Implementation of IBeetleService
 
@@ -142,7 +149,7 @@ namespace Beetle.WebApi {
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
-            var svc = (IBeetleService) this;
+            var svc = (IBeetleService)this;
             return svc.ContextHandler != null
                 ? svc.ContextHandler.ProcessRequest(actionContext)
                 : ServerHelper.DefaultRequestProcessor(actionContext);
@@ -156,7 +163,9 @@ namespace Beetle.WebApi {
                 : entityBags as List<EntityBag> ?? entityBags.ToList();
 
             var handledUnknowns = HandleUnknowns(unknowns);
-            if (handledUnknowns != null) entityBagList.AddRange(handledUnknowns);
+            if (handledUnknowns != null) {
+                entityBagList.AddRange(handledUnknowns);
+            }
             if (!entityBagList.Any()) return SaveResult.Empty;
 
             var saveContext = new SaveContext(entityBagList);
