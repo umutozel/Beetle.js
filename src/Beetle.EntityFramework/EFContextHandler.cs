@@ -103,16 +103,16 @@ namespace Beetle.EntityFramework {
                 var a = typeof(TContext).Assembly;
                 return _metadata ?? 
                     (_metadata = MetadataGenerator.Generate(_objectContext.MetadataWorkspace, 
-                                                            _itemCollection, 
-                                                            _objectItemCollection, a));
+                                                            ItemCollection, 
+                                                            ObjectItemCollection, a));
             }
         }
 
         public override object CreateType(string typeName) {
-            var oType = _objectEntityTypes?.FirstOrDefault(x => x.Name == typeName);
+            var oType = ObjectEntityTypes?.FirstOrDefault(x => x.Name == typeName);
             if (oType == null) return base.CreateType(typeName);
 
-            var clrType = _objectItemCollection.GetClrType(oType);
+            var clrType = ObjectItemCollection.GetClrType(oType);
             return Activator.CreateInstance(clrType);
         }
 
@@ -130,7 +130,7 @@ namespace Beetle.EntityFramework {
 
             foreach (var entityBag in entityList) {
                 var entity = entityBag.Entity;
-                var entityType = _entityTypes.FirstOrDefault(et => et.Name == entity.GetType().Name);
+                var entityType = EntityTypes.FirstOrDefault(et => et.Name == entity.GetType().Name);
                 EntitySetBase set = null;
                 if (entityType != null) {
                     set = FindEntitySet(entityType);
@@ -250,7 +250,7 @@ namespace Beetle.EntityFramework {
 
         private EntitySetBase FindEntitySet(EdmType entityType) {
             while (entityType != null) {
-                var set = _entitySets.FirstOrDefault(es => es.ElementType == entityType);
+                var set = EntitySets.FirstOrDefault(es => es.ElementType == entityType);
                 if (set != null) return set;
                 entityType = entityType.BaseType;
             }
