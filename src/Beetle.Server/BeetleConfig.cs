@@ -16,6 +16,9 @@ namespace Beetle.Server {
     public class BeetleConfig: IBeetleConfig {
         private static readonly Lazy<BeetleConfig> _instance = new Lazy<BeetleConfig>();
 
+        public BeetleConfig(): this(CreateSettings()) {
+        }
+
         public BeetleConfig(NullValueHandling nullValueHandling = NullValueHandling.Ignore,
                             TypeNameHandling typeNameHandling = TypeNameHandling.Objects,
                             PreserveReferencesHandling preserveReferencesHandling = PreserveReferencesHandling.Objects,
