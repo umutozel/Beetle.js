@@ -14,18 +14,75 @@ namespace Beetle.EntityFramework {
     using Server;
 
     public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
-        private Metadata _metadata;
+        // ReSharper disable StaticMemberInGenericType
+        private static Metadata _metadata;
+        private static ItemCollection _itemCollection;
+        private static IEnumerable<EFEntityType> _entityTypes;
+        private static IEnumerable<EntitySetBase> _entitySets;
+        private static ObjectItemCollection _objectItemCollection;
+        private static List<EFEntityType> _objectEntityTypes;
+        // ReSharper restore StaticMemberInGenericType
         private ObjectContext _objectContext;
-        private ItemCollection _itemCollection;
-        private IEnumerable<EFEntityType> _entityTypes;
-        private IEnumerable<EntitySetBase> _entitySets;
-        private ObjectItemCollection _objectItemCollection;
-        private List<EFEntityType> _objectEntityTypes;
 
         public EFContextHandler() {
         }
 
         public EFContextHandler(TContext context) : base(context) {
+        }
+
+        protected ItemCollection ItemCollection {
+            get {
+                if (_itemCollection != null) return _itemCollection;
+                lock (Lockers.ItemCollectionLocker) {
+                    return _itemCollection ??
+                        (_itemCollection = _objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace));
+                }
+            }
+        }
+
+        protected IEnumerable<EFEntityType> EntityTypes {
+            get {
+                if (_entityTypes != null) return _entityTypes;
+                lock (ItemCollection) {
+                    return _entityTypes ??
+                        (_entityTypes = ItemCollection.OfType<EFEntityType>().ToList());
+                }
+            }
+        }
+
+        protected IEnumerable<EntitySetBase> EntitySets {
+            get {
+                if (_entitySets != null) return _entitySets;
+                lock (ItemCollection) {
+                    return _entitySets ??
+                        (_entitySets = ItemCollection.OfType<EntityContainer>().SelectMany(ec => ec.BaseEntitySets).ToList());
+                }
+            }
+        }
+
+        protected ObjectItemCollection ObjectItemCollection {
+            get {
+                if (_objectItemCollection != null) return _objectItemCollection;
+                lock (Lockers.ObjectItemCollectionLocker) {
+                    if (typeof(ObjectContext).IsAssignableFrom(typeof(TContext)))
+                        _objectContext.MetadataWorkspace.LoadFromAssembly(_objectContext.GetType().Assembly);
+                    return _objectItemCollection ??
+                        (_objectItemCollection = (ObjectItemCollection)_objectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace));
+                }
+            }
+        }
+
+        protected List<EFEntityType> ObjectEntityTypes {
+            get {
+                if (_objectEntityTypes != null) return _objectEntityTypes;
+                lock (Lockers.ObjectEntityTypesLocker) {
+                    if (_objectEntityTypes == null) {
+                        var objectEntityTypes = ObjectItemCollection.GetItems<EFEntityType>();
+                        _objectEntityTypes = objectEntityTypes?.ToList() ?? new List<EFEntityType>();
+                    }
+                    return _objectEntityTypes;
+                }
+            }
         }
 
         public override void Initialize() {
@@ -38,12 +95,6 @@ namespace Beetle.EntityFramework {
             Context.Configuration.LazyLoadingEnabled = false;
 
             _objectContext = ((IObjectContextAdapter) Context).ObjectContext;
-            _itemCollection = _objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace);
-            _entityTypes = _itemCollection.OfType<EFEntityType>().ToList();
-            _entitySets = _itemCollection.OfType<EntityContainer>().SelectMany(ec => ec.BaseEntitySets).ToList();
-            _objectItemCollection = (ObjectItemCollection)_objectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace);
-            var objectEntityTypes = _objectItemCollection.GetItems<EFEntityType>();
-            _objectEntityTypes = objectEntityTypes?.ToList() ?? new List<EFEntityType>();
         }
 
         public override Metadata Metadata() {
@@ -208,6 +259,10 @@ namespace Beetle.EntityFramework {
     }
 
     internal static class Lockers {
+        internal static readonly object ObjectContextLocker = new object();
+        internal static readonly object ItemCollectionLocker = new object();
+        internal static readonly object ObjectItemCollectionLocker = new object();
+        internal static readonly object ObjectEntityTypesLocker = new object();
         internal static readonly object MetadataLocker = new object();
     }
 }
