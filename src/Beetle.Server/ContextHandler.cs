@@ -58,13 +58,13 @@ namespace Beetle.Server {
         /// <summary>
         /// Handles the unmapped objects (which does not mapped to persistence layer, like DTOs or Proxies).
         /// </summary>
-        public virtual IEnumerable<EntityBag> HandleUnmappeds(IEnumerable<EntityBag> unmappeds) {
+        public virtual IList<EntityBag> HandleUnmappeds(IEnumerable<EntityBag> unmappeds) {
             throw new NotImplementedException();
         }
 
         public abstract Task<SaveResult> SaveChanges(SaveContext saveContext);
 
-        public virtual IEnumerable<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags) {
+        public virtual IList<GeneratedValue> GetGeneratedValues(IEnumerable<EntityBag> entityBags) {
             return Helper.GetGeneratedValues(entityBags, Metadata());
         }
 

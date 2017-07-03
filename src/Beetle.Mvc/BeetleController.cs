@@ -91,8 +91,8 @@ namespace Beetle.Mvc {
             }
         }
 
-        protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle, 
-                                                                 out IEnumerable<EntityBag> unknownEntities) {
+        protected virtual IList<EntityBag> ResolveEntities(object saveBundle, 
+                                                                 out IList<EntityBag> unknownEntities) {
             return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
         }
 
@@ -142,7 +142,7 @@ namespace Beetle.Mvc {
         }
 
         async Task<SaveResult> IBeetleService.SaveChanges(object saveBundle) {
-            var entityBags = ResolveEntities(saveBundle, out IEnumerable<EntityBag> unknowns);
+            var entityBags = ResolveEntities(saveBundle, out IList<EntityBag> unknowns);
             var entityBagList = entityBags == null
                 ? new List<EntityBag>()
                 : entityBags as List<EntityBag> ?? entityBags.ToList();

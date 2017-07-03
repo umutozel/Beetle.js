@@ -13,7 +13,6 @@ namespace Beetle.WebApi {
     using Server;
     using Server.Interface;
     using ServerHelper = Server.Helper;
-    using Properties;
 
     public abstract class BeetleApiController<TContextHandler> : BeetleApiController, IBeetleService<TContextHandler>
             where TContextHandler : class, IContextHandler {
@@ -111,8 +110,8 @@ namespace Beetle.WebApi {
             return Helper.HandleResponse(processResult);
         }
 
-        protected virtual IEnumerable<EntityBag> ResolveEntities(object saveBundle,
-                                                                 out IEnumerable<EntityBag> unknownEntities) {
+        protected virtual IList<EntityBag> ResolveEntities(object saveBundle,
+                                                           out IList<EntityBag> unknownEntities) {
             return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
         }
 
@@ -157,7 +156,7 @@ namespace Beetle.WebApi {
 
         [HttpPost]
         public async Task<SaveResult> SaveChanges(object saveBundle) {
-            var entityBags = ResolveEntities(saveBundle, out IEnumerable<EntityBag> unknowns);
+            var entityBags = ResolveEntities(saveBundle, out IList<EntityBag> unknowns);
             var entityBagList = entityBags == null
                 ? new List<EntityBag>()
                 : entityBags as List<EntityBag> ?? entityBags.ToList();

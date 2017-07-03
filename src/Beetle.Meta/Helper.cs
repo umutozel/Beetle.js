@@ -1,4 +1,8 @@
-﻿namespace Beetle.Meta {
+﻿using System;
+using System.Linq;
+using System.Reflection;
+
+namespace Beetle.Meta {
 
     public static class Helper {
 

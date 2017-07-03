@@ -87,16 +87,19 @@ namespace Beetle.EntityFramework {
                 if (mappingXml != null) {
                     entityMap = mappingXml
                         .Descendants(mappingNs.GetName("EntitySetMapping"))
-                        .First(esm => esm.Attribute("Name").Value == entitySet.Name)
+                        .First(esm => esm.Attribute("Name")?.Value == entitySet.Name)
                         .Descendants(mappingNs.GetName("EntityTypeMapping"))
                         .First(mf => {
-                            var typeName = mf.Attribute("TypeName").Value;
+                            var typeName = mf.Attribute("TypeName")?.Value;
                             return typeName == et.FullName || typeName == $"IsTypeOf({et.FullName})";
                         })
                         .Descendants(mappingNs.GetName("MappingFragment"))
                         .Single();
+
                     propertyMappings = entityMap.Descendants(mappingNs.GetName("ScalarProperty"))
-                        .Select(sp => new KeyValuePair<string, string>(sp.Attribute("Name").Value, sp.Attribute("ColumnName").Value));
+                        .Select(sp => new KeyValuePair<string, string>(
+                            sp.Attribute("Name")?.Value, sp.Attribute("ColumnName")?.Value)
+                        );
                 }
 
                 var complexProperties = et.Properties.Where(p => p.TypeUsage.EdmType is ComplexType && p.DeclaringType == et);
@@ -106,9 +109,9 @@ namespace Beetle.EntityFramework {
                     foreach (var complexProperty in complexProperties) {
                         var complexMapping = entityMap
                             .Descendants(mappingNs.GetName("ComplexProperty"))
-                            .First(cp => cp.Attribute("Name").Value == complexProperty.Name)
+                            .First(cp => cp.Attribute("Name")?.Value == complexProperty.Name)
                             .Descendants(mappingNs.GetName("ScalarProperty"))
-                            .Select(p => new ColumnMapping(p.Attribute("Name").Value, p.Attribute("ColumnName").Value));
+                            .Select(p => new ColumnMapping(p.Attribute("Name")?.Value, p.Attribute("ColumnName")?.Value));
                         complexMappings.Add(complexProperty, complexMapping);
                     }
                 }
@@ -165,7 +168,7 @@ namespace Beetle.EntityFramework {
             // entity types
             foreach (var er in entityResources) {
                 var fullName = $"{er.ClrType.FullName}, {er.ClrType.Assembly.GetName().Name}";
-                var et = new Meta.EntityType(fullName, er.Name) { TableName = er.TableName };
+                var et = new EntityType(fullName, er.Name) { TableName = er.TableName };
 
                 // entity informations
                 if (er.Entity != null) {
@@ -183,30 +186,28 @@ namespace Beetle.EntityFramework {
                     if (er.NavigationProperties != null) {
                         foreach (var p in er.NavigationProperties) {
                             var ass = globalItems.OfType<AssociationType>().First(a => a.Name == p.RelationshipType.Name);
-                            Func<string> displayNameGetter = null;
-                            string resourceName = null;
-                            ServerHelper.GetDisplayInfo(er.ClrType, p.Name, ref resourceName, ref displayNameGetter);
+                            ServerHelper.GetDisplayInfo(er.ClrType, p.Name, out string resourceName, out Func<string> displayNameGetter);
 
-                            var np = new Meta.NavigationProperty(p.Name, displayNameGetter) {
+                            var np = new NavigationProperty(p.Name, displayNameGetter) {
                                 ResourceName = resourceName,
-                                EntityTypeName = (((RefType)p.ToEndMember.TypeUsage.EdmType).ElementType).Name
+                                EntityTypeName = ((RefType)p.ToEndMember.TypeUsage.EdmType).ElementType.Name
                             };
 
-                            var isScalar = p.ToEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many;
-                            var isOneToOne = isScalar && p.FromEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many;
-
-                            if (isScalar) {
+                            if (p.ToEndMember.RelationshipMultiplicity != RelationshipMultiplicity.Many) {
                                 np.IsScalar = true;
                                 np.ForeignKeys.AddRange(ass.ReferentialConstraints.SelectMany(rc => rc.ToProperties.Select(tp => tp.Name)));
                             }
-                            else
+                            else {
                                 np.ForeignKeys.AddRange(ass.ReferentialConstraints.SelectMany(rc => rc.ToProperties.Select(tp => tp.Name)));
+                            }
 
-                            if (p.FromEndMember.DeleteBehavior == OperationAction.Cascade)
+                            if (p.FromEndMember.DeleteBehavior == OperationAction.Cascade) {
                                 np.DoCascadeDelete = true;
+                            }
 
-                            if (er.ClrType != null)
+                            if (er.ClrType != null) {
                                 ServerHelper.PopulateNavigationPropertyValidations(er.ClrType, np);
+                            }
 
                             np.AssociationName = p.RelationshipType.Name;
 
@@ -217,9 +218,9 @@ namespace Beetle.EntityFramework {
                     // complex properties
                     if (er.ComplexProperties != null) {
                         foreach (var p in er.ComplexProperties) {
-                            Func<string> displayNameGetter = null;
-                            string resourceName = null;
-                            ServerHelper.GetDisplayInfo(er.ClrType, p.Key.Name, ref resourceName, ref displayNameGetter);
+                            ServerHelper.GetDisplayInfo(er.ClrType, p.Key.Name, 
+                                                        out string resourceName, 
+                                                        out Func<string> displayNameGetter);
 
                             var cp = new ComplexProperty(p.Key.Name, displayNameGetter) {
                                 TypeName = p.Key.TypeUsage.EdmType.Name,
@@ -238,9 +239,8 @@ namespace Beetle.EntityFramework {
                 foreach (var sp in er.SimpleProperties) {
                     var p = sp.Value;
                     var clrType = UnderlyingClrType(p.TypeUsage.EdmType);
-                    Func<string> displayNameGetter = null;
-                    string resourceName = null;
-                    ServerHelper.GetDisplayInfo(er.ClrType, p.Name, ref resourceName, ref displayNameGetter);
+                    ServerHelper.GetDisplayInfo(er.ClrType, p.Name, 
+                                                out string resourceName, out Func<string> displayNameGetter);
 
                     var dp = new DataProperty(p.Name, displayNameGetter) {
                         ColumnName = sp.Key,
@@ -318,11 +318,14 @@ namespace Beetle.EntityFramework {
             foreach (var enumResource in enumResources) {
                 var enumType = enumResource.EnumType;
                 //var enumClrType = enumResource.ClrType;
-                var et = new Meta.EnumType(enumType.Name);
+                var et = new EnumType(enumType.Name);
 
                 foreach (var member in enumType.Members) {
                     //todo: enum member için display
-                    var em = new Meta.EnumMember(member.Name, null) { Value = member.Value };
+                    //ServerHelper.GetDisplayInfo(member, out string resourceName, out Func<string> displayNameGetter);
+                    var em = new EnumMember(member.Name, null) {
+                        Value = member.Value
+                    };
 
                     et.Members.Add(em);
                 }
@@ -351,8 +354,8 @@ namespace Beetle.EntityFramework {
             return null;
         }
 
-        private static int? GetPrecision(EdmProperty edmProperty) {
-            foreach (var facet in edmProperty.TypeUsage.Facets) {
+        private static int? GetPrecision(EdmMember edmMember) {
+            foreach (var facet in edmMember.TypeUsage.Facets) {
                 if (facet.Name == "Precision" && facet.Value != null && facet.IsUnbounded == false) {
                     return Convert.ToInt32(facet.Value);
                 }
@@ -361,8 +364,8 @@ namespace Beetle.EntityFramework {
             return null;
         }
 
-        private static int? GetScale(EdmProperty edmProperty) {
-            foreach (var facet in edmProperty.TypeUsage.Facets) {
+        private static int? GetScale(EdmMember edmMember) {
+            foreach (var facet in edmMember.TypeUsage.Facets) {
                 if (facet.Name == "Scale" && facet.Value != null && facet.IsUnbounded == false) {
                     return Convert.ToInt32(facet.Value);
                 }
@@ -371,8 +374,8 @@ namespace Beetle.EntityFramework {
             return null;
         }
 
-        private static bool? IsConcurrencyProperty(EdmProperty edmProperty) {
-            foreach (var facet in edmProperty.TypeUsage.Facets) {
+        private static bool? IsConcurrencyProperty(EdmMember edmMember) {
+            foreach (var facet in edmMember.TypeUsage.Facets) {
                 if (facet.Name == "ConcurrencyMode" && facet.Value != null && facet.IsUnbounded == false) {
                     return facet.Value.ToString() == "Fixed";
                 }

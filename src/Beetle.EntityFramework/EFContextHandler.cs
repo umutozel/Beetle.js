@@ -69,7 +69,7 @@ namespace Beetle.EntityFramework {
             return Context.Set<TEntity>();
         }
 
-        public virtual IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, out IEnumerable<EntityBag> unmappedEntities) {
+        public virtual IList<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, out IList<EntityBag> unmappedEntities) {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
 
@@ -99,45 +99,44 @@ namespace Beetle.EntityFramework {
                 mergeList.Add(entry, entityBag);
 
                 // set original values for modified entities
-                if (state == EntityState.Modified) {
-                    var originalValues = entry.GetUpdatableOriginalValues();
+                if (state != EntityState.Modified) continue;
 
-                    foreach (var originalValue in entityBag.OriginalValues) {
-                        var propertyPaths = originalValue.Key.Split('.');
-                        if (!propertyPaths.Any()) continue;
+                var originalValues = entry.GetUpdatableOriginalValues();
+                foreach (var originalValue in entityBag.OriginalValues) {
+                    var propertyPaths = originalValue.Key.Split('.');
 
-                        var loopOriginalValues = originalValues;
-                        StructuralType loopType = entityType;
-                        EdmMember property = null;
-                        string lastPropertyName;
-                        if (propertyPaths.Length > 1) {
-                            for (var i = 0; i < propertyPaths.Length - 1; i++) {
-                                var propertyName = propertyPaths[i];
-                                property = loopType.Members.FirstOrDefault(p => p.Name == propertyName);
-                                if (property == null) break;
+                    var loopOriginalValues = originalValues;
+                    StructuralType loopType = entityType;
+                    EdmMember property = null;
+                    string lastPropertyName;
+                    if (propertyPaths.Length > 1) {
+                        for (var i = 0; i < propertyPaths.Length - 1; i++) {
+                            var propertyName = propertyPaths[i];
+                            property = loopType.Members.FirstOrDefault(p => p.Name == propertyName);
+                            if (property == null) break;
 
-                                var ordinal = loopOriginalValues.GetOrdinal(propertyName);
-                                loopOriginalValues = (OriginalValueRecord)loopOriginalValues.GetValue(ordinal);
-                                loopType = (StructuralType)property.TypeUsage.EdmType;
-                            }
-                            if (property == null) continue;
-
-                            lastPropertyName = propertyPaths[propertyPaths.Length - 1];
+                            var ordinal = loopOriginalValues.GetOrdinal(propertyName);
+                            loopOriginalValues = (OriginalValueRecord)loopOriginalValues.GetValue(ordinal);
+                            loopType = (StructuralType)property.TypeUsage.EdmType;
                         }
-                        else
-                            lastPropertyName = originalValue.Key;
-
-                        property = loopType.Members.FirstOrDefault(p => p.Name == lastPropertyName);
                         if (property == null) continue;
 
-                        // if modified property is a ComplexType then set all properties of ComplexType to modified.
-                        var complexType = property.TypeUsage.EdmType as ComplexType;
-                        if (complexType != null)
-                            PopulateComplexType(loopOriginalValues, property.Name, originalValue.Value, complexType);
-                        else {
-                            var ordinal = loopOriginalValues.GetOrdinal(property.Name);
-                            loopOriginalValues.SetValue(ordinal, originalValue.Value);
-                        }
+                        lastPropertyName = propertyPaths[propertyPaths.Length - 1];
+                    }
+                    else {
+                        lastPropertyName = originalValue.Key;
+                    }
+
+                    property = loopType.Members.FirstOrDefault(p => p.Name == lastPropertyName);
+                    if (property == null) continue;
+
+                    // if modified property is a ComplexType then set all properties of ComplexType to modified.
+                    if (property.TypeUsage.EdmType is ComplexType complexType) {
+                        PopulateComplexType(loopOriginalValues, property.Name, originalValue.Value, complexType);
+                    }
+                    else {
+                        var ordinal = loopOriginalValues.GetOrdinal(property.Name);
+                        loopOriginalValues.SetValue(ordinal, originalValue.Value);
                     }
                 }
             }
@@ -145,8 +144,9 @@ namespace Beetle.EntityFramework {
             foreach (var merge in mergeList) {
                 // and fix the entity state, and relations will also be fixed.
                 if (merge.Value.EntityState == EntityState.Modified) {
-                    if (merge.Key.State != EFEntityState.Modified && merge.Value.ForceUpdate)
+                    if (merge.Key.State != EFEntityState.Modified && merge.Value.ForceUpdate) {
                         merge.Key.ChangeState(EFEntityState.Modified);
+                    }
                 }
                 else {
                     merge.Key.ChangeState((EFEntityState)merge.Value.EntityState);
@@ -154,7 +154,7 @@ namespace Beetle.EntityFramework {
             }
 
             unmappedEntities = unmappeds;
-            return mergeList.Select(m => m.Value);
+            return mergeList.Select(m => m.Value).ToList();
         }
 
         private static void PopulateComplexType(OriginalValueRecord originalValues, string propertyName, object originalValue, ComplexType complexType) {
@@ -163,8 +163,7 @@ namespace Beetle.EntityFramework {
             foreach (var cp in complexType.Properties) {
                 var value = Server.Helper.GetMemberValue(originalValue, cp.Name);
 
-                var loopComplexType = cp.TypeUsage.EdmType as ComplexType;
-                if (loopComplexType != null) {
+                if (cp.TypeUsage.EdmType is ComplexType loopComplexType) {
                     PopulateComplexType(originalValues, cp.Name, value, loopComplexType);
                 }
                 else {
@@ -175,31 +174,22 @@ namespace Beetle.EntityFramework {
         }
 
         public override async Task<SaveResult> SaveChanges(SaveContext saveContext) {
-            var merges = MergeEntities(saveContext.Entities, out IEnumerable<EntityBag> unmappeds);
+            var merges = MergeEntities(saveContext.Entities, out IList<EntityBag> unmappeds);
             var mergeList = merges == null
                 ? new List<EntityBag>()
                 : merges as List<EntityBag> ?? merges.ToList();
 
             var saveList = mergeList;
             var handledUnmappeds = HandleUnmappeds(unmappeds);
-            var handledUnmappedList = handledUnmappeds == null
-                ? null
-                : handledUnmappeds as IList<EntityBag> ?? handledUnmappeds.ToList();
-            if (handledUnmappedList != null && handledUnmappedList.Any()) {
-                MergeEntities(handledUnmappedList, out IEnumerable<EntityBag> _);
-                saveList = saveList.Concat(handledUnmappedList).ToList();
+            if (handledUnmappeds != null) {
+                MergeEntities(handledUnmappeds, out IList<EntityBag> _);
+                saveList = saveList.Concat(handledUnmappeds).ToList();
             }
             if (!saveList.Any()) return SaveResult.Empty;
 
             OnBeforeSaveChanges(new BeforeSaveEventArgs(saveContext));
             var affectedCount = await Context.SaveChangesAsync();
-            var generatedValues = GetGeneratedValues(mergeList);
-            if (handledUnmappedList != null && handledUnmappedList.Any()) {
-                var generatedValueList = generatedValues == null
-                    ? new List<GeneratedValue>()
-                    : generatedValues as List<GeneratedValue> ?? generatedValues.ToList();
-                generatedValues = generatedValueList;
-            }
+            var generatedValues = GetGeneratedValues(saveList);
 
             var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
             OnAfterSaveChanges(new AfterSaveEventArgs(saveResult));
@@ -209,22 +199,15 @@ namespace Beetle.EntityFramework {
 
         private EntitySetBase FindEntitySet(EdmType entityType) {
             while (entityType != null) {
-                var set = ntitySets.FirstOrDefault(es => es.ElementType == entityType);
+                var set = _entitySets.FirstOrDefault(es => es.ElementType == entityType);
                 if (set != null) return set;
                 entityType = entityType.BaseType;
             }
             return null;
         }
-
-        public string ModelNamespace => typeof(TContext).Namespace;
-
-        public string ModelAssembly => typeof(TContext).Assembly.GetName().Name;
     }
 
     internal static class Lockers {
-        internal static readonly object ObjectContextLocker = new object();
-        internal static readonly object ItemCollectionLocker = new object();
-        internal static readonly object ObjectItemCollectionLocker = new object();
         internal static readonly object MetadataLocker = new object();
     }
 }
