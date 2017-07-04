@@ -63,6 +63,7 @@ namespace Beetle.WebApi {
             base.OnActionExecuted(actionExecutedContext);
 
             var processResult = ProcessRequest(actionContext, actionExecutedContext.Request);
+            Helper.SetCustomHeaders(processResult);
             response.Content = HandleResponse(processResult);
         }
 

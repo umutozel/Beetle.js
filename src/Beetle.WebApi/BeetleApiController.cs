@@ -107,6 +107,7 @@ namespace Beetle.WebApi {
                 MaxResultCount, CheckRequestHash, null, this
             );
             var processResult = ProcessRequest(actionContext);
+            Helper.SetCustomHeaders(processResult);
             return Helper.HandleResponse(processResult);
         }
 
