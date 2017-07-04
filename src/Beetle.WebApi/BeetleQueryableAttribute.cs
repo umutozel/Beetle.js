@@ -13,7 +13,6 @@ namespace Beetle.WebApi {
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleQueryableAttribute : EnableQueryAttribute {
-        private static readonly Lazy<BeetleQueryableAttribute> _instance = new Lazy<BeetleQueryableAttribute>();
 
         public BeetleQueryableAttribute() {
             AllowedQueryOptions = AllowedQueryOptions.Supported | AllowedQueryOptions.Expand | AllowedQueryOptions.Select;
@@ -120,7 +119,5 @@ namespace Beetle.WebApi {
         protected virtual ObjectContent HandleResponse(ProcessResult result) {
             return Helper.HandleResponse(result);
         }
-
-        internal static BeetleQueryableAttribute Instance => _instance.Value;
     }
 }

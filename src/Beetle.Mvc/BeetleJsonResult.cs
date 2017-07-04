@@ -27,12 +27,15 @@ namespace Beetle.Mvc {
                 ? ContentType
                 : "application/json";
 
-            if (ContentEncoding != null)
+            if (ContentEncoding != null) {
                 response.ContentEncoding = ContentEncoding;
+            }
 
             var d = _config.Serializer.Serialize(Data);
-            if (!(Data is string) && Data is IEnumerable)
+            if (!(Data is string) && Data is IEnumerable) {
                 d = "{\"$d\" : " + d + "}";
+            }
+
             response.Write(d);
         }
     }
