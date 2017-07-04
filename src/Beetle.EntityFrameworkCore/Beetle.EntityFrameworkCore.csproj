@@ -2,11 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net451</TargetFrameworks>
-    <DefineConstants>EF_CORE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <DefineConstants>EF_CORE;NET_STANDARD</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)'=='netstandard1.3'">EF_CORE;NET_STANDARD</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)'!='netstandard1.3'">EF_CORE;NET_STANDARD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
