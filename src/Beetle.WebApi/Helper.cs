@@ -43,14 +43,12 @@ namespace Beetle.WebApi {
         }
 
         public static ObjectContent HandleResponse(ProcessResult processResult) {
+            var result = processResult.Result;
+
             var actionContext = processResult.ActionContext;
             var service = actionContext.Service;
             var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var response = HttpContext.Current.Response;
-
-            var type = processResult.Result?.GetType() ?? typeof(object);
-            var formatter = CreateFormatter(config);
-            var retVal = new ObjectContent(type, processResult.Result, formatter);
 
             // set InlineCount header info if exists
             object inlineCount = processResult.InlineCount;
@@ -62,7 +60,9 @@ namespace Beetle.WebApi {
                 response.Headers.Add("X-UserData", userDataStr);
             }
 
-            return retVal;
+            var type = result?.GetType() ?? typeof(object);
+            var formatter = CreateFormatter(config);
+            return new ObjectContent(type, result, formatter);
         }
 
         public static void CheckRequestHash(string queryString) {
@@ -83,6 +83,10 @@ namespace Beetle.WebApi {
             throw new BeetleException(Server.Properties.Resources.AlteredRequestException);
         }
 
+        public static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection) {
+            return nameValueCollection.AllKeys.ToDictionary(k => k, k => nameValueCollection[k]);
+        }
+
         public static MediaTypeFormatter CreateFormatter(IBeetleConfig config) {
             var beetleConfig = config as BeetleConfig;
             var settings = beetleConfig != null ? beetleConfig.JsonSerializerSettings : BeetleConfig.Instance.JsonSerializerSettings;
@@ -91,10 +95,6 @@ namespace Beetle.WebApi {
             formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
             formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
             return formatter;
-        }
-
-        public static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection) {
-            return nameValueCollection.AllKeys.ToDictionary(k => k, k => nameValueCollection[k]);
         }
     }
 }
