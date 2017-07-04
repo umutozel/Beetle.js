@@ -15,6 +15,11 @@ namespace Beetle.EntityFramework {
 
     public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
         // ReSharper disable StaticMemberInGenericType
+        // this behavior is exactly what we want: static instances for each TContext generic argument
+        private static readonly object _itemCollectionLocker = new object();
+        private static readonly object _objectItemCollectionLocker = new object();
+        private static readonly object _objectEntityTypesLocker = new object();
+        private static readonly object _metadataLocker = new object();
         private static Metadata _metadata;
         private static ItemCollection _itemCollection;
         private static IEnumerable<EFEntityType> _entityTypes;
@@ -33,9 +38,11 @@ namespace Beetle.EntityFramework {
         protected ItemCollection ItemCollection {
             get {
                 if (_itemCollection != null) return _itemCollection;
-                lock (Lockers.ItemCollectionLocker) {
+                lock (_itemCollectionLocker) {
                     return _itemCollection ??
-                        (_itemCollection = _objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSpace));
+                        (_itemCollection = _objectContext
+                                            .MetadataWorkspace
+                                            .GetItemCollection(DataSpace.CSpace));
                 }
             }
         }
@@ -55,7 +62,8 @@ namespace Beetle.EntityFramework {
                 if (_entitySets != null) return _entitySets;
                 lock (ItemCollection) {
                     return _entitySets ??
-                        (_entitySets = ItemCollection.OfType<EntityContainer>().SelectMany(ec => ec.BaseEntitySets).ToList());
+                        (_entitySets = ItemCollection.OfType<EntityContainer>()
+                                        .SelectMany(ec => ec.BaseEntitySets).ToList());
                 }
             }
         }
@@ -63,11 +71,15 @@ namespace Beetle.EntityFramework {
         protected ObjectItemCollection ObjectItemCollection {
             get {
                 if (_objectItemCollection != null) return _objectItemCollection;
-                lock (Lockers.ObjectItemCollectionLocker) {
-                    if (typeof(ObjectContext).IsAssignableFrom(typeof(TContext)))
+                lock (_objectItemCollectionLocker) {
+                    if (typeof(ObjectContext).IsAssignableFrom(typeof(TContext))) {
                         _objectContext.MetadataWorkspace.LoadFromAssembly(_objectContext.GetType().Assembly);
+                    }
+
                     return _objectItemCollection ??
-                        (_objectItemCollection = (ObjectItemCollection)_objectContext.MetadataWorkspace.GetItemCollection(DataSpace.OSpace));
+                        (_objectItemCollection = (ObjectItemCollection)_objectContext
+                                                    .MetadataWorkspace
+                                                    .GetItemCollection(DataSpace.OSpace));
                 }
             }
         }
@@ -75,7 +87,7 @@ namespace Beetle.EntityFramework {
         protected List<EFEntityType> ObjectEntityTypes {
             get {
                 if (_objectEntityTypes != null) return _objectEntityTypes;
-                lock (Lockers.ObjectEntityTypesLocker) {
+                lock (_objectEntityTypesLocker) {
                     if (_objectEntityTypes == null) {
                         var objectEntityTypes = ObjectItemCollection.GetItems<EFEntityType>();
                         _objectEntityTypes = objectEntityTypes?.ToList() ?? new List<EFEntityType>();
@@ -99,7 +111,7 @@ namespace Beetle.EntityFramework {
 
         public override Metadata Metadata() {
             if (_metadata != null) return _metadata;
-            lock (Lockers.MetadataLocker) {
+            lock (_metadataLocker) {
                 var a = typeof(TContext).Assembly;
                 return _metadata ?? 
                     (_metadata = MetadataGenerator.Generate(_objectContext.MetadataWorkspace, 
@@ -120,7 +132,8 @@ namespace Beetle.EntityFramework {
             return Context.Set<TEntity>();
         }
 
-        public virtual IList<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, out IList<EntityBag> unmappedEntities) {
+        public virtual IList<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, 
+                                                      out IList<EntityBag> unmappedEntities) {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
 
@@ -208,7 +221,8 @@ namespace Beetle.EntityFramework {
             return mergeList.Select(m => m.Value).ToList();
         }
 
-        private static void PopulateComplexType(OriginalValueRecord originalValues, string propertyName, object originalValue, ComplexType complexType) {
+        private static void PopulateComplexType(OriginalValueRecord originalValues, string propertyName, 
+                                                object originalValue, ComplexType complexType) {
             var ordinal = originalValues.GetOrdinal(propertyName);
             originalValues = (OriginalValueRecord)originalValues.GetValue(ordinal);
             foreach (var cp in complexType.Properties) {
@@ -242,7 +256,10 @@ namespace Beetle.EntityFramework {
             var affectedCount = await Context.SaveChangesAsync();
             var generatedValues = GetGeneratedValues(saveList);
 
-            var saveResult = new SaveResult(affectedCount, generatedValues, saveContext.GeneratedEntities, saveContext.UserData);
+            var saveResult = new SaveResult(
+                affectedCount, generatedValues, 
+                saveContext.GeneratedEntities, saveContext.UserData
+            );
             OnAfterSaveChanges(new AfterSaveEventArgs(saveResult));
 
             return saveResult;
@@ -256,13 +273,5 @@ namespace Beetle.EntityFramework {
             }
             return null;
         }
-    }
-
-    internal static class Lockers {
-        internal static readonly object ObjectContextLocker = new object();
-        internal static readonly object ItemCollectionLocker = new object();
-        internal static readonly object ObjectItemCollectionLocker = new object();
-        internal static readonly object ObjectEntityTypesLocker = new object();
-        internal static readonly object MetadataLocker = new object();
     }
 }
