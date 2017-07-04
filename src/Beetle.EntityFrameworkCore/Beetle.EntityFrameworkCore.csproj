@@ -4,4 +4,15 @@
     <TargetFrameworks>netstandard1.3;net451</TargetFrameworks>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore">
+      <Version>1.1.2</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Beetle.Meta\Beetle.Meta.csproj" />
+    <ProjectReference Include="..\Beetle.Server\Beetle.Server.csproj" />
+  </ItemGroup>
+
 </Project>
