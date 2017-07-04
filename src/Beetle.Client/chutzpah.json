@@ -1,10 +1,11 @@
 ﻿{
   "Framework": "qunit",
-  "TestHarnessReferenceMode": "Normal",
+  "TestHarnessReferenceMode": "AMD",
   "TestHarnessLocationMode": "SettingsFileAdjacent",
-  "TestHarnessDirectory": "../Scripts/tests",
+  "TestHarnessDirectory": "Scripts/tests",
+  "RootReferencePathMode": "SettingsFileDirectory",
   "References": [
-    { "Path": "../Scripts/beetle/beetle.js" },
-    { "Path": "../Scripts/beetle/beetle.queryExtensions.js" }
+    { "Path": "Scripts/beetle/beetle.js" },
+    { "Path": "Scripts/beetle/beetle.queryExtensions.js" }
   ]
 }

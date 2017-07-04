@@ -2,12 +2,18 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net451</TargetFrameworks>
+    <DefineConstants>EF_CORE</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <DefineConstants>EF_CORE;NET_STANDARD</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore">
       <Version>1.1.2</Version>
     </PackageReference>
+    <Compile Include="..\Beetle.EntityFramework\EFQueryHandler.cs" Link="EFQueryHandler.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,9 +1,20 @@
 ﻿using System;
+#if EF_CORE
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
+#if NET_STANDARD
+using System.Reflection;
+#endif
 
+#if EF_CORE
+namespace Beetle.EntityFrameworkCore {
+#else
 namespace Beetle.EntityFramework {
+#endif
     using Server;
 
     public class EFQueryHandler: QueryableHandler {
