@@ -39,26 +39,32 @@ namespace Beetle.Mvc {
             parameters = Server.Helper.GetBeetleParameters(queryParams);
         }
 
-        public static ActionResult HandleResponse(ProcessResult processResult) {
-            var result = processResult.Result;
-
+        public static void SetCustomHeaders(ProcessResult processResult) {
             var actionContext = processResult.ActionContext;
             var service = actionContext.Service;
             var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var response = HttpContext.Current.Response;
 
             // set InlineCount header info if exists
-            object inlineCount = processResult.InlineCount;
+            var inlineCount = processResult.InlineCount;
             if (inlineCount != null && response.Headers["X-InlineCount"] == null) {
                 response.Headers.Add("X-InlineCount", inlineCount.ToString());
             }
-            if (processResult.UserData != null && response.Headers["X-UserData"] == null) {
-                var userDataStr = config.Serializer.Serialize(processResult.UserData);
+
+            var userData = processResult.UserData;
+            if (userData != null && response.Headers["X-UserData"] == null) {
+                var userDataStr = (config ?? BeetleConfig.Instance).Serializer.Serialize(userData);
                 response.Headers.Add("X-UserData", userDataStr);
             }
+        }
 
-            if (result is ActionResult actionResult) return actionResult;
-
+        public static ActionResult HandleResponse(ProcessResult processResult) {
+            var result = processResult.Result;
+            var actionContext = processResult.ActionContext;
+            var service = actionContext.Service;
+            var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
+            var response = HttpContext.Current.Response;
+            
             // write the result to response content
             return new BeetleJsonResult(config, processResult) {
                 Data = result,

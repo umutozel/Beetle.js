@@ -83,6 +83,7 @@ namespace Beetle.Mvc {
                     MaxResultCount, CheckRequestHash, null, this
                 );
                 var processResult = ProcessRequest(actionContext);
+                Helper.SetCustomHeaders(processResult);
                 var response = Helper.HandleResponse(processResult);
                 response.ExecuteResult(ControllerContext);
             }
