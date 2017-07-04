@@ -4,4 +4,8 @@
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants>MVC_CORE</DefineConstants>
+  </PropertyGroup>
+
 </Project>
