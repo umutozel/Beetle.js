@@ -84,7 +84,7 @@ namespace Beetle.WebApi {
                 return base.ExecuteAsync(controllerContext, cancellationToken);
             }
             catch (HttpResponseException ex) {
-                if (ex.Response.StatusCode != HttpStatusCode.NotFound || !AutoHandleUnknownActions) throw;
+                if (ex.Response.StatusCode != HttpStatusCode.NotFound) throw;
 
                 var action = controllerContext.Request.GetRouteData().Values["action"].ToString();
                 var content = HandleUnknownAction(action);
