@@ -65,7 +65,7 @@ namespace Beetle.EntityFrameworkCore {
         }
 
         public virtual IList<EntityBag> MergeEntities(IEnumerable<EntityBag> entities, 
-                                                      out IList<EntityBag> unmappedEntities) {
+                                                      out IEnumerable<EntityBag> unmappedEntities) {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
 
@@ -114,7 +114,7 @@ namespace Beetle.EntityFrameworkCore {
         }
 
         public override async Task<SaveResult> SaveChanges(SaveContext saveContext) {
-            var merges = MergeEntities(saveContext.Entities, out IList<EntityBag> unmappeds);
+            var merges = MergeEntities(saveContext.Entities, out IEnumerable<EntityBag> unmappeds);
             var mergeList = merges == null
                 ? new List<EntityBag>()
                 : merges as List<EntityBag> ?? merges.ToList();
@@ -122,8 +122,8 @@ namespace Beetle.EntityFrameworkCore {
             var saveList = mergeList;
             var handledUnmappeds = HandleUnmappeds(unmappeds);
             if (handledUnmappeds != null) {
-                MergeEntities(handledUnmappeds, out IList<EntityBag> _);
-                saveList = saveList.Concat(handledUnmappeds).ToList();
+                var mergedUnmappeds = MergeEntities(handledUnmappeds, out IEnumerable<EntityBag> _);
+                saveList = saveList.Concat(mergedUnmappeds).ToList();
             }
             if (!saveList.Any()) return SaveResult.Empty;
 
