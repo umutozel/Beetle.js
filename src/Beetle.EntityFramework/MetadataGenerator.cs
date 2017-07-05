@@ -236,8 +236,9 @@ namespace Beetle.EntityFramework {
                         }
                     }
                 }
-                else
+                else {
                     et.IsComplexType = true; // this is a complex type
+                }
 
                 // data properties
                 foreach (var sp in er.SimpleProperties) {
@@ -258,50 +259,71 @@ namespace Beetle.EntityFramework {
                     }
                     else {
                         // convert CLR type to javascript type
-                        if (clrType == typeof(string))
+                        if (clrType == typeof(string)) {
                             jsType = DataType.String;
-                        else if (clrType == typeof(Guid))
+                        }
+                        else if (clrType == typeof(Guid)) {
                             jsType = DataType.Guid;
-                        else if (clrType == typeof(DateTime))
+                        }
+                        else if (clrType == typeof(DateTime)) {
                             jsType = DataType.Date;
-                        else if (clrType == typeof(DateTimeOffset))
+                        }
+                        else if (clrType == typeof(DateTimeOffset)) {
                             jsType = DataType.DateTimeOffset;
-                        else if (clrType == typeof(TimeSpan))
+                        }
+                        else if (clrType == typeof(TimeSpan)) {
                             jsType = DataType.Time;
-                        else if (clrType == typeof(bool))
+                        }
+                        else if (clrType == typeof(bool)) {
                             jsType = DataType.Boolean;
-                        else if (clrType == typeof(Int16) || clrType == typeof(Int64) || clrType == typeof(Int32))
+                        }
+                        else if (clrType == typeof(Int16) || clrType == typeof(Int64) || clrType == typeof(Int32)) {
                             jsType = DataType.Int;
-                        else if (clrType == typeof(Single) || clrType == typeof(double) || clrType == typeof(decimal))
+                        }
+                        else if (clrType == typeof(Single) || clrType == typeof(double) || clrType == typeof(decimal)) {
                             jsType = DataType.Number;
-                        else if (clrType == typeof(byte))
+                        }
+                        else if (clrType == typeof(byte)) {
                             jsType = DataType.Byte;
-                        else if (clrType == typeof(DbGeography))
+                        }
+                        else if (clrType == typeof(DbGeography)) {
                             jsType = DataType.Geography;
-                        else if (clrType == typeof(DbGeometry))
+                        }
+                        else if (clrType == typeof(DbGeometry)) {
                             jsType = DataType.Geometry;
-                        else if (clrType == typeof(byte[]))
+                        }
+                        else if (clrType == typeof(byte[])) {
                             jsType = DataType.Binary;
+                        }
                         else throw new BeetleException(Resources.UnknownDataType + p.TypeUsage.EdmType.Name);
                     }
                     dp.DataType = jsType;
                     var generated = p.MetadataProperties.FirstOrDefault(m => m.Name == StoreGeneratedPatternAttributeName);
-                    if (generated == null)
+                    if (generated == null) {
                         dp.GenerationPattern = GenerationPattern.None;
-                    else if (generated.Value.ToString().StartsWith("I"))
+                    }
+                    else if (generated.Value.ToString().StartsWith("I")) {
                         dp.GenerationPattern = GenerationPattern.Identity;
-                    else
+                    }
+                    else {
                         dp.GenerationPattern = GenerationPattern.Computed;
+                    }
+
                     dp.UseForConcurrency = IsConcurrencyProperty(p);
-                    if (p.Nullable)
+                    if (p.Nullable) {
                         dp.IsNullable = true;
+                    }
+
                     if (jsType == DataType.Number) {
                         var precision = GetPrecision(p);
-                        var scale = GetScale(p);
-                        if (precision.HasValue)
+                        if (precision.HasValue) {
                             dp.Precision = precision;
-                        if (scale.HasValue)
+                        }
+
+                        var scale = GetScale(p);
+                        if (scale.HasValue) {
                             dp.Scale = scale;
+                        }
                     }
 
                     if (er.ClrType != null) {
