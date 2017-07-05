@@ -11,7 +11,7 @@ namespace Beetle.CSharpClient {
             if (query.Provider is IAsyncQueryProvider provider)
                 return (await provider.ExecuteListAsync<TResult>(query.Expression)).ToList();
 
-            throw new InvalidOperationException("Query provider does not support async.");
+            throw new InvalidOperationException();
         }
     }
 }

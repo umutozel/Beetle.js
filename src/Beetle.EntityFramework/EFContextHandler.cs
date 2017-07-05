@@ -12,6 +12,7 @@ using EFEntityType = System.Data.Entity.Core.Metadata.Edm.EntityType;
 namespace Beetle.EntityFramework {
     using Meta;
     using Server;
+    using Properties;
 
     public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
         // ReSharper disable StaticMemberInGenericType
@@ -122,7 +123,7 @@ namespace Beetle.EntityFramework {
 
         public override object CreateType(string typeName) {
             var oType = ObjectEntityTypes?.FirstOrDefault(x => x.Name == typeName);
-            if (oType == null) return base.CreateType(typeName);
+            if (oType == null) throw new ArgumentException(Resources.UnknownDataType + typeName);
 
             var clrType = ObjectItemCollection.GetClrType(oType);
             return Activator.CreateInstance(clrType);

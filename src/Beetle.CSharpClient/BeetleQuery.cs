@@ -9,29 +9,28 @@ namespace Beetle.CSharpClient {
 
     public class BeetleQuery<T> : IOrderedQueryable<T> {
         private readonly BeetleQueryProvider _provider;
-        private readonly Expression _expression;
 
         internal BeetleQuery(BeetleQueryProvider provider) {
-            _provider = provider ?? throw new ArgumentNullException("provider");
-            _expression = Expression.Constant(this);
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            Expression = Expression.Constant(this);
         }
 
         internal BeetleQuery(BeetleQueryProvider provider, Expression expression) {
             if (!typeof(IQueryable<T>).GetTypeInfo().IsAssignableFrom(expression.Type.GetTypeInfo()))
-                throw new ArgumentOutOfRangeException("expression");
+                throw new ArgumentOutOfRangeException(nameof(expression));
 
-            _provider = provider ?? throw new ArgumentNullException("provider");
-            _expression = expression ?? throw new ArgumentNullException("şexpression");
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            Expression = expression;
         }
 
         public Type ElementType => typeof(T);
 
-        public Expression Expression => _expression;
+        public Expression Expression { get; }
 
         public IQueryProvider Provider => _provider;
 
         public IEnumerator<T> GetEnumerator() {
-            return _provider.ExecuteList<T>(_expression).GetEnumerator();
+            return _provider.ExecuteList<T>(Expression).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

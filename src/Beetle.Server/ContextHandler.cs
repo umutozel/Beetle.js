@@ -41,11 +41,7 @@ namespace Beetle.Server {
 
         public abstract Metadata Metadata();
 
-        public virtual object CreateType(string typeName) {
-            var type = Type.GetType(typeName);
-            if (type == null) throw new ArgumentException(string.Format(Resources.TypeCouldNotBeFound, typeName));
-            return Activator.CreateInstance(type);
-        }
+        public abstract object CreateType(string typeName);
 
         public virtual object HandleUnknownAction(string action) {
             throw new NotImplementedException();

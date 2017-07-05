@@ -176,11 +176,15 @@ namespace Beetle.EntityFramework {
                     if (er.EntitySet.ElementType.Name != er.Name)
                         et.QueryType = er.EntitySet.ElementType.Name;
                     et.Keys.AddRange(er.Entity.KeyMembers.Select(k => k.Name));
+
                     // if entity has base type, set the base type's name
-                    if (er.Entity.BaseType != null)
+                    if (er.Entity.BaseType != null) {
                         et.BaseTypeName = er.Entity.BaseType.Name;
-                    if (er.ClrType != null)
+                    }
+
+                    if (er.ClrType != null) {
                         et.ClrType = er.ClrType;
+                    }
 
                     // navigation properties
                     if (er.NavigationProperties != null) {
@@ -248,8 +252,7 @@ namespace Beetle.EntityFramework {
                     };
 
                     var jsType = DataType.Binary;
-                    var enumType = p.TypeUsage.EdmType as EFEnumType;
-                    if (enumType != null) {
+                    if (p.TypeUsage.EdmType is EFEnumType enumType) {
                         dp.IsEnum = true;
                         dp.EnumType = enumType.Name;
                     }
