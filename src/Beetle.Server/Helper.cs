@@ -114,7 +114,7 @@ namespace Beetle.Server {
         }
 
         public static IList<EntityBag> ResolveEntities(dynamic bundle, IBeetleConfig config, Metadata metadata,
-                                                             out IList<EntityBag> unknownEntities) {
+                                                       out IList<EntityBag> unknownEntities) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
