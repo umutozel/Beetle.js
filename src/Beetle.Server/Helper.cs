@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
@@ -256,9 +257,7 @@ namespace Beetle.Server {
             resourceName = null;
             displayNameGetter = null;
 
-            if (type == null) return;
-
-            var memberInfo = type.GetMember(memberName).FirstOrDefault();
+            var memberInfo = type?.GetMember(memberName).FirstOrDefault();
             if (memberInfo == null) return;
 
             GetDisplayInfo(memberInfo, out resourceName, out displayNameGetter);
@@ -273,6 +272,11 @@ namespace Beetle.Server {
 
             displayNameGetter = displayAttribute.GetName;
             resourceName = displayAttribute.Name;
+        }
+
+        public static Func<string> GetDisplayNameGetter(Type type) {
+            var displayAttribute = type.GetTypeInfo().GetCustomAttributes<DisplayNameAttribute>().FirstOrDefault();
+            return () => displayAttribute?.DisplayName;
         }
 
         public static void PopulateNavigationPropertyValidations(Type clrType, NavigationProperty navigationProperty) {

@@ -15,7 +15,7 @@ namespace Beetle.Server {
 
     public static class DtoUtils {
 
-        public static IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, Metadata metadata, 
+        public static IEnumerable<EntityBag> MergeEntities(IEnumerable<EntityBag> entityBags, Metadata metadata,
                                                            out IEnumerable<EntityBag> unmappedEntities) {
             if (entityBags == null)
                 throw new ArgumentNullException(nameof(entityBags));
@@ -35,7 +35,7 @@ namespace Beetle.Server {
                 var type = entity.GetType();
                 var entityTypeName = string.Format("{0}, {1}", type.FullName, type.GetTypeInfo().Assembly.GetName().Name);
                 if (entityBag.EntityType == null) {
-                    entityBag.EntityType = entityBag.EntityType 
+                    entityBag.EntityType = entityBag.EntityType
                         ?? metadata.Entities.FirstOrDefault(e => e.Name == entityTypeName);
                 }
 
@@ -52,7 +52,7 @@ namespace Beetle.Server {
                     if (navigationProperty.IsScalar == true) {
                         if (!navigationProperty.ForeignKeys.Any()) continue;
 
-                        var navigationQuery = GetRelationQuery(entityList, entity, navigationType, 
+                        var navigationQuery = GetRelationQuery(entityList, entity, navigationType,
                                                                entityType.Keys, navigationProperty.ForeignKeys);
                         if (navigationQuery == null) continue;
 
@@ -71,7 +71,7 @@ namespace Beetle.Server {
                         }
                         if (navigationValue == null) continue;
 
-                        var navigationQuery = GetRelationQuery(entityList, entity, 
+                        var navigationQuery = GetRelationQuery(entityList, entity,
                                                                navigationType.GenericTypeArguments.Single(),
                                                                navigationProperty.ForeignKeys, entityType.Keys);
                         if (navigationQuery == null) continue;
@@ -94,7 +94,7 @@ namespace Beetle.Server {
             return mergedBagList;
         }
 
-        private static IQueryable GetRelationQuery(IEnumerable entities, object keyEntity, Type relationType, 
+        private static IQueryable GetRelationQuery(IEnumerable entities, object keyEntity, Type relationType,
                                                    IReadOnlyList<string> keys, IReadOnlyList<string> foreignKeys) {
             if (!keys.Any() || keys.Count != foreignKeys.Count) return null;
 
@@ -131,51 +131,48 @@ namespace Beetle.Server {
         }
 
         public static void PopulateMetadata(Type type, Metadata metadata) {
-            if (!type.GetTypeInfo().IsClass || metadata.Entities.Any(e => e.ClrType == type)) return;
+            var typeInfo = type.GetTypeInfo();
+            if (!typeInfo.IsClass || metadata.Entities.Any(e => e.ClrType == type)) return;
 
-            Func<string> entityDisplayNameGetter = null;
-            var displayNameAttribute = type.GetTypeInfo().GetCustomAttribute<DisplayNameAttribute>();
-            if (displayNameAttribute != null)
-                entityDisplayNameGetter = () => displayNameAttribute.DisplayName;
-
-            var fullName = type.FullName + ", " + type.GetTypeInfo().Assembly.GetName().Name;
-            var entityType = new EntityType(fullName, type.Name, entityDisplayNameGetter);
+            var fullName = type.FullName + ", " + typeInfo.Assembly.GetName().Name;
+            var entityType = new EntityType(fullName, type.Name, Helper.GetDisplayNameGetter(type));
             metadata.Entities.Add(entityType);
             entityType.ClrType = type;
 
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
-            if (type.GetTypeInfo().BaseType != null && type.GetTypeInfo().BaseType != typeof(object)) {
-                if (type.GetTypeInfo().BaseType.GetTypeInfo().IsAbstract 
-                        || type.GetTypeInfo().BaseType.GetTypeInfo().BaseType.GetTypeInfo().IsGenericType 
-                        || type.GetTypeInfo().BaseType.GetTypeInfo().GetCustomAttribute<NotMappedAttribute>() != null) {
-                    properties = properties.Union(type.GetTypeInfo().BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
+            if (typeInfo.BaseType != null) {
+                if (typeInfo.BaseType.GetTypeInfo().GetCustomAttribute<NotMappedAttribute>() != null) {
+                    properties = properties.Union(typeInfo.BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
                 }
                 else {
-                    entityType.BaseTypeName = type.GetTypeInfo().BaseType.Name;
-                    PopulateMetadata(type.GetTypeInfo().BaseType, metadata);
+                    entityType.BaseTypeName = typeInfo.BaseType.Name;
+                    PopulateMetadata(typeInfo.BaseType, metadata);
                 }
             }
 
             foreach (var propertyInfo in properties) {
                 var propertyType = propertyInfo.PropertyType;
+                var propertyTypeInfo = propertyType.GetTypeInfo();
                 if (entityType.DataProperties.Any(dp => dp.Name == propertyInfo.Name)
-                    || propertyType.GetTypeInfo().GetCustomAttribute<NotMappedAttribute>() != null) continue;
+                    || propertyTypeInfo.GetCustomAttribute<NotMappedAttribute>() != null) continue;
 
                 var isNullable = false;
-                if (propertyType.GetTypeInfo().IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
+                if (propertyTypeInfo.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
                     isNullable = true;
                     propertyType = propertyType.GetGenericArguments().First();
                 }
-                else if (propertyType == typeof(string))
+                else if (propertyType == typeof(string)) {
                     isNullable = true;
-
-                var dataType = GetDataType(propertyType);
+                }
 
                 Helper.GetDisplayInfo(propertyInfo, out string resourceName, out Func<string> displayNameGetter);
+                var dataType = GetDataType(propertyType);
                 if (dataType == null) {
                     var isScalar = true;
-                    var enumerable = propertyType.GetInterfaces().Concat(new[] { propertyType })
+                    var enumerable = propertyType
+                        .GetInterfaces()
+                        .Concat(new[] { propertyType })
                         .FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
                     if (enumerable != null) {
                         isScalar = false;
@@ -192,19 +189,23 @@ namespace Beetle.Server {
                         IsScalar = isScalar,
                         ResourceName = resourceName
                     };
-                    var associationAttribute = propertyInfo.GetCustomAttribute<AssociationAttribute>();
-                    if (associationAttribute != null) {
-                        navigationProperty.AssociationName = associationAttribute.Name;
-                        navigationProperty.ForeignKeys = isScalar ? associationAttribute.ThisKeyMembers.ToList() : associationAttribute.OtherKeyMembers.ToList();
-                    }
-                    else {
-                        var assName = string.Join("_", new[] { entityType.ShortName, navigationProperty.EntityTypeName }.OrderBy(s => s));
-                        var i = 0;
-                        while (entityType.AllNavigationProperties.Any(n => n.AssociationName == assName + i)) i++;
-                        if (i > 0) assName += i;
+                    var foreignKeys = properties
+                        .Where(p => p.GetCustomAttribute<ForeignKeyAttribute>()?.Name == propertyInfo.Name)
+                        .ToList();
+                    var required = foreignKeys
+                        .All(p => !p.PropertyType.GetTypeInfo().IsGenericType 
+                                || p.PropertyType.GetTypeInfo().GetGenericTypeDefinition() != typeof(Nullable<>));
 
-                        navigationProperty.AssociationName = assName;
-                    }
+                    navigationProperty.ForeignKeys = foreignKeys.Select(p => p.Name).ToList();
+                    navigationProperty.DoCascadeDelete = required;
+                    var assName = string.Join("_",
+                        new[] {entityType.ShortName, navigationProperty.EntityTypeName}.OrderBy(s => s)
+                    );
+                    var j = 0;
+                    while (entityType.AllNavigationProperties.Any(n => n.AssociationName == assName + j)) j++;
+                    if (j > 0) assName += j;
+
+                    navigationProperty.AssociationName = assName;
 
                     Helper.PopulateNavigationPropertyValidations(propertyInfo, navigationProperty);
 
@@ -213,15 +214,17 @@ namespace Beetle.Server {
                 else {
                     object defaultValue = null;
                     var defaultValueAttribute = propertyInfo.GetCustomAttribute<DefaultValueAttribute>(true);
-                    if (defaultValueAttribute != null)
+                    if (defaultValueAttribute != null) {
                         defaultValue = defaultValueAttribute.Value;
+                    }
 
                     string enumType = null;
                     if (dataType == DataType.Enum) {
                         enumType = propertyType.Name;
 
-                        if (metadata.Enums.All(e => e.Name != enumType))
+                        if (metadata.Enums.All(e => e.Name != enumType)) {
                             metadata.Enums.Add(GenerateEnumType(propertyType));
+                        }
                     }
 
                     var dataProperty = new DataProperty(propertyInfo.Name, displayNameGetter) {
@@ -235,8 +238,9 @@ namespace Beetle.Server {
                     };
 
                     var keyAttribute = propertyInfo.GetCustomAttribute<KeyAttribute>();
-                    if (keyAttribute != null)
+                    if (keyAttribute != null) {
                         entityType.Keys.Add(dataProperty.Name);
+                    }
 
                     var generationPattern = propertyInfo.GetCustomAttribute<DatabaseGeneratedAttribute>();
                     if (generationPattern != null) {
@@ -251,8 +255,8 @@ namespace Beetle.Server {
                     }
 
                     if (propertyInfo.GetCustomAttribute<ConcurrencyCheckAttribute>(true) != null
-                        || propertyInfo.GetCustomAttribute<TimestampAttribute>(true) != null
-                        || (propertyInfo.Name == "RowVersion" && propertyType == typeof(byte[]))) {
+                            || propertyInfo.GetCustomAttribute<TimestampAttribute>(true) != null
+                            || propertyInfo.Name == "RowVersion" && propertyType == typeof(byte[])) {
                         dataProperty.UseForConcurrency = true;
                     }
 
@@ -268,58 +272,54 @@ namespace Beetle.Server {
 
             foreach (var entity in metadata.Entities) {
                 if (!entity.Keys.Any()) {
-                    var idProperty = entity.AllDataProperties.FirstOrDefault(dp => dp.Name == "Id");
+                    var idProperty = entity.AllDataProperties
+                        .FirstOrDefault(dp => dp.Name == "Id" || dp.Name == entity.ShortName + "Id");
 
                     if (idProperty != null) {
-                        entity.Keys.Add("Id");
+                        entity.Keys.Add(idProperty.Name);
 
                         var dt = idProperty.DataType;
-                        if (dt == DataType.Int || dt == DataType.Byte || dt == DataType.Number)
+                        if (dt == DataType.Int || dt == DataType.Byte || dt == DataType.Number) {
                             idProperty.GenerationPattern = GenerationPattern.Identity;
+                        }
                     }
                 }
 
                 foreach (var navigationProperty in entity.NavigationProperties) {
+                    if (navigationProperty.ForeignKeys != null && navigationProperty.ForeignKeys.Any()) continue;
+
+                    var assName = navigationProperty.AssociationName;
+                    var lastChar = assName.Last();
+
+                    var suffix = "Id";
+                    if (char.IsNumber(lastChar)) suffix = lastChar + suffix;
+
                     var inverse = navigationProperty.Inverse;
+                    if (navigationProperty.IsScalar == false) {
+                        var fkName = entity.ShortName + suffix;
 
-                    if (navigationProperty.IsScalar == false && inverse != null) {
-                        var inverseClrType = navigationProperty.EntityType.ClrType;
-                        var requiredAttribute = inverseClrType.GetProperty(inverse.Name).GetCustomAttribute<RequiredAttribute>();
-                        navigationProperty.DoCascadeDelete = requiredAttribute != null;
+                        var fp = navigationProperty.EntityType.DataProperties.FirstOrDefault(dp => dp.Name == fkName);
+                        if (fp == null) continue;
+
+                        navigationProperty.ForeignKeys = new List<string> { fp.Name };
+                        if (inverse != null) {
+                            inverse.ForeignKeys = navigationProperty.ForeignKeys;
+                        }
                     }
-
-                    if (navigationProperty.ForeignKeys == null || !navigationProperty.ForeignKeys.Any()) {
-                        var assName = navigationProperty.AssociationName;
-                        var lastChar = assName.Last();
-
-                        var suffix = "Id";
-                        if (char.IsNumber(lastChar)) suffix = lastChar + suffix;
-
-                        if (navigationProperty.IsScalar == false) {
-                            var fkName = entity.ShortName + suffix;
-
-                            var fp = navigationProperty.EntityType.DataProperties.FirstOrDefault(dp => dp.Name == fkName);
-                            if (fp != null) {
-                                navigationProperty.ForeignKeys = new List<string> { fp.Name };
-                                if (inverse != null) {
-                                    inverse.ForeignKeys = navigationProperty.ForeignKeys;
-                                }
-                            }
+                    else {
+                        if (inverse != null && inverse.IsScalar == true) {
+                            navigationProperty.ForeignKeys = entity.Keys.ToList(); // one-to-one
                         }
                         else {
-                            if (inverse != null && inverse.IsScalar == true)
-                                navigationProperty.ForeignKeys = entity.Keys.ToList(); // one-to-one
-                            else {
-                                var fkName1 = navigationProperty.EntityTypeName + suffix;
-                                var fkName2 = navigationProperty.Name + suffix;
+                            var fkName1 = navigationProperty.EntityTypeName + suffix;
+                            var fkName2 = navigationProperty.Name + suffix;
 
-                                var fp = entity.DataProperties.FirstOrDefault(dp => dp.Name == fkName1 || dp.Name == fkName2);
-                                if (fp != null) {
-                                    navigationProperty.ForeignKeys = new List<string> { fp.Name };
-                                    if (inverse != null) {
-                                        inverse.ForeignKeys = navigationProperty.ForeignKeys;
-                                    }
-                                }
+                            var fp = entity.DataProperties.FirstOrDefault(dp => dp.Name == fkName1 || dp.Name == fkName2);
+                            if (fp == null) continue;
+
+                            navigationProperty.ForeignKeys = new List<string> { fp.Name };
+                            if (inverse != null) {
+                                inverse.ForeignKeys = navigationProperty.ForeignKeys;
                             }
                         }
                     }
@@ -392,18 +392,19 @@ namespace Beetle.Server {
             var names = Enum.GetNames(enumType);
             foreach (var name in names) {
                 var member = enumType.GetField(name);
-                var value = (int) Enum.Parse(enumType, name);
+                var value = (int)Enum.Parse(enumType, name);
 
                 Helper.GetDisplayInfo(member, out string resourceName, out Func<string> displayNameGetter);
 
                 retVal.Members.Add(new EnumMember(name, displayNameGetter) {
-                    ResourceName = resourceName, Value = value
+                    ResourceName = resourceName,
+                    Value = value
                 });
             }
 
             return retVal;
         }
-        
+
         internal static TypeCode GetTypeCode(Type type) {
 #if NET_STANDARD
             if (type == null) return TypeCode.Empty;
