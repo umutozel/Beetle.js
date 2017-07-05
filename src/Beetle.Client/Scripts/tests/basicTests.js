@@ -4,7 +4,7 @@ test("get all entities", 1, function () {
     var query = manager.createQuery("Entities").where(function (e) { return e.Id > 0; });
     stop();
     query.then(function (data) {
-        ok(data.length > 0, "loaded all entities") && start();
+        ok(data.length > 0, "loaded all entities") || start();
     }, handleFail);
 });
 function handleFail(error) {
@@ -12,4 +12,5 @@ function handleFail(error) {
         return;
     ok(false, error.message || "Failed: " + error.toString()) && start();
 }
+// ReSharper restore InconsistentNaming
 //# sourceMappingURL=basicTests.js.map
