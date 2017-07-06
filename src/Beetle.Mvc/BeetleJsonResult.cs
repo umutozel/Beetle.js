@@ -23,13 +23,8 @@ namespace Beetle.Mvc {
             if (JsonRequestBehavior == JsonRequestBehavior.DenyGet && context.HttpContext.Request.HttpMethod == "GET")
                 throw new InvalidOperationException(Resources.GETRequestNotAllowed);
 
-            response.ContentType = !string.IsNullOrEmpty(ContentType)
-                ? ContentType
-                : "application/json";
-
-            if (ContentEncoding != null) {
-                response.ContentEncoding = ContentEncoding;
-            }
+            response.ContentType = _config.Serializer.ContentType;
+            response.ContentEncoding = _config.Serializer.Encoding;
 
             var d = _config.Serializer.Serialize(Data);
             if (!(Data is string) && Data is IEnumerable) {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -12,6 +13,10 @@ namespace Beetle.Server.Json {
             Settings = settings;
             Settings.Converters.Add(new ExpandoObjectConverter());
         }
+
+        public string ContentType { get; } = "application/json; charset=utf-8";
+
+        public Encoding Encoding { get; } = Encoding.UTF8;
 
         public JsonSerializerSettings Settings { get; }
 

@@ -70,7 +70,7 @@ namespace Beetle.Mvc {
             return new BeetleJsonResult(config, processResult) {
                 Data = result,
                 ContentEncoding = response.HeaderEncoding,
-                ContentType = "application/json",
+                ContentType = config.Serializer.ContentType,
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet
             };
         }

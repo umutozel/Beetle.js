@@ -62,10 +62,9 @@ namespace Beetle.MvcCore {
             var formatters = new List<IOutputFormatter> { formatter };
             var formatterCollection = new FormatterCollection<IOutputFormatter>(formatters);
 
-            //todo: handle response
             return new ObjectResult(result) {
                 Formatters = formatterCollection,
-                ContentTypes = new MediaTypeCollection { "application/json; charset=utf-8" }
+                ContentTypes = new MediaTypeCollection { config.Serializer.ContentType }
             };
         }
 

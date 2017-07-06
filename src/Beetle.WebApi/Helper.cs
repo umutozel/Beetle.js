@@ -98,8 +98,8 @@ namespace Beetle.WebApi {
             var settings = beetleConfig != null ? beetleConfig.JsonSerializerSettings : BeetleConfig.Instance.JsonSerializerSettings;
 
             var formatter = new BeetleMediaTypeFormatter { SerializerSettings = settings };
-            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
-            formatter.SupportedEncodings.Add(new UTF8Encoding(false, true));
+            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue(config.Serializer.ContentType));
+            formatter.SupportedEncodings.Add(config.Serializer.Encoding);
             return formatter;
         }
     }

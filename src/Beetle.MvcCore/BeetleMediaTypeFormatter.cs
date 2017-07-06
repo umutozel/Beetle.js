@@ -13,7 +13,7 @@ namespace Beetle.MvcCore {
         public BeetleMediaTypeFormatter(IBeetleConfig config) {
             _config = config;
 
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
+            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse(config.Serializer.ContentType));
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context) {
