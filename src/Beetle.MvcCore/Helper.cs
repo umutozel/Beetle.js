@@ -13,7 +13,7 @@ namespace Beetle.MvcCore {
 
     public static class Helper {
 
-        public static void GetParameters(IBeetleConfig config, HttpRequest request, 
+        public static void GetParameters(IBeetleConfig config, HttpRequest request,
                                          out string queryString, out IList<BeetleParameter> parameters) {
             if (config == null) {
                 config = BeetleConfig.Instance;
@@ -24,11 +24,9 @@ namespace Beetle.MvcCore {
                 request.Body.Position = 0;
                 queryString = new StreamReader(request.Body).ReadToEnd();
                 queryParams = request.Query.ToDictionary(k => k.Key, k => k.Value.ToString());
-                if (request.ContentType.Contains("application/json")) {
-                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                    foreach (var i in d) {
-                        queryParams[i.Key] = i.Value.ToString();
-                    }
+                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                foreach (var i in d) {
+                    queryParams[i.Key] = i.Value.ToString();
                 }
             }
             else {
@@ -61,7 +59,7 @@ namespace Beetle.MvcCore {
             var service = actionContext.Service;
             var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var formatter = new BeetleMediaTypeFormatter(config);
-            var formatters = new List<IOutputFormatter> {formatter};
+            var formatters = new List<IOutputFormatter> { formatter };
             var formatterCollection = new FormatterCollection<IOutputFormatter>(formatters);
 
             //todo: handle response

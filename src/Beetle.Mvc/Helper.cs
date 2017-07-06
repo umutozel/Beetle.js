@@ -27,12 +27,10 @@ namespace Beetle.Mvc {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 queryParams = request.Params.ToDictionary();
-                if (request.ContentType.Contains("application/json")) {
-                    postData = config.Serializer.DeserializeToDynamic(queryString);
-                    foreach (var p in TypeDescriptor.GetProperties(postData)) {
-                        var v = postData[p.Name];
-                        queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
-                    }
+                postData = config.Serializer.DeserializeToDynamic(queryString);
+                foreach (var p in TypeDescriptor.GetProperties(postData)) {
+                    var v = postData[p.Name];
+                    queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
                 }
             }
             else {
@@ -67,7 +65,7 @@ namespace Beetle.Mvc {
             var service = actionContext.Service;
             var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var response = HttpContext.Current.Response;
-            
+
             // write the result to response content
             return new BeetleJsonResult(config, processResult) {
                 Data = result,

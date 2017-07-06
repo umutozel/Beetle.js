@@ -30,7 +30,7 @@ namespace Beetle.MvcCore {
     }
 
     [BeetleActionFilter]
-    public abstract class BeetleController : ControllerBase, IBeetleService {
+    public abstract class BeetleController : Controller, IBeetleService {
 
         protected BeetleController() : this(null) {
         }

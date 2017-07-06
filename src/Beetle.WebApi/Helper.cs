@@ -28,11 +28,9 @@ namespace Beetle.WebApi {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 queryParams = request.Params.ToDictionary();
-                if (request.ContentType.Contains("application/json")) {
-                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                    foreach (var i in d) {
-                        queryParams.Add(i.Key, i.Value.ToString());
-                    }
+                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                foreach (var i in d) {
+                    queryParams.Add(i.Key, i.Value.ToString());
                 }
             }
             else {
