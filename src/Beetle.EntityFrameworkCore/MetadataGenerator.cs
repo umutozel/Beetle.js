@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Beetle.EntityFrameworkCore {
     using Meta;
-    using ServerHelper = Server.Helper;
+    using Server;
 
     public static class MetadataGenerator {
 
@@ -25,55 +26,50 @@ namespace Beetle.EntityFrameworkCore {
             var entityTypeList = entityTypes as IList<IEntityType> ?? entityTypes.ToList();
             foreach (var entityType in entityTypeList) {
                 var fullName = $"{entityType.ClrType.FullName}, {entityType.ClrType.GetTypeInfo().Assembly.GetName().Name}";
-                //todo: table name
-                var et = new EntityType(fullName, entityType.Name) { TableName = "" };
-
-                // entity informations
-                //todo: query name and type
-                et.QueryName = "";
-                et.QueryType = null;
+                var tableName = entityType.GetAnnotation("Relational:TableName")?.Value.ToString();
+                var et = new EntityType(fullName, entityType.ClrType.Name) {
+                    TableName = tableName
+                };
 
                 var keys = entityType.GetKeys().Where(k => k.IsPrimaryKey()).SelectMany(k => k.Properties.Select(p => p.Name));
                 et.Keys.AddRange(keys);
-                // if entity has base type, set the base type's name
                 if (entityType.BaseType != null) {
-                    et.BaseTypeName = entityType.BaseType.Name;
+                    et.BaseTypeName = entityType.BaseType.ClrType.Name;
                 }
 
                 et.ClrType = entityType.ClrType;
 
-                // navigation properties
                 foreach (var navigation in entityType.GetDeclaredNavigations()) {
-                    ServerHelper.GetDisplayInfo(navigation.ClrType, navigation.Name,
-                                                out string resourceName, out Func<string> displayNameGetter);
+                    MetaUtils.GetDisplayInfo(navigation.ClrType, navigation.Name,
+                                             out string resourceName, out Func<string> displayNameGetter);
 
                     var targetType = navigation.GetTargetType();
                     var np = new NavigationProperty(navigation.Name, displayNameGetter) {
                         ResourceName = resourceName,
-                        EntityTypeName = targetType.Name
+                        EntityTypeName = targetType.Name,
+                        IsScalar = !navigation.IsCollection()
                     };
 
-                    np.IsScalar = !navigation.IsCollection();
-                    np.ForeignKeys.AddRange(navigation.ForeignKey.Properties.Select(p => p.Name));
+                    np.AssociationName = navigation.ForeignKey.DeclaringEntityType.ClrType.Name + "_" +
+                        navigation.ForeignKey.PrincipalEntityType.ClrType.Name + "_" +
+                        string.Join("+", np.ForeignKeys);
 
-                    //todo: cascade delete
-                    np.DoCascadeDelete = true;
+                    np.ForeignKeys.AddRange(navigation.ForeignKey.Properties.Select(p => p.Name));
+                    np.DoCascadeDelete = navigation.ForeignKey.DeleteBehavior == DeleteBehavior.Cascade;
 
                     if (entityType.ClrType != null) {
-                        ServerHelper.PopulateNavigationPropertyValidations(entityType.ClrType, np);
+                        MetaUtils.PopulateNavigationPropertyValidations(entityType.ClrType, np);
                     }
 
                     et.NavigationProperties.Add(np);
                 }
 
-                // data properties
                 foreach (var property in entityType.GetDeclaredProperties()) {
-                    ServerHelper.GetDisplayInfo(entityType.ClrType, property.Name,
-                                                out string resourceName, out Func<string> displayNameGetter);
+                    MetaUtils.GetDisplayInfo(entityType.ClrType, property.Name,
+                                             out string resourceName, out Func<string> displayNameGetter);
 
                     var dp = new DataProperty(property.Name, displayNameGetter) {
-                        // todo: column name
-                        ColumnName = "",
+                        ColumnName = property.FindAnnotation("Relational:ColumnName")?.Value.ToString(),
                         ResourceName = resourceName
                     };
 
@@ -81,7 +77,13 @@ namespace Beetle.EntityFrameworkCore {
                     var jsType = DataType.Binary;
                     // convert CLR type to javascript type
                     if (clrType.GetTypeInfo().IsEnum) {
-
+                        var enumType = property.ClrType;
+                        var enumTypeName = enumType.Name;
+                        if (metadata.Enums.All(e => e.Name != enumTypeName)) {
+                            metadata.Enums.Add(MetaUtils.GenerateEnumType(property.ClrType));
+                        }
+                        dp.IsEnum = true;
+                        dp.EnumType = enumTypeName;
                     }
                     else if (clrType == typeof(string)) {
                         jsType = DataType.String;
@@ -115,29 +117,21 @@ namespace Beetle.EntityFrameworkCore {
                     }
 
                     dp.DataType = jsType;
-                    //todo: generation pattern
-                    dp.GenerationPattern = GenerationPattern.None;
+                    if (property.ValueGenerated == ValueGenerated.OnAdd) {
+                        dp.GenerationPattern = GenerationPattern.Identity;
+                    }
+                    else if (property.ValueGenerated == ValueGenerated.OnAddOrUpdate) {
+                        dp.GenerationPattern = GenerationPattern.Computed;
+                    }
 
                     dp.UseForConcurrency = property.IsConcurrencyToken;
                     dp.IsNullable = property.IsNullable;
 
-                    if (jsType == DataType.Number) {
-                        //var precision = GetPrecision(p);
-                        //var scale = GetScale(p);
-                        //if (precision.HasValue)
-                        //    dp.Precision = precision;
-                        //if (scale.HasValue)
-                        //    dp.Scale = scale;
-                    }
+                    MetaUtils.PopulateDataPropertyValidations(entityType.ClrType, dp);
 
-                    ServerHelper.PopulateDataPropertyValidations(entityType.ClrType, dp/*, GetMaxStringLength(p) */);
-
-                    // todo: default value
-                    dp.DefaultValue = null;
-
-                    //todo: GetMaxStringLength, GetPrecision, GetScale, IsConcurrencyProperty
                     et.DataProperties.Add(dp);
                 }
+
                 metadata.Entities.Add(et);
             }
 

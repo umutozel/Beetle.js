@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
-using Beetle.Client.Models;
-using Beetle.Mvc;
 using Giver;
 
 namespace Beetle.Client.Controllers {
+    using Mvc;
+    using Models;
 
     public class HomeController : BeetleController {
 

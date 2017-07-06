@@ -33,10 +33,10 @@ namespace Beetle.MvcCore {
         public bool? CheckRequestHash { get; set; }
 
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
-            if (!(filterContext.Result is ObjectResult contentValue)) {
-                base.OnActionExecuted(filterContext);
+            base.OnActionExecuted(filterContext);
+
+            if (!(filterContext.Result is ObjectResult contentValue))
                 return;
-            }
 
             var actionName = filterContext.ActionDescriptor.DisplayName;
             var service = filterContext.Controller as IBeetleService;
@@ -51,8 +51,6 @@ namespace Beetle.MvcCore {
             var processResult = ProcessRequest(actionContext, request);
             Helper.SetCustomHeaders(processResult, response);
             filterContext.Result = HandleResponse(processResult, response);
-
-            base.OnActionExecuted(filterContext);
         }
 
         protected virtual void GetParameters(IBeetleService service,

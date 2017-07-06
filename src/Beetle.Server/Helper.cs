@@ -1,16 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using ValidatorType = System.ComponentModel.DataAnnotations.DataType;
 
 namespace Beetle.Server {
     using Interface;
     using Meta;
     using Properties;
+    using Validator = Validator;
 
     public static class Helper {
         private const BindingFlags Binding = BindingFlags.Instance | BindingFlags.Public;
@@ -239,143 +238,55 @@ namespace Beetle.Server {
             return retVal;
         }
 
-        public static IQueryHandler<IQueryable> GetQueryHandler(IBeetleConfig actionConfig, IBeetleService service) {
+        public static List<EntityValidationResult> ValidateEntities(IEnumerable entities) {
+            var validationResults = new List<EntityValidationResult>();
+            foreach (var entity in entities) {
+                var results = new List<ValidationResult>();
+                var context = new ValidationContext(entity, null, null);
+                Validator.TryValidateObject(entity, context, results, true);
+                if (results.Any())
+                    validationResults.Add(new EntityValidationResult(entity, results));
+            }
+            return validationResults;
+        }
+
+        internal static IQueryHandler<IQueryable> GetQueryHandler(IBeetleConfig actionConfig, IBeetleService service) {
             var config = actionConfig ?? service?.Config;
             return config?.QueryableHandler
                 ?? service?.ContextHandler?.QueryableHandler
                 ?? QueryableHandler.Instance;
         }
 
-        public static IContentHandler<IEnumerable> GetEnumerableHandler(IBeetleConfig actionConfig, IBeetleService service) {
+        internal static IContentHandler<IEnumerable> GetEnumerableHandler(IBeetleConfig actionConfig, IBeetleService service) {
             var config = actionConfig ?? service?.Config;
             return config?.EnumerableHandler
                 ?? service?.ContextHandler?.EnumerableHandler
                 ?? EnumerableHandler.Instance;
         }
 
-        public static void GetDisplayInfo(Type type, string memberName, out string resourceName, out Func<string> displayNameGetter) {
-            resourceName = null;
-            displayNameGetter = null;
+        internal static TypeCode GetTypeCode(Type type) {
+#if NET_STANDARD
+            if (type == null) return TypeCode.Empty;
+            if (type == typeof(bool)) return TypeCode.Boolean;
+            if (type == typeof(byte)) return TypeCode.Byte;
+            if (type == typeof(char)) return TypeCode.Char;
+            if (type == typeof(DateTime)) return TypeCode.DateTime;
+            if (type == typeof(decimal)) return TypeCode.Decimal;
+            if (type == typeof(double)) return TypeCode.Double;
+            if (type == typeof(short)) return TypeCode.Int16;
+            if (type == typeof(int)) return TypeCode.Int32;
+            if (type == typeof(long)) return TypeCode.Int64;
+            if (type == typeof(sbyte)) return TypeCode.SByte;
+            if (type == typeof(float)) return TypeCode.Single;
+            if (type == typeof(string)) return TypeCode.String;
+            if (type == typeof(ushort)) return TypeCode.UInt16;
+            if (type == typeof(uint)) return TypeCode.UInt32;
+            if (type == typeof(ulong)) return TypeCode.UInt64;
 
-            var memberInfo = type?.GetMember(memberName).FirstOrDefault();
-            if (memberInfo == null) return;
-
-            GetDisplayInfo(memberInfo, out resourceName, out displayNameGetter);
-        }
-
-        public static void GetDisplayInfo(MemberInfo memberInfo, out string resourceName, out Func<string> displayNameGetter) {
-            resourceName = null;
-            displayNameGetter = null;
-
-            var displayAttribute = memberInfo.GetCustomAttributes<DisplayAttribute>().FirstOrDefault();
-            if (displayAttribute == null) return;
-
-            displayNameGetter = displayAttribute.GetName;
-            resourceName = displayAttribute.Name;
-        }
-
-        public static Func<string> GetDisplayNameGetter(Type type) {
-            var displayAttribute = type.GetTypeInfo().GetCustomAttributes<DisplayNameAttribute>().FirstOrDefault();
-            return () => displayAttribute?.DisplayName;
-        }
-
-        public static void PopulateNavigationPropertyValidations(Type clrType, NavigationProperty navigationProperty) {
-            var clrProperty = clrType.GetMember(navigationProperty.Name).FirstOrDefault();
-            PopulateNavigationPropertyValidations(clrProperty, navigationProperty);
-        }
-
-        public static void PopulateNavigationPropertyValidations(MemberInfo member, NavigationProperty navigationProperty) {
-            var displayName = navigationProperty.GetDisplayName() ?? navigationProperty.Name;
-            var dataAnnotations = member.GetCustomAttributes<ValidationAttribute>();
-            foreach (var att in dataAnnotations) {
-                string msg;
-                var rmsg = att.ErrorMessageResourceName;
-                try {
-                    msg = att.FormatErrorMessage(displayName);
-                }
-                catch {
-                    msg = null;
-                }
-
-                if (att is MaxLengthAttribute mal && mal.Length > 0) {
-                    navigationProperty.Validators.Add(Validator.MaxLength(msg, rmsg, mal.Length));
-                }
-                else if (att is MinLengthAttribute mil && mil.Length > 0) {
-                    navigationProperty.Validators.Add(Validator.MinLength(msg, rmsg, mil.Length));
-                }
-            }
-        }
-
-        public static void PopulateDataPropertyValidations(Type clrType, DataProperty dataProperty, int? maxLen = null) {
-            var clrProperty = clrType.GetMember(dataProperty.Name).First();
-            var clrPropertyType = GetMemberType(clrType, dataProperty.Name);
-            PopulateDataPropertyValidations(clrProperty, clrPropertyType, dataProperty, maxLen);
-        }
-
-        public static void PopulateDataPropertyValidations(MemberInfo member, Type memberType, DataProperty dataProperty, int? maxLen = null) {
-            var displayName = dataProperty.GetDisplayName() ?? dataProperty.Name;
-            var dataAnnotations = member.GetCustomAttributes<ValidationAttribute>();
-            foreach (var att in dataAnnotations) {
-                string msg;
-                var rmsg = att.ErrorMessageResourceName;
-                try {
-                    msg = att.FormatErrorMessage(displayName);
-                }
-                catch {
-                    msg = null;
-                }
-
-                if (memberType == typeof(string)) {
-                    if (att is StringLengthAttribute sl) {
-                        var ml = maxLen.HasValue
-                            ? (sl.MaximumLength < maxLen ? sl.MaximumLength : maxLen.Value)
-                            : sl.MaximumLength;
-                        dataProperty.Validators.Add(Validator.StringLength(msg, rmsg, sl.MinimumLength, ml));
-                    }
-                    else if (att is MaxLengthAttribute mal && mal.Length > 0) {
-                        dataProperty.Validators.Add(Validator.MaxLength(msg, rmsg, mal.Length));
-                    }
-                    else if (att is MinLengthAttribute mil && mil.Length > 0) {
-                        dataProperty.Validators.Add(Validator.MinLength(msg, rmsg, mil.Length));
-                    }
-                }
-
-                if (att is RequiredAttribute re) {
-                    dataProperty.Validators.Add(Validator.Required(msg, rmsg, re.AllowEmptyStrings));
-                }
-                else if (att is RangeAttribute ra) {
-                    dataProperty.Validators.Add(Validator.Range(msg, rmsg, ra.Minimum, ra.Maximum));
-                }
-                else if (att is RegularExpressionAttribute rx) {
-                    dataProperty.Validators.Add(Validator.RegularExpression(msg, rmsg, rx.Pattern));
-                }
-                else if (att is DataTypeAttribute dt) {
-                    switch (dt.DataType) {
-                        case ValidatorType.EmailAddress:
-                            dataProperty.Validators.Add(Validator.EmailAddress(msg, rmsg));
-                            break;
-                        case ValidatorType.CreditCard:
-                            dataProperty.Validators.Add(Validator.CreditCard(msg, rmsg));
-                            break;
-                        case ValidatorType.ImageUrl:
-                        case ValidatorType.Url:
-                            dataProperty.Validators.Add(Validator.Url(msg, rmsg));
-                            break;
-                        case ValidatorType.PhoneNumber:
-                            dataProperty.Validators.Add(Validator.PhoneNumber(msg, rmsg));
-                            break;
-                        case ValidatorType.PostalCode:
-                            dataProperty.Validators.Add(Validator.PostalCode(msg, rmsg));
-                            break;
-                        case ValidatorType.Time:
-                            dataProperty.Validators.Add(Validator.Time(msg, rmsg));
-                            break;
-                    }
-                }
-                else if (att is CompareAttribute co) {
-                    dataProperty.Validators.Add(Validator.Compare(msg, rmsg, co.OtherProperty));
-                }
-            }
+            return TypeCode.Object;
+#else
+            return Type.GetTypeCode(type);
+#endif
         }
     }
 }

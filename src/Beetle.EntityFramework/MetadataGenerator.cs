@@ -19,7 +19,6 @@ namespace Beetle.EntityFramework {
     using Meta;
     using Server;
     using Properties;
-    using ServerHelper = Server.Helper;
 
     public static class MetadataGenerator {
         private const string StoreGeneratedPatternAttributeName = @"http://schemas.microsoft.com/ado/2009/02/edm/annotation:StoreGeneratedPattern";
@@ -190,7 +189,7 @@ namespace Beetle.EntityFramework {
                     if (er.NavigationProperties != null) {
                         foreach (var p in er.NavigationProperties) {
                             var ass = globalItems.OfType<AssociationType>().First(a => a.Name == p.RelationshipType.Name);
-                            ServerHelper.GetDisplayInfo(er.ClrType, p.Name, out string resourceName, out Func<string> displayNameGetter);
+                            MetaUtils.GetDisplayInfo(er.ClrType, p.Name, out string resourceName, out Func<string> displayNameGetter);
 
                             var np = new NavigationProperty(p.Name, displayNameGetter) {
                                 ResourceName = resourceName,
@@ -210,7 +209,7 @@ namespace Beetle.EntityFramework {
                             }
 
                             if (er.ClrType != null) {
-                                ServerHelper.PopulateNavigationPropertyValidations(er.ClrType, np);
+                                MetaUtils.PopulateNavigationPropertyValidations(er.ClrType, np);
                             }
 
                             np.AssociationName = p.RelationshipType.Name;
@@ -222,7 +221,7 @@ namespace Beetle.EntityFramework {
                     // complex properties
                     if (er.ComplexProperties != null) {
                         foreach (var p in er.ComplexProperties) {
-                            ServerHelper.GetDisplayInfo(er.ClrType, p.Key.Name, 
+                            MetaUtils.GetDisplayInfo(er.ClrType, p.Key.Name, 
                                                         out string resourceName, 
                                                         out Func<string> displayNameGetter);
 
@@ -244,7 +243,7 @@ namespace Beetle.EntityFramework {
                 foreach (var sp in er.SimpleProperties) {
                     var p = sp.Value;
                     var clrType = UnderlyingClrType(p.TypeUsage.EdmType);
-                    ServerHelper.GetDisplayInfo(er.ClrType, p.Name, 
+                    MetaUtils.GetDisplayInfo(er.ClrType, p.Name, 
                                                 out string resourceName, out Func<string> displayNameGetter);
 
                     var dp = new DataProperty(p.Name, displayNameGetter) {
@@ -327,7 +326,7 @@ namespace Beetle.EntityFramework {
                     }
 
                     if (er.ClrType != null) {
-                        ServerHelper.PopulateDataPropertyValidations(er.ClrType, dp, GetMaxStringLength(p));
+                        MetaUtils.PopulateDataPropertyValidations(er.ClrType, dp, GetMaxStringLength(p));
                     }
 
                     if (p.DefaultValue != null) {
@@ -342,14 +341,15 @@ namespace Beetle.EntityFramework {
             // enum types
             foreach (var enumResource in enumResources) {
                 var enumType = enumResource.EnumType;
-                //var enumClrType = enumResource.ClrType;
+                var enumClrType = enumResource.ClrType;
                 var et = new EnumType(enumType.Name);
 
                 foreach (var member in enumType.Members) {
-                    //todo: enum member için display
-                    //ServerHelper.GetDisplayInfo(member, out string resourceName, out Func<string> displayNameGetter);
-                    var em = new EnumMember(member.Name, null) {
-                        Value = member.Value
+                    var enumMember = enumClrType.GetField(member.Name);
+                    MetaUtils.GetDisplayInfo(enumMember, out string resourceName, out Func<string> displayNameGetter);
+                    var em = new EnumMember(member.Name, displayNameGetter) {
+                        Value = member.Value,
+                        ResourceName = resourceName
                     };
 
                     et.Members.Add(em);

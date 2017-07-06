@@ -3610,7 +3610,6 @@
 					}
 					value = this.dataType.handle(value, this);
 
-					// todo: consider moving precision and scale check to validator (it's not ok to put number specific code here).
 					if (this.dataType == core.dataTypes.number && this.precision && value.toString().replace(/\./g, '').length > this.precision)
 						throw helper.createError(i18N.maxPrecisionError, [value, this.precision],
 							{ dataType: dataType, value: value });

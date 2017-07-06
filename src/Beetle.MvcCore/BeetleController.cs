@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Beetle.Meta;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Beetle.MvcCore {
+    using Meta;
     using Server;
     using Server.Interface;
     using ServerHelper = Server.Helper;

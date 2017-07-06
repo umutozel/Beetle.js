@@ -62,14 +62,13 @@ namespace Beetle.MvcCore {
 
             return null;
 
-            //todo:
-            // write the result to response content
-            //return new BeetleJsonResult(config, processResult) {
-            //    Data = result,
-            //    ContentEncoding = response.HeaderEncoding,
-            //    ContentType = "application/json",
-            //    JsonRequestBehavior = JsonRequestBehavior.AllowGet
-            //};
+            //todo: generate json  result
+            return new JsonResult(config, processResult) {
+                Data = result,
+                ContentEncoding = response.HeaderEncoding,
+                ContentType = "application/json",
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet
+            };
         }
 
         public static void CheckRequestHash(string queryString, HttpRequest request) {
