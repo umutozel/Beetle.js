@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Mvc.Async;
@@ -65,8 +66,21 @@ namespace Beetle.Mvc {
             if (typeof(ActionResult).IsAssignableFrom(returnType) || typeof(Task).IsAssignableFrom(returnType))
                 return;
 
+            var service = controller as IBeetleService;
+            GetParameters(service, out string queryString, out IList<BeetleParameter> parameters, out dynamic postData);
+
+            if (postData != null) {
+                // fix parameter values for object and dynamic parameters
+                foreach (var pd in filterContext.ActionDescriptor.GetParameters()) {
+                    var t = pd.ParameterType;
+                    if (t == typeof(object) || pd.GetCustomAttributes(typeof(DynamicAttribute), false).Any()) {
+                        filterContext.ActionParameters[pd.ParameterName] = postData;
+                    }
+                }
+            }
+
             var contentValue = action.Execute(filterContext.Controller.ControllerContext, filterContext.ActionParameters);
-            filterContext.Result = ProcessAction(contentValue, action, filterContext.Controller);
+            filterContext.Result = ProcessAction(action.ActionName, contentValue, queryString, parameters, service);
         }
 
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
@@ -74,15 +88,17 @@ namespace Beetle.Mvc {
 
             if (!(filterContext.Result is BeetleContentResult contentResult)) return;
 
-            filterContext.Result = ProcessAction(contentResult.Value, filterContext.ActionDescriptor, filterContext.Controller);
+            var service = filterContext.Controller as IBeetleService;
+            GetParameters(service, out string queryString, out IList<BeetleParameter> parameters, out dynamic _);
+            filterContext.Result = ProcessAction(filterContext.ActionDescriptor.ActionName,
+                                                 contentResult.Value, queryString, parameters, service);
         }
 
-        private ActionResult ProcessAction(object contentValue, ActionDescriptor action, ControllerBase controller) {
-            var service = controller as IBeetleService;
+        private ActionResult ProcessAction(string actionName, object contentValue, string queryString,
+                                           IEnumerable<BeetleParameter> parameters, IBeetleService service) {
             // translate the request query
-            GetParameters(service, out string queryString, out IList<BeetleParameter> parameters);
             var actionContext = new ActionContext(
-                action.ActionName, contentValue, queryString, parameters,
+                actionName, contentValue, queryString, parameters,
                 MaxResultCount, CheckRequestHash, Config, service
             );
             var processResult = ProcessRequest(actionContext);
@@ -90,11 +106,11 @@ namespace Beetle.Mvc {
             return HandleResponse(processResult);
         }
 
-        protected virtual void GetParameters(IBeetleService service, 
-                                             out string queryString, 
-                                             out IList<BeetleParameter> parameters) {
+        protected virtual void GetParameters(IBeetleService service,
+                                             out string queryString,
+                                             out IList<BeetleParameter> parameters, out dynamic postData) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(config, out queryString, out parameters);
+            Helper.GetParameters(config, out queryString, out parameters, out postData);
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {

@@ -32,27 +32,27 @@ namespace Beetle.MvcCore {
 
         public bool? CheckRequestHash { get; set; }
 
-        public override void OnActionExecuting(ActionExecutingContext filterContext) {
-            base.OnActionExecuting(filterContext);
-
-            ProcessAction(null, filterContext.ActionDescriptor.DisplayName, filterContext.Controller, filterContext.HttpContext);
-        }
-
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
-            base.OnActionExecuted(filterContext);
-        }
+            if (!(filterContext.Result is ObjectResult contentValue)) {
+                base.OnActionExecuted(filterContext);
+                return;
+            }
 
-        private ActionResult ProcessAction(object contentValue, string actionName, object controller, HttpContext httpContext) {
-            var service = controller as IBeetleService;
+            var actionName = filterContext.ActionDescriptor.DisplayName;
+            var service = filterContext.Controller as IBeetleService;
+            var request = filterContext.HttpContext.Request;
+            var response = filterContext.HttpContext.Response;
             // translate the request query
-            GetParameters(service, httpContext.Request, out string queryString, out IList<BeetleParameter> parameters);
+            GetParameters(service, request, out string queryString, out IList<BeetleParameter> parameters);
             var actionContext = new ActionContext(
                 actionName, contentValue, queryString, parameters,
                 MaxResultCount, CheckRequestHash, Config, service
             );
-            var processResult = ProcessRequest(actionContext, httpContext.Request);
-            Helper.SetCustomHeaders(processResult, httpContext.Response);
-            return HandleResponse(processResult, httpContext.Response);
+            var processResult = ProcessRequest(actionContext, request);
+            Helper.SetCustomHeaders(processResult, response);
+            filterContext.Result = HandleResponse(processResult, response);
+
+            base.OnActionExecuted(filterContext);
         }
 
         protected virtual void GetParameters(IBeetleService service,

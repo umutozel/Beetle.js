@@ -76,7 +76,7 @@ namespace Beetle.Mvc {
                     throw new NotSupportedException();
 
                 var result = contextHandler.HandleUnknownAction(action);
-                Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters);
+                Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters, out dynamic _);
 
                 var actionContext = new ActionContext(
                     action, result, queryString, parameters,

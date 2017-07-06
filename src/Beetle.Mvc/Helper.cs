@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,21 +15,23 @@ namespace Beetle.Mvc {
     public static class Helper {
 
         public static void GetParameters(IBeetleConfig config, out string queryString,
-                                         out IList<BeetleParameter> parameters) {
+                                         out IList<BeetleParameter> parameters, out dynamic postData) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
             var request = HttpContext.Current.Request;
 
+            postData = null;
             IDictionary<string, string> queryParams;
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 queryParams = request.Params.ToDictionary();
                 if (request.ContentType.Contains("application/json")) {
-                    var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                    foreach (var i in d) {
-                        queryParams.Add(i.Key, i.Value.ToString());
+                    postData = config.Serializer.DeserializeToDynamic(queryString);
+                    foreach (var p in TypeDescriptor.GetProperties(postData)) {
+                        var v = postData[p.Name];
+                        queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
                     }
                 }
             }
