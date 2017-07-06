@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Beetle.MvcCore {
     using Server;
@@ -59,15 +60,14 @@ namespace Beetle.MvcCore {
             var actionContext = processResult.ActionContext;
             var service = actionContext.Service;
             var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
+            var formatter = new BeetleMediaTypeFormatter(config);
+            var formatters = new List<IOutputFormatter> {formatter};
+            var formatterCollection = new FormatterCollection<IOutputFormatter>(formatters);
 
-            return null;
-
-            //todo: generate json  result
-            return new JsonResult(config, processResult) {
-                Data = result,
-                ContentEncoding = response.HeaderEncoding,
-                ContentType = "application/json",
-                JsonRequestBehavior = JsonRequestBehavior.AllowGet
+            //todo: handle response
+            return new ObjectResult(result) {
+                Formatters = formatterCollection,
+                ContentTypes = new MediaTypeCollection { "application/json; charset=utf-8" }
             };
         }
 

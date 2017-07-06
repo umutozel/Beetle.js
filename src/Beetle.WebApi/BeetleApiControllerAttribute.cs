@@ -11,7 +11,7 @@ namespace Beetle.WebApi {
     [AttributeUsage(AttributeTargets.Class)]
     public class BeetleApiControllerAttribute : Attribute, IControllerConfiguration {
         private static readonly object _locker = new object();
-        private readonly IBeetleConfig _beetleConfig;
+        private readonly IBeetleConfig _config;
         private readonly BeetleQueryableAttribute _queryableFilter;
 
         public BeetleApiControllerAttribute(Type configType = null)
@@ -20,14 +20,14 @@ namespace Beetle.WebApi {
 
         public BeetleApiControllerAttribute(BeetleQueryableAttribute defaultFilter, Type configType = null) {
             if (configType != null) {
-                _beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
-                if (_beetleConfig == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
+                _config = Activator.CreateInstance(configType) as IBeetleConfig;
+                if (_config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
             }
 
             _queryableFilter = defaultFilter;
         }
 
-        protected virtual IBeetleConfig BeetleConfig => _beetleConfig;
+        protected virtual IBeetleConfig Config => _config;
 
         public void Initialize(HttpControllerSettings settings, HttpControllerDescriptor descriptor) {
             lock (_locker) {
@@ -42,7 +42,7 @@ namespace Beetle.WebApi {
         }
 
         protected virtual MediaTypeFormatter CreateFormatter() {
-            return Helper.CreateFormatter(_beetleConfig);
+            return Helper.CreateFormatter(_config);
         }
 
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {
