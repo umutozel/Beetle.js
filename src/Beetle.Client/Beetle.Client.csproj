@@ -89,12 +89,12 @@
     <Content Include="Scripts\beetle\beetle.js" />
     <Content Include="Scripts\beetle\beetle.lang-tr-TR.js" />
     <Content Include="Scripts\beetle\beetle.queryExtensions.js" />
-    <Content Include="Scripts\qunit.js" />
+    <Content Include="Scripts\qunit\qunit.js" />
     <TypeScriptCompile Include="Scripts\tests\basicTests.ts" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <TypeScriptCompile Include="Scripts\qunit.d.ts" />
+    <TypeScriptCompile Include="Scripts\qunit\qunit.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -111,7 +111,6 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="chutzpah.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

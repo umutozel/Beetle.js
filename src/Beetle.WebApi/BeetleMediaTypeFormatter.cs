@@ -10,7 +10,8 @@ namespace Beetle.WebApi {
 
     public class BeetleMediaTypeFormatter : JsonMediaTypeFormatter {
 
-        public override async Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext) {
+        public override async Task WriteToStreamAsync(Type type, object value, Stream writeStream, 
+                                                      HttpContent content, TransportContext transportContext) {
             if (!(value is string) && value is IEnumerable) {
                 using (var sw = new StreamWriter(writeStream)) {
                     sw.Write("{\"$d\":");
