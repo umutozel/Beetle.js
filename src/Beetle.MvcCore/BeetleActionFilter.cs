@@ -35,10 +35,11 @@ namespace Beetle.MvcCore {
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
             base.OnActionExecuted(filterContext);
 
-            if (!(filterContext.Result is ObjectResult contentValue))
+            if (!(filterContext.Result is ObjectResult objectResult))
                 return;
 
             var actionName = filterContext.ActionDescriptor.DisplayName;
+            var contentValue = objectResult.Value;
             var service = filterContext.Controller as IBeetleService;
             var request = filterContext.HttpContext.Request;
             var response = filterContext.HttpContext.Response;

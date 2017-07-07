@@ -2,7 +2,7 @@
 
 test("get all entities", 1, () => {
     var manager = new beetle.EntityManager(service);
-    var query = manager.createQuery<Entity>("Entities").where(e => e.Id > 10);
+    var query = manager.createQuery<Entity>("Entities").where(e => e.Id > 0);
     stop();
     query.then(data => {
         ok(data.length > 0, "loaded all entities") || start();
