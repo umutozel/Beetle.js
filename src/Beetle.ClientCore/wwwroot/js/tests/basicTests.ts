@@ -1,4 +1,7 @@
-﻿var service = new beetle.MvcService("Home", false);
+﻿import "../qunit/qunit";
+import * as beetle from "../beetle/beetle";
+
+var service = new beetle.MvcService("Home", false);
 
 test("get all entities", 1, () => {
     var manager = new beetle.EntityManager(service);

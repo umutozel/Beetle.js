@@ -9,11 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot/js\qunit\_Chutzpah.79eedc52f0565b0e0e40837c437a3965845b52b7.test.html" />
+    <Content Remove="wwwroot/js\tests\_Chutzpah.35b3e889c15cddc914b70c805d93b5229a786f9b.test.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="wwwroot\css\qunit.css" />
     <Content Include="wwwroot\js\beetle\beetle.js" />
     <Content Include="wwwroot\js\beetle\beetle.lang-tr-TR.js" />
     <Content Include="wwwroot\js\beetle\beetle.queryExtensions.js" />
     <Content Include="wwwroot\js\qunit\qunit.js" />
+    <Content Include="wwwroot\js\tests\basicTests.ts" />
+    <Content Include="wwwroot\js\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Giver" Version="1.0.0" />
@@ -31,7 +38,6 @@
     <None Include="wwwroot\js\beetle\beetle.d.ts" />
     <None Include="wwwroot\js\beetle\beetle.queryExtensions.d.ts" />
     <None Include="wwwroot\js\qunit\qunit.d.ts" />
-    <None Include="wwwroot\js\tests\basicTests.ts" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Beetle.MvcCore\Beetle.MvcCore.csproj" />
