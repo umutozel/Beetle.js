@@ -1,7 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Authors>Umut Özel</Authors>
+    <Description>Beetle Asp.Net Mvc Core implementation.</Description>
+    <Copyright>Copyright (c) 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/umutozel/Beetle/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/umutozel/Beetle</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <PackageTags>Asp.Net Mvc Core Unit of Work Client Side Change Tracker Beetle</PackageTags>
+    <RepositoryUrl>https://github.com/umutozel/Beetle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup>

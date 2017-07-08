@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Authors>Umut Özel</Authors>
+    <Description>Beetle metadata types.</Description>
+    <Copyright>Copyright (c) 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/umutozel/Beetle/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/umutozel/Beetle</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <PackageTags>Asp.Net Mvc Core Unit of Work Client Side Change Tracker Beetle</PackageTags>
+    <RepositoryUrl>https://github.com/umutozel/Beetle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
 </Project>
