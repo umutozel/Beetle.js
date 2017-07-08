@@ -1,14 +1,18 @@
-﻿import "../qunit/qunit";
-import * as beetle from "../beetle/beetle";
-
-var service = new beetle.MvcService("Home", false);
+﻿var service = new beetle.MvcService("Home", false);
 
 test("get all entities", 1, () => {
     var manager = new beetle.EntityManager(service);
     var query = manager.createQuery<Entity>("Entities").where(e => e.Id > 0);
     stop();
     query.then(data => {
-        ok(data.length > 0, "loaded all entities") || start();
+        var entity = data.first();
+        entity.IsCanceled = !entity.IsCanceled;
+        manager.saveChanges()
+            .then(sr => {
+                ok(sr, "loaded all entities");
+                start();
+            }, handleFail);
+
     }, handleFail);
 });
 

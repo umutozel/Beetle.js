@@ -57,7 +57,7 @@ namespace Beetle.WebApi {
         }
 
         protected BeetleApiController(IBeetleConfig config) {
-            Config = config;
+            Config = config ?? new BeetleConfig();
         }
 
         protected bool ForbidBeetleQueryString { get; set; }

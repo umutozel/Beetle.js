@@ -54,7 +54,7 @@ namespace Beetle.Mvc {
         }
 
         protected BeetleController(IBeetleConfig config) {
-            Config = config;
+            Config = config ?? new BeetleConfig();
         }
 
         protected bool AutoHandleUnknownActions { get; set; }

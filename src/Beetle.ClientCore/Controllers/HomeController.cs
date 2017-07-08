@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Beetle.ClientCore.Controllers {
 
-    public class HomeController : BeetleController {
+    public sealed class HomeController : BeetleController {
 
         public IActionResult Index() {
             return View();

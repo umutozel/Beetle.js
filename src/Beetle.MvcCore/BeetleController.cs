@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Beetle.MvcCore {
     using Meta;
@@ -36,7 +37,7 @@ namespace Beetle.MvcCore {
         }
 
         protected BeetleController(IBeetleConfig config) {
-            Config = config;
+            Config = config ?? new BeetleConfig();
         }
 
         protected bool AutoHandleUnknownActions { get; set; }
@@ -119,7 +120,7 @@ namespace Beetle.MvcCore {
                 : ServerHelper.DefaultRequestProcessor(actionContext);
         }
 
-        public async Task<SaveResult> SaveChanges(object saveBundle) {
+        public async Task<SaveResult> SaveChanges([FromBody]object saveBundle) {
             var entityBags = ResolveEntities(saveBundle, out IList<EntityBag> unknowns);
             var entityBagList = entityBags == null
                 ? new List<EntityBag>()

@@ -20,7 +20,6 @@
     <Content Include="wwwroot\js\beetle\beetle.queryExtensions.js" />
     <Content Include="wwwroot\js\qunit\qunit.js" />
     <Content Include="wwwroot\js\tests\basicTests.ts" />
-    <Content Include="wwwroot\js\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Giver" Version="1.0.0" />
