@@ -4,9 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
+#if MVC_CORE_API
+namespace Beetle.MvcCoreApi {
+#else
 namespace Beetle.MvcCore {
+#endif
     using Meta;
-    using Server;
+using Server;
     using Server.Interface;
     using ServerHelper = Server.Helper;
 
@@ -30,7 +34,11 @@ namespace Beetle.MvcCore {
     }
 
     [BeetleActionFilter]
+#if MVC_CORE_API
+    public abstract class BeetleController : ControllerBase, IBeetleService {
+#else
     public abstract class BeetleController : Controller, IBeetleService {
+#endif
 
         protected BeetleController() : this(null) {
         }
@@ -90,7 +98,7 @@ namespace Beetle.MvcCore {
                    ?? throw new NotSupportedException();
         }
 
-        #region Implementation of IBeetleService
+#region Implementation of IBeetleService
 
         public virtual IBeetleConfig Config { get; }
 
@@ -139,7 +147,7 @@ namespace Beetle.MvcCore {
             return retVal;
         }
 
-        #region Event-Handlers
+#region Event-Handlers
 
         public event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
@@ -183,8 +191,8 @@ namespace Beetle.MvcCore {
             AfterSaveChanges?.Invoke(this, args);
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
     }
 }

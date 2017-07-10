@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.CSharpClient", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.EntityFrameworkCore", "src\Beetle.EntityFrameworkCore\Beetle.EntityFrameworkCore.csproj", "{F54E6978-7527-4341-BFD9-759A05888B6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.ClientCore", "src\Beetle.ClientCore\Beetle.ClientCore.csproj", "{D50BB10C-7C52-4220-A23A-7B36290C0100}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.ClientCore", "src\Beetle.ClientCore\Beetle.ClientCore.csproj", "{D50BB10C-7C52-4220-A23A-7B36290C0100}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.MvcCoreApi", "src\Beetle.MvcCoreApi\Beetle.MvcCoreApi.csproj", "{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,10 @@ Global
 		{D50BB10C-7C52-4220-A23A-7B36290C0100}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D50BB10C-7C52-4220-A23A-7B36290C0100}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D50BB10C-7C52-4220-A23A-7B36290C0100}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,5 +98,6 @@ Global
 		{1909C42A-2D98-47FE-AB21-DD2EE97B493A} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 		{F54E6978-7527-4341-BFD9-759A05888B6D} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 		{D50BB10C-7C52-4220-A23A-7B36290C0100} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 	EndGlobalSection
 EndGlobal

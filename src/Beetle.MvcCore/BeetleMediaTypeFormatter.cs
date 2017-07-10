@@ -4,7 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
+#if MVC_CORE_API
+namespace Beetle.MvcCoreApi {
+#else
 namespace Beetle.MvcCore {
+#endif
     using Server.Interface;
 
     public class BeetleMediaTypeFormatter : OutputFormatter {

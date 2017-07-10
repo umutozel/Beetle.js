@@ -4,7 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
+#if MVC_CORE_API
+namespace Beetle.MvcCoreApi {
+#else
 namespace Beetle.MvcCore {
+#endif
     using Server;
     using Server.Interface;
     using Properties;
