@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Web;
 using System.Net.Http.Formatting;
 
@@ -43,9 +42,6 @@ namespace Beetle.WebApi {
         }
 
         public static void SetCustomHeaders(ProcessResult processResult) {
-            var actionContext = processResult.ActionContext;
-            var service = actionContext.Service;
-            var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var response = HttpContext.Current.Response;
 
             // set InlineCount header info if exists
@@ -56,6 +52,9 @@ namespace Beetle.WebApi {
 
             var userData = processResult.UserData;
             if (userData != null && response.Headers["X-UserData"] == null) {
+                var actionContext = processResult.ActionContext;
+                var service = actionContext.Service;
+                var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
                 var userDataStr = (config ?? BeetleConfig.Instance).Serializer.Serialize(userData);
                 response.Headers.Add("X-UserData", userDataStr);
             }

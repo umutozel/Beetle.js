@@ -42,9 +42,6 @@ namespace Beetle.Mvc {
         }
 
         public static void SetCustomHeaders(ProcessResult processResult) {
-            var actionContext = processResult.ActionContext;
-            var service = actionContext.Service;
-            var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
             var response = HttpContext.Current.Response;
 
             // set InlineCount header info if exists
@@ -55,6 +52,9 @@ namespace Beetle.Mvc {
 
             var userData = processResult.UserData;
             if (userData != null && response.Headers["X-UserData"] == null) {
+                var actionContext = processResult.ActionContext;
+                var service = actionContext.Service;
+                var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
                 var userDataStr = (config ?? BeetleConfig.Instance).Serializer.Serialize(userData);
                 response.Headers.Add("X-UserData", userDataStr);
             }
