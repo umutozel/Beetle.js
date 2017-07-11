@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Web.Http.Filters;
 using System.Net.Http.Formatting;
 
 namespace Beetle.WebApi {
+    using Server;
     using Server.Interface;
     using Properties;
 
@@ -28,9 +30,12 @@ namespace Beetle.WebApi {
         }
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
-            var formatter = CreateFormatter();
-
             base.OnActionExecuted(actionExecutedContext);
+
+            if (actionExecutedContext.ActionContext.ActionDescriptor
+                .GetCustomAttributes<NonBeetleActionAttribute>(false).Any()) return;
+
+            var formatter = CreateFormatter();
 
             var response = actionExecutedContext.Response;
             if (!response.TryGetContentValue(out object contentValue)) return;

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 #if MVC_CORE_API
@@ -36,8 +39,10 @@ namespace Beetle.MvcCore {
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
             base.OnActionExecuted(filterContext);
 
-            if (!(filterContext.Result is ObjectResult objectResult))
-                return;
+            if (!(filterContext.Result is ObjectResult objectResult)) return;
+
+            if (filterContext.ActionDescriptor is ControllerActionDescriptor cad &&
+                cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonBeetleActionAttribute))) return;
 
             var actionName = filterContext.ActionDescriptor.DisplayName;
             var contentValue = objectResult.Value;

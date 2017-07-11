@@ -38,6 +38,8 @@ namespace Beetle.Mvc {
             var controller = filterContext.Controller;
             var action = filterContext.ActionDescriptor;
 
+            if (action.GetCustomAttributes(typeof(NonBeetleActionAttribute), false).Any()) return;
+
             MethodInfo actionMethod;
             if (action is ReflectedActionDescriptor reflectedAction) {
                 actionMethod = reflectedAction.MethodInfo;
@@ -83,7 +85,8 @@ namespace Beetle.Mvc {
         public override void OnActionExecuted(ActionExecutedContext filterContext) {
             base.OnActionExecuted(filterContext);
 
-            if (!(filterContext.Result is BeetleContentResult contentResult)) return;
+            if (!(filterContext.Result is BeetleContentResult contentResult)
+                || filterContext.ActionDescriptor.GetCustomAttributes(typeof(NonBeetleActionAttribute), false).Any()) return;
 
             var service = filterContext.Controller as IBeetleService;
             GetParameters(service, out string queryString, out IList<BeetleParameter> parameters, out dynamic _);
