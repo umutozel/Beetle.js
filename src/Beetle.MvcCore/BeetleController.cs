@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 #if MVC_CORE_API
 namespace Beetle.MvcCoreApi {
@@ -67,8 +68,6 @@ namespace Beetle.MvcCore {
             Config = config ?? new BeetleConfig();
         }
 
-        protected bool AutoHandleUnknownActions { get; set; }
-
         protected virtual Metadata GetMetadata() {
             var svc = (IBeetleService)this;
             return svc.ContextHandler?.Metadata();
@@ -77,30 +76,6 @@ namespace Beetle.MvcCore {
         [BeetleActionFilter(typeof(SimpleResultConfig))]
         public virtual object Metadata() {
             return GetMetadata()?.ToMinified();
-        }
-
-        public override NotFoundResult NotFound() {
-            var action = ControllerContext.ActionDescriptor.ActionName;
-
-            if (AutoHandleUnknownActions) {
-                var contextHandler = ((IBeetleService)this).ContextHandler;
-                if (contextHandler == null)
-                    throw new NotSupportedException();
-
-                var result = contextHandler.HandleUnknownAction(action);
-                Helper.GetParameters(Config, Request, out string queryString, out IList<BeetleParameter> parameters);
-
-                var actionContext = new ActionContext(
-                    action, result, queryString, parameters,
-                    MaxResultCount, CheckRequestHash, null, this
-                );
-                var processResult = ProcessRequest(actionContext);
-                Helper.SetCustomHeaders(processResult, Response);
-                var response = Helper.HandleResponse(processResult, Response);
-                response.ExecuteResult(ControllerContext);
-            }
-
-            return base.NotFound();
         }
 
         protected virtual IList<EntityBag> ResolveEntities(object saveBundle, out IList<EntityBag> unknownEntities) {
