@@ -10,18 +10,18 @@ namespace Beetle.MvcCoreApi {
 namespace Beetle.MvcCore {
 #endif
     using Meta;
-using Server;
+    using Server;
     using Server.Interface;
     using ServerHelper = Server.Helper;
 
-    public abstract class BeetleController<TContextHandler> : BeetleController, IBeetleService<TContextHandler>
+    public abstract class BeetleControllerBase<TContextHandler> : BeetleControllerBase, IBeetleService<TContextHandler>
         where TContextHandler : class, IContextHandler {
 
-        protected BeetleController(TContextHandler contextHandler)
+        protected BeetleControllerBase(TContextHandler contextHandler)
             : this(contextHandler, null) {
         }
 
-        protected BeetleController(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
+        protected BeetleControllerBase(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
             if (ContextHandler == null)
                 throw new ArgumentNullException(nameof(contextHandler));
 
@@ -35,15 +35,15 @@ using Server;
 
     [BeetleActionFilter]
 #if MVC_CORE_API
-    public abstract class BeetleController : ControllerBase, IBeetleService {
+    public abstract class BeetleControllerBase : ControllerBase, IBeetleService {
 #else
-    public abstract class BeetleController : Controller, IBeetleService {
+    public abstract class BeetleControllerBase : Controller, IBeetleService {
 #endif
 
-        protected BeetleController() : this(null) {
+        protected BeetleControllerBase() : this(null) {
         }
 
-        protected BeetleController(IBeetleConfig config) {
+        protected BeetleControllerBase(IBeetleConfig config) {
             Config = config ?? new BeetleConfig();
         }
 
@@ -98,7 +98,7 @@ using Server;
                    ?? throw new NotSupportedException();
         }
 
-#region Implementation of IBeetleService
+        #region Implementation of IBeetleService
 
         public virtual IBeetleConfig Config { get; }
 
@@ -147,7 +147,7 @@ using Server;
             return retVal;
         }
 
-#region Event-Handlers
+        #region Event-Handlers
 
         public event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
@@ -191,8 +191,8 @@ using Server;
             AfterSaveChanges?.Invoke(this, args);
         }
 
-#endregion
+        #endregion
 
-#endregion
+        #endregion
     }
 }

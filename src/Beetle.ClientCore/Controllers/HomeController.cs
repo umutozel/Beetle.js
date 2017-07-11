@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Beetle.ClientCore.Models;
-using Beetle.MvcCore;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Beetle.ClientCore.Controllers {
+    using MvcCore;
+    using Models;
 
     public sealed class HomeController : BeetleController {
 

@@ -39,6 +39,7 @@
     <None Include="wwwroot\js\qunit\qunit.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beetle.MvcCoreApi\Beetle.MvcCoreApi.csproj" />
     <ProjectReference Include="..\Beetle.MvcCore\Beetle.MvcCore.csproj" />
   </ItemGroup>
 
