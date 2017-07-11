@@ -1,21 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace Beetle.CSharpClient {
 
     internal class BeetleQueryVisitor : ExpressionVisitor {
-        private static readonly Dictionary<string, string> _prmMap;
-        private List<string> _queryParams = new List<string>();
-
-        static BeetleQueryVisitor() {
-            _prmMap = new Dictionary<string, string> {
-                ["Where"] = "filter",
-                ["Select"] = "select",
-                ["OrderBy"] = "orderBy",
-                ["OrderByDescending"] = "orderBy"
-            };
-        }
+        private readonly List<string> _queryParams = new List<string>();
 
         private BeetleQueryVisitor() {
         }
@@ -30,32 +21,29 @@ namespace Beetle.CSharpClient {
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node) {
-            var methodName = node.Method.Name;
-            switch (methodName) {
-                case "Where":
-                case "OrderBy":
-                case "OrderByDescending":
-                case "Select":
-                    var bodyExp = BeetleLambdaVisitor.ReplaceParameter(node.Arguments[1]);
-                    var body = bodyExp.ToString();
-                    body = body.Substring(6);
-                    if (methodName == "OrderByDescending") body += " desc";
-                    if (methodName == "Select" && body.StartsWith("new ")) {
-                        body = body.Substring(body.IndexOf("(") + 1);
-                        body = body.Substring(0, body.Length - 1);
-                        var bodyParts = body.Split(',');
-                        body = string.Join(", ",
-                            bodyParts.Select(bp => {
-                                var assignParts = bp.Split('=');
-                                if (assignParts.Length == 2)
-                                    return assignParts[1] + " as " + assignParts[0];
-                                return bp;
-                            })
-                        );
-                    }
-                    _queryParams.Add($"{_prmMap[methodName]}:{body}");
-                    break;
+            var methodName = node.Method.Name.ToLower();
+            var bodyExp = BeetleLambdaVisitor.ReplaceParameter(node.Arguments[1]);
+            var body = bodyExp.ToString();
+            body = body.Substring(6);
+
+            if (methodName == "OrderByDescending" || methodName == "ThenByDescending") {
+                methodName = "OrderBy";
+                body += " desc";
             }
+            else if (methodName == "Select" && body.StartsWith("new ")) {
+                body = body.Substring(body.IndexOf("(", StringComparison.Ordinal) + 1);
+                body = body.Substring(0, body.Length - 1);
+                var bodyParts = body.Split(',');
+                body = string.Join(", ",
+                    bodyParts.Select(bp => {
+                        var assignParts = bp.Split('=');
+                        if (assignParts.Length == 2)
+                            return assignParts[1] + " as " + assignParts[0];
+                        return bp;
+                    })
+                );
+            }
+            _queryParams.Add($"{methodName.ToLower()}:{body}");
 
             return base.VisitMethodCall(node);
         }

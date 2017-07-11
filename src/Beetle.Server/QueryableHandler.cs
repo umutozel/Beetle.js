@@ -107,6 +107,7 @@ namespace Beetle.Server {
                         query = Where(query, prm.Value);
                         break;
                     case "orderby":
+                    case "thenby":
                         query = OrderBy(query, prm.Value);
                         break;
                     case "expand":
