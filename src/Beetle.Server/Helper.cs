@@ -244,8 +244,9 @@ namespace Beetle.Server {
                 var results = new List<ValidationResult>();
                 var context = new ValidationContext(entity, null, null);
                 Validator.TryValidateObject(entity, context, results, true);
-                if (results.Any())
+                if (results.Any()) {
                     validationResults.Add(new EntityValidationResult(entity, results));
+                }
             }
             return validationResults;
         }

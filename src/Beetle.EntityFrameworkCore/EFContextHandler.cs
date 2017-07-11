@@ -26,6 +26,8 @@ namespace Beetle.EntityFrameworkCore {
         public EFContextHandler(TContext context) : base(context) {
         }
 
+        public bool ValidateOnSave { get; set; } = true;
+
         protected IEnumerable<IEntityType> EntityTypes {
             get {
                 if (_entityTypes != null) return _entityTypes;
@@ -126,6 +128,12 @@ namespace Beetle.EntityFrameworkCore {
                 saveList = saveList.Concat(mergedUnmappeds).ToList();
             }
             if (!saveList.Any()) return SaveResult.Empty;
+
+            if (ValidateOnSave) {
+                var validationResults = Server.Helper.ValidateEntities(saveList.Select(eb => eb.Entity));
+                if (validationResults.Any())
+                    throw new EntityValidationException(validationResults);
+            }
 
             OnBeforeSaveChanges(new BeforeSaveEventArgs(saveContext));
             var affectedCount = await Context.SaveChangesAsync();

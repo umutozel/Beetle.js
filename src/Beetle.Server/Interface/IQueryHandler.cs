@@ -6,15 +6,6 @@ namespace Beetle.Server.Interface {
 
         HandledQuery HandleQuery(T query, IEnumerable<BeetleParameter> parameters);
 
-        /// <summary>
-        /// Handles executer expression (any, all, first, single etc..).
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="executer">The executer expression.</param>
-        /// <returns></returns>
-        /// <exception cref="BeetleException">Invalid group by expression:  + prm.Value
-        /// or
-        /// Unknown beetle query parameter:  + prm.Key</exception>
         object HandleExecuter(T query, BeetleParameter executer);
 
         T OfType(T query, string ofType);

@@ -13,9 +13,6 @@ namespace Beetle.MvcCore {
     using Server.Interface;
     using Properties;
 
-    /// <summary>
-    /// Imitate OData behavior for MVC Controllers.
-    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
 

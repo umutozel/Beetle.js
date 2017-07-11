@@ -38,7 +38,7 @@ namespace Beetle.Server {
 
         /// <summary>
         /// Gets or sets the type of the entity.
-        /// Added for performance.
+        /// Added to improve performance.
         /// </summary>
         public EntityType EntityType { get; set; }
     }

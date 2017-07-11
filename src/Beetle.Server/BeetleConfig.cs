@@ -10,7 +10,6 @@ namespace Beetle.Server {
     /// <summary>
     /// Default config implementation using Newtonsoft.
     /// We want Beetle to work without any configuration, so here the default implementation and yeah there is dependency to Newtonsoft.
-    /// (Microsoft did it too with their JsonMediaTypeFormatter).
     /// But it is possible to use another serializer.
     /// </summary>
     public class BeetleConfig : IBeetleConfig {

@@ -36,7 +36,9 @@ namespace Beetle.Server {
         public HashSet<object> GeneratedEntities { get; }
 
         /// <summary>
-        /// Gets or sets the user data. One can override the SaveChanges method and can set custom value to this object. Will be carried as a HTTP Header
+        /// Gets or sets the user data. 
+        /// One can override the SaveChanges method and can set custom value to this object. 
+        /// Will be carried as a HTTP Header
         /// </summary>
         public object UserData { get; set; }
     }

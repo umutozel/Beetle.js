@@ -234,15 +234,11 @@ namespace Beetle.Server {
         }
 
         public virtual IQueryable Where(IQueryable query, string filter) {
-            if (string.IsNullOrWhiteSpace(filter)) return query;
-
-            return query.Where(filter);
+            return string.IsNullOrWhiteSpace(filter) ? query : query.Where(filter);
         }
 
         public virtual IQueryable OrderBy(IQueryable query, string orderBy) {
-            if (string.IsNullOrWhiteSpace(orderBy)) return query;
-
-            return query.OrderBy(orderBy);
+            return string.IsNullOrWhiteSpace(orderBy) ? query : query.OrderBy(orderBy);
         }
 
         public virtual IQueryable Include(IQueryable query, string expand) {
@@ -269,22 +265,30 @@ namespace Beetle.Server {
         }
 
         public virtual IQueryable GroupBy(IQueryable query, string keySelector, string elementSelector) {
-            if (string.IsNullOrWhiteSpace(keySelector))
+            if (string.IsNullOrWhiteSpace(keySelector)) {
                 keySelector = "true";
-            else if (keySelector.Contains(",") || keySelector.Contains(" as "))
+            }
+            else if (keySelector.Contains(",") || keySelector.Contains(" as ")) {
                 keySelector = $"New({keySelector})";
+            }
+
             query = query.GroupBy(keySelector, "it");
 
-            if (string.IsNullOrWhiteSpace(elementSelector))
+            if (string.IsNullOrWhiteSpace(elementSelector)) {
                 elementSelector = "New(Key, it as Items)";
-            else if (elementSelector.Contains(",") || elementSelector.Contains(" as "))
+            }
+            else if (elementSelector.Contains(",") || elementSelector.Contains(" as ")) {
                 elementSelector = $"New({elementSelector})";
+            }
+
             return query.Select(elementSelector);
         }
 
         public virtual IQueryable Distinct(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector))
+            if (!string.IsNullOrWhiteSpace(elementSelector)) {
                 query = Select(query, elementSelector);
+            }
+
             return Queryable.Distinct((dynamic)query);
         }
 
@@ -293,9 +297,7 @@ namespace Beetle.Server {
         }
 
         public virtual IQueryable SelectMany(IQueryable query, string projection) {
-            if (string.IsNullOrWhiteSpace(projection)) return query;
-
-            return query.SelectMany(projection);
+            return string.IsNullOrWhiteSpace(projection) ? query : query.SelectMany(projection);
         }
 
         public virtual IQueryable SkipWhile(IQueryable query, string predicate) {
@@ -311,74 +313,98 @@ namespace Beetle.Server {
         }
 
         public virtual bool Any(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return query.Any();
         }
 
         public virtual object Avg(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector))
+            if (!string.IsNullOrWhiteSpace(elementSelector)) {
                 query = query.Select(elementSelector);
+            }
+
             return Queryable.Average((dynamic)query);
         }
 
         public virtual object Max(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector))
+            if (!string.IsNullOrWhiteSpace(elementSelector)) {
                 query = query.Select(elementSelector);
+            }
+
             return Queryable.Max((dynamic)query);
         }
 
         public virtual object Min(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector))
+            if (!string.IsNullOrWhiteSpace(elementSelector)) {
                 query = query.Select(elementSelector);
+            }
+
             return Queryable.Min((dynamic)query);
         }
 
         public virtual object Sum(IQueryable query, string elementSelector) {
-            if (!string.IsNullOrWhiteSpace(elementSelector))
+            if (!string.IsNullOrWhiteSpace(elementSelector)) {
                 query = query.Select(elementSelector);
+            }
+
             return Queryable.Sum((dynamic)query);
         }
 
         public virtual object Count(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.Count((dynamic)query);
         }
 
         public virtual object First(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.First((dynamic)query);
         }
 
         public virtual object FirstOrDefault(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.FirstOrDefault((dynamic)query);
         }
 
         public virtual object Single(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.Single((dynamic)query);
         }
 
         public virtual object SingleOrDefault(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.SingleOrDefault((dynamic)query);
         }
 
         public virtual object Last(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.Last((dynamic)query);
         }
 
         public virtual object LastOrDefault(IQueryable query, string predicate) {
-            if (!string.IsNullOrWhiteSpace(predicate))
+            if (!string.IsNullOrWhiteSpace(predicate)) {
                 query = Where(query, predicate);
+            }
+
             return Queryable.LastOrDefault((dynamic)query);
         }
 
