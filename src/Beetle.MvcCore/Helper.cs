@@ -30,11 +30,15 @@ namespace Beetle.MvcCore {
                 queryParams = request.Query.ToDictionary(k => k.Key, k => k.Value.ToString());
                 var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
                 foreach (var i in d) {
-                    queryParams[i.Key] = i.Value.ToString();
+                    var v = i.Value;
+                    queryParams[i.Key] = v == null ? string.Empty : v.ToString();
                 }
             }
             else {
                 queryString = request.QueryString.Value;
+                if (queryString.StartsWith("?")) {
+                    queryString = queryString.Substring(1);
+                }
             }
             parameters = Server.Helper.GetBeetleParameters(queryParams);
         }

@@ -14,14 +14,26 @@ namespace Beetle.MvcCore {
     using Server.Interface;
     using ServerHelper = Server.Helper;
 
+#if MVC_CORE_API
     public abstract class BeetleControllerBase<TContextHandler> : BeetleControllerBase, IBeetleService<TContextHandler>
+#else
+    public abstract class BeetleController<TContextHandler> : BeetleController, IBeetleService<TContextHandler>
+#endif
         where TContextHandler : class, IContextHandler {
 
+#if MVC_CORE_API
         protected BeetleControllerBase(TContextHandler contextHandler)
+#else
+        protected BeetleController(TContextHandler contextHandler)
+#endif
             : this(contextHandler, null) {
         }
 
+#if MVC_CORE_API
         protected BeetleControllerBase(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
+#else
+        protected BeetleController(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
+#endif
             if (ContextHandler == null)
                 throw new ArgumentNullException(nameof(contextHandler));
 
@@ -37,13 +49,21 @@ namespace Beetle.MvcCore {
 #if MVC_CORE_API
     public abstract class BeetleControllerBase : ControllerBase, IBeetleService {
 #else
-    public abstract class BeetleControllerBase : Controller, IBeetleService {
+    public abstract class BeetleController : Controller, IBeetleService {
 #endif
 
+#if MVC_CORE_API
         protected BeetleControllerBase() : this(null) {
+#else
+        protected BeetleController() : this(null) {
+#endif
         }
 
+#if MVC_CORE_API
         protected BeetleControllerBase(IBeetleConfig config) {
+#else
+        protected BeetleController(IBeetleConfig config) {
+#endif
             Config = config ?? new BeetleConfig();
         }
 
@@ -83,8 +103,7 @@ namespace Beetle.MvcCore {
             return base.NotFound();
         }
 
-        protected virtual IList<EntityBag> ResolveEntities(object saveBundle,
-            out IList<EntityBag> unknownEntities) {
+        protected virtual IList<EntityBag> ResolveEntities(object saveBundle, out IList<EntityBag> unknownEntities) {
             return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
         }
 

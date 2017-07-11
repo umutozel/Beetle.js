@@ -22,11 +22,10 @@ namespace Beetle.Mvc {
             var request = HttpContext.Current.Request;
 
             postData = null;
-            IDictionary<string, string> queryParams;
+            var queryParams = request.QueryString.ToDictionary();
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
-                queryParams = request.Params.ToDictionary();
                 postData = config.Serializer.DeserializeToDynamic(queryString);
                 foreach (var p in TypeDescriptor.GetProperties(postData)) {
                     var v = postData[p.Name];
@@ -34,8 +33,10 @@ namespace Beetle.Mvc {
                 }
             }
             else {
-                queryString = HttpUtility.UrlDecode(request.Url.Query);
-                queryParams = request.QueryString.ToDictionary();
+                queryString = request.Url.Query;
+                if (queryString.StartsWith("?")) {
+                    queryString = queryString.Substring(1);
+                }
             }
             parameters = Server.Helper.GetBeetleParameters(queryParams);
         }

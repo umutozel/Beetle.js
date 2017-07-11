@@ -23,19 +23,21 @@ namespace Beetle.WebApi {
             }
             var request = HttpContext.Current.Request;
 
-            IDictionary<string, string> queryParams;
+            var queryParams = request.QueryString.ToDictionary();
             if (request.HttpMethod == "POST") {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
-                queryParams = request.Params.ToDictionary();
                 var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
                 foreach (var i in d) {
-                    queryParams.Add(i.Key, i.Value.ToString());
+                    var v = i.Value;
+                    queryParams.Add(i.Key, v == null ? string.Empty : v.ToString());
                 }
             }
             else {
-                queryString = HttpUtility.UrlDecode(request.Url.Query);
-                queryParams = request.QueryString.ToDictionary();
+                queryString = request.Url.Query;
+                if (queryString.StartsWith("?")) {
+                    queryString = queryString.Substring(1);
+                }
             }
             parameters = Server.Helper.GetBeetleParameters(queryParams);
         }

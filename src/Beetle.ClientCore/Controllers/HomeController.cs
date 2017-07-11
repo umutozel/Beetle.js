@@ -8,6 +8,10 @@ namespace Beetle.ClientCore.Controllers {
 
     public sealed class HomeController : BeetleController {
 
+        public HomeController() {
+            CheckRequestHash = true;
+        }
+
         public IActionResult Index() {
             return View();
         }
