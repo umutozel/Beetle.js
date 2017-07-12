@@ -39,8 +39,6 @@ namespace Beetle.WebApi {
         }
 
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {
-            _queryableFilter.
-
             return new BeetleQueryableFilterProvider(defaultFilter);
         }
 
