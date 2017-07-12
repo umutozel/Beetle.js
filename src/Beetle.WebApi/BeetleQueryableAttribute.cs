@@ -18,18 +18,16 @@ namespace Beetle.WebApi {
             AllowedQueryOptions = AllowedQueryOptions.Supported | AllowedQueryOptions.Expand | AllowedQueryOptions.Select;
         }
 
-        public BeetleQueryableAttribute(IBeetleConfig config) : this() {
+        public BeetleQueryableAttribute(IBeetleApiConfig config) : this() {
             Config = config;
         }
 
         public BeetleQueryableAttribute(Type configType) : this() {
-            if (configType == null) return;
-
-            Config = Activator.CreateInstance(configType) as IBeetleConfig;
-            if (Config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
+            var config = Activator.CreateInstance(configType) as IBeetleApiConfig;
+            if (config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
         }
 
-        protected IBeetleConfig Config { get; }
+        public IBeetleApiConfig Config { get; }
 
         public int? MaxResultCount { get; set; }
 
@@ -72,13 +70,12 @@ namespace Beetle.WebApi {
 
             // trigger the event on the service
             if (request.Properties.TryGetValue("BeetleService", out object serviceObj)
-                    && request.Properties.TryGetValue("BeetleActionContext", out object actionObj)) {
-                if (serviceObj is IODataService odataService) {
-                    var actionContext = (ActionContext)actionObj;
-                    var args = new BeforeODataQueryHandleEventArgs(actionContext, queryable, queryOptions);
-                    odataService.OnBeforeODataQueryHandle(args);
-                    queryable = args.Query;
-                }
+                    && request.Properties.TryGetValue("BeetleActionContext", out object actionObj) 
+                    && serviceObj is IODataService odataService) {
+                var actionContext = (ActionContext) actionObj;
+                var args = new BeforeODataQueryHandleEventArgs(actionContext, queryable, queryOptions);
+                odataService.OnBeforeODataQueryHandle(args);
+                queryable = args.Query;
             }
 
             return base.ApplyQuery(queryable, queryOptions);

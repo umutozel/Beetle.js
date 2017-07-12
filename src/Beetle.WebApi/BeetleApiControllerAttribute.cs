@@ -5,29 +5,22 @@ using System.Web.Http.OData.Query;
 using System.Net.Http.Formatting;
 
 namespace Beetle.WebApi {
-    using Server.Interface;
-    using Properties;
 
     [AttributeUsage(AttributeTargets.Class)]
     public class BeetleApiControllerAttribute : Attribute, IControllerConfiguration {
         private static readonly object _locker = new object();
-        private readonly IBeetleConfig _config;
         private readonly BeetleQueryableAttribute _queryableFilter;
 
-        public BeetleApiControllerAttribute(Type configType = null)
-            : this(new BeetleQueryableAttribute(configType), configType) {
+        public BeetleApiControllerAttribute() : this(new BeetleApiConfig()) {
         }
 
-        public BeetleApiControllerAttribute(BeetleQueryableAttribute defaultFilter, Type configType = null) {
-            if (configType != null) {
-                _config = Activator.CreateInstance(configType) as IBeetleConfig;
-                if (_config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
-            }
+        public BeetleApiControllerAttribute(IBeetleApiConfig config)
+            : this(new BeetleQueryableAttribute(config)) {
+        }
 
+        public BeetleApiControllerAttribute(BeetleQueryableAttribute defaultFilter) {
             _queryableFilter = defaultFilter;
         }
-
-        protected virtual IBeetleConfig Config => _config;
 
         public void Initialize(HttpControllerSettings settings, HttpControllerDescriptor descriptor) {
             lock (_locker) {
@@ -42,7 +35,7 @@ namespace Beetle.WebApi {
         }
 
         protected virtual MediaTypeFormatter CreateFormatter() {
-            return Helper.CreateFormatter(_config);
+            return _queryableFilter.Config.CreateFormatter();
         }
 
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {

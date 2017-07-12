@@ -24,11 +24,11 @@ namespace Beetle.WebApi {
             : this(contextHandler, null) {
         }
 
-        protected BeetleApiController(IBeetleConfig config)
+        protected BeetleApiController(IBeetleApiConfig config)
             : this(null, config) {
         }
 
-        protected BeetleApiController(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
+        protected BeetleApiController(TContextHandler contextHandler, IBeetleApiConfig config) : base(config) {
             ContextHandler = contextHandler;
         }
 
@@ -56,9 +56,11 @@ namespace Beetle.WebApi {
         protected BeetleApiController() : this(null) {
         }
 
-        protected BeetleApiController(IBeetleConfig config) {
-            Config = config ?? new BeetleConfig();
+        protected BeetleApiController(IBeetleApiConfig config) {
+            Config = config ?? new BeetleApiConfig();
         }
+
+        public IBeetleApiConfig Config { get; }
 
         protected bool ForbidBeetleQueryString { get; set; }
 
@@ -70,7 +72,7 @@ namespace Beetle.WebApi {
         }
 
         [HttpGet]
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
+        [BeetleActionFilter(typeof(SimpleResultApiConfig))]
         public virtual object Metadata() {
             return GetMetadata()?.ToMinified();
         }
@@ -88,7 +90,6 @@ namespace Beetle.WebApi {
 
                 var action = controllerContext.Request.GetRouteData().Values["action"].ToString();
                 var content = HandleUnknownAction(action);
-                // execute response
                 var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = content };
                 return Task.FromResult(responseMessage);
             }
@@ -128,7 +129,7 @@ namespace Beetle.WebApi {
 
         #region Implementation of IBeetleService
 
-        public virtual IBeetleConfig Config { get; }
+        IBeetleConfig IBeetleService.Config => Config;
 
         IContextHandler IBeetleService.ContextHandler => null;
 

@@ -26,7 +26,7 @@ namespace Beetle.Mvc {
             Config = config;
         }
 
-        protected IBeetleConfig Config { get; }
+        public IBeetleConfig Config { get; }
 
         public int MaxResultCount { get; set; }
 

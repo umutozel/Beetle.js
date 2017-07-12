@@ -5,9 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Web;
-using System.Net.Http.Formatting;
 
 namespace Beetle.WebApi {
     using Server;
@@ -65,10 +63,12 @@ namespace Beetle.WebApi {
 
             var actionContext = processResult.ActionContext;
             var service = actionContext.Service;
-            var config = actionContext.Config ?? service?.Config ?? BeetleConfig.Instance;
+            var config = actionContext.Config as IBeetleApiConfig 
+                ?? service?.Config as IBeetleApiConfig 
+                ?? BeetleApiConfig.Instance;
 
             var type = result?.GetType() ?? typeof(object);
-            var formatter = CreateFormatter(config);
+            var formatter = config.CreateFormatter();
             return new ObjectContent(type, result, formatter);
         }
 
@@ -92,16 +92,6 @@ namespace Beetle.WebApi {
 
         public static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection) {
             return nameValueCollection.AllKeys.ToDictionary(k => k, k => nameValueCollection[k]);
-        }
-
-        public static MediaTypeFormatter CreateFormatter(IBeetleConfig config) {
-            var beetleConfig = config as BeetleConfig;
-            var settings = beetleConfig != null ? beetleConfig.JsonSerializerSettings : BeetleConfig.Instance.JsonSerializerSettings;
-
-            var formatter = new BeetleMediaTypeFormatter { SerializerSettings = settings };
-            formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue(config.Serializer.ContentType));
-            formatter.SupportedEncodings.Add(config.Serializer.Encoding);
-            return formatter;
         }
     }
 }

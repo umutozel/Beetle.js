@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Web.Http.Filters;
-using System.Net.Http.Formatting;
 
 namespace Beetle.WebApi {
     using Server;
@@ -15,19 +14,15 @@ namespace Beetle.WebApi {
         }
 
         public BeetleActionFilterAttribute(Type configType) {
-            var beetleConfig = Activator.CreateInstance(configType) as IBeetleConfig;
+            var beetleConfig = Activator.CreateInstance(configType) as IBeetleApiConfig;
             Config = beetleConfig ?? throw new ArgumentException(Resources.CannotCreateConfigInstance);
         }
 
-        public BeetleActionFilterAttribute(IBeetleConfig config) {
+        public BeetleActionFilterAttribute(IBeetleApiConfig config) {
             Config = config;
         }
 
-        protected IBeetleConfig Config { get; }
-
-        protected virtual MediaTypeFormatter CreateFormatter() {
-            return Helper.CreateFormatter(Config);
-        }
+        public IBeetleApiConfig Config { get; }
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
             base.OnActionExecuted(actionExecutedContext);
@@ -35,7 +30,10 @@ namespace Beetle.WebApi {
             if (actionExecutedContext.ActionContext.ActionDescriptor
                 .GetCustomAttributes<NonBeetleActionAttribute>(false).Any()) return;
 
-            var formatter = CreateFormatter();
+            var controller = actionExecutedContext.ActionContext.ControllerContext.Controller;
+            var service = controller as IBeetleService;
+            var config = Config ?? service?.Config as IBeetleApiConfig ?? BeetleApiConfig.Instance;
+            var formatter = config.CreateFormatter();
 
             var response = actionExecutedContext.Response;
             if (!response.TryGetContentValue(out object contentValue)) return;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Beetle.Server;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Beetle.ClientCore.Controllers {
+    using Server;
     using MvcCore;
     using Models;
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -30,7 +29,7 @@ namespace Beetle.MvcCore {
             Config = config;
         }
 
-        protected IBeetleConfig Config { get; }
+        public IBeetleConfig Config { get; }
 
         public int MaxResultCount { get; set; }
 

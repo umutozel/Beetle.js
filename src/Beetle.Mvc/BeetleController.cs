@@ -115,7 +115,7 @@ namespace Beetle.Mvc {
 
         #region Implementation of IBeetleService
 
-        public virtual IBeetleConfig Config { get; }
+        public IBeetleConfig Config { get; }
 
         IContextHandler IBeetleService.ContextHandler => null;
 

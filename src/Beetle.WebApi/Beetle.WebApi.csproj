@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BeetleActionFilterAttribute.cs" />
+    <Compile Include="BeetleApiConfig.cs" />
     <Compile Include="BeetleApiController.cs" />
     <Compile Include="BeetleApiControllerAttribute.cs" />
     <Compile Include="BeetleMediaTypeFormatter.cs" />
@@ -73,6 +74,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SimpleResultApiConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

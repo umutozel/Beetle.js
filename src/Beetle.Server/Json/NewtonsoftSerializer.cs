@@ -14,7 +14,7 @@ namespace Beetle.Server.Json {
             Settings.Converters.Add(new ExpandoObjectConverter());
         }
 
-        public string ContentType { get; } = "application/json; charset=utf-8";
+        public string ContentType { get; } = "application/json";
 
         public Encoding Encoding { get; } = Encoding.UTF8;
 
