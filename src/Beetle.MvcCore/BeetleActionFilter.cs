@@ -72,7 +72,7 @@ namespace Beetle.MvcCore {
             var service = actionContext.Service;
 
             if (!string.IsNullOrEmpty(actionContext.QueryString)
-                && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
+                    && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
                 Helper.CheckRequestHash(actionContext.QueryString, request);
             }
 

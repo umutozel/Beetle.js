@@ -108,7 +108,8 @@ namespace Beetle.Mvc {
 
         protected virtual void GetParameters(IBeetleService service,
                                              out string queryString,
-                                             out IList<BeetleParameter> parameters, out dynamic postData) {
+                                             out IList<BeetleParameter> parameters, 
+                                             out dynamic postData) {
             var config = Config ?? service?.Config;
             Helper.GetParameters(config, out queryString, out parameters, out postData);
         }
