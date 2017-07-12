@@ -30,13 +30,13 @@ namespace Beetle.WebApi {
             if (actionExecutedContext.ActionContext.ActionDescriptor
                 .GetCustomAttributes<NonBeetleActionAttribute>(false).Any()) return;
 
+            var response = actionExecutedContext.Response;
+            if (!response.TryGetContentValue(out object contentValue)) return;
+
             var controller = actionExecutedContext.ActionContext.ControllerContext.Controller;
             var service = controller as IBeetleService;
             var config = Config ?? service?.Config as IBeetleApiConfig ?? BeetleApiConfig.Instance;
             var formatter = config.CreateFormatter();
-
-            var response = actionExecutedContext.Response;
-            if (!response.TryGetContentValue(out object contentValue)) return;
 
             if (contentValue != null) {
                 response.Content = new ObjectContent(contentValue.GetType(), contentValue, formatter);
