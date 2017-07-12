@@ -36,8 +36,6 @@ namespace Beetle.WebApi {
         public bool ForbidBeetleParameters { get; set; }
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
-            if (actionExecutedContext.Exception != null || !actionExecutedContext.Response.IsSuccessStatusCode) return;
-
             var request = actionExecutedContext.Request;
             var response = actionExecutedContext.Response;
             var controller = actionExecutedContext.ActionContext.ControllerContext.Controller;
@@ -54,12 +52,16 @@ namespace Beetle.WebApi {
             var actionContext = new ActionContext(action, contentValue, queryString, parameters,
                                                   MaxResultCount, CheckRequestHash, Config, service);
 
-            request.Properties["BeetleService"] = service;
             request.Properties["BeetleActionContext"] = actionContext;
 
             // call base and let WebApi process the request
             base.OnActionExecuted(actionExecutedContext);
 
+            // get modified content value
+            if (!response.TryGetContentValue(out contentValue)) return;
+
+            actionContext = new ActionContext(action, contentValue, queryString, parameters,
+                                              MaxResultCount, CheckRequestHash, Config, service);
             var processResult = ProcessRequest(actionContext, actionExecutedContext.Request);
             Helper.SetCustomHeaders(processResult);
             response.Content = HandleResponse(processResult);
@@ -69,13 +71,13 @@ namespace Beetle.WebApi {
             var request = queryOptions.Request;
 
             // trigger the event on the service
-            if (request.Properties.TryGetValue("BeetleService", out object serviceObj)
-                    && request.Properties.TryGetValue("BeetleActionContext", out object actionObj) 
-                    && serviceObj is IODataService odataService) {
-                var actionContext = (ActionContext) actionObj;
-                var args = new BeforeODataQueryHandleEventArgs(actionContext, queryable, queryOptions);
-                odataService.OnBeforeODataQueryHandle(args);
-                queryable = args.Query;
+            if (request.Properties.TryGetValue("BeetleActionContext", out object actionObj)) {
+                var actionContext = (ActionContext)actionObj;
+                if (actionContext.Service is IODataService odataService) {
+                    var args = new BeforeODataQueryHandleEventArgs(actionContext, queryable, queryOptions);
+                    odataService.OnBeforeODataQueryHandle(args);
+                    queryable = args.Query;
+                }
             }
 
             return base.ApplyQuery(queryable, queryOptions);

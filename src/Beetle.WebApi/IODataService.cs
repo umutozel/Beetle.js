@@ -16,6 +16,7 @@ namespace Beetle.WebApi {
     }
 
     public class BeforeODataQueryHandleEventArgs : EventArgs {
+
         public BeforeODataQueryHandleEventArgs(ActionContext actionContext, IQueryable query, ODataQueryOptions queryOptions) {
             ActionContext = actionContext;
             Query = query;
