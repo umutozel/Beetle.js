@@ -39,10 +39,37 @@ namespace Beetle.WebApi {
         }
 
         protected virtual IFilterProvider GetQueryableFilterProvider(BeetleQueryableAttribute defaultFilter) {
+            _queryableFilter.
+
             return new BeetleQueryableFilterProvider(defaultFilter);
         }
 
         #region Exposed Queryable Filter Properties
+
+        public AllowedArithmeticOperators AllowedArithmeticOperators {
+            get => _queryableFilter.AllowedArithmeticOperators;
+            set => _queryableFilter.AllowedArithmeticOperators = value;
+        }
+
+        public AllowedFunctions AllowedFunctions {
+            get => _queryableFilter.AllowedFunctions;
+            set => _queryableFilter.AllowedFunctions = value;
+        }
+
+        public AllowedLogicalOperators AllowedLogicalOperators {
+            get => _queryableFilter.AllowedLogicalOperators;
+            set => _queryableFilter.AllowedLogicalOperators = value;
+        }
+
+        public string AllowedOrderByProperties {
+            get => _queryableFilter.AllowedOrderByProperties;
+            set => _queryableFilter.AllowedOrderByProperties = value;
+        }
+
+        public AllowedQueryOptions AllowedQueryOptions {
+            get => _queryableFilter.AllowedQueryOptions;
+            set => _queryableFilter.AllowedQueryOptions = value;
+        }
 
         public bool EnableConstantParameterization {
             get => _queryableFilter.EnableConstantParameterization;
@@ -64,39 +91,19 @@ namespace Beetle.WebApi {
             set => _queryableFilter.MaxAnyAllExpressionDepth = value;
         }
 
+        public int MaxExpansionDepth {
+            get => _queryableFilter.MaxExpansionDepth;
+            set => _queryableFilter.MaxExpansionDepth = value;
+        }
+
         public int MaxNodeCount {
             get => _queryableFilter.MaxNodeCount;
             set => _queryableFilter.MaxNodeCount = value;
         }
 
-        public int PageSize {
-            get => _queryableFilter.PageSize;
-            set => _queryableFilter.PageSize = value;
-        }
-
-        public AllowedQueryOptions AllowedQueryOptions {
-            get => _queryableFilter.AllowedQueryOptions;
-            set => _queryableFilter.AllowedQueryOptions = value;
-        }
-
-        public AllowedFunctions AllowedFunctions {
-            get => _queryableFilter.AllowedFunctions;
-            set => _queryableFilter.AllowedFunctions = value;
-        }
-
-        public AllowedArithmeticOperators AllowedArithmeticOperators {
-            get => _queryableFilter.AllowedArithmeticOperators;
-            set => _queryableFilter.AllowedArithmeticOperators = value;
-        }
-
-        public AllowedLogicalOperators AllowedLogicalOperators {
-            get => _queryableFilter.AllowedLogicalOperators;
-            set => _queryableFilter.AllowedLogicalOperators = value;
-        }
-
-        public string AllowedOrderByProperties {
-            get => _queryableFilter.AllowedOrderByProperties;
-            set => _queryableFilter.AllowedOrderByProperties = value;
+        public int MaxOrderByNodeCount {
+            get => _queryableFilter.MaxOrderByNodeCount;
+            set => _queryableFilter.MaxOrderByNodeCount = value;
         }
 
         public int MaxSkip {
@@ -107,6 +114,11 @@ namespace Beetle.WebApi {
         public int MaxTop {
             get => _queryableFilter.MaxTop;
             set => _queryableFilter.MaxTop = value;
+        }
+
+        public int PageSize {
+            get => _queryableFilter.PageSize;
+            set => _queryableFilter.PageSize = value;
         }
 
         #endregion

@@ -16,13 +16,13 @@ namespace Beetle.WebApi {
         }
 
         public IEnumerable<FilterInfo> GetFilters(HttpConfiguration configuration, HttpActionDescriptor actionDescriptor) {
-            if (actionDescriptor == null ||
-                (!IsIQueryable(actionDescriptor.ReturnType)) ||
-                actionDescriptor.GetCustomAttributes<EnableQueryAttribute>().Any() ||
-                actionDescriptor.GetParameters().Any(parameter => typeof (ODataQueryOptions).IsAssignableFrom(parameter.ParameterType)))
+            if (actionDescriptor == null
+                || !IsIQueryable(actionDescriptor.ReturnType) 
+                || actionDescriptor.GetCustomAttributes<EnableQueryAttribute>().Any()
+                || actionDescriptor.GetParameters().Any(parameter => typeof (ODataQueryOptions).IsAssignableFrom(parameter.ParameterType)))
                 return Enumerable.Empty<FilterInfo>();
 
-            return new[] {new FilterInfo(_filter, FilterScope.Global)};
+            return new[] {new FilterInfo(_filter, FilterScope.Controller)};
         }
 
         public static bool IsIQueryable(Type type) {
