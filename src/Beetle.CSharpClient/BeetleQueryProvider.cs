@@ -23,7 +23,9 @@ namespace Beetle.CSharpClient {
         IQueryable IQueryProvider.CreateQuery(Expression expression) {
             Type elementType = Helper.GetElementType(expression.Type);
             try {
-                return (IQueryable)Activator.CreateInstance(typeof(BeetleQuery<>).MakeGenericType(elementType), new object[] { this, expression });
+                return (IQueryable)Activator.CreateInstance(
+                    typeof(BeetleQuery<>).MakeGenericType(elementType), new object[] { this, expression }
+                );
             }
             catch (TargetInvocationException tie) {
                 throw tie.InnerException;

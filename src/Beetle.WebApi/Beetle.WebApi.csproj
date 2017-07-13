@@ -59,13 +59,10 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BeetleActionFilterAttribute.cs" />
     <Compile Include="BeetleApiConfig.cs" />
     <Compile Include="BeetleApiController.cs" />
-    <Compile Include="BeetleApiControllerAttribute.cs" />
     <Compile Include="BeetleMediaTypeFormatter.cs" />
     <Compile Include="BeetleQueryableAttribute.cs" />
-    <Compile Include="BeetleQueryableFilterProvider.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IODataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

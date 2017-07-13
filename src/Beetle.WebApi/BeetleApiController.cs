@@ -50,7 +50,7 @@ namespace Beetle.WebApi {
         }
     }
 
-    [BeetleApiController]
+    [BeetleQueryable]
     public abstract class BeetleApiController : ApiController, IBeetleService, IODataService {
 
         protected BeetleApiController() : this(null) {
@@ -72,7 +72,7 @@ namespace Beetle.WebApi {
         }
 
         [HttpGet]
-        [BeetleActionFilter(typeof(SimpleResultApiConfig))]
+        [BeetleQueryable(typeof(SimpleResultApiConfig))]
         public virtual object Metadata() {
             return GetMetadata()?.ToMinified();
         }
