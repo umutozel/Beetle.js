@@ -33,6 +33,7 @@
   "homepage": "https://github.com/umutozel/Beetle.js#readme",
   "license": "MIT",
   "devDependencies": {
-    "qunit": "^1.0.0"
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2"
   }
 }
