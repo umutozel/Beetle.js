@@ -20,7 +20,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="beetle\beetle.d.ts" target="content\Scripts\beetle\beetle.d.ts" />
-        <file src="beetle\beetle.queryExtensions.d.ts" target="content\Scripts\beetle\beetle.queryExtensions.d.ts" />
+        <file src="lib\beetle.d.ts" target="content\Scripts\beetle\beetle.d.ts" />
+        <file src="lib\beetle.queryExtensions.d.ts" target="content\Scripts\beetle\beetle.queryExtensions.d.ts" />
     </files>
 </package>

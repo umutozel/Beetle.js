@@ -2,9 +2,9 @@
   "name": "beetle.js",
   "version": "3.0.0",
   "module": "beetle.js",
-  "typings": "beetle\beetle.d.ts",
+  "typings": "lib\beetle.d.ts",
   "description": "Beetle is a data manager for Javascript. The goal is to be able to work with data as easy as Entity Framework and LINQ.",
-  "main": "beetle\beetle.js",
+  "main": "lib\beetle.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/umutozel/Beetle.js.git"

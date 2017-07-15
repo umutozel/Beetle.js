@@ -29,11 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\src\Beetle.Client\beetle\beetle.d.ts" Link="wwwroot\js\beetle\beetle.d.ts" />
-    <None Include="..\..\src\Beetle.Client\beetle\beetle.js" Link="wwwroot\js\beetle\beetle.js" />
-    <None Include="..\..\src\Beetle.Client\beetle\beetle.lang-tr-TR.js" Link="wwwroot\js\beetle\beetle.lang-tr-TR.js" />
-    <None Include="..\..\src\Beetle.Client\beetle\beetle.queryExtensions.d.ts" Link="wwwroot\js\beetle\beetle.queryExtensions.d.ts" />
-    <None Include="..\..\src\Beetle.Client\beetle\beetle.queryExtensions.js" Link="wwwroot\js\beetle\beetle.queryExtensions.js" />
+    <None Include="..\..\src\Beetle.Client\lib\beetle.d.ts" Link="wwwroot\js\beetle\beetle.d.ts" />
+    <None Include="..\..\src\Beetle.Client\lib\beetle.js" Link="wwwroot\js\beetle\beetle.js" />
+    <None Include="..\..\src\Beetle.Client\lib\beetle.lang-tr-TR.js" Link="wwwroot\js\beetle\beetle.lang-tr-TR.js" />
+    <None Include="..\..\src\Beetle.Client\lib\beetle.queryExtensions.d.ts" Link="wwwroot\js\beetle\beetle.queryExtensions.d.ts" />
+    <None Include="..\..\src\Beetle.Client\lib\beetle.queryExtensions.js" Link="wwwroot\js\beetle\beetle.queryExtensions.js" />
     <None Include="Views\Home\Index.cshtml" />
     <None Include="wwwroot\js\beetle\beetle.d.ts" />
     <None Include="wwwroot\js\beetle\beetle.queryExtensions.d.ts" />

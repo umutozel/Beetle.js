@@ -17,7 +17,7 @@
         <tags>Unit of Work Client Side Change Tracker Beetle Javascript</tags>
     </metadata>
     <files>
-        <file src="beetle\beetle.queryExtensions.js" target="content\Scripts\beetle\beetle.queryExtensions.js" />
-        <file src="beetle\beetle.js" target="content\Scripts\beetle\beetle.js" />
+        <file src="lib\beetle.queryExtensions.js" target="content\Scripts\beetle\beetle.queryExtensions.js" />
+        <file src="lib\beetle.js" target="content\Scripts\beetle\beetle.js" />
     </files>
 </package>
