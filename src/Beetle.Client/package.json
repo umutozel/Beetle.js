@@ -23,7 +23,7 @@
     "TypeScript"
   ],
   "author": {
-    "name": "Umut Özel",
+    "name": "Umut ï¿½zel",
     "email": "umutozel@gmail.com",
     "url": "http://umutozel.com"
   },
@@ -31,5 +31,8 @@
     "url": "https://github.com/umutozel/Beetle.js/issues"
   },
   "homepage": "https://github.com/umutozel/Beetle.js#readme",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "qunit": "^1.0.0"
+  }
 }
