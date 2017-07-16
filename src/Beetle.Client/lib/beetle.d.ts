@@ -22,8 +22,8 @@ declare module beetle {
 		}
 
 		interface ArrayChangeEventArgs {
-			added: Array<any>,
-			removed: Array<any>
+			added: Array<any>;
+			removed: Array<any>;
 		}
 
 		interface ValidationErrorsChangedEventArgs {
@@ -89,7 +89,7 @@ declare module beetle {
 
 			remove(...T): T[];
 			load(expands: string[], resourceName: string, options: ManagerQueryOptions,
-				successCallback?: (items: T[]) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<interfaces.QueryResultArray<T>>;
+				successCallback?: (items: T[]) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<QueryResultArray<T>>;
 		}
 
 		interface Validator {
@@ -539,8 +539,8 @@ declare module beetle {
 	interface AjaxError extends Error {
 		status: number;
 		detail: any;
-		manager: beetle.core.EntityManager;
-		query: beetle.querying.EntityQuery<any>;
+		manager: core.EntityManager;
+		query: querying.EntityQuery<any>;
 		error?: any;
 		xhr?: XMLHttpRequest;
 	}
@@ -597,7 +597,7 @@ declare module beetle {
 
 	namespace baseTypes {
 		abstract class DateConverterBase {
-			constructor(name: string);
+			protected constructor(name: string);
 
 			name: string;
 
@@ -606,7 +606,7 @@ declare module beetle {
 			toISOString(value: Date): string;
 		}
 		abstract class ObservableProviderBase {
-			constructor(name: string);
+			protected constructor(name: string);
 
 			name: string;
 
@@ -617,7 +617,7 @@ declare module beetle {
 			setValue(object: Object, property: string, value: any);
 		}
 		abstract class AjaxProviderBase {
-			constructor(name: string);
+			protected constructor(name: string);
 
 			name: string;
 
@@ -628,7 +628,7 @@ declare module beetle {
 				errorCallback: (e: AjaxError) => void);
 		}
 		abstract class SerializationServiceBase {
-			constructor(name: string);
+			protected constructor(name: string);
 
 			name: string;
 
@@ -637,7 +637,7 @@ declare module beetle {
 			deserialize(string: string): any;
 		}
 		abstract class PromiseProviderBase {
-			constructor(name: string);
+			protected constructor(name: string);
 
 			name: string;
 
@@ -648,10 +648,10 @@ declare module beetle {
 			reject(deferred: any, error: AjaxError);
 		}
 		abstract class DataServiceBase {
-			constructor(url: string, loadMetadata?: boolean, options?: ServiceOptions);
-			constructor(url: string, metadataManager: metadata.MetadataManager, options?: ServiceOptions);
-			constructor(url: string, metadata: Object, options?: ServiceOptions);
-			constructor(url: string, metadata: string, options?: ServiceOptions);
+			protected constructor(url: string, loadMetadata?: boolean, options?: ServiceOptions);
+			protected constructor(url: string, metadataManager: metadata.MetadataManager, options?: ServiceOptions);
+			protected constructor(url: string, metadata: Object, options?: ServiceOptions);
+            protected constructor(url: string, metadata: string, options?: ServiceOptions);
 
 			uri: string;
 			ajaxTimeout: number;
@@ -770,6 +770,7 @@ declare module beetle {
 			inlineCountEnabled: boolean;
 
 			// not removing redundant qualifiers so they would be same (ok to copy-paste) with array extensions
+// ReSharper disable RedundantQualifier
 			inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
 			ofType<TResult extends T>(type: string | (new () => TResult)): beetle.querying.ArrayQuery<TResult>;
 			where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
@@ -798,7 +799,8 @@ declare module beetle {
 			skipWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
 			takeWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
 			takeWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
-			all(predicate?: string, varContext?: any): boolean;
+// ReSharper restore RedundantQualifier
+            all(predicate?: string, varContext?: any): boolean;
 			all(predicate: (entity: T) => boolean): boolean;
 			any(predicate?: string, varContext?: any): boolean;
 			any(predicate: (entity: T) => boolean): boolean;

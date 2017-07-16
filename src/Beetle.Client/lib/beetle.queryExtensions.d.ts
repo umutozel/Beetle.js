@@ -2,9 +2,9 @@
 // Project: https://github.com/umutozel/Beetle.js
 // File version: 2.3.1
 
-import * as beetle from './beetle';
+import * as beetle from "./beetle";
 
-declare module 'beetle' {
+declare module "beetle" {
 
 	namespace querying {
 
@@ -192,3 +192,7 @@ declare global {
 		repeat(item: any, count: number): Array<number>;
 	}
 }
+
+export = beetle;
+
+export as namespace beetle;

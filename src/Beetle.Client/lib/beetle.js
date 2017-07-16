@@ -30,9 +30,7 @@
 				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
 			]).get(aHttp.Http);
 			angular = { http, Request: aHttp.Request, Headers: aHttp.Headers };
-		} catch (e) { 
-			console.log(e);
-		}
+		} catch (e) { }
 
 		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, node, angular);
 		return module.exports;

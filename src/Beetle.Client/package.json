@@ -2,9 +2,12 @@
   "name": "beetle.js",
   "version": "3.0.0",
   "module": "beetle.js",
-  "typings": "lib\beetle.d.ts",
+  "typings": "lib\beetle.d.ts;lib\beetle.queryExtensions.ts",
   "description": "Beetle is a data manager for Javascript. The goal is to be able to work with data as easy as Entity Framework and LINQ.",
   "main": "lib\beetle.js",
+  "scripts": {
+    "test": "jasmine ./test/*"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/umutozel/Beetle.js.git"
@@ -23,7 +26,7 @@
     "TypeScript"
   ],
   "author": {
-    "name": "Umut �zel",
+    "name": "Umut Özel",
     "email": "umutozel@gmail.com",
     "url": "http://umutozel.com"
   },
@@ -33,7 +36,8 @@
   "homepage": "https://github.com/umutozel/Beetle.js#readme",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^4.1.0",
-    "mocha": "^3.4.2"
+    "@types/jasmine": "^2.5.53",
+    "jasmine": "^2.6.0",
+    "ts-node": "^3.2.0"
   }
 }

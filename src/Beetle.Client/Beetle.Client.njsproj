@@ -37,10 +37,19 @@
     <Content Include="Beetlejs.Client.TypeScript.nuspec" />
     <Content Include="bower.json" />
     <Content Include="package.json" />
+    <Content Include="tsconfig.json">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="lib\beetle.d.ts" />
     <TypeScriptCompile Include="lib\beetle.queryExtensions.d.ts" />
+    <TypeScriptCompile Include="test\localQuery.tests.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="test\models.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="lib\beetle.js" />
@@ -49,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
-    <Folder Include="tests\" />
+    <Folder Include="test\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
