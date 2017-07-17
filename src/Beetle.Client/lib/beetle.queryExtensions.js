@@ -1,8 +1,7 @@
 ﻿(function (root, factory) {
     if (typeof exports === "object") {
-        var beetle = require("./beetle.js");
-        factory(root, beetle);
-        module.exports = beetle;
+        var beetle = require(".\beetle.js");
+        module.exports = factory(root, beetle);
         return beetle;
     }
     else if (typeof define === "function" && define.amd) {
@@ -11,8 +10,7 @@
         });
     }
     else {
-        factory(root, root.beetle);
-        return root.beetle;
+        return factory(root, root.beetle);
     }
 })(this, function (root, beetle) {
     "use strict";
@@ -20,10 +18,11 @@
     /// <summary>
     /// Adds javascript arrays c# extension methods like usage.
     /// Query gets executed when someone access it's length property and we can access results on the query object with indexer.
-    /// Most of these expressions support only javascript functions (string expressions are not supported, because these are local only so expressions are not necessary)
+    /// Most of these expressions support only javascript functions 
+    ///   (string expressions are not supported, because these are local only so expressions are not necessary)
     /// </summary>
 
-    if (!beetle) return;
+    if (!beetle) throw new Error("Beetle must be loaded first to register query extensions.");
 
     var resources = {
         indexOutOfRange: "Specified argument was out of the range of valid values. Parameter name: %1"
@@ -31,9 +30,6 @@
 
     var ArrayExpBase = (function () {
         var ctor = function (name) {
-            /// <summary>
-            /// Holds query all information.
-            /// </summary>
             beetle.baseTypes.ExpressionBase.call(this, name, 3, true, true);
         };
         beetle.helper.inherit(ctor, beetle.baseTypes.ExpressionBase);
@@ -59,9 +55,6 @@
 
     var aggregateExp = (function () {
         var ctor = function (func, seed) {
-            /// <summary>
-            /// Holds query aggregate information.
-            /// </summary>
             if (!beetle.Assert.isFunction(func))
                 throw new Error(beetle.helper.formatString(beetle.i18N.typeError, 'aggregate: func', 'function'));
 
@@ -104,9 +97,6 @@
 
     var concatExp = (function () {
         var ctor = function (other) {
-            /// <summary>
-            /// Holds query concat information.
-            /// </summary>
             ArrayExpBase.call(this, 'concat');
             this.other = other;
         };
@@ -124,19 +114,12 @@
         return ctor;
     })();
     arrayQueryProto.concat = function (other) {
-        /// <summary>
-        /// Concatenates two arrays.
-        /// </summary>
-        /// <param name="other">The array to concatenate to the first array.</param>
         var q = this.clone();
         return q.addExpression(new concatExp(other));
     };
 
     var containsExp = (function () {
         var ctor = function (item) {
-            /// <summary>
-            /// Holds query contains information.
-            /// </summary>
             ArrayExpBase.call(this, 'contains');
             this.item = item;
             this.isExecuter = true;
@@ -158,19 +141,12 @@
         return ctor;
     })();
     arrayQueryProto.contains = function (item) {
-        /// <summary>
-        /// Determines whether an array contains a specified element.
-        /// </summary>
-        /// <param name="item">The item to locate in the array.</param>
         var q = this.clone();
         return q.addExpression(new containsExp(item));
     };
 
     var exceptExp = (function () {
         var ctor = function (other) {
-            /// <summary>
-            /// Holds query except information.
-            /// </summary>
             ArrayExpBase.call(this, 'except');
             this.other = other;
         };
@@ -209,9 +185,6 @@
 
     var groupJoinExp = (function () {
         var ctor = function (other, thisKey, otherKey, selector) {
-            /// <summary>
-            /// Holds query except information.
-            /// </summary>
             ArrayExpBase.call(this, 'groupJoin');
             this.other = other;
             this.thisKey = thisKey;
@@ -261,9 +234,6 @@
 
     var intersectExp = (function () {
         var ctor = function (other) {
-            /// <summary>
-            /// Holds query intersect information.
-            /// </summary>
             ArrayExpBase.call(this, 'intersect');
             this.other = other;
         };
@@ -306,9 +276,6 @@
 
     var joinExp = (function () {
         var ctor = function (other, thisKey, otherKey, selector) {
-            /// <summary>
-            /// Holds query join information.
-            /// </summary>
             ArrayExpBase.call(this, 'join');
             this.other = other;
             this.thisKey = thisKey;
@@ -363,9 +330,6 @@
 
     var leftJoinExp = (function () {
         var ctor = function (other, thisKey, otherKey, selector) {
-            /// <summary>
-            /// Holds query join information.
-            /// </summary>
             ArrayExpBase.call(this, 'leftJoin');
             this.other = other;
             this.thisKey = thisKey;
@@ -423,9 +387,6 @@
 
     var rightJoinExp = (function () {
         var ctor = function (other, thisKey, otherKey, selector) {
-            /// <summary>
-            /// Holds query join information.
-            /// </summary>
             ArrayExpBase.call(this, 'rightJoin');
             this.other = other;
             this.thisKey = thisKey;
@@ -483,9 +444,6 @@
 
     var fullJoinExp = (function () {
         var ctor = function (other, thisKey, otherKey, selector) {
-            /// <summary>
-            /// Holds query join information.
-            /// </summary>
             ArrayExpBase.call(this, 'fullJoin');
             this.other = other;
             this.thisKey = thisKey;
@@ -548,9 +506,6 @@
 
     var crossJoinExp = (function () {
         var ctor = function (other, selector) {
-            /// <summary>
-            /// Holds query join information.
-            /// </summary>
             ArrayExpBase.call(this, 'crossJoin');
             this.other = other;
             this.selector = selector;
@@ -590,9 +545,6 @@
 
     var sequenceEqualExp = (function () {
         var ctor = function (other) {
-            /// <summary>
-            /// Holds query intersect information.
-            /// </summary>
             ArrayExpBase.call(this, 'sequenceEqual');
             this.other = other;
             this.isExecuter = true;
@@ -626,7 +578,7 @@
     var toLookupExp = (function () {
         var ctor = function (keySelector, elementSelector) {
             /// <summary>
-            /// Holds query toLookup information (same as groupBy but elementSelector is function instead of string).
+            /// Same as groupBy but elementSelector is function instead of string.
             /// </summary>
             ArrayExpBase.call(this, 'toLookup', 3, true, true);
             this.keySelector = keySelector;
@@ -692,9 +644,6 @@
 
     var unionExp = (function () {
         var ctor = function (other) {
-            /// <summary>
-            /// Holds query concat information.
-            /// </summary>
             ArrayExpBase.call(this, 'union');
             this.other = other;
         };
@@ -740,9 +689,6 @@
 
     var zipExp = (function () {
         var ctor = function (other, selector) {
-            /// <summary>
-            /// Holds query join information.
-            /// </summary>
             ArrayExpBase.call(this, 'zip');
             this.other = other;
             this.selector = selector;
@@ -909,4 +855,6 @@
             configurable: true
         });
     }
+
+    return beetle;
 });

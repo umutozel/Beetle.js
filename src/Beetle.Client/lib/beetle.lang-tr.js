@@ -1,6 +1,6 @@
 ﻿(function (root, factory) {
     if (typeof exports === "object") {
-        var beetle = require("beetle.js");
+        var beetle = require(".\beetle.js");
         module.exports = factory(root, beetle);
         return beetle;
     }
@@ -10,12 +10,13 @@
         });
     }
     else {
-        factory(root, root.beetle);
-        return root.beetle;
+        return factory(root, root.beetle);
     }
 })(this, function (root, beetle) {
     "use strict";
 
+    if (!beetle) throw new Error("Beetle must be loaded first to register internalization.");
+    
     var tr = {
         argCountMismatch: '"%0" için argüman sayısı uyuşmuyor.',
         arrayEmpty: 'Dizide hiçbir eleman bulunmuyor.',
@@ -98,7 +99,7 @@
         operatorNotSupportedForOData: 'Operatör OData sorgularında desteklenmiyor: %0.'
     };
 
-    if (beetle)
-        beetle.registerI18N("tr", tr, true);
-    else throw new Error("Beetle must be loaded first to register internalization.");
+    beetle.registerI18N("tr", tr, true);
+
+    return beetle;
 });
