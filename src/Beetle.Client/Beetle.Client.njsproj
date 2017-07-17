@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="lib\beetle.js" />
-    <Compile Include="lib\beetle.lang-tr-TR.js" />
+    <Compile Include="lib\beetle.lang-tr.js" />
     <Compile Include="lib\beetle.queryExtensions.js" />
   </ItemGroup>
   <ItemGroup>
