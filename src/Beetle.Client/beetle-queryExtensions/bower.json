@@ -1,0 +1,30 @@
+{
+  "name": "beetle-queryExtensions",
+  "description": "Beetle query extensions plug-in. Registers some extra methods to beetle ArrayQuery and javascript Array.",
+  "main": "beetle-queryExtensions.js",
+  "authors": [
+    "Umut Özel"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "ORM",
+    "OData",
+    "Unit",
+    "of",
+    "Work",
+    "Client",
+    "Side",
+    "Change",
+    "Tracker",
+    "JavaScript",
+    "TypeScript"
+  ],
+  "homepage": "https://github.com/umutozel/Beetle.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
