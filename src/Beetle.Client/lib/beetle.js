@@ -791,7 +791,7 @@
 						var a = helper.findInArray(queryContext.aliases, n, 'alias');
 						if (a) return a.value;
 						var v = helper.getValue(value, n);
-						if (v === undefined) return window[n];
+						if (v === undefined) return root[n];
 						return v;
 					}
 					else if (exp.type == 'Literal')
@@ -846,7 +846,7 @@
 								if (exp.callee.type == 'MemberExpression')
 									obj = helper.jsepToFunction(exp.callee.object, queryContext)(value);
 								else
-									obj = window;
+									obj = root;
 
 								if (obj == null || (func = obj[funcName]) == null)
 									throw helper.createError(i18N.unknownFunction, [funcName]);
