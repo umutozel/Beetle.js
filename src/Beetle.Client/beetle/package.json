@@ -1,0 +1,43 @@
+{
+  "name": "beetle.js",
+  "version": "3.0.0",
+  "module": "beetle.js",
+  "typings": "lib\beetle.d.ts",
+  "description": "Beetle is a data manager for Javascript. The goal is to be able to work with data as easy as Entity Framework and LINQ.",
+  "main": "lib\beetle.js",
+  "scripts": {
+    "test": "jasmine ./test/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/umutozel/Beetle.js.git"
+  },
+  "keywords": [
+    "ORM",
+    "OData",
+    "Unit",
+    "of",
+    "Work",
+    "Client",
+    "Side",
+    "Change",
+    "Tracker",
+    "JavaScript",
+    "TypeScript"
+  ],
+  "author": {
+    "name": "Umut Özel",
+    "email": "umutozel@gmail.com",
+    "url": "http://umutozel.com"
+  },
+  "bugs": {
+    "url": "https://github.com/umutozel/Beetle.js/issues"
+  },
+  "homepage": "https://github.com/umutozel/Beetle.js#readme",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jasmine": "^2.5.53",
+    "jasmine": "^2.6.0",
+    "ts-node": "^3.2.0"
+  }
+}

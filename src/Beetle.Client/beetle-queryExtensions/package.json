@@ -1,9 +1,9 @@
 {
   "name": "beetle.js",
   "version": "3.0.0",
-  "module": "beetle.js",
-  "typings": "lib\beetle.d.ts;lib\beetle.queryExtensions.ts",
-  "description": "Beetle is a data manager for Javascript. The goal is to be able to work with data as easy as Entity Framework and LINQ.",
+  "module": "beetle-queryExtensions.js",
+  "typings": "lib\beetle-queryExtensions.d.ts",
+  "description": "Beetle query extensions plug-in. Registers some extra methods to beetle ArrayQuery and javascript Array.",
   "main": "lib\beetle.js",
   "scripts": {
     "test": "jasmine ./test/*"
