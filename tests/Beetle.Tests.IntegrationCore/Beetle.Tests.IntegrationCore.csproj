@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\beetle\*.*" />
+    <Content Remove="wwwroot/js\tests\_Chutzpah.12cd687a03f79563393e930d199b204f877f458b.test.html" />
     <Content Remove="wwwroot/js\tests\_Chutzpah.d497df2acafd3072ddb30478b73b0734b5a58a8e.test.html" />
   </ItemGroup>
 
@@ -32,8 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\src\Beetle.Client\beetle\lib\beetle.d.ts" Link="wwwroot\js\beetle\beetle.d.ts" />
-    <None Include="..\..\src\Beetle.Client\beetle\lib\beetle.js" Link="wwwroot\js\beetle\beetle.js" />
+    <None Include="..\..\src\Beetle.Client\beetle\lib\*.*">
+      <Link>wwwroot\js\beetle\%(FileName)%(Extension)</Link>
+    </None>
     <None Include="Views\Home\Index.cshtml" />
     <None Include="wwwroot\js\qunit\qunit.d.ts" />
   </ItemGroup>
@@ -43,8 +46,12 @@
     <ProjectReference Include="..\..\src\Beetle.MvcCore\Beetle.MvcCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\js\beetle\" />
+  </ItemGroup>
+
   <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
-    <Copy SourceFiles="%(Content.Identity)" DestinationFiles="%(Content.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Condition="'%(Content.Link)' != ''" />
+    <Copy SourceFiles="%(None.Identity)" DestinationFiles="%(None.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" ContinueOnError="true" Condition="'%(None.Link)' != ''" />
   </Target>
 
 </Project>

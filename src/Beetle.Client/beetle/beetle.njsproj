@@ -42,9 +42,11 @@
     <Folder Include="test\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="lib\beetle-queryExtensions.d.ts" />
     <TypeScriptCompile Include="lib\beetle.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="lib\beetle-queryExtensions.js" />
     <Compile Include="lib\beetle.js" />
     <Compile Include="locale\tr.js" />
   </ItemGroup>
