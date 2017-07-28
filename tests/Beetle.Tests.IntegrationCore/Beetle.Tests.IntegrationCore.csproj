@@ -10,8 +10,6 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\js\beetle\*.*" />
-    <Content Remove="wwwroot/js\tests\_Chutzpah.12cd687a03f79563393e930d199b204f877f458b.test.html" />
-    <Content Remove="wwwroot/js\tests\_Chutzpah.d497df2acafd3072ddb30478b73b0734b5a58a8e.test.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\src\Beetle.Client\beetle\lib\*.*">
+    <None Include="..\..\src\beetle\lib\*.*">
       <Link>wwwroot\js\beetle\%(FileName)%(Extension)</Link>
     </None>
     <None Include="Views\Home\Index.cshtml" />
@@ -51,7 +49,8 @@
   </ItemGroup>
 
   <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
-    <Copy SourceFiles="%(None.Identity)" DestinationFiles="%(None.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" ContinueOnError="true" Condition="'%(None.Link)' != ''" />
+    <Copy SourceFiles="%(None.Identity)" DestinationFiles="%(None.Link)" SkipUnchangedFiles="true" 
+          OverwriteReadOnlyFiles="true" ContinueOnError="true" Condition="'%(None.Link)' != ''" />
   </Target>
 
 </Project>
