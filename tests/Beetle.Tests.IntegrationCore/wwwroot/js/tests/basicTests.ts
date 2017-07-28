@@ -2,10 +2,10 @@
 
 test("get all entities", 1, () => {
     var manager = new beetle.EntityManager(service);
-    var query = manager.createQuery<Entity>("Entities").where(e => e.Id > 0);
+    var query = manager.createQuery<Entity>("Entities").where(e => e.Id > 0).setParameter("oha", 123);
     stop();
     query.then(data => {
-        var entity = data.first();
+        var entity = data[0];
         entity.IsCanceled = !entity.IsCanceled;
         manager.saveChanges()
             .then(sr => {
@@ -13,7 +13,7 @@ test("get all entities", 1, () => {
                 start();
             }, handleFail);
 
-    }, handleFail);
+    }, handleFail, { usePost: true });
 });
 
 function handleFail(error: any) {

@@ -96,7 +96,6 @@ namespace Beetle.Mvc {
 
         private ActionResult ProcessAction(string actionName, object contentValue, string queryString,
                                            IEnumerable<BeetleParameter> parameters, IBeetleService service) {
-            // translate the request query
             var actionContext = new ActionContext(
                 actionName, contentValue, queryString, parameters,
                 MaxResultCount, CheckRequestHash, Config, service

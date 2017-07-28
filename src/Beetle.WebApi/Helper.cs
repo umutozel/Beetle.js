@@ -25,9 +25,11 @@ namespace Beetle.WebApi {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                foreach (var i in d) {
-                    var v = i.Value;
-                    queryParams.Add(i.Key, v == null ? string.Empty : v.ToString());
+                if (d != null) {
+                    foreach (var i in d) {
+                        var v = i.Value;
+                        queryParams.Add(i.Key, v == null ? string.Empty : v.ToString());
+                    }
                 }
             }
             else {
@@ -63,8 +65,8 @@ namespace Beetle.WebApi {
 
             var actionContext = processResult.ActionContext;
             var service = actionContext.Service;
-            var config = actionContext.Config as IBeetleApiConfig 
-                ?? service?.Config as IBeetleApiConfig 
+            var config = actionContext.Config as IBeetleApiConfig
+                ?? service?.Config as IBeetleApiConfig
                 ?? BeetleApiConfig.Instance;
 
             var type = result?.GetType() ?? typeof(object);

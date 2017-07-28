@@ -35,36 +35,36 @@ namespace Beetle.MvcCore {
 
         public bool? CheckRequestHash { get; set; }
 
-        public override void OnActionExecuted(ActionExecutedContext filterContext) {
-            base.OnActionExecuted(filterContext);
+        public override void OnActionExecuted(ActionExecutedContext context) {
+            base.OnActionExecuted(context);
 
-            if (!(filterContext.Result is ObjectResult objectResult)) return;
+            if (!(context.Result is ObjectResult objectResult)) return;
 
-            if (filterContext.ActionDescriptor is ControllerActionDescriptor cad &&
-                cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonBeetleActionAttribute))) return;
+            if (context.ActionDescriptor is ControllerActionDescriptor cad 
+                    && cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonBeetleActionAttribute))) return;
 
-            var actionName = filterContext.ActionDescriptor.DisplayName;
+            var actionName = context.ActionDescriptor.DisplayName;
             var contentValue = objectResult.Value;
-            var service = filterContext.Controller as IBeetleService;
-            var request = filterContext.HttpContext.Request;
-            var response = filterContext.HttpContext.Response;
+            var service = context.Controller as IBeetleService;
+            var request = context.HttpContext.Request;
+            var response = context.HttpContext.Response;
             // translate the request query
-            GetParameters(service, request, out string queryString, out IList<BeetleParameter> parameters);
+            GetParameters(service, context, out string queryString, out IList<BeetleParameter> parameters);
             var actionContext = new ActionContext(
                 actionName, contentValue, queryString, parameters,
                 MaxResultCount, CheckRequestHash, Config, service
             );
             var processResult = ProcessRequest(actionContext, request);
             Helper.SetCustomHeaders(processResult, response);
-            filterContext.Result = HandleResponse(processResult, response);
+            context.Result = HandleResponse(processResult, response);
         }
 
         protected virtual void GetParameters(IBeetleService service,
-                                             HttpRequest request,
+                                             ActionExecutedContext context,
                                              out string queryString,
                                              out IList<BeetleParameter> parameters) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(config, request, out queryString, out parameters);
+            Helper.GetParameters(config, context.HttpContext.Request, out queryString, out parameters);
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext, HttpRequest request) {

@@ -25,13 +25,17 @@ namespace Beetle.MvcCore {
 
             var queryParams = request.Query.ToDictionary(k => k.Key, k => k.Value.ToString());
             if (request.Method == "POST") {
-                request.Body.Position = 0;
+                if (request.Body.CanSeek) {
+                    request.Body.Position = 0;
+                }
+
                 queryString = new StreamReader(request.Body).ReadToEnd();
-                queryParams = request.Query.ToDictionary(k => k.Key, k => k.Value.ToString());
                 var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
-                foreach (var i in d) {
-                    var v = i.Value;
-                    queryParams[i.Key] = v == null ? string.Empty : v.ToString();
+                if (d != null) {
+                    foreach (var i in d) {
+                        var v = i.Value;
+                        queryParams[i.Key] = v == null ? string.Empty : v.ToString();
+                    }
                 }
             }
             else {

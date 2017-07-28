@@ -27,9 +27,11 @@ namespace Beetle.Mvc {
                 request.InputStream.Position = 0;
                 queryString = new StreamReader(request.InputStream).ReadToEnd();
                 postData = config.Serializer.DeserializeToDynamic(queryString);
-                foreach (var p in TypeDescriptor.GetProperties(postData)) {
-                    var v = postData[p.Name];
-                    queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
+                if (postData != null) {
+                    foreach (var p in TypeDescriptor.GetProperties(postData)) {
+                        var v = postData[p.Name];
+                        queryParams.Add(p.Name, v == null ? string.Empty : v.ToString());
+                    }
                 }
             }
             else {

@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot/js\tests\_Chutzpah.d497df2acafd3072ddb30478b73b0734b5a58a8e.test.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="wwwroot\css\qunit.css" />
-    <Content Include="wwwroot\js\beetle\beetle.js" />
     <Content Include="wwwroot\js\qunit\qunit.js" />
     <Content Include="wwwroot\js\tests\basicTests.ts" />
   </ItemGroup>
@@ -29,24 +32,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\src\Beetle.Client\lib\beetle.d.ts" Link="wwwroot\js\beetle\beetle.d.ts" />
-    <None Include="..\..\src\Beetle.Client\lib\beetle.js" Link="wwwroot\js\beetle\beetle.js" />
-    <None Include="..\..\src\Beetle.Client\lib\beetle.lang-tr-TR.js" Link="wwwroot\js\beetle\beetle.lang-tr-TR.js" />
-    <None Include="..\..\src\Beetle.Client\lib\beetle.queryExtensions.d.ts" Link="wwwroot\js\beetle\beetle.queryExtensions.d.ts" />
-    <None Include="..\..\src\Beetle.Client\lib\beetle.queryExtensions.js" Link="wwwroot\js\beetle\beetle.queryExtensions.js" />
+    <None Include="..\..\src\Beetle.Client\beetle\lib\beetle.d.ts" Link="wwwroot\js\beetle\beetle.d.ts" />
+    <None Include="..\..\src\Beetle.Client\beetle\lib\beetle.js" Link="wwwroot\js\beetle\beetle.js" />
     <None Include="Views\Home\Index.cshtml" />
-    <None Include="wwwroot\js\beetle\beetle.d.ts" />
-    <None Include="wwwroot\js\beetle\beetle.queryExtensions.d.ts" />
     <None Include="wwwroot\js\qunit\qunit.d.ts" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Beetle.MvcCoreApi\Beetle.MvcCoreApi.csproj" />
     <ProjectReference Include="..\..\src\Beetle.MvcCore\Beetle.MvcCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\js\beetle\" />
   </ItemGroup>
 
   <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
