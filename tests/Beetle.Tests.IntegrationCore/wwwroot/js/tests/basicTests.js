@@ -14,7 +14,7 @@ var metadata, observableProvider, service;
 var basicTestViewModel = {
     metadataType: 'MM',
     observableProviderType: 'KO',
-    serviceType: 'WA',
+    serviceType: 'MV',
     reRun: function () {
         window.location = QUnit.url({ metadataType: this.metadataType, observableProviderType: this.observableProviderType, serviceType: this.serviceType });
     }
@@ -57,11 +57,12 @@ var basicTestViewModel = {
         beetle.settings.setObservableProvider(observableProviderType == 'KO' ? new beetle.impls.KoObservableProvider(ko) : new beetle.impls.PropertyObservableProvider());
 
         var serviceType = urlVars['serviceType'];
-        if (serviceType == 'MV')
-            service = new beetle.BeetleService('Home', metadata);
-        else {
-            serviceType = 'WA';
+        if (serviceType == 'WA') {
             service = new beetle.services.ODataService('api/BeetleTest', metadata);
+        }
+        else {
+            serviceType = 'MV';
+            service = new beetle.BeetleService('Home', metadata);
         }
         basicTestViewModel.serviceType = serviceType;
     }
@@ -213,16 +214,6 @@ var EntityManager = beetle.EntityManager;
 var entityStates = beetle.entityStates;
 
 module('basic tests');
-
-test('seed the test db', 1, function () {
-    stop();
-    seed(service.uri)
-        .then(function (msg) {
-            ok(0 < msg.indexOf('seed'), msg);
-        })
-        .fail(handleFail)
-        .fin(start);
-});
 
 test('get all NamedEntities', 1, function () {
     var manager = new EntityManager(service);

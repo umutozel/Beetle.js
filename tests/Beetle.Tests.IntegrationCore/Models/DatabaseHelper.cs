@@ -46,9 +46,9 @@ namespace Beetle.Tests.IntegrationCore.Models {
 
             // add created data to context
             nets.ForEach(net => context.NamedEntityTypes.Add(net));
-            ads.ForEach(ad => context.Entities.Add(ad));
-            nes.ForEach(ne => context.Entities.Add(ne));
-            cs.ForEach(c => context.Entities.Add(c));
+            ads.ForEach(ad => context.Set<Address>().Add(ad));
+            nes.ForEach(ne => context.Set<NamedEntity>().Add(ne));
+            cs.ForEach(c => context.Set<Company>().Add(c));
             os.ForEach(o => context.Orders.Add(o));
 
             // save all data

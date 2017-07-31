@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace Beetle.Tests.IntegrationCore.Models {
 
-    public partial class Address : Entity {
+    public class Address : Entity {
+
         public Address() {
             Companies = new HashSet<Company>();
         }
