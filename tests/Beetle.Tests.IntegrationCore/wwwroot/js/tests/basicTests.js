@@ -1,4 +1,4 @@
-var service = new beetle.MvcService("Home", false);
+var service = new beetle.BeetleService("Home", false);
 test("get all entities", 1, function () {
     var manager = new beetle.EntityManager(service);
     var query = manager.createQuery("Entities").where(function (e) { return e.Id > 0; }).setParameter("oha", 123);

@@ -105,23 +105,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\src\Beetle.Client\lib\beetle.js">
+    <Content Include="..\..\src\beetle\lib\beetle-queryExtensions.js">
+      <Link>Scripts\beetle\beetle-queryExtensions.js</Link>
+    </Content>
+    <Content Include="..\..\src\beetle\lib\beetle.js">
       <Link>Scripts\beetle\beetle.js</Link>
-    </Content>
-    <Content Include="..\..\src\Beetle.Client\lib\beetle.lang-tr-TR.js">
-      <Link>Scripts\beetle\beetle.lang-tr-TR.js</Link>
-    </Content>
-    <Content Include="..\..\src\Beetle.Client\lib\beetle.queryExtensions.js">
-      <Link>Scripts\beetle\beetle.queryExtensions.js</Link>
     </Content>
     <Content Include="Content\qunit.css" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\qunit\qunit.js" />
-    <TypeScriptCompile Include="..\..\src\Beetle.Client\lib\beetle.d.ts">
-      <Link>Scripts\beetle\beetle.d.ts</Link>
+    <TypeScriptCompile Include="..\..\src\beetle\lib\beetle-queryExtensions.d.ts">
+      <Link>Scripts\beetle\beetle-queryExtensions.d.ts</Link>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="..\..\src\Beetle.Client\lib\beetle.queryExtensions.d.ts">
-      <Link>Scripts\beetle\beetle.queryExtensions.d.ts</Link>
+    <TypeScriptCompile Include="..\..\src\beetle\lib\beetle.d.ts">
+      <Link>Scripts\beetle\beetle.d.ts</Link>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Scripts\tests\basicTests.ts" />
     <Content Include="Web.config">

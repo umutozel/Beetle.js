@@ -32,7 +32,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="Beetlejs.Client.nuspec" />
+    <Content Include="Beetlejs.nuspec" />
     <Content Include="bower.json" />
     <Content Include="package.json" />
   </ItemGroup>

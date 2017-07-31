@@ -2,8 +2,8 @@ using System;
 
 namespace Beetle.Tests.IntegrationCore.Models {
 
-    public class Entity {
-        public int Id { get; set; }
+    public partial class Entity {
+        public Guid Id { get; set; }
         public int ShortId { get; set; }
         public string UserNameCreate { get; set; }
         public DateTime TimeCreate { get; set; }

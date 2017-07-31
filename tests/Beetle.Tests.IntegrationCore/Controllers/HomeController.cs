@@ -1,42 +1,104 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Beetle.Tests.IntegrationCore.Controllers {
     using Server;
+    using EntityFrameworkCore;
     using MvcCore;
     using Models;
-    using System.Threading.Tasks;
-    using Newtonsoft.Json;
 
-    public sealed class HomeController : BeetleController {
+    public sealed class HomeController : BeetleController<EFContextHandler<TestEntities>> {
 
-        public HomeController() {
+        public HomeController(EFContextHandler<TestEntities> contextHandler): base(contextHandler) {
             CheckRequestHash = true;
+        }
+
+        public TestEntities Context {
+            get { return ContextHandler.Context; }
         }
 
         public IActionResult Index() {
             return View();
         }
 
-        protected override Task<SaveResult> SaveChanges(SaveContext saveContext) {
-            return Task.FromResult(SaveResult.Empty);
-        }
-
+        [HttpGet]
         public IQueryable<Entity> Entities() {
-            var s = JsonConvert.SerializeObject(null);
-            var rnd = new Random();
-            return Enumerable.Range(1, 10)
-                .Select(i => new Entity {Id = rnd.Next(20), ShortId = i, TimeCreate = DateTime.Now, UserNameCreate = "tester"})
-                .AsQueryable();
+            return Context.Entities;
         }
 
-        [NonBeetleAction]
-        public IQueryable<Entity> Entities2() {
-            var rnd = new Random();
-            return Enumerable.Range(1, 10)
-                .Select(i => new Entity { Id = rnd.Next(20), ShortId = i, TimeCreate = DateTime.Now, UserNameCreate = "tester" })
-                .AsQueryable();
+        [HttpGet]
+        public IQueryable<NamedEntity> NamedEntities() {
+            return Context.Entities.OfType<NamedEntity>();
+        }
+
+        [HttpGet]
+        public IQueryable<Company> Companies() {
+            return Context.Entities.OfType<Company>();
+        }
+
+        [HttpGet]
+        public IQueryable<Address> Addresses() {
+            return Context.Entities.OfType<Address>();
+        }
+
+        [HttpGet]
+        public IQueryable<NamedEntityType> NamedEntityTypes() {
+            return Context.NamedEntityTypes;
+        }
+
+        [HttpGet]
+        public IQueryable<Order> Orders() {
+            return Context.Orders;
+        }
+
+        [HttpGet]
+        public IQueryable<OrderDetail> OrderDetails() {
+            return Context.OrderDetails;
+        }
+
+        [HttpGet]
+        public IQueryable<OrderDetail> Details(Guid? id) {
+            return Context.OrderDetails;
+        }
+
+        public class Person {
+            public string Name { get; set; }
+            public string Surname { get; set; }
+            public DateTime BirthDate { get; set; }
+        }
+
+        [HttpPost]
+        public IQueryable<NamedEntity> TestPost(dynamic prms, string name) {
+            if (name != "Knuth") throw new ArgumentException("name is missing");
+
+            int shortId = Convert.ToInt32(prms.shortId.ToString());
+            string personName = Convert.ToString(prms.person.Name).ToString();
+            var ids = ((IEnumerable)prms.ids).OfType<object>().Select(x => Convert.ToInt32(x.ToString()));
+            return Context.Entities.OfType<NamedEntity>()
+                .Where(ne => ne.ShortId != shortId)
+                .Where(ne => ne.Name != personName)
+                .Where(ne => !ids.Contains(ne.ShortId));
+        }
+
+        [HttpPost]
+        public Task<SaveResult> UpdateEntity(object saveBundle) {
+            return SaveChanges(saveBundle);
+        }
+
+        [HttpGet]
+        public string Clear() {
+            DatabaseHelper.ClearDatabase(Context);
+            return "clear";
+        }
+
+        [HttpGet]
+        public string Seed() {
+            Clear();
+            DatabaseHelper.SeedDatabase(Context);
+            return "seed";
         }
     }
 }

@@ -1050,7 +1050,7 @@
 	}
 
 	namespace services {
-		class MvcService extends baseTypes.DataServiceBase {
+		class BeetleService extends baseTypes.DataServiceBase {
 			constructor(url: string, loadMetadata?: boolean, options?: ServiceOptions);
 			constructor(url: string, metadata: metadata.MetadataManager | Object | string, options?: ServiceOptions);
 
@@ -1058,7 +1058,7 @@
 				successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: AjaxError) => void);
 			fixResults(results: any[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
 		}
-		class WebApiService extends MvcService {
+		class ODataService extends BeetleService {
 		}
 	}
 
@@ -1079,7 +1079,7 @@
 			NotAllowed, Replace, Append
 		}
 		enum serviceTypes {
-			WebApi, Mvc
+			OData, Beetle
 		}
 	}
 
@@ -1135,8 +1135,8 @@
 	class EntityManager extends core.EntityManager { }
 	class EntityBase extends core.EntityBase { }
 	class EntitySet<T extends IEntity> extends core.EntitySet<T> { }
-	class WebApiService extends services.WebApiService { }
-	class MvcService extends services.MvcService { }
+	class ODataService extends services.ODataService { }
+	class BeetleService extends services.BeetleService { }
 	class Event<T> extends core.Event<T> { }
 	class ValueNotifyWrapper extends core.ValueNotifyWrapper { }
 	interface TrackableArray<T> extends interfaces.TrackableArray<T> { }

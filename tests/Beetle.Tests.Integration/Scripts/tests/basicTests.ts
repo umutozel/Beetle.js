@@ -1,4 +1,4 @@
-﻿var service = new beetle.WebApiService("api/TestApi", false);
+﻿var service = new beetle.ODataService("api/TestApi", false);
 
 test("get all entities", 1, () => {
     var manager = new beetle.EntityManager(service);

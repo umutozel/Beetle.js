@@ -30,9 +30,7 @@
 				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
 			]).get(aHttp.Http);
 			angular = { http, Request: aHttp.Request, Headers: aHttp.Headers };
-		} catch (e) { 
-			console.log(e);
-		}
+		} catch (e) { }
 
 		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, node, angular);
 		return module.exports;
@@ -793,7 +791,7 @@
 						var a = helper.findInArray(queryContext.aliases, n, 'alias');
 						if (a) return a.value;
 						var v = helper.getValue(value, n);
-						if (v === undefined) return window[n];
+						if (v === undefined) return root[n];
 						return v;
 					}
 					else if (exp.type == 'Literal')
@@ -848,7 +846,7 @@
 								if (exp.callee.type == 'MemberExpression')
 									obj = helper.jsepToFunction(exp.callee.object, queryContext)(value);
 								else
-									obj = window;
+									obj = root;
 
 								if (obj == null || (func = obj[funcName]) == null)
 									throw helper.createError(i18N.unknownFunction, [funcName]);
@@ -2730,8 +2728,8 @@
 					///  uri: Overrides dataService's uri.
 					///  headers: Extra http headers
 					///  
-					///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
-					///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
+					///  -Options will be passed to services also, so we can pass service specific options too, these are available for OData and Beetle services;
+					///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
 					///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
 					///  dataType: We can set ajax call's dataType with this option
 					///  contentType: We can set ajax call's contentType with this option
@@ -3780,7 +3778,7 @@
 					/// <summary>
 					/// Creates a new query for this type.
 					/// </summary>
-					/// <param name="resourceName">WebApi query resource name (Service controller action).</param>
+					/// <param name="resourceName">OData query resource name (Service controller action).</param>
 					/// <param name="manager">The entity manager.</param>
 					if (resourceName) return new querying.EntityQuery(resourceName, this, manager);
 
@@ -5942,8 +5940,8 @@
 					///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
 					///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
 					///  
-					///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
-					///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
+					///  -Options will be passed to services also, so we can pass service specific options too, these are available for OData and Beetle services;
+					///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
 					///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
 					///  dataType: We can set ajax call's dataType with this option
 					///  contentType: We can set ajax call's contentType with this option
@@ -8426,9 +8424,9 @@
 					///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
 					///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
 					///  
-					///  -Options will be passed to services also, so we can pass service specific options too, these are available for WebApi and Mvc services;
+					///  -Options will be passed to services also, so we can pass service specific options too, these are available for OData and Beetle services;
 					///  async: When false, Ajax call will be made synchronously (default: true)
-					///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings (only WebApi)
+					///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
 					///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
 					///  dataType: We can set ajax call's dataType with this option
 					///  contentType: We can set ajax call's contentType with this option
@@ -9277,7 +9275,7 @@
 
 						// If first parameter is string, use it as an Uri and create the default service.
 						var dst = settings.getDefaultServiceType();
-						var serviceType = dst === enums.serviceTypes.WebApi ? services.WebApiService : services.MvcService;
+						var serviceType = dst === enums.serviceTypes.OData ? services.ODataService : services.BeetleService;
 						instance.dataService = new serviceType(service, metadataPrm, injections);
 					}
 					else throw helper.createError(i18N.managerInvalidArgs, { entityManager: this, arguments: args });
@@ -9854,15 +9852,15 @@
 		};
 	})();
 	var services = (function () {
-		/// <summary>Data service implementations like WebApiService, MvcService etc..</summary>
+		/// <summary>Data service implementations like ODataService, BeetleService etc..</summary>
 
 		var expose = {};
 
-		expose.MvcService = (function () {
+        expose.BeetleService = (function () {
 			// Dependencies are injected through constructor.
 			var ctor = function (uri, metadataPrm, injections) {
 				/// <summary>
-				/// MVC Controller Service class.
+				/// Beetle Service class.
 				/// </summary>
 				/// <param name="uri">Service URI.</param>
 				/// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
@@ -10129,7 +10127,7 @@
 			return ctor;
 		})();
 
-		expose.WebApiService = (function () {
+        expose.ODataService = (function () {
 			// Dependencies are injected through constructor.
 			var ctor = function (uri, metadataPrm, injections) {
 				/// <summary>
@@ -10141,10 +10139,10 @@
 				/// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
 				///  When not given, defaults will be used.
 				/// </param>
-				services.MvcService.call(this, uri, metadataPrm, injections);
+                services.BeetleService.call(this, uri, metadataPrm, injections);
 				this.useBeetleQueryStrings = false;
 			};
-			helper.inherit(ctor, expose.MvcService);
+            helper.inherit(ctor, expose.BeetleService);
 			var proto = ctor.prototype;
 
 			proto.executeQuery = function (query, options, successCallback, errorCallback) {
@@ -10273,10 +10271,8 @@
 			arraySetBehaviour: new libs.Enum('NotAllowed', 'Replace', 'Append'),
 			/// <field>
 			/// Supported service types.
-			///  WebApi: Web Api service.
-			///  Mvc: Mvc service.
 			/// </field>
-			serviceTypes: new libs.Enum('WebApi', 'Mvc')
+			serviceTypes: new libs.Enum('OData', 'Beetle')
 		};
 	})();
 	var events = (function () {
@@ -10334,7 +10330,7 @@
 		var _serializationService = new impls.JsonSerializationService();
 
 		var _arraySetBehaviour = enums.arraySetBehaviour.NotAllowed;
-		var _defaultServiceType = enums.serviceTypes.WebApi;
+		var _defaultServiceType = enums.serviceTypes.Beetle;
 		var _dateConverter = new impls.DefaultDateConverter();
 
 		var _localizeFunction;
@@ -10641,8 +10637,8 @@
 		EntityManager: core.EntityManager,
 		EntityBase: core.EntityBase,
 		EntitySet: core.EntitySet,
-		WebApiService: services.WebApiService,
-		MvcService: services.MvcService,
+        ODataService: services.ODataService,
+        BeetleService: services.BeetleService,
 		Event: core.Event,
 		Validator: core.Validator,
 		ValueNotifyWrapper: core.ValueNotifyWrapper,

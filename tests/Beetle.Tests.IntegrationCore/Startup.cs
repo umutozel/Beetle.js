@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Beetle.Tests.IntegrationCore {
+    using Beetle.EntityFrameworkCore;
+    using Models;
 
     public class Startup {
 
@@ -23,6 +25,9 @@ namespace Beetle.Tests.IntegrationCore {
         public void ConfigureServices(IServiceCollection services) {
             // Add framework services.
             services.AddMvc();
+
+            services.AddDbContext<TestEntities>(o => o.UseInMemoryDatabase(), ServiceLifetime.Transient);
+            services.AddTransient<EFContextHandler<TestEntities>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
