@@ -14,8 +14,16 @@
 
   <ItemGroup>
     <Content Include="wwwroot\css\qunit.css" />
+    <Content Include="wwwroot\css\toastr.css" />
+    <Content Include="wwwroot\js\jquery-1.8.3.min.js" />
+    <Content Include="wwwroot\js\json2.js" />
+    <Content Include="wwwroot\js\knockout-2.1.0.js" />
+    <Content Include="wwwroot\js\q.min.js" />
+    <Content Include="wwwroot\js\qunit.js" />
     <Content Include="wwwroot\js\qunit\qunit.js" />
-    <Content Include="wwwroot\js\tests\basicTests.ts" />
+    <Content Include="wwwroot\js\tests\basicTests.js" />
+    <Content Include="wwwroot\js\tests\testMetadata.js" />
+    <Content Include="wwwroot\js\toastr.js" />
   </ItemGroup>
 
   <ItemGroup>

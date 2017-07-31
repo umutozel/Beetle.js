@@ -16,9 +16,7 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
             CheckRequestHash = true;
         }
 
-        public TestEntities Context {
-            get { return ContextHandler.Context; }
-        }
+        public TestEntities Context => ContextHandler.Context;
 
         public IActionResult Index() {
             return View();

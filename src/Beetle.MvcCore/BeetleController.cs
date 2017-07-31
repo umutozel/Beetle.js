@@ -34,10 +34,7 @@ namespace Beetle.MvcCore {
 #else
         protected BeetleController(TContextHandler contextHandler, IBeetleConfig config) : base(config) {
 #endif
-            if (ContextHandler == null)
-                throw new ArgumentNullException(nameof(contextHandler));
-
-            ContextHandler = contextHandler;
+            ContextHandler = contextHandler ?? throw new ArgumentNullException(nameof(contextHandler));
         }
 
         public TContextHandler ContextHandler { get; }
