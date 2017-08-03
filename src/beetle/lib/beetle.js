@@ -1,10 +1,7 @@
 ﻿/**
- * String options.
- * @typedef {Object} StringOptions
- * @property {boolean} isCaseSensitive - Indicates whether call toLowerCase on strings before comparison.
- * @property {boolean} ignoreWhiteSpaces - Indicates whether trim strings before comparison.
- */
-
+* Beetle module.
+* @module
+*/
 (function (root, factory) {
     var deps = {
         jQuery: root.$,
@@ -64,7 +61,7 @@
         return root.beetle;
     }
 })(this, function (root, $, angularjs, ko, Q, node, angular) {
-    'use strict';
+    "use strict";
 
     /**
     * Helper class for common codes. We are not using ECMA 5, so we must write these helper methods.
@@ -232,15 +229,22 @@
                 return -1;
             },
             forEach: function (array, callback) {
-                /// <summary>Calls given callback with item and current index paramaters for each item in the array, can be used like iterators.</summary>
-                /// <param name="array">Array to iterate.</param>
-                /// <param name="callback">Method to call for each item.</param>
+                /**
+                * Calls given callback with item and current index parameters for each item in the array.
+                * @param {any[]} array - Array to iterate.
+                * @param {forEachCallback} callback - Method to call for each item.
+                */
                 for (var i = 0; i < array.length; i++) {
                     var obj = array[i];
                     callback.call(null, obj, i);
                 }
             },
             forEachProperty: function (object, callback) {
+                /**
+                * Iterate objects properties and skips ones starting with '$'.
+                * @param {Object} array - Object to iterate.
+                * @param {forEachPropertyCallback} callback - Method to call for each property.
+                */
                 /// <summary>Iterate objects properties but does not make callbacks for functions.</summary>
                 /// <param name="object">Object to iterate.</param>
                 /// <param name="callback">Method to call for each property.</param>
@@ -10693,4 +10697,25 @@
         arraySetBehaviour: enums.arraySetBehaviour,
         serviceTypes: enums.serviceTypes
     };
-});
+    });
+
+/**
+ * String options.
+ * @typedef {Object} StringOptions
+ * @property {boolean} isCaseSensitive - Indicates whether call toLowerCase on strings before comparison.
+ * @property {boolean} ignoreWhiteSpaces - Indicates whether trim strings before comparison.
+ */
+
+/**
+ * forEach callback.
+ * @callback forEachCallback
+ * @param {*} item - The current item in iteration.
+ * @property {number} index - The current index.
+ */
+
+/**
+ * forEachProperty callback.
+ * @callback forEachPropertyCallback
+ * @param {string} property - The current property name in iteration.
+ * @property {*} value - The value of current property.
+ */
