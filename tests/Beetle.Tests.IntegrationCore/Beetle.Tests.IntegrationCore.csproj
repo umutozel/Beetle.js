@@ -59,6 +59,10 @@
     <Folder Include="wwwroot\js\beetle\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
   <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
     <Copy SourceFiles="%(None.Identity)" DestinationFiles="%(None.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" ContinueOnError="true" Condition="'%(None.Link)' != ''" />
   </Target>
