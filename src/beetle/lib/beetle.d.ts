@@ -561,8 +561,8 @@
 		function getResourceValue(resourceName: string, altValue?: string): string;
 		function createValidationError(entity, value, property: string, message: string, validator: interfaces.Validator);
 		function createError(message: string, args?: Array<any>, props?: interfaces.Dictionary<any>): Error;
-		function setForeignKeys(entity: IEntity, navProperty: interfaces.NavigationProperty, newValue);
-		function createTrackableArray<T>(initial: Array<T>, object: Object, property: string,
+        function setForeignKeys(entity: IEntity, navProperty: interfaces.NavigationProperty, newValue);
+        function createTrackableArray<T>(initial: Array<T>, object: Object, property: interfaces.NavigationProperty,
 			after: (entity: any, property: string, instance: interfaces.TrackableArray<T>, removed: Array<T>, added: Array<T>) => void): interfaces.TrackableArray<T>;
 	}
 

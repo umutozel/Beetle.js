@@ -64,7 +64,7 @@
     "use strict";
 
     /**
-    * Helper class for common codes. We are not using ECMA 5, so we must write these helper methods.
+    * Helper functions. We are trying not to use ECMA 5, so we polyfill some methods.
     * @namespace
     */
     var helper = (function () {
@@ -259,6 +259,7 @@
                  * @param {any[]} array - Array to search.
                  * @param {*} value - Value to find.
                  * @param {string=} property - Property to look for the value.
+                 * @returns {*} When value is found; if property is provided, the array item containing the given value, otherwise value itself. When not found, null.
                  */
                 for (var i = 0; i < array.length; i++)
                     if (property) {
@@ -267,9 +268,12 @@
                 return null;
             },
             filterArray: function (array, predicate) {
-                /// <summary>Copies array items that match the given conditions to another array and returns the new array.</summary>
-                /// <param name="array">Array to filter.</param>
-                /// <param name="predicate">Select conditions.</param>
+                /**
+                 * Copies array items that match the given conditions to another array and returns the new array.
+                 * @param {any[]} array - The array to filter.
+                 * @param {predicateFunction} predicate - Predicate function to apply on the array.
+                 * @returns {any[]} New array with filtered items.
+                 */
                 var retVal = [];
                 for (var i = 0; i < array.length; i++) {
                     var item = array[i];
@@ -279,11 +283,13 @@
                 return retVal;
             },
             removeFromArray: function (array, item, property) {
-                /// <summary>Removes the item from given array.</summary>
-                /// <param name="array">The array.</param>
-                /// <param name="item">The item to remove.</param>
-                /// <param name="property">The property that holds the value (item).</param>
-                /// <returns type="Number">Returns how many item removed.</returns>
+                /**
+                 * Removes the item from given array.
+                 * @param {any[]} array - The array to remove item from.
+                 * @param {*} item - Item to remove.
+                 * @param {string=} property - Property to look for the value.
+                 * @returns {number[]} Removed item indexes.
+                 */
                 var indexes = [];
                 this.forEach(array, function (current, index) {
                     if (property) {
@@ -295,6 +301,12 @@
                 return indexes.length;
             },
             mapArray: function (array, callback) {
+                /**
+                 * Creates a new array with the results of calling the provided function on every element in the given array.
+                 * @param {any[]} array - The array to map.
+                 * @param {mapCallback} callback - Function that produces new element.
+                 * @returns {any[]} New array with mapped values.
+                 */
                 var retVal = [];
                 for (var i = 0; i < array.length; i++) {
                     var item = array[i];
@@ -303,7 +315,10 @@
                 return retVal;
             },
             createGuid: function () {
-                /// <summary>Creates a guid.</summary>
+                /**
+                 * Creates a GUID string with "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" format.
+                 * @returns {string} Newly generated GUID.
+                 */
 
                 function s4() {
                     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -313,6 +328,11 @@
                     s4() + '-' + s4() + s4() + s4();
             },
             funcToLambda: function (func) {
+                /**
+                 * Creates string representation of given function with arrow syntax.
+                 * @param {function} func - The function.
+                 * @returns {string} Arrow style code for given function.
+                 */
                 helper.assertPrm(func, "func").isFunction().check();
 
                 var f = func.toString().replace(/function(.*?){/g, "$1=>").replace(/{|}|;|return /g, "").trim();
@@ -336,18 +356,21 @@
                 return p ? (p + " => " + f) : f;
             },
             getFuncName: function (func) {
+                /**
+                 * Finds and returns function name. Works for ES6 classes too.
+                 * @param {function} func - The function (or class).
+                 * @returns {string} Name of the given function.
+                 */
                 var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
                 var results = funcNameRegex.exec(func.toString());
                 return results[1] || results[2];
             },
             inherit: function (derivedClass, baseClass) {
-                /// <summary>
-                /// Inherits given derivedClass from baseClass.
-                /// Generates prototypal relation, sets constructor 
-                /// and creates a 'baseClass' property on derived type points to base type.
-                /// </summary>
-                /// <param name="derivedClass">Derived class.</param>
-                /// <param name="baseClass">Base class.</param>
+                /**
+                 * Implements prototypal inheritance. Uses a "Function" instance to avoid unnecessary instantiations.
+                 * @param {function} derivedClass - Deriving type.
+                 * @param {function} baseClass - Base type.
+                 */
                 var f = new Function();
                 f.prototype = baseClass.prototype;
 
@@ -356,9 +379,12 @@
                 derivedClass.baseClass = baseClass.prototype;
             },
             getValue: function (object, propertyPath) {
-                /// <summary>Reads property of value, used when we are not sure if property is observable.</summary>
-                /// <param name="object">The object.</param>
-                /// <param name="property">The property.</param>
+                /**
+                 * Reads property of value, used when we are not sure if property is observable.
+                 * @param {Object} object - Deriving type.
+                 * @param {string} property - Property path. Can be a chain like "address.city.name".
+                 * @returns {*} Value of property (undefined when a property cannot be found).
+                 */
                 if (object == null) return undefined;
                 var op = settings.getObservableProvider();
                 // split propertyPath path and read every items value
@@ -383,23 +409,35 @@
                 }
             },
             getResourceValue: function (resourceName, altValue) {
+                /**
+                 * Gets localized value for given name using "settings.localizeFunc" function.
+                 * @param {string} resourceName - Resource name.
+                 * @param {string} altValue - Alternative value to use when resource cannot be found.
+                 * @returns {string} Value for the given resource name.
+                 */
                 var localizeFunc = settings.getLocalizeFunction();
                 return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
             },
             createValidationError: function (entity, value, property, message, validator) {
-                /// <summary>Creates validation error object using given parameters.</summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="value">Current value.</param>
-                /// <param name="property">The property.</param>
-                /// <param name="message">Validation message.</param>
-                /// <param name="validator">Validator instance.</param>
+                /**
+                 * Creates validation error object using given parameters.
+                 * @param {*} entity - Entity containing invalid value.
+                 * @param {*} value - Invalid value itself.
+                 * @param {string} property - Property containing invalid value.
+                 * @param {string} message - Validation message.
+                 * @param {core.Validator} validator - Validator instance.
+                 * @returns {Object} Validation error object.
+                 */
                 return { message: message, entity: entity, validator: validator, value: value, property: property };
             },
             createError: function (message, arg1, arg2) {
-                /// <summary>Creates error object with given message and populates with given object's values.</summary>
-                /// <param name="message">Error message.</param>
-                /// <param name="arg1">Message format arguments.</param>
-                /// <param name="arg2">Extra informations, will be attached to error object.</param>
+                /**
+                 * Creates error object by formatting provided message and populates with given object's values.
+                 * @param {string} message - Error message.
+                 * @param {string[]=} arg1 - Message format arguments.
+                 * @param {Object=} arg2 - Extra informations, properties will be attached to error object.
+                 * @returns {Error} Error object.
+                 */
                 var args = null, obj = arg2;
                 if (Assert.isArray(arg1)) args = arg1;
                 else if (Assert.isObject(arg1)) obj = arg1;
@@ -417,10 +455,12 @@
                 return retVal;
             },
             setForeignKeys: function (entity, navProperty, newValue) {
-                /// <summary>Updates foreign keys of given navigation property with new values.</summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="navProperty">The navigation property.</param>
-                /// <param name="newValue">New value.</param>
+                /**
+                 * Updates foreign keys of given navigation property with new values.
+                 * @param {*} entity - The entity.
+                 * @param {string[]=} navProperty - The navigation property.
+                 * @param {Object} newValue - Value of the navigation property.
+                 */
                 for (var i = 0; i < navProperty.foreignKeyNames.length; i++) {
                     // We get each related foreign key for this navigation property.
                     var fk = navProperty.foreignKeyNames[i];
@@ -440,6 +480,14 @@
                 }
             },
             createTrackableArray: function (initial, object, property, after) {
+                /**
+                 * Creates an array and overrides methods to provide callbacks on array changes.
+                 * @param {any[]} initial - Initial values for the array.
+                 * @param {Object} object - Owner object of the array.
+                 * @param {metadata.NavigationProperty} property - Navigation property metadata.
+                 * @param {arrayChangeCallback} after - Array change callback.
+                 * @returns {TrackableArray} Trackable array, an array with change events.
+                 */
                 var array = initial || [];
                 array.object = object;
                 array.property = property;
@@ -517,15 +565,16 @@
                 };
 
                 array.load = function (expands, resourceName, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Loads the navigation property.
-                    /// </summary>
-                    /// <param name="expands">Expand navigations to apply when loading navigation property.</param>
-                    /// <param name="resourceName">Resource name to query entities.</param>
-                    /// <param name="options">Query options.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    return this.object.$tracker.loadNavigationProperty(this.propertyName, expands, resourceName, options, successCallback, errorCallback);
+                    /**
+                     * Loads the navigation property using EntityManager.
+                     * @param {string[]} expands - Expand navigations to apply when loading navigation property.
+                     * @param {Object} resourceName - Resource name to query entities.
+                     * @param {queryOptions} options - Query options.
+                     * @param {successCallback=} successCallback - Success callback function.
+                     * @param {errorCallback=} errorCallback - Error callback function.
+                     * @returns {Promise} A Promise when available, otherwise return value of the AjaxProvider.
+                     */
+                    return this.object.$tracker.loadNavigationProperty(this.property.name, expands, resourceName, options, successCallback, errorCallback);
                 };
 
                 function beforeAdd(added, instance) {
@@ -549,6 +598,13 @@
                 return array;
             },
             runSelectExp: function (array, exp, queryContext) {
+                /**
+                 * Creates a new array with the results of evaluating provided expression on every element in the given array.
+                 * @param {any[]} array - Array to run projection on.
+                 * @param {string} exp - Projection expression.
+                 * @param {QueryContext} queryContext - Query execution context.
+                 * @returns {any[]} Projected new object.
+                 */
                 if (array.length == 0) return array;
 
                 exp = libs.jsep(exp);
@@ -557,9 +613,12 @@
                 return helper.mapArray(array, projector);
             },
             jsepToODataQuery: function (exp, queryContext, firstExp) {
-                /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
-                /// <param name="exp">Jsep expression.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
+                /**
+                 * Converts parsed javascript expression (jsep) to OData format query string.
+                 * @param {Object} exp - Jsep expression (tokenized).
+                 * @param {QueryContext} queryContext - Query execution context.
+                 * @returns {string} OData query string.
+                 */
                 firstExp = firstExp || exp;
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
@@ -677,9 +736,12 @@
                 throw helper.createError(i18N.unknownExpression, { expression: exp });
             },
             jsepToBeetleQuery: function (exp, queryContext, firstExp) {
-                /// <summary>Converts parsed javascript expression (jsep) to Beetle format query string.</summary>
-                /// <param name="exp">Jsep expression.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
+                /**
+                 * Converts parsed javascript expression (jsep) to Beetle format query string.
+                 * @param {Object} exp - Jsep expression (tokenized).
+                 * @param {QueryContext} queryContext - Query execution context.
+                 * @returns {string} OData query string.
+                 */
                 firstExp = firstExp || exp;
                 if (!queryContext) queryContext = { aliases: [] };
                 else if (!queryContext.aliases) queryContext.aliases = [];
@@ -789,9 +851,12 @@
                 throw helper.createError(i18N.unknownExpression, { expression: exp });
             },
             jsepToFunction: function (exp, queryContext) {
-                /// <summary>Converts parsed javascript expression (jsep) to Javascript function.</summary>
-                /// <param name="exp">Jsep expression.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
+                /**
+                 * Converts parsed javascript expression (jsep) to Javascript function (not using evil "eval").
+                 * @param {Object} exp - Jsep expression (tokenized).
+                 * @param {QueryContext} queryContext - Query execution context.
+                 * @returns {Function} Javascript function.
+                 */
                 return function (value) {
                     if (!queryContext) queryContext = { aliases: [] };
                     else if (!queryContext.aliases) queryContext.aliases = [];
@@ -911,9 +976,12 @@
                 };
             },
             jsepToProjector: function (exps, queryContext) {
-                /// <summary>Converts parsed javascript expression (jsep) to Javascript projection selector (creates new projected object).</summary>
-                /// <param name="exps">Jsep expressions.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
+                /**
+                 * Converts parsed javascript expression (jsep) to Javascript projection function (not using evil "eval").
+                 * @param {Object} exp - Jsep expression (tokenized).
+                 * @param {QueryContext} queryContext - Query execution context.
+                 * @returns {Function} Javascript projector function.
+                 */
                 var projectExps = [];
                 if (!Assert.isArray(exps)) exps = [exps];
                 for (var i = 0; i < exps.length; i++) {
@@ -2310,8 +2378,11 @@
                         helper.forEach(that.expressions, function (exp) {
                             qc.expVarContext = exp.varContext;
                             array = exp.execute(array, qc);
-                            if (that.inlineCountEnabled && !Assert.isInstanceOf(exp, querying.expressions.TopExp) && !Assert.isInstanceOf(exp, querying.expressions.SkipExp))
+                            if (that.inlineCountEnabled
+                                    && !Assert.isInstanceOf(exp, querying.expressions.TopExp)
+                                    && !Assert.isInstanceOf(exp, querying.expressions.SkipExp)) {
                                 qc.inlineCount = array.length;
+                            }
                             qc.expVarContext = undefined;
                         });
                         if (that.inlineCountEnabled)
@@ -10718,4 +10789,52 @@
  * @callback forEachPropertyCallback
  * @param {string} property - The current property name in iteration.
  * @param {*} value - The value of current property.
+ */
+
+/**
+ * predicateFunction callback.
+ * @callback predicateFunction
+ * @param {any} value - Current value.
+ * @returns {boolean} - True when item mets conditions, otherwise false.
+ */
+
+/**
+ * mapCallback callback. "this" will be the current item.
+ * @callback mapCallback
+ * @param {any} item - Current item.
+ * @param {number} index - Current index.
+ */
+
+/**
+ * arrayChangeCallback callback. Called when a TrackableArray changed.
+ * @callback arrayChangeCallback
+ * @param {any} item - Current item.
+ * @param {number} index - Current index.
+ */
+
+/**
+ * TrackableArray type.
+ * @typedef {Object} TrackableArray
+ * @property {Object} object - Owner object of the array.
+ * @property {metadata.NavigationProperty} property - Navigation property metadata.
+ * @property {beetle.core.Event} changing - Called before array change.
+ * @property {beetle.core.Event} changed - Called after the array changed.
+ */
+
+/**
+ * successCallback callback.
+ * @callback successCallback
+ * @param {any} result - Result value of the operation.
+ */
+
+/**
+ * errorCallback callback.
+ * @callback errorCallback
+ * @param {Error} error - Error object for the failed operation.
+ */
+
+/**
+ * QueryContext type. Generated when query execution starts and will be shared through execution.
+ * @typedef {Object} QueryContext
+ * @property {*} varContext - Variables for the query. Can be used for parameterization.
  */
