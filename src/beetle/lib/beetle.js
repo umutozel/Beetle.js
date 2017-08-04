@@ -72,20 +72,20 @@
         return {
             assertPrm: function (value, name) {
                 /**
-                * Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check().
-                * @param {*} value - The value of parameter.
-                * @param {string} name - The name of the parameter.
-                * @returns {Assert} Assert instance.
-                */
+                 * Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check().
+                 * @param {*} value - The value of parameter.
+                 * @param {string} name - The name of the parameter.
+                 * @returns {Assert} Assert instance.
+                 */
                 return new Assert(value, name);
             },
             combine: function (obj1, obj2) {
                 /**
-                * Combines first object's properties with second object's properties on a new object.
-                * @param {Object} obj1 - The first object.
-                * @param {Object} obj2 - The second object.
-                * @returns {Object} New object containing all properties from both objects.
-                */
+                 * Combines first object's properties with second object's properties on a new object.
+                 * @param {Object} obj1 - The first object.
+                 * @param {Object} obj2 - The second object.
+                 * @returns {Object} New object containing all properties from both objects.
+                 */
                 if (obj1 == obj2) return obj1;
                 var obj = {};
                 if (obj1 != null) {
@@ -105,11 +105,11 @@
             },
             extend: function (objMain, objExt) {
                 /**
-                * Extends objMain with objExt's properties.
-                * @param {Object} objMain - The main object.
-                * @param {Object} objExt - Object to extend with.
-                * @returns {Object} objMain is returned.
-                */
+                 * Extends objMain with objExt's properties.
+                 * @param {Object} objMain - The main object.
+                 * @param {Object} objExt - Object to extend with.
+                 * @returns {Object} objMain is returned.
+                 */
                 if (objMain != null && objExt != null) {
                     for (var p in objExt) {
                         if (!objMain.hasOwnProperty(p))
@@ -120,11 +120,11 @@
             },
             objEquals: function (obj1, obj2) {
                 /**
-                * Checks if the given two are equal. if parameters are both objects, recursively controls their properties too.
-                * @param {Object} obj1 - The first object.
-                * @param {Object} obj2 - The second object.
-                * @returns {boolean} True when two objects are equal, otherwise false.
-                */
+                 * Checks if the given two are equal. if parameters are both objects, recursively controls their properties too.
+                 * @param {Object} obj1 - The first object.
+                 * @param {Object} obj2 - The second object.
+                 * @returns {boolean} True when two objects are equal, otherwise false.
+                 */
                 if (obj1 == obj2)
                     return true;
 
@@ -147,28 +147,28 @@
             },
             isCaseSensitive: function (options) {
                 /**
-                * Returns string case option for current operation context.
-                * @param {StringOptions} options - String options for the context.
-                * @returns {boolean} True when given options' isCaseSensitive is true (or null and global options' isCaseSensitive is true), otherwise false.
-                */
+                 * Returns string case option for current operation context.
+                 * @param {StringOptions} options - String options for the context.
+                 * @returns {boolean} True when given options' isCaseSensitive is true (or null and global options' isCaseSensitive is true), otherwise false.
+                 */
                 var isCaseSensitive = options && options.isCaseSensitive;
                 return isCaseSensitive == null ? settings.isCaseSensitive : isCaseSensitive;
             },
             ignoreWhiteSpaces: function (options) {
                 /**
-                * Returns whitespace ignore option for current operation context.
-                * @param {StringOptions} options - String options for the context.
-                * @returns {boolean} True when given options' ignoreWhiteSpaces is true (or null and global options' ignoreWhiteSpaces is true), otherwise false.
-                */
+                 * Returns whitespace ignore option for current operation context.
+                 * @param {StringOptions} options - String options for the context.
+                 * @returns {boolean} True when given options' ignoreWhiteSpaces is true (or null and global options' ignoreWhiteSpaces is true), otherwise false.
+                 */
                 var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
                 return ignoreWhiteSpaces == null ? settings.ignoreWhiteSpaces : ignoreWhiteSpaces;
             },
             handleStrOptions: function (str, options) {
                 /**
-                * Applies current operation context string options to given parameter.
-                * @param {StringOptions} options - String options for the context.
-                * @returns {string} Modified string (using the options).
-                */
+                 * Applies current operation context string options to given parameter.
+                 * @param {StringOptions} options - String options for the context.
+                 * @returns {string} Modified string (using the options).
+                 */
                 if (str == null || typeof str !== "string") return str;
                 if (!helper.isCaseSensitive(options)) {
                     str = str.replace("İ", "i");
@@ -179,13 +179,13 @@
             },
             equals: function (obj1, obj2, isStrict, options) {
                 /**
-                * Compares two objects. Uses given options when necessary.
-                * @param {Object} obj1 - The first object.
-                * @param {Object} obj2 - The second object.
-                * @param {bool} isStrict - Use strict comparing (===).
-                * @param {StringOptions} options - String options for the context.
-                * @returns {boolean} True when two values are equal (options will be used for string values).
-                */
+                 * Compares two objects. Uses given options when necessary.
+                 * @param {Object} obj1 - The first object.
+                 * @param {Object} obj2 - The second object.
+                 * @param {bool} isStrict - Use strict comparing (===).
+                 * @param {StringOptions} options - String options for the context.
+                 * @returns {boolean} True when two values are equal (options will be used for string values).
+                 */
                 if (typeof obj1 === 'string' && typeof obj2 === 'string') {
                     obj1 = helper.handleStrOptions(obj1, options);
                     obj2 = helper.handleStrOptions(obj2, options);
@@ -200,11 +200,11 @@
             },
             formatString: function (string, params) {
                 /**
-                * Format string using given arguments. %1 and {1} format can be used for placeholders.
-                * @param {string} string - String to format.
-                * @param {...string} params - Values to replace.
-                * @returns {string} Formatted string.
-                */
+                 * Format string using given arguments. %1 and {1} format can be used for placeholders.
+                 * @param {string} string - String to format.
+                 * @param {...string} params - Values to replace.
+                 * @returns {string} Formatted string.
+                 */
                 var args = arguments;
                 var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
                 var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
@@ -218,22 +218,22 @@
             },
             indexOf: function (array, item, index) {
                 /**
-                * Finds the index of the given item in the array.
-                * @param {any[]} array - Array to search.
-                * @param {*} item - Item to find.
-                * @param {number=} index - Start index.
-                * @returns {number} Found index. If the item could not be found returns '-1'.
-                */
+                 * Finds the index of the given item in the array.
+                 * @param {any[]} array - Array to search.
+                 * @param {*} item - Item to find.
+                 * @param {number=} index - Start index.
+                 * @returns {number} Found index. If the item could not be found returns '-1'.
+                 */
                 for (var i = index || 0; i < array.length; i++)
                     if (array[i] === item) return i;
                 return -1;
             },
             forEach: function (array, callback) {
                 /**
-                * Calls given callback with item and current index parameters for each item in the array.
-                * @param {any[]} array - Array to iterate.
-                * @param {forEachCallback} callback - Method to call for each item.
-                */
+                 * Calls given callback with item and current index parameters for each item in the array.
+                 * @param {any[]} array - Array to iterate.
+                 * @param {forEachCallback} callback - Method to call for each item.
+                 */
                 for (var i = 0; i < array.length; i++) {
                     var obj = array[i];
                     callback.call(null, obj, i);
@@ -241,13 +241,10 @@
             },
             forEachProperty: function (object, callback) {
                 /**
-                * Iterate objects properties and skips ones starting with '$'.
-                * @param {Object} array - Object to iterate.
-                * @param {forEachPropertyCallback} callback - Method to call for each property.
-                */
-                /// <summary>Iterate objects properties but does not make callbacks for functions.</summary>
-                /// <param name="object">Object to iterate.</param>
-                /// <param name="callback">Method to call for each property.</param>
+                 * Iterate objects properties and skips ones starting with '$'.
+                 * @param {Object} object - Object to iterate.
+                 * @param {forEachPropertyCallback} callback - Method to call for each property.
+                 */
                 for (var p in object) {
                     if (p[0] == '$') continue;
                     var v = object[p];
@@ -256,10 +253,13 @@
                 }
             },
             findInArray: function (array, value, property) {
-                /// <summary>Finds given item in the array. When property is given, looks item's given property, otherwise compares items' itself. if item could not be found returns null.</summary>
-                /// <param name="array">Array to search.</param>
-                /// <param name="value">Value to find.</param>
-                /// <param name="property">Property that holds the item. Optional.</param>
+                /**
+                 * Finds given item in the array.
+                 * When property is given, looks item's property value, otherwise compares item's itself.
+                 * @param {any[]} array - Array to search.
+                 * @param {*} value - Value to find.
+                 * @param {string=} property - Property to look for the value.
+                 */
                 for (var i = 0; i < array.length; i++)
                     if (property) {
                         if (array[i][property] === value) return array[i];
@@ -10710,12 +10710,12 @@
  * forEach callback.
  * @callback forEachCallback
  * @param {*} item - The current item in iteration.
- * @property {number} index - The current index.
+ * @param {number} index - The current index.
  */
 
 /**
  * forEachProperty callback.
  * @callback forEachPropertyCallback
  * @param {string} property - The current property name in iteration.
- * @property {*} value - The value of current property.
+ * @param {*} value - The value of current property.
  */
