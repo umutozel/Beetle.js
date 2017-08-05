@@ -1,6 +1,6 @@
 ﻿/**
 * Beetle module.
-* @module
+* @module beetle
 */
 (function (root, factory) {
     var deps = {
@@ -64,964 +64,965 @@
     "use strict";
 
     /**
-    * Helper functions. We are trying not to use ECMA 5, so we polyfill some methods.
-    * @namespace
-    */
-    var helper = (function () {
-
-        return {
-            assertPrm: function (value, name) {
-                /**
-                 * Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check().
-                 * @param {*} value - The value of parameter.
-                 * @param {string} name - The name of the parameter.
-                 * @returns {Assert} Assert instance.
-                 */
-                return new Assert(value, name);
-            },
-            combine: function (obj1, obj2) {
-                /**
-                 * Combines first object's properties with second object's properties on a new object.
-                 * @param {Object} obj1 - The first object.
-                 * @param {Object} obj2 - The second object.
-                 * @returns {Object} New object containing all properties from both objects.
-                 */
-                if (obj1 == obj2) return obj1;
-                var obj = {};
-                if (obj1 != null) {
-                    for (var p1 in obj1) {
-                        obj[p1] = obj1[p1];
-                    }
+     * Helper functions. We are trying not to use ECMA 5, so we polyfill some methods.
+     * @namespace helper
+     */
+    var helper = {
+        /**
+         * Creates an assert instance to work with, a shortcut.
+         * @example
+         * helper.assertPrm(prm, 'prm').isArray().check()
+         * @param {any} value - The value of parameter.
+         * @param {string} name - The name of the parameter.
+         * @returns {Assert} Assert instance.
+         */
+        assertPrm: function (value, name) {
+            return new Assert(value, name);
+        },
+        /**
+         * Combines first object's properties with second object's properties on a new object.
+         * @param {Object} obj1 - The first object.
+         * @param {Object} obj2 - The second object.
+         * @returns {Object} New object containing all properties from both objects.
+         */
+        combine: function (obj1, obj2) {
+            if (obj1 == obj2) return obj1;
+            var obj = {};
+            if (obj1 != null) {
+                for (var p1 in obj1) {
+                    obj[p1] = obj1[p1];
                 }
-                if (obj2 != null) {
-                    for (var p2 in obj2) {
-                        var v1 = obj[p2];
-                        var v2 = obj2[p2];
-                        var v = Assert.isTypeOf(v1, 'object') && Assert.isTypeOf(v2, 'object') ? helper.combine(v1, v2) : v2;
-                        obj[p2] = v;
-                    }
-                }
-                return obj;
-            },
-            extend: function (objMain, objExt) {
-                /**
-                 * Extends objMain with objExt's properties.
-                 * @param {Object} objMain - The main object.
-                 * @param {Object} objExt - Object to extend with.
-                 * @returns {Object} objMain is returned.
-                 */
-                if (objMain != null && objExt != null) {
-                    for (var p in objExt) {
-                        if (!objMain.hasOwnProperty(p))
-                            objMain[p] = objExt[p];
-                    }
-                }
-                return objMain;
-            },
-            objEquals: function (obj1, obj2) {
-                /**
-                 * Checks if the given two are equal. if parameters are both objects, recursively controls their properties too.
-                 * @param {Object} obj1 - The first object.
-                 * @param {Object} obj2 - The second object.
-                 * @returns {boolean} True when two objects are equal, otherwise false.
-                 */
-                if (obj1 == obj2)
-                    return true;
-
-                if (obj1 == null || obj2 == null)
-                    return false;
-
-                if (Assert.isObject(obj1) && Assert.isObject(obj2)) {
-                    var count1 = 0;
-                    var count2 = 0;
-                    for (var p in obj1) {
-                        if (!(p in obj2)) return false;
-                        if (helper.getValue(obj1, p) != helper.getValue(obj2, p)) return false;
-                        count1++;
-                    }
-                    for (var p2 in obj2) count2++;
-                    return count1 == count2;
-                }
-
-                return false;
-            },
-            isCaseSensitive: function (options) {
-                /**
-                 * Returns string case option for current operation context.
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {boolean} True when given options' isCaseSensitive is true (or null and global options' isCaseSensitive is true), otherwise false.
-                 */
-                var isCaseSensitive = options && options.isCaseSensitive;
-                return isCaseSensitive == null ? settings.isCaseSensitive : isCaseSensitive;
-            },
-            ignoreWhiteSpaces: function (options) {
-                /**
-                 * Returns whitespace ignore option for current operation context.
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {boolean} True when given options' ignoreWhiteSpaces is true (or null and global options' ignoreWhiteSpaces is true), otherwise false.
-                 */
-                var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
-                return ignoreWhiteSpaces == null ? settings.ignoreWhiteSpaces : ignoreWhiteSpaces;
-            },
-            handleStrOptions: function (str, options) {
-                /**
-                 * Applies current operation context string options to given parameter.
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {string} Modified string (using the options).
-                 */
-                if (str == null || typeof str !== "string") return str;
-                if (!helper.isCaseSensitive(options)) {
-                    str = str.replace("İ", "i");
-                    str = str.toLowerCase();
-                    str = str.replace("ı", "i");
-                }
-                return helper.ignoreWhiteSpaces(options) ? str.trim() : str;
-            },
-            equals: function (obj1, obj2, isStrict, options) {
-                /**
-                 * Compares two objects. Uses given options when necessary.
-                 * @param {Object} obj1 - The first object.
-                 * @param {Object} obj2 - The second object.
-                 * @param {bool} isStrict - Use strict comparing (===).
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {boolean} True when two values are equal (options will be used for string values).
-                 */
-                if (typeof obj1 === 'string' && typeof obj2 === 'string') {
-                    obj1 = helper.handleStrOptions(obj1, options);
-                    obj2 = helper.handleStrOptions(obj2, options);
-                }
-
-                if (obj1 != null && obj2 != null && core.dataTypes.date.isValid(obj1) && core.dataTypes.date.isValid(obj2)) {
-                    obj1 = obj1.valueOf();
-                    obj2 = obj2.valueOf();
-                }
-
-                return isStrict ? obj1 === obj2 : obj1 == obj2;
-            },
-            formatString: function (string, params) {
-                /**
-                 * Format string using given arguments. %1 and {1} format can be used for placeholders.
-                 * @param {string} string - String to format.
-                 * @param {...string} params - Values to replace.
-                 * @returns {string} Formatted string.
-                 */
-                var args = arguments;
-                var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
-                var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
-                return string
-                    .replace(pattern1, function (match, index) {
-                        return args[Number(index) + 1] || '';
-                    })
-                    .replace(pattern2, function (match, index) {
-                        return args[Number(index) + 1] || '';
-                    });
-            },
-            indexOf: function (array, item, index) {
-                /**
-                 * Finds the index of the given item in the array.
-                 * @param {any[]} array - Array to search.
-                 * @param {*} item - Item to find.
-                 * @param {number=} index - Start index.
-                 * @returns {number} Found index. If the item could not be found returns '-1'.
-                 */
-                for (var i = index || 0; i < array.length; i++)
-                    if (array[i] === item) return i;
-                return -1;
-            },
-            forEach: function (array, callback) {
-                /**
-                 * Calls given callback with item and current index parameters for each item in the array.
-                 * @param {any[]} array - Array to iterate.
-                 * @param {forEachCallback} callback - Method to call for each item.
-                 */
-                for (var i = 0; i < array.length; i++) {
-                    var obj = array[i];
-                    callback.call(null, obj, i);
-                }
-            },
-            forEachProperty: function (object, callback) {
-                /**
-                 * Iterate objects properties and skips ones starting with '$'.
-                 * @param {Object} object - Object to iterate.
-                 * @param {forEachPropertyCallback} callback - Method to call for each property.
-                 */
-                for (var p in object) {
-                    if (p[0] == '$') continue;
-                    var v = object[p];
-                    if (Assert.isFunction(v)) continue;
-                    callback(p, v);
-                }
-            },
-            findInArray: function (array, value, property) {
-                /**
-                 * Finds given item in the array.
-                 * When property is given, looks item's property value, otherwise compares item's itself.
-                 * @param {any[]} array - Array to search.
-                 * @param {*} value - Value to find.
-                 * @param {string=} property - Property to look for the value.
-                 * @returns {*} When value is found; if property is provided, the array item containing the given value, otherwise value itself. When not found, null.
-                 */
-                for (var i = 0; i < array.length; i++)
-                    if (property) {
-                        if (array[i][property] === value) return array[i];
-                    } else if (array[i] === value) return value;
-                return null;
-            },
-            filterArray: function (array, predicate) {
-                /**
-                 * Copies array items that match the given conditions to another array and returns the new array.
-                 * @param {any[]} array - The array to filter.
-                 * @param {predicateFunction} predicate - Predicate function to apply on the array.
-                 * @returns {any[]} New array with filtered items.
-                 */
-                var retVal = [];
-                for (var i = 0; i < array.length; i++) {
-                    var item = array[i];
-                    if (predicate(item) === true)
-                        retVal.push(item);
-                }
-                return retVal;
-            },
-            removeFromArray: function (array, item, property) {
-                /**
-                 * Removes the item from given array.
-                 * @param {any[]} array - The array to remove item from.
-                 * @param {*} item - Item to remove.
-                 * @param {string=} property - Property to look for the value.
-                 * @returns {number[]} Removed item indexes.
-                 */
-                var indexes = [];
-                this.forEach(array, function (current, index) {
-                    if (property) {
-                        if (current[property] === item) indexes.push(index);
-                    } else if (current === item) indexes.push(index);
-                });
-                for (var i = indexes.length - 1; i >= 0; i--)
-                    array.splice(indexes[i], 1);
-                return indexes.length;
-            },
-            mapArray: function (array, callback) {
-                /**
-                 * Creates a new array with the results of calling the provided function on every element in the given array.
-                 * @param {any[]} array - The array to map.
-                 * @param {mapCallback} callback - Function that produces new element.
-                 * @returns {any[]} New array with mapped values.
-                 */
-                var retVal = [];
-                for (var i = 0; i < array.length; i++) {
-                    var item = array[i];
-                    retVal.push(callback.call(item, item, i));
-                }
-                return retVal;
-            },
-            createGuid: function () {
-                /**
-                 * Creates a GUID string with "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" format.
-                 * @returns {string} Newly generated GUID.
-                 */
-
-                function s4() {
-                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-                }
-
-                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                    s4() + '-' + s4() + s4() + s4();
-            },
-            funcToLambda: function (func) {
-                /**
-                 * Creates string representation of given function with arrow syntax.
-                 * @param {function} func - The function.
-                 * @returns {string} Arrow style code for given function.
-                 */
-                helper.assertPrm(func, "func").isFunction().check();
-
-                var f = func.toString().replace(/function(.*?){/g, "$1=>").replace(/{|}|;|return /g, "").trim();
-
-                var l1 = f.indexOf("=>");
-                var p = f.substr(0, l1).trim();
-                f = f.substr(l1 + 2).trim();
-
-                var xs = f.split(",");
-                var s = [];
-                for (var i = 0; i < xs.length; i++) {
-                    var x = xs[i];
-                    var ps = x.split(":");
-                    if (ps.length > 1) {
-                        s.push(ps[1].trim() + " as " + ps[0].trim());
-                    }
-                    else s.push(x.trim());
-                }
-                f = s.join(", ");
-
-                return p ? (p + " => " + f) : f;
-            },
-            getFuncName: function (func) {
-                /**
-                 * Finds and returns function name. Works for ES6 classes too.
-                 * @param {function} func - The function (or class).
-                 * @returns {string} Name of the given function.
-                 */
-                var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
-                var results = funcNameRegex.exec(func.toString());
-                return results[1] || results[2];
-            },
-            inherit: function (derivedClass, baseClass) {
-                /**
-                 * Implements prototypal inheritance. Uses a "Function" instance to avoid unnecessary instantiations.
-                 * @param {function} derivedClass - Deriving type.
-                 * @param {function} baseClass - Base type.
-                 */
-                var f = new Function();
-                f.prototype = baseClass.prototype;
-
-                derivedClass.prototype = new f();
-                derivedClass.prototype.constructor = derivedClass;
-                derivedClass.baseClass = baseClass.prototype;
-            },
-            getValue: function (object, propertyPath) {
-                /**
-                 * Reads property of value, used when we are not sure if property is observable.
-                 * @param {Object} object - Deriving type.
-                 * @param {string} property - Property path. Can be a chain like "address.city.name".
-                 * @returns {*} Value of property (undefined when a property cannot be found).
-                 */
-                if (object == null) return undefined;
-                var op = settings.getObservableProvider();
-                // split propertyPath path and read every items value
-                var paths = propertyPath.trim().split('.');
-                var retVal = object;
-                for (var i = 0; i < paths.length; i++) {
-                    retVal = getValue(retVal, paths[i]);
-                    if (retVal == null) break;
-                }
-                return retVal;
-
-                function getValue(o, p) {
-                    // get tracker
-                    var tracker = o.$tracker;
-                    // if o is an entity, get value from its tracker
-                    if (tracker)
-                        return tracker.getValue(p);
-                    if (op.isObservable(o, p)) // if o's p is observable get value from default observable provider
-                        return op.getValue(o, p);
-                    var value = o[p];
-                    return value; // if its not observable get value of p
-                }
-            },
-            getResourceValue: function (resourceName, altValue) {
-                /**
-                 * Gets localized value for given name using "settings.localizeFunc" function.
-                 * @param {string} resourceName - Resource name.
-                 * @param {string} altValue - Alternative value to use when resource cannot be found.
-                 * @returns {string} Value for the given resource name.
-                 */
-                var localizeFunc = settings.getLocalizeFunction();
-                return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
-            },
-            createValidationError: function (entity, value, property, message, validator) {
-                /**
-                 * Creates validation error object using given parameters.
-                 * @param {*} entity - Entity containing invalid value.
-                 * @param {*} value - Invalid value itself.
-                 * @param {string} property - Property containing invalid value.
-                 * @param {string} message - Validation message.
-                 * @param {core.Validator} validator - Validator instance.
-                 * @returns {Object} Validation error object.
-                 */
-                return { message: message, entity: entity, validator: validator, value: value, property: property };
-            },
-            createError: function (message, arg1, arg2) {
-                /**
-                 * Creates error object by formatting provided message and populates with given object's values.
-                 * @param {string} message - Error message.
-                 * @param {string[]=} arg1 - Message format arguments.
-                 * @param {Object=} arg2 - Extra informations, properties will be attached to error object.
-                 * @returns {Error} Error object.
-                 */
-                var args = null, obj = arg2;
-                if (Assert.isArray(arg1)) args = arg1;
-                else if (Assert.isObject(arg1)) obj = arg1;
-
-                if (args && args.length > 0) {
-                    args.splice(0, 0, message);
-                    message = helper.formatString.apply(null, args);
-                }
-                var retVal = new Error(message);
-                if (obj) {
-                    for (var p in obj)
-                        retVal[p] = obj[p];
-                }
-                events.error.notify(retVal);
-                return retVal;
-            },
-            setForeignKeys: function (entity, navProperty, newValue) {
-                /**
-                 * Updates foreign keys of given navigation property with new values.
-                 * @param {*} entity - The entity.
-                 * @param {string[]=} navProperty - The navigation property.
-                 * @param {Object} newValue - Value of the navigation property.
-                 */
-                for (var i = 0; i < navProperty.foreignKeyNames.length; i++) {
-                    // We get each related foreign key for this navigation property.
-                    var fk = navProperty.foreignKeyNames[i];
-                    var tracker = entity.$tracker;
-                    if (newValue) {
-                        // When foreign key is built with more than one column, we presume foreign key-primary key order is same
-                        // Example:
-                        //  When we create an association between Product and Supplier using Name and Location fields
-                        //  we presume Supplier's corresponding primary keys are in exactly same order.
-                        var k = newValue.$tracker.entityType.keys[i];
-                        var v = newValue.$tracker.getValue(k.name);
-                        tracker.setValue(fk, v);
-                    } else {
-                        var fkp = helper.findInArray(tracker.entityType.dataProperties, fk, 'name');
-                        tracker.setValue(fk, fkp.getDefaultValue());
-                    }
-                }
-            },
-            createTrackableArray: function (initial, object, property, after) {
-                /**
-                 * Creates an array and overrides methods to provide callbacks on array changes.
-                 * @param {any[]} initial - Initial values for the array.
-                 * @param {Object} object - Owner object of the array.
-                 * @param {metadata.NavigationProperty} property - Navigation property metadata.
-                 * @param {arrayChangeCallback} after - Array change callback.
-                 * @returns {TrackableArray} Trackable array, an array with change events.
-                 */
-                var array = initial || [];
-                array.object = object;
-                array.property = property;
-                array.after = after;
-
-                array.changing = new core.Event(property + "ArrayChanging", array);
-                array.changed = new core.Event(property + "ArrayChanged", array);
-
-                array.pop = function () {
-                    var items = [this[this.length - 1]];
-                    // call base method
-                    this.changing.notify({ added: [], removed: items });
-                    var retVal = Array.prototype.pop.call(this);
-                    this.after(this.object, this.property, this, items, null);
-                    this.changed.notify({ added: [], removed: items });
-                    return retVal;
-                };
-
-                array.push = function (items) {
-                    this.changing.notify({ added: arguments, removed: [] });
-                    beforeAdd(arguments, this);
-                    var retVal = Array.prototype.push.apply(this, arguments);
-                    this.after(this.object, this.property, this, null, arguments);
-                    this.changed.notify({ added: arguments, removed: [] });
-                    return retVal;
-                };
-
-                array.unshift = function (items) {
-                    this.changing.notify({ added: arguments, removed: [] });
-                    beforeAdd(arguments, this);
-                    var retVal = Array.prototype.unshift.apply(this, arguments);
-                    this.after(this.object, this.property, this, null, arguments);
-                    this.changed.notify({ added: arguments, removed: [] });
-                    return retVal;
-                };
-
-                array.shift = function () {
-                    var items = [this[0]];
-                    this.changing.notify({ added: [], removed: items });
-                    var retVal = Array.prototype.shift.call(this);
-                    this.after(this.object, this.property, this, items, null);
-                    this.changed.notify({ added: [], removed: items });
-                    return retVal;
-                };
-
-                array.splice = function (start, count) {
-                    count = count || this.length;
-                    var addedItems = null;
-                    if (arguments.length > 2)
-                        addedItems = Array.prototype.slice.call(arguments).slice(2); // convert arguments to array then slice
-                    var removedItems = this.slice(start, start + count);
-                    this.changing.notify({ added: addedItems, removed: removedItems });
-                    if (addedItems)
-                        beforeAdd(addedItems, this);
-                    var retVal = Array.prototype.splice.apply(this, arguments);
-                    this.after(this.object, this.property, this, removedItems, addedItems);
-                    this.changed.notify({ added: addedItems, removed: removedItems });
-                    return retVal;
-                };
-
-                array.remove = function (items) {
-                    var removed = [];
-                    this.changing.notify({ added: [], removed: arguments });
-                    var that = this;
-                    helper.forEach(arguments, function (item) {
-                        var index = helper.indexOf(that, item);
-                        if (index >= 0) {
-                            Array.prototype.splice.call(that, index, 1);
-                            removed.push(item);
-                        }
-                    });
-                    this.after(this.object, this.property, this, removed, null);
-                    this.changed.notify({ added: [], removed: removed });
-                    return removed;
-                };
-
-                array.load = function (expands, resourceName, options, successCallback, errorCallback) {
-                    /**
-                     * Loads the navigation property using EntityManager.
-                     * @param {string[]} expands - Expand navigations to apply when loading navigation property.
-                     * @param {Object} resourceName - Resource name to query entities.
-                     * @param {queryOptions} options - Query options.
-                     * @param {successCallback=} successCallback - Success callback function.
-                     * @param {errorCallback=} errorCallback - Error callback function.
-                     * @returns {Promise} A Promise when available, otherwise return value of the AjaxProvider.
-                     */
-                    return this.object.$tracker.loadNavigationProperty(this.property.name, expands, resourceName, options, successCallback, errorCallback);
-                };
-
-                function beforeAdd(added, instance) {
-                    var o = instance.object;
-                    var p = instance.property;
-                    if (p) {
-                        var handleUnmappedProperties;
-                        if (o.$tracker && o.$tracker.manager)
-                            handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
-                        if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
-
-                        if (Assert.isInstanceOf(p, metadata.NavigationProperty))
-                            helper.forEach(added, function (a) { p.checkAssign(a); });
-                        else if (Assert.isInstanceOf(p, metadata.DataProperty))
-                            helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
-                        else if (handleUnmappedProperties === true)
-                            helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
-                    }
-                }
-
-                return array;
-            },
-            runSelectExp: function (array, exp, queryContext) {
-                /**
-                 * Creates a new array with the results of evaluating provided expression on every element in the given array.
-                 * @param {any[]} array - Array to run projection on.
-                 * @param {string} exp - Projection expression.
-                 * @param {QueryContext} queryContext - Query execution context.
-                 * @returns {any[]} Projected new object.
-                 */
-                if (array.length == 0) return array;
-
-                exp = libs.jsep(exp);
-                var exps = exp.type == 'Compound' ? exp.body : [exp];
-                var projector = helper.jsepToProjector(exps, queryContext);
-                return helper.mapArray(array, projector);
-            },
-            jsepToODataQuery: function (exp, queryContext, firstExp) {
-                /**
-                 * Converts parsed javascript expression (jsep) to OData format query string.
-                 * @param {Object} exp - Jsep expression (tokenized).
-                 * @param {QueryContext} queryContext - Query execution context.
-                 * @returns {string} OData query string.
-                 */
-                firstExp = firstExp || exp;
-                if (!queryContext) queryContext = { aliases: [] };
-                else if (!queryContext.aliases) queryContext.aliases = [];
-                if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                    if (exp.operator == '=>') {
-                        if (exp != firstExp)
-                            throw helper.createError(i18N.odataDoesNotSupportAlias);
-                        queryContext.aliases.push({ alias: exp.left.name, value: null });
-                        var r = helper.jsepToODataQuery(exp.right, queryContext, firstExp);
-                        if (exp != firstExp)
-                            queryContext.aliases.pop();
-                        return r;
-                    }
-                    var op = enums.langOperators.find(exp.operator).oData;
-                    if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
-                    return '(' + helper.jsepToODataQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext, firstExp) + ')';
-                }
-                else if (exp.type == 'UnaryExpression')
-                    return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
-                else if (exp.type == 'Identifier') {
-                    var n = exp.name;
-                    var val = undefined;
-                    var isPrm = false;
-                    if (n[0] == '@') {
-                        isPrm = true;
-                        n = n.slice(1);
-                    }
-
-                    if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
-                        val = queryContext.expVarContext[n];
-                    else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
-                        val = queryContext.varContext[n];
-
-                    if (val !== undefined)
-                        return core.dataTypes.toODataValue(val);
-                    if (isPrm)
-                        throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-
-                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                    if (a) return a.value;
-
-                    return n;
-                }
-                else if (exp.type == 'Literal')
-                    return core.dataTypes.toODataValue(exp.value);
-                else if (exp.type == 'MemberExpression') {
-                    if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
-                        return exp.property.name;
-                    else {
-                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
-                        if (ali) o = ali.value;
-                        else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
-
-                        if (o && o[exp.property.name] !== undefined)
-                            return core.dataTypes.toODataValue(o[exp.property.name]);
-                        return o ? o + '/' + exp.property.name : exp.property.name;
-                    }
-                }
-                else if (exp.type == 'Compound') {
-                    var sts = [];
-                    for (var i = 0; i < exp.body.length; i++) {
-                        var st = exp.body[i];
-                        var s = helper.jsepToODataQuery(st, queryContext);
-                        var ls = s.toLowerCase();
-                        if (ls == 'desc' || ls == 'asc') {
-                            if (sts.length == 0)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' ' + s;
-                        }
-                        else if (ls == 'as') {
-                            if (sts.length == 0 || exp.body.length < i + 1)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
-                            i++;
-                        }
-                        else sts.push(s);
-                    }
-                    return sts.join(', ');
-                }
-                else if (exp.type == 'CallExpression') {
-                    var argList = exp.arguments, args = [], alias = null;
-                    if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                        alias = { alias: argList[0].left.name };
-                        alias.value = alias.alias;
-                        argList = [argList[0].right];
-                    }
-                    if (alias) {
-                        queryContext.currentAlias = alias;
-                        queryContext.aliases.push(alias);
-                    }
-                    for (var j = 0; j < argList.length; j++) {
-                        var arg = argList[j];
-                        if (arg != null)
-                            args.push(helper.jsepToODataQuery(arg, queryContext, firstExp));
-                    }
-                    var funcName;
-                    if (exp.callee.type == 'MemberExpression') {
-                        args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext, firstExp));
-                        funcName = exp.callee.property.name;
-                    }
-                    else funcName = exp.callee.name;
-                    var func = querying.queryFuncs.getFunc(funcName);
-                    if (func.needsAlias == true) {
-                        if (alias)
-                            args.splice(0, 0, alias);
-                        else throw helper.createError(i18N.functionNeedsAlias, [funcName], { expression: exp });
-                    }
-                    var retVal = func.toODataFunction.apply(func, args);
-                    if (alias) {
-                        queryContext.currentAlias = null;
-                        queryContext.aliases.pop();
-                    }
-                    return retVal;
-                }
-                throw helper.createError(i18N.unknownExpression, { expression: exp });
-            },
-            jsepToBeetleQuery: function (exp, queryContext, firstExp) {
-                /**
-                 * Converts parsed javascript expression (jsep) to Beetle format query string.
-                 * @param {Object} exp - Jsep expression (tokenized).
-                 * @param {QueryContext} queryContext - Query execution context.
-                 * @returns {string} OData query string.
-                 */
-                firstExp = firstExp || exp;
-                if (!queryContext) queryContext = { aliases: [] };
-                else if (!queryContext.aliases) queryContext.aliases = [];
-                if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                    if (exp.operator == '=>') {
-                        queryContext.aliases.push({ alias: exp.left.name, value: 'it' });
-                        var r = helper.jsepToBeetleQuery(exp.right, queryContext, firstExp);
-                        if (exp != firstExp)
-                            queryContext.aliases.pop();
-                        return r;
-                    }
-                    var op = enums.langOperators.find(exp.operator).code;
-                    return '(' + helper.jsepToBeetleQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext, firstExp) + ')';
-                }
-                else if (exp.type == 'UnaryExpression')
-                    return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
-                else if (exp.type == 'Identifier') {
-                    var n = exp.name;
-                    var val = undefined;
-                    var isPrm = false;
-                    if (n[0] == '@') {
-                        isPrm = true;
-                        n = n.slice(1);
-                    }
-
-                    if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
-                        val = queryContext.expVarContext[n];
-                    else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
-                        val = queryContext.varContext[n];
-
-                    if (val !== undefined)
-                        return core.dataTypes.toBeetleValue(val);
-                    if (isPrm)
-                        throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-
-                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                    if (a) return a.value;
-
-                    return n;
-                }
-                else if (exp.type == 'Literal')
-                    return core.dataTypes.toBeetleValue(exp.value);
-                else if (exp.type == 'MemberExpression') {
-                    if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
-                        return exp.property.name;
-                    else {
-                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
-                        if (ali) o = ali.value;
-                        else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
-
-                        if (o[exp.property.name] !== undefined)
-                            return core.dataTypes.toBeetleValue(o[exp.property.name]);
-                        return o + '.' + exp.property.name;
-                    }
-                }
-                else if (exp.type == 'Compound') {
-                    var sts = [];
-                    for (var i = 0; i < exp.body.length; i++) {
-                        var st = exp.body[i];
-                        var s = helper.jsepToBeetleQuery(st, queryContext);
-                        var ls = s.toLowerCase();
-                        if (ls == 'desc' || ls == 'asc') {
-                            if (sts.length == 0)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' ' + s;
-                        }
-                        else if (ls == 'as') {
-                            if (sts.length == 0 || exp.body.length < i + 1)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
-                            i++;
-                        }
-                        else sts.push(s);
-                    }
-                    return sts.join(', ');
-                }
-                else if (exp.type == 'CallExpression') {
-                    var argList = exp.arguments, args = [], alias = null;
-                    if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                        alias = { alias: argList[0].left.name };
-                        alias.value = alias.alias;
-                        argList = [argList[0].right];
-                    }
-                    if (alias) {
-                        queryContext.currentAlias = alias;
-                        queryContext.aliases.push(alias);
-                    }
-                    for (var j = 0; j < argList.length; j++) {
-                        var arg = argList[j];
-                        if (arg != null)
-                            args.push(helper.jsepToBeetleQuery(arg, queryContext, firstExp));
-                    }
-                    var funcName;
-                    if (exp.callee.type == 'MemberExpression') {
-                        args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext, firstExp));
-                        funcName = exp.callee.property.name;
-                    }
-                    else funcName = exp.callee.name;
-                    var func = querying.queryFuncs.getFunc(funcName);
-                    var retVal = func.toBeetleFunction.apply(func, args);
-                    if (alias) {
-                        queryContext.currentAlias = null;
-                        queryContext.aliases.pop();
-                    }
-                    return retVal;
-                }
-                throw helper.createError(i18N.unknownExpression, { expression: exp });
-            },
-            jsepToFunction: function (exp, queryContext) {
-                /**
-                 * Converts parsed javascript expression (jsep) to Javascript function (not using evil "eval").
-                 * @param {Object} exp - Jsep expression (tokenized).
-                 * @param {QueryContext} queryContext - Query execution context.
-                 * @returns {Function} Javascript function.
-                 */
-                return function (value) {
-                    if (!queryContext) queryContext = { aliases: [] };
-                    else if (!queryContext.aliases) queryContext.aliases = [];
-                    if (queryContext.currentAlias)
-                        queryContext.currentAlias.value = value;
-                    if (exp.type === undefined) return value;
-                    else if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                        if (exp.operator == '=>') {
-                            if (queryContext.currentAlias)
-                                queryContext.aliases.push(queryContext.currentAlias);
-                            queryContext.currentAlias = { alias: exp.left.name };
-                            var r = helper.jsepToFunction(exp.right, queryContext)(value);
-                            queryContext.currentAlias = queryContext.aliases.pop();
-                            return r;
-                        }
-                        var op = enums.langOperators.find(exp.operator);
-                        var varContext = queryContext.varContext;
-                        var arg1 = function () { return helper.jsepToFunction(exp.left, queryContext)(value); };
-                        var arg2 = function () { return helper.jsepToFunction(exp.right, queryContext)(value); };
-                        return op.asFunc.call(varContext, arg1, arg2);
-                    }
-                    else if (exp.type == 'UnaryExpression') {
-                        var arg = function () { return helper.jsepToFunction(exp.argument, queryContext)(value); };
-                        var uop = enums.langOperators.find(exp.operator);
-                        return uop.asFunc.call(varContext, arg);
-                    }
-                    else if (exp.type == 'Identifier') {
-                        var n = exp.name;
-                        if (n == 'null') return null;
-                        if (n == 'true') return true;
-                        if (n == 'false') return false;
-                        if (n[0] == '@') {
-                            var val = undefined;
-                            var varName = n.slice(1);
-                            if (queryContext.expVarContext && queryContext.expVarContext[varName] !== undefined)
-                                val = queryContext.expVarContext[varName];
-                            else if (queryContext.varContext)
-                                val = queryContext.varContext[varName];
-                            if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-                            return val;
-                        }
-                        if (queryContext.currentAlias && queryContext.currentAlias.alias == n)
-                            return value;
-                        var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                        if (a) return a.value;
-                        var v = helper.getValue(value, n);
-                        if (v === undefined) return root[n];
-                        return v;
-                    }
-                    else if (exp.type == 'Literal')
-                        return exp.value;
-                    else if (exp.type == 'MemberExpression') {
-                        if (exp.object.name) {
-                            if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
-                                return helper.getValue(value, exp.property.name);
-                            var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias');
-                            if (ali) return helper.getValue(ali.value, exp.property.name);
-                        }
-                        return helper.getValue(helper.jsepToFunction(exp.object, queryContext)(value), exp.property.name);
-                    }
-                    else if (exp.type == 'CallExpression') {
-                        var argList = exp.arguments, args = [], alias = null;
-                        if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                            alias = argList[0].left.name;
-                            argList = [argList[0].right];
-                        }
-                        if (alias) {
-                            if (queryContext.currentAlias)
-                                queryContext.aliases.push(queryContext.currentAlias);
-                            queryContext.currentAlias = { alias: alias };
-                        }
-                        var funcName;
-                        helper.forEach(argList, function (farg) {
-                            if (farg != null)
-                                args.push(helper.jsepToFunction(farg, queryContext));
-                        });
-
-                        funcName = exp.callee.type == 'MemberExpression' ? exp.callee.property.name : exp.callee.name;
-
-                        var retVal;
-                        var func = querying.queryFuncs.getFunc(funcName, false);
-                        if (func) {
-                            if (exp.callee.type == 'MemberExpression')
-                                args.splice(0, 0, helper.jsepToFunction(exp.callee.object, queryContext));
-                            args.splice(0, 0, value);
-
-                            retVal = func.impl.apply(queryContext, args);
-                        }
-                        else {
-                            if (funcName[0] == '@') {
-                                var varFuncName = funcName.slice(1);
-                                if (queryContext.expVarContext && queryContext.expVarContext[varFuncName])
-                                    func = queryContext.expVarContext[varFuncName];
-                                else if (queryContext.varContext && queryContext.varContext[varFuncName])
-                                    func = queryContext.varContext[varFuncName];
-                                else throw helper.createError(i18N.unknownParameter, [varFuncName], { expression: exp, queryContext: queryContext });
-                            } else {
-                                var obj;
-                                if (exp.callee.type == 'MemberExpression')
-                                    obj = helper.jsepToFunction(exp.callee.object, queryContext)(value);
-                                else
-                                    obj = root;
-
-                                if (obj == null || (func = obj[funcName]) == null)
-                                    throw helper.createError(i18N.unknownFunction, [funcName]);
-                            }
-
-                            args = helper.mapArray(args, function () { return this(value); });
-                            retVal = func.apply(obj, args);
-                        }
-
-                        if (alias)
-                            queryContext.currentAlias = queryContext.aliases.pop();
-                        return retVal;
-                    }
-                    else throw helper.createError(i18N.unknownExpression, { expression: exp });
-                };
-            },
-            jsepToProjector: function (exps, queryContext) {
-                /**
-                 * Converts parsed javascript expression (jsep) to Javascript projection function (not using evil "eval").
-                 * @param {Object} exp - Jsep expression (tokenized).
-                 * @param {QueryContext} queryContext - Query execution context.
-                 * @returns {Function} Javascript projector function.
-                 */
-                var projectExps = [];
-                if (!Assert.isArray(exps)) exps = [exps];
-                for (var i = 0; i < exps.length; i++) {
-                    var propertyName = null;
-                    var e = exps[i];
-                    // list expression property names and value evaluators
-                    switch (e.type) {
-                        case 'Identifier':
-                            propertyName = e.name;
-                            break;
-                        case 'MemberExpression':
-                            propertyName = e.property.name;
-                            break;
-                    }
-                    if (exps.length > i + 2 && exps[i + 1].name && exps[i + 1].name.toLowerCase() == 'as') {
-                        i = i + 2;
-                        var pExp = exps[i];
-                        if (pExp.type != 'Identifier')
-                            throw helper.createError(i18N.invalidPropertyAlias, { expressions: exps, aliasExpression: pExp });
-                        propertyName = pExp.name;
-                    }
-                    if (exps.length > 1 && !propertyName)
-                        throw helper.createError(i18N.projectionsMustHaveAlias, { expressions: exps, expression: e });
-
-                    projectExps.push({ p: propertyName, func: helper.jsepToFunction(e, queryContext) });
-                }
-
-                return function (item) {
-                    var projection = {};
-                    for (var k = 0; k < projectExps.length; k++) {
-                        var pe = projectExps[k];
-                        var value = pe.func(item);
-                        if (exps.length == 1) return value;
-                        projection[pe.p] = value;
-                    }
-                    return projection;
-                };
             }
-        };
-    })();
+            if (obj2 != null) {
+                for (var p2 in obj2) {
+                    var v1 = obj[p2];
+                    var v2 = obj2[p2];
+                    var v = Assert.isTypeOf(v1, 'object') && Assert.isTypeOf(v2, 'object') ? helper.combine(v1, v2) : v2;
+                    obj[p2] = v;
+                }
+            }
+            return obj;
+        },
+        /**
+         * Extends objMain with objExt's properties.
+         * @param {Object} objMain - The main object.
+         * @param {Object} objExt - Object to extend with.
+         * @returns {Object} objMain is returned.
+         */
+        extend: function (objMain, objExt) {
+            if (objMain != null && objExt != null) {
+                for (var p in objExt) {
+                    if (!objMain.hasOwnProperty(p))
+                        objMain[p] = objExt[p];
+                }
+            }
+            return objMain;
+        },
+        /**
+         * Checks if the given two are equal. if parameters are both objects, recursively controls their properties too.
+         * @param {Object} obj1 - The first object.
+         * @param {Object} obj2 - The second object.
+         * @returns {boolean} True when two objects are equal, otherwise false.
+         */
+        objEquals: function (obj1, obj2) {
+            if (obj1 == obj2)
+                return true;
+
+            if (obj1 == null || obj2 == null)
+                return false;
+
+            if (Assert.isObject(obj1) && Assert.isObject(obj2)) {
+                var count1 = 0;
+                var count2 = 0;
+                for (var p in obj1) {
+                    if (!(p in obj2)) return false;
+                    if (helper.getValue(obj1, p) != helper.getValue(obj2, p)) return false;
+                    count1++;
+                }
+                for (var p2 in obj2) count2++;
+                return count1 == count2;
+            }
+
+            return false;
+        },
+        /**
+         * Returns string case option for current operation context.
+         * @param {StringOptions} options - String options for the context.
+         * @returns {boolean} True when given options' isCaseSensitive is true (or null and global options' isCaseSensitive is true), otherwise false.
+         */
+        isCaseSensitive: function (options) {
+            var isCaseSensitive = options && options.isCaseSensitive;
+            return isCaseSensitive == null ? settings.isCaseSensitive : isCaseSensitive;
+        },
+        /**
+         * Returns whitespace ignore option for current operation context.
+         * @param {StringOptions} options - String options for the context.
+         * @returns {boolean} True when given options' ignoreWhiteSpaces is true (or null and global options' ignoreWhiteSpaces is true), otherwise false.
+         */
+        ignoreWhiteSpaces: function (options) {
+            var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
+            return ignoreWhiteSpaces == null ? settings.ignoreWhiteSpaces : ignoreWhiteSpaces;
+        },
+        /**
+         * Applies current operation context string options to given parameter.
+         * @param {StringOptions} options - String options for the context.
+         * @returns {string} Modified string (using the options).
+         */
+        handleStrOptions: function (str, options) {
+            if (str == null || typeof str !== "string") return str;
+            if (!helper.isCaseSensitive(options)) {
+                str = str.replace("İ", "i");
+                str = str.toLowerCase();
+                str = str.replace("ı", "i");
+            }
+            return helper.ignoreWhiteSpaces(options) ? str.trim() : str;
+        },
+        /**
+         * Compares two objects. Uses given options when necessary.
+         * @param {Object} obj1 - The first object.
+         * @param {Object} obj2 - The second object.
+         * @param {bool} isStrict - Use strict comparing (===).
+         * @param {StringOptions} options - String options for the context.
+         * @returns {boolean} True when two values are equal (options will be used for string values).
+         */
+        equals: function (obj1, obj2, isStrict, options) {
+            if (typeof obj1 === 'string' && typeof obj2 === 'string') {
+                obj1 = helper.handleStrOptions(obj1, options);
+                obj2 = helper.handleStrOptions(obj2, options);
+            }
+
+            if (obj1 != null && obj2 != null && core.dataTypes.date.isValid(obj1) && core.dataTypes.date.isValid(obj2)) {
+                obj1 = obj1.valueOf();
+                obj2 = obj2.valueOf();
+            }
+
+            return isStrict ? obj1 === obj2 : obj1 == obj2;
+        },
+        /**
+         * Format string using given arguments. %1 and {1} format can be used for placeholders.
+         * @param {string} string - String to format.
+         * @param {...string} params - Values to replace.
+         * @returns {string} Formatted string.
+         */
+        formatString: function (string, params) {
+            var args = arguments;
+            var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
+            var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
+            return string
+                .replace(pattern1, function (match, index) {
+                    return args[Number(index) + 1] || '';
+                })
+                .replace(pattern2, function (match, index) {
+                    return args[Number(index) + 1] || '';
+                });
+        },
+        /**
+         * Finds the index of the given item in the array.
+         * @param {any[]} array - Array to search.
+         * @param {any} item - Item to find.
+         * @param {number=} index - Start index.
+         * @returns {number} Found index. If the item could not be found returns '-1'.
+         */
+        indexOf: function (array, item, index) {
+            for (var i = index || 0; i < array.length; i++)
+                if (array[i] === item) return i;
+            return -1;
+        },
+        /**
+         * Calls given callback with item and current index parameters for each item in the array.
+         * @param {any[]} array - Array to iterate.
+         * @param {forEachCallback} callback - Method to call for each item.
+         */
+        forEach: function (array, callback) {
+            for (var i = 0; i < array.length; i++) {
+                var obj = array[i];
+                callback.call(null, obj, i);
+            }
+        },
+        /**
+         * Iterate objects properties and skips ones starting with '$'.
+         * @param {Object} object - Object to iterate.
+         * @param {forEachPropertyCallback} callback - Method to call for each property.
+         */
+        forEachProperty: function (object, callback) {
+            for (var p in object) {
+                if (p[0] == '$') continue;
+                var v = object[p];
+                if (Assert.isFunction(v)) continue;
+                callback(p, v);
+            }
+        },
+        /**
+         * Finds given item in the array.
+         * When property is given, looks item's property value, otherwise compares item's itself.
+         * @param {any[]} array - Array to search.
+         * @param {any} value - Value to find.
+         * @param {string=} property - Property to look for the value.
+         * @returns {any} When value is found; if property is provided, the array item containing the given value, otherwise value itself. When not found, null.
+         */
+        findInArray: function (array, value, property) {
+            for (var i = 0; i < array.length; i++)
+                if (property) {
+                    if (array[i][property] === value) return array[i];
+                } else if (array[i] === value) return value;
+            return null;
+        },
+        /**
+         * Copies array items that match the given conditions to another array and returns the new array.
+         * @param {any[]} array - The array to filter.
+         * @param {predicateFunction} predicate - Predicate function to apply on the array.
+         * @returns {any[]} New array with filtered items.
+         */
+        filterArray: function (array, predicate) {
+            var retVal = [];
+            for (var i = 0; i < array.length; i++) {
+                var item = array[i];
+                if (predicate(item) === true)
+                    retVal.push(item);
+            }
+            return retVal;
+        },
+        /**
+         * Removes the item from given array.
+         * @param {any[]} array - The array to remove item from.
+         * @param {any} item - Item to remove.
+         * @param {string=} property - Property to look for the value.
+         * @returns {number[]} Removed item indexes.
+         */
+        removeFromArray: function (array, item, property) {
+            var indexes = [];
+            this.forEach(array, function (current, index) {
+                if (property) {
+                    if (current[property] === item) indexes.push(index);
+                } else if (current === item) indexes.push(index);
+            });
+            for (var i = indexes.length - 1; i >= 0; i--)
+                array.splice(indexes[i], 1);
+            return indexes.length;
+        },
+        /**
+         * Creates a new array with the results of calling the provided function on every element in the given array.
+         * @param {any[]} array - The array to map.
+         * @param {mapCallback} callback - Function that produces new element.
+         * @returns {any[]} New array with mapped values.
+         */
+        mapArray: function (array, callback) {
+            var retVal = [];
+            for (var i = 0; i < array.length; i++) {
+                var item = array[i];
+                retVal.push(callback.call(item, item, i));
+            }
+            return retVal;
+        },
+        /**
+         * Creates a GUID string with "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" format.
+         * @returns {string} Newly generated GUID.
+         */
+        createGuid: function () {
+            
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+            }
+
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+        },
+        /**
+         * Creates string representation of given function with arrow syntax.
+         * @param {function} func - The function.
+         * @returns {string} Arrow style code for given function.
+         */
+        funcToLambda: function (func) {
+            helper.assertPrm(func, "func").isFunction().check();
+
+            var f = func.toString().replace(/function(.*?){/g, "$1=>").replace(/{|}|;|return /g, "").trim();
+
+            var l1 = f.indexOf("=>");
+            var p = f.substr(0, l1).trim();
+            f = f.substr(l1 + 2).trim();
+
+            var xs = f.split(",");
+            var s = [];
+            for (var i = 0; i < xs.length; i++) {
+                var x = xs[i];
+                var ps = x.split(":");
+                if (ps.length > 1) {
+                    s.push(ps[1].trim() + " as " + ps[0].trim());
+                }
+                else s.push(x.trim());
+            }
+            f = s.join(", ");
+
+            return p ? (p + " => " + f) : f;
+        },
+        /**
+         * Finds and returns function name. Works for ES6 classes too.
+         * @param {function} func - The function (or class).
+         * @returns {string} Name of the given function.
+         */
+        getFuncName: function (func) {
+            var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
+            var results = funcNameRegex.exec(func.toString());
+            return results[1] || results[2];
+        },
+        /**
+         * Implements prototypal inheritance. Uses a "Function" instance to avoid unnecessary instantiations.
+         * @param {function} derivedClass - Deriving type.
+         * @param {function} baseClass - Base type.
+         */
+        inherit: function (derivedClass, baseClass) {
+            var f = new Function();
+            f.prototype = baseClass.prototype;
+
+            derivedClass.prototype = new f();
+            derivedClass.prototype.constructor = derivedClass;
+            derivedClass.baseClass = baseClass.prototype;
+        },
+        /**
+         * Reads property of value, used when we are not sure if property is observable.
+         * @param {Object} object - Deriving type.
+         * @param {string} property - Property path. Can be a chain like "address.city.name".
+         * @returns {any} Value of property (undefined when a property cannot be found).
+         */
+        getValue: function (object, propertyPath) {
+            if (object == null) return undefined;
+            var op = settings.getObservableProvider();
+            // split propertyPath path and read every items value
+            var paths = propertyPath.trim().split('.');
+            var retVal = object;
+            for (var i = 0; i < paths.length; i++) {
+                retVal = getValue(retVal, paths[i]);
+                if (retVal == null) break;
+            }
+            return retVal;
+
+            function getValue(o, p) {
+                // get tracker
+                var tracker = o.$tracker;
+                // if o is an entity, get value from its tracker
+                if (tracker)
+                    return tracker.getValue(p);
+                if (op.isObservable(o, p)) // if o's p is observable get value from default observable provider
+                    return op.getValue(o, p);
+                var value = o[p];
+                return value; // if its not observable get value of p
+            }
+        },
+        /**
+         * Gets localized value for given name using "settings.localizeFunc" function.
+         * @param {string} resourceName - Resource name.
+         * @param {string} altValue - Alternative value to use when resource cannot be found.
+         * @returns {string} Value for the given resource name.
+         */
+        getResourceValue: function (resourceName, altValue) {
+            var localizeFunc = settings.getLocalizeFunction();
+            return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
+        },
+        /**
+         * Creates validation error object using given parameters.
+         * @param {any} entity - Entity containing invalid value.
+         * @param {any} value - Invalid value itself.
+         * @param {string} property - Property containing invalid value.
+         * @param {string} message - Validation message.
+         * @param {core.Validator} validator - Validator instance.
+         * @returns {Object} Validation error object.
+         */
+        createValidationError: function (entity, value, property, message, validator) {
+            return { message: message, entity: entity, validator: validator, value: value, property: property };
+        },
+        /**
+         * Creates error object by formatting provided message and populates with given object's values.
+         * @param {string} message - Error message.
+         * @param {string[]} arg1 - Message format arguments.
+         * @param {Object=} arg2 - Extra informations, properties will be attached to error object.
+         * @returns {Error} Error object.
+         */
+        createError: function (message, arg1, arg2) {
+            var args = null, obj = arg2;
+            if (Assert.isArray(arg1)) args = arg1;
+            else if (Assert.isObject(arg1)) obj = arg1;
+
+            if (args && args.length > 0) {
+                args.splice(0, 0, message);
+                message = helper.formatString.apply(null, args);
+            }
+            var retVal = new Error(message);
+            if (obj) {
+                for (var p in obj)
+                    retVal[p] = obj[p];
+            }
+            events.error.notify(retVal);
+            return retVal;
+        },
+        /**
+         * Updates foreign keys of given navigation property with new values.
+         * @param {any} entity - The entity.
+         * @param {meta.NavigationProperty} navProperty - The navigation property.
+         * @param {Object} newValue - Value of the navigation property.
+         */
+        setForeignKeys: function (entity, navProperty, newValue) {
+            for (var i = 0; i < navProperty.foreignKeyNames.length; i++) {
+                // We get each related foreign key for this navigation property.
+                var fk = navProperty.foreignKeyNames[i];
+                var tracker = entity.$tracker;
+                if (newValue) {
+                    // When foreign key is built with more than one column, we presume foreign key-primary key order is same
+                    // Example:
+                    //  When we create an association between Product and Supplier using Name and Location fields
+                    //  we presume Supplier's corresponding primary keys are in exactly same order.
+                    var k = newValue.$tracker.entityType.keys[i];
+                    var v = newValue.$tracker.getValue(k.name);
+                    tracker.setValue(fk, v);
+                } else {
+                    var fkp = helper.findInArray(tracker.entityType.dataProperties, fk, 'name');
+                    tracker.setValue(fk, fkp.getDefaultValue());
+                }
+            }
+        },
+        /**
+         * Creates an array and overrides methods to provide callbacks on array changes.
+         * @param {any[]} initial - Initial values for the array.
+         * @param {Object} object - Owner object of the array.
+         * @param {metadata.NavigationProperty} property - Navigation property metadata.
+         * @param {arrayChangeCallback} after - Array change callback.
+         * @returns {TrackableArray} Trackable array, an array with change events.
+         */
+        createTrackableArray: function (initial, object, property, after) {
+            var array = initial || [];
+            array.object = object;
+            array.property = property;
+            array.after = after;
+
+            array.changing = new core.Event(property + "ArrayChanging", array);
+            array.changed = new core.Event(property + "ArrayChanged", array);
+
+            array.pop = function () {
+                var items = [this[this.length - 1]];
+                // call base method
+                this.changing.notify({ added: [], removed: items });
+                var retVal = Array.prototype.pop.call(this);
+                this.after(this.object, this.property, this, items, null);
+                this.changed.notify({ added: [], removed: items });
+                return retVal;
+            };
+
+            array.push = function (items) {
+                this.changing.notify({ added: arguments, removed: [] });
+                beforeAdd(arguments, this);
+                var retVal = Array.prototype.push.apply(this, arguments);
+                this.after(this.object, this.property, this, null, arguments);
+                this.changed.notify({ added: arguments, removed: [] });
+                return retVal;
+            };
+
+            array.unshift = function (items) {
+                this.changing.notify({ added: arguments, removed: [] });
+                beforeAdd(arguments, this);
+                var retVal = Array.prototype.unshift.apply(this, arguments);
+                this.after(this.object, this.property, this, null, arguments);
+                this.changed.notify({ added: arguments, removed: [] });
+                return retVal;
+            };
+
+            array.shift = function () {
+                var items = [this[0]];
+                this.changing.notify({ added: [], removed: items });
+                var retVal = Array.prototype.shift.call(this);
+                this.after(this.object, this.property, this, items, null);
+                this.changed.notify({ added: [], removed: items });
+                return retVal;
+            };
+
+            array.splice = function (start, count) {
+                count = count || this.length;
+                var addedItems = null;
+                if (arguments.length > 2)
+                    addedItems = Array.prototype.slice.call(arguments).slice(2); // convert arguments to array then slice
+                var removedItems = this.slice(start, start + count);
+                this.changing.notify({ added: addedItems, removed: removedItems });
+                if (addedItems)
+                    beforeAdd(addedItems, this);
+                var retVal = Array.prototype.splice.apply(this, arguments);
+                this.after(this.object, this.property, this, removedItems, addedItems);
+                this.changed.notify({ added: addedItems, removed: removedItems });
+                return retVal;
+            };
+
+            array.remove = function (items) {
+                var removed = [];
+                this.changing.notify({ added: [], removed: arguments });
+                var that = this;
+                helper.forEach(arguments, function (item) {
+                    var index = helper.indexOf(that, item);
+                    if (index >= 0) {
+                        Array.prototype.splice.call(that, index, 1);
+                        removed.push(item);
+                    }
+                });
+                this.after(this.object, this.property, this, removed, null);
+                this.changed.notify({ added: [], removed: removed });
+                return removed;
+            };
+
+            array.load = function (expands, resourceName, options, successCallback, errorCallback) {
+                /**
+                * Loads the navigation property using EntityManager.
+                * @param {string[]} expands - Expand navigations to apply when loading navigation property.
+                * @param {Object} resourceName - Resource name to query entities.
+                * @param {queryOptions} options - Query options.
+                * @param {successCallback=} successCallback - Success callback function.
+                * @param {errorCallback=} errorCallback - Error callback function.
+                * @returns {Promise} A Promise when available, otherwise return value of the AjaxProvider.
+                */
+                return this.object.$tracker.loadNavigationProperty(this.property.name, expands, resourceName, options, successCallback, errorCallback);
+            };
+
+            function beforeAdd(added, instance) {
+                var o = instance.object;
+                var p = instance.property;
+                if (p) {
+                    var handleUnmappedProperties;
+                    if (o.$tracker && o.$tracker.manager)
+                        handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
+                    if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
+
+                    if (Assert.isInstanceOf(p, metadata.NavigationProperty))
+                        helper.forEach(added, function (a) { p.checkAssign(a); });
+                    else if (Assert.isInstanceOf(p, metadata.DataProperty))
+                        helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
+                    else if (handleUnmappedProperties === true)
+                        helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
+                }
+            }
+
+            return array;
+        },
+        /**
+         * Creates a new array with the results of evaluating provided expression on every element in the given array.
+         * @param {any[]} array - Array to run projection on.
+         * @param {string} exp - Projection expression.
+         * @param {QueryContext} queryContext - Query execution context.
+         * @returns {any[]} Projected new object.
+         */
+        runSelectExp: function (array, exp, queryContext) {
+            if (array.length == 0) return array;
+
+            exp = libs.jsep(exp);
+            var exps = exp.type === 'Compound' ? exp.body : [exp];
+            var projector = helper.jsepToProjector(exps, queryContext);
+            return helper.mapArray(array, projector);
+        },
+        /**
+        * Converts parsed javascript expression (jsep) to OData format query string.
+        * @param {Object} exp - Jsep expression (tokenized).
+        * @param {QueryContext} queryContext - Query execution context.
+        * @param {Object=} firstExp - First evaluated expression (for internal use only).
+        * @returns {string} OData query string.
+        */
+        jsepToODataQuery: function (exp, queryContext, firstExp) {
+            firstExp = firstExp || exp;
+            if (!queryContext) queryContext = { aliases: [] };
+            else if (!queryContext.aliases) queryContext.aliases = [];
+            if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
+                if (exp.operator == '=>') {
+                    if (exp != firstExp)
+                        throw helper.createError(i18N.odataDoesNotSupportAlias);
+                    queryContext.aliases.push({ alias: exp.left.name, value: null });
+                    var r = helper.jsepToODataQuery(exp.right, queryContext, firstExp);
+                    if (exp != firstExp)
+                        queryContext.aliases.pop();
+                    return r;
+                }
+                var op = enums.langOperators.find(exp.operator).oData;
+                if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
+                return '(' + helper.jsepToODataQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext, firstExp) + ')';
+            }
+            else if (exp.type == 'UnaryExpression')
+                return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
+            else if (exp.type == 'Identifier') {
+                var n = exp.name;
+                var val = undefined;
+                var isPrm = false;
+                if (n[0] == '@') {
+                    isPrm = true;
+                    n = n.slice(1);
+                }
+
+                if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
+                    val = queryContext.expVarContext[n];
+                else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
+                    val = queryContext.varContext[n];
+
+                if (val !== undefined)
+                    return core.dataTypes.toODataValue(val);
+                if (isPrm)
+                    throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+
+                var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                if (a) return a.value;
+
+                return n;
+            }
+            else if (exp.type == 'Literal')
+                return core.dataTypes.toODataValue(exp.value);
+            else if (exp.type == 'MemberExpression') {
+                if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                    return exp.property.name;
+                else {
+                    var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
+                    if (ali) o = ali.value;
+                    else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
+
+                    if (o && o[exp.property.name] !== undefined)
+                        return core.dataTypes.toODataValue(o[exp.property.name]);
+                    return o ? o + '/' + exp.property.name : exp.property.name;
+                }
+            }
+            else if (exp.type == 'Compound') {
+                var sts = [];
+                for (var i = 0; i < exp.body.length; i++) {
+                    var st = exp.body[i];
+                    var s = helper.jsepToODataQuery(st, queryContext);
+                    var ls = s.toLowerCase();
+                    if (ls == 'desc' || ls == 'asc') {
+                        if (sts.length == 0)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' ' + s;
+                    }
+                    else if (ls == 'as') {
+                        if (sts.length == 0 || exp.body.length < i + 1)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
+                        i++;
+                    }
+                    else sts.push(s);
+                }
+                return sts.join(', ');
+            }
+            else if (exp.type == 'CallExpression') {
+                var argList = exp.arguments, args = [], alias = null;
+                if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
+                    alias = { alias: argList[0].left.name };
+                    alias.value = alias.alias;
+                    argList = [argList[0].right];
+                }
+                if (alias) {
+                    queryContext.currentAlias = alias;
+                    queryContext.aliases.push(alias);
+                }
+                for (var j = 0; j < argList.length; j++) {
+                    var arg = argList[j];
+                    if (arg != null)
+                        args.push(helper.jsepToODataQuery(arg, queryContext, firstExp));
+                }
+                var funcName;
+                if (exp.callee.type == 'MemberExpression') {
+                    args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext, firstExp));
+                    funcName = exp.callee.property.name;
+                }
+                else funcName = exp.callee.name;
+                var func = querying.queryFuncs.getFunc(funcName);
+                if (func.needsAlias == true) {
+                    if (alias)
+                        args.splice(0, 0, alias);
+                    else throw helper.createError(i18N.functionNeedsAlias, [funcName], { expression: exp });
+                }
+                var retVal = func.toODataFunction.apply(func, args);
+                if (alias) {
+                    queryContext.currentAlias = null;
+                    queryContext.aliases.pop();
+                }
+                return retVal;
+            }
+            throw helper.createError(i18N.unknownExpression, { expression: exp });
+        },
+        /**
+        * Converts parsed javascript expression (jsep) to Beetle format query string.
+        * @param {Object} exp - Jsep expression (tokenized).
+        * @param {QueryContext} queryContext - Query execution context.
+        * @param {Object=} firstExp - First evaluated expression (for internal use only).
+        * @returns {string} OData query string.
+        */
+        jsepToBeetleQuery: function (exp, queryContext, firstExp) {
+            firstExp = firstExp || exp;
+            if (!queryContext) queryContext = { aliases: [] };
+            else if (!queryContext.aliases) queryContext.aliases = [];
+            if (exp.type === 'LogicalExpression' || exp.type == 'BinaryExpression') {
+                if (exp.operator == '=>') {
+                    queryContext.aliases.push({ alias: exp.left.name, value: 'it' });
+                    var r = helper.jsepToBeetleQuery(exp.right, queryContext, firstExp);
+                    if (exp != firstExp)
+                        queryContext.aliases.pop();
+                    return r;
+                }
+                var op = enums.langOperators.find(exp.operator).code;
+                return '(' + helper.jsepToBeetleQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext, firstExp) + ')';
+            }
+            else if (exp.type === 'UnaryExpression')
+                return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
+            else if (exp.type === 'Identifier') {
+                var n = exp.name;
+                var val = undefined;
+                var isPrm = false;
+                if (n[0] == '@') {
+                    isPrm = true;
+                    n = n.slice(1);
+                }
+
+                if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
+                    val = queryContext.expVarContext[n];
+                else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
+                    val = queryContext.varContext[n];
+
+                if (val !== undefined)
+                    return core.dataTypes.toBeetleValue(val);
+                if (isPrm)
+                    throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+
+                var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                if (a) return a.value;
+
+                return n;
+            }
+            else if (exp.type === 'Literal')
+                return core.dataTypes.toBeetleValue(exp.value);
+            else if (exp.type === 'MemberExpression') {
+                if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                    return exp.property.name;
+                else {
+                    var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
+                    if (ali) o = ali.value;
+                    else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
+
+                    if (o[exp.property.name] !== undefined)
+                        return core.dataTypes.toBeetleValue(o[exp.property.name]);
+                    return o + '.' + exp.property.name;
+                }
+            }
+            else if (exp.type === 'Compound') {
+                var sts = [];
+                for (var i = 0; i < exp.body.length; i++) {
+                    var st = exp.body[i];
+                    var s = helper.jsepToBeetleQuery(st, queryContext);
+                    var ls = s.toLowerCase();
+                    if (ls == 'desc' || ls == 'asc') {
+                        if (sts.length == 0)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' ' + s;
+                    }
+                    else if (ls == 'as') {
+                        if (sts.length == 0 || exp.body.length < i + 1)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
+                        i++;
+                    }
+                    else sts.push(s);
+                }
+                return sts.join(', ');
+            }
+            else if (exp.type === 'CallExpression') {
+                var argList = exp.arguments, args = [], alias = null;
+                if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
+                    alias = { alias: argList[0].left.name };
+                    alias.value = alias.alias;
+                    argList = [argList[0].right];
+                }
+                if (alias) {
+                    queryContext.currentAlias = alias;
+                    queryContext.aliases.push(alias);
+                }
+                for (var j = 0; j < argList.length; j++) {
+                    var arg = argList[j];
+                    if (arg != null)
+                        args.push(helper.jsepToBeetleQuery(arg, queryContext, firstExp));
+                }
+                var funcName;
+                if (exp.callee.type == 'MemberExpression') {
+                    args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext, firstExp));
+                    funcName = exp.callee.property.name;
+                }
+                else funcName = exp.callee.name;
+                var func = querying.queryFuncs.getFunc(funcName);
+                var retVal = func.toBeetleFunction.apply(func, args);
+                if (alias) {
+                    queryContext.currentAlias = null;
+                    queryContext.aliases.pop();
+                }
+                return retVal;
+            }
+            throw helper.createError(i18N.unknownExpression, { expression: exp });
+        },
+        /**
+         * Converts parsed javascript expression (jsep) to Javascript function (not using evil "eval").
+         * @param {Object} exp - Jsep expression (tokenized).
+         * @param {QueryContext} queryContext - Query execution context.
+         * @returns {Function} Javascript function.
+         */
+        jsepToFunction: function (exp, queryContext) {
+            return function (value) {
+                if (!queryContext) queryContext = { aliases: [] };
+                else if (!queryContext.aliases) queryContext.aliases = [];
+                if (queryContext.currentAlias)
+                    queryContext.currentAlias.value = value;
+                if (exp.type === undefined) return value;
+                else if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
+                    if (exp.operator == '=>') {
+                        if (queryContext.currentAlias)
+                            queryContext.aliases.push(queryContext.currentAlias);
+                        queryContext.currentAlias = { alias: exp.left.name };
+                        var r = helper.jsepToFunction(exp.right, queryContext)(value);
+                        queryContext.currentAlias = queryContext.aliases.pop();
+                        return r;
+                    }
+                    var op = enums.langOperators.find(exp.operator);
+                    var varContext = queryContext.varContext;
+                    var arg1 = function () { return helper.jsepToFunction(exp.left, queryContext)(value); };
+                    var arg2 = function () { return helper.jsepToFunction(exp.right, queryContext)(value); };
+                    return op.asFunc.call(varContext, arg1, arg2);
+                }
+                else if (exp.type == 'UnaryExpression') {
+                    var arg = function () { return helper.jsepToFunction(exp.argument, queryContext)(value); };
+                    var uop = enums.langOperators.find(exp.operator);
+                    return uop.asFunc.call(varContext, arg);
+                }
+                else if (exp.type == 'Identifier') {
+                    var n = exp.name;
+                    if (n == 'null') return null;
+                    if (n == 'true') return true;
+                    if (n == 'false') return false;
+                    if (n[0] == '@') {
+                        var val = undefined;
+                        var varName = n.slice(1);
+                        if (queryContext.expVarContext && queryContext.expVarContext[varName] !== undefined)
+                            val = queryContext.expVarContext[varName];
+                        else if (queryContext.varContext)
+                            val = queryContext.varContext[varName];
+                        if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+                        return val;
+                    }
+                    if (queryContext.currentAlias && queryContext.currentAlias.alias == n)
+                        return value;
+                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                    if (a) return a.value;
+                    var v = helper.getValue(value, n);
+                    if (v === undefined) return root[n];
+                    return v;
+                }
+                else if (exp.type == 'Literal')
+                    return exp.value;
+                else if (exp.type == 'MemberExpression') {
+                    if (exp.object.name) {
+                        if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                            return helper.getValue(value, exp.property.name);
+                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias');
+                        if (ali) return helper.getValue(ali.value, exp.property.name);
+                    }
+                    return helper.getValue(helper.jsepToFunction(exp.object, queryContext)(value), exp.property.name);
+                }
+                else if (exp.type == 'CallExpression') {
+                    var argList = exp.arguments, args = [], alias = null;
+                    if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
+                        alias = argList[0].left.name;
+                        argList = [argList[0].right];
+                    }
+                    if (alias) {
+                        if (queryContext.currentAlias)
+                            queryContext.aliases.push(queryContext.currentAlias);
+                        queryContext.currentAlias = { alias: alias };
+                    }
+                    var funcName;
+                    helper.forEach(argList, function (farg) {
+                        if (farg != null)
+                            args.push(helper.jsepToFunction(farg, queryContext));
+                    });
+
+                    funcName = exp.callee.type == 'MemberExpression' ? exp.callee.property.name : exp.callee.name;
+
+                    var retVal;
+                    var func = querying.queryFuncs.getFunc(funcName, false);
+                    if (func) {
+                        if (exp.callee.type == 'MemberExpression')
+                            args.splice(0, 0, helper.jsepToFunction(exp.callee.object, queryContext));
+                        args.splice(0, 0, value);
+
+                        retVal = func.impl.apply(queryContext, args);
+                    }
+                    else {
+                        if (funcName[0] == '@') {
+                            var varFuncName = funcName.slice(1);
+                            if (queryContext.expVarContext && queryContext.expVarContext[varFuncName])
+                                func = queryContext.expVarContext[varFuncName];
+                            else if (queryContext.varContext && queryContext.varContext[varFuncName])
+                                func = queryContext.varContext[varFuncName];
+                            else throw helper.createError(i18N.unknownParameter, [varFuncName], { expression: exp, queryContext: queryContext });
+                        } else {
+                            var obj;
+                            if (exp.callee.type == 'MemberExpression')
+                                obj = helper.jsepToFunction(exp.callee.object, queryContext)(value);
+                            else
+                                obj = root;
+
+                            if (obj == null || (func = obj[funcName]) == null)
+                                throw helper.createError(i18N.unknownFunction, [funcName]);
+                        }
+
+                        args = helper.mapArray(args, function () { return this(value); });
+                        retVal = func.apply(obj, args);
+                    }
+
+                    if (alias)
+                        queryContext.currentAlias = queryContext.aliases.pop();
+                    return retVal;
+                }
+                else throw helper.createError(i18N.unknownExpression, { expression: exp });
+            };
+        },
+        /**
+         * Converts parsed javascript expression (jsep) to Javascript projection function (not using evil "eval").
+         * @param {Object} exp - Jsep expression (tokenized).
+         * @param {QueryContext} queryContext - Query execution context.
+         * @returns {Function} Javascript projector function.
+         */
+        jsepToProjector: function (exps, queryContext) {
+            var projectExps = [];
+            if (!Assert.isArray(exps)) exps = [exps];
+            for (var i = 0; i < exps.length; i++) {
+                var propertyName = null;
+                var e = exps[i];
+                // list expression property names and value evaluators
+                switch (e.type) {
+                    case 'Identifier':
+                        propertyName = e.name;
+                        break;
+                    case 'MemberExpression':
+                        propertyName = e.property.name;
+                        break;
+                }
+                if (exps.length > i + 2 && exps[i + 1].name && exps[i + 1].name.toLowerCase() == 'as') {
+                    i = i + 2;
+                    var pExp = exps[i];
+                    if (pExp.type != 'Identifier')
+                        throw helper.createError(i18N.invalidPropertyAlias, { expressions: exps, aliasExpression: pExp });
+                    propertyName = pExp.name;
+                }
+                if (exps.length > 1 && !propertyName)
+                    throw helper.createError(i18N.projectionsMustHaveAlias, { expressions: exps, expression: e });
+
+                projectExps.push({ p: propertyName, func: helper.jsepToFunction(e, queryContext) });
+            }
+
+            return function (item) {
+                var projection = {};
+                for (var k = 0; k < projectExps.length; k++) {
+                    var pe = projectExps[k];
+                    var value = pe.func(item);
+                    if (exps.length == 1) return value;
+                    projection[pe.p] = value;
+                }
+                return projection;
+            };
+        }
+    };
     var Assert = (function () {
         var ctor = function (value, name) {
             /// <summary>
@@ -10768,7 +10769,8 @@
         arraySetBehaviour: enums.arraySetBehaviour,
         serviceTypes: enums.serviceTypes
     };
-    });
+});
+(function jsdocTypeDefinitions() {
 
 /**
  * String options.
@@ -10780,7 +10782,7 @@
 /**
  * forEach callback.
  * @callback forEachCallback
- * @param {*} item - The current item in iteration.
+ * @param {any} item - The current item in iteration.
  * @param {number} index - The current index.
  */
 
@@ -10788,7 +10790,7 @@
  * forEachProperty callback.
  * @callback forEachPropertyCallback
  * @param {string} property - The current property name in iteration.
- * @param {*} value - The value of current property.
+ * @param {any} value - The value of current property.
  */
 
 /**
@@ -10836,5 +10838,6 @@
 /**
  * QueryContext type. Generated when query execution starts and will be shared through execution.
  * @typedef {Object} QueryContext
- * @property {*} varContext - Variables for the query. Can be used for parameterization.
+ * @property {any} varContext - Variables for the query. Can be used for parameterization.
  */
+})();
