@@ -1023,133 +1023,140 @@
             };
         }
     };
+    /**
+     * Assertion methods. Two different usage possible, static methods and instance methods.
+     * Static methods returns true or false.Instance methods can be chained and they collect errors in an array, 
+     * Check method throws error if there are any.
+     */
     var Assert = (function () {
+
+        /** @constructor
+         * @param {any} value - Value to check.
+         * @param {string=} name - Property name representing the value (will be used in error messages).
+         */
         var ctor = function (value, name) {
-            /// <summary>
-            /// Assertion methods. Two different usage possible, static methods and instance methods. 
-            /// Static methods returns true or false.Instance methods can be chained and they collect errors in an array, 
-            /// after all assertions check methods throws error if there is any.(adapted from breezejs)
-            /// </summary>
-            /// <param name="value">Value to check.</param>
-            /// <param name="name">Property or field name represanting the value (will be used in error messages).</param>
             this.value = value;
             this.name = name;
             this.errors = [];
         };
         var proto = ctor.prototype;
 
+        /** Checks if value is not null or undefined. */
         proto.hasValue = function () {
-            /// <summary>
-            /// Checks if value is not null.
-            /// </summary>
             ctor.hasValue(this.value, this.errors, this.name);
             return this;
         };
+        /** Checks if value is object. */
         proto.isObject = function () {
-            /// <summary>
-            /// Checks if value is object.
-            /// </summary>
             ctor.isObject(this.value, this.errors, this.name);
             return this;
         };
+        /** Checks if value is function. */
         proto.isFunction = function () {
-            /// <summary>
-            /// Checks if value is function.
-            /// </summary>
             ctor.isFunction(this.value, this.errors, this.name);
             return this;
         };
+        /** Checks if value is a non-empty string. */
         proto.isNotEmptyString = function () {
-            /// <summary>
-            /// Checks if value is a non-empty string.
-            /// </summary>
             ctor.isNotEmptyString(this.value, this.errors, this.name);
             return this;
         };
+        /** 
+         * Checks if value is an object of given type.
+         * @param {string} typeName - Name of the javascript type.
+         */
         proto.isTypeOf = function (typeName) {
-            /// <summary>
-            /// Checks if value is an object of given type.
-            /// </summary>
-            /// <param name="typeName">Name of the javascript type.</param>
             ctor.isTypeOf(this.value, typeName, this.errors, this.name);
             return this;
         };
+        /** Checks if value is array. */
         proto.isArray = function () {
-            /// <summary>
-            /// Checks if value is array.
-            /// </summary>
             ctor.isArray(this.value, this.errors, this.name);
             return this;
         };
+        /** 
+         * Checks if value is an symbol of given enum.
+         * @param {libs.Enum} enumType - Type of the enum.
+         */
         proto.isEnum = function (enumType) {
-            /// <summary>
-            /// Checks if value is an symbol of given enum.
-            /// </summary>
-            /// <param name="typeName">Type of the enum.</param>
             ctor.isEnum(this.value, enumType, this.errors, this.name);
             return this;
         };
+        /** 
+         * Checks if value is an instance of given type.
+         * @param {any} type - Javascript function or class to check.
+         */
         proto.isInstanceOf = function (type) {
-            /// <summary>
-            /// Checks if value is instance of given type.
-            /// </summary>
-            /// <param name="type">Type of the javascript class.</param>
             ctor.isInstanceOf(this.value, type, this.errors, this.name);
             return this;
         };
 
+        /** If previous checks created any error, joins them with a new line and throws an Error. */
         proto.check = function () {
-            /// <summary>
-            /// If previous checks created any error, joins them with ',' and throws an Error.
-            /// </summary>
             if (this.errors.length > 0)
                 throw helper.createError(this.errors.join('\n'), { name: this.name, value: this.value });
         };
 
+        /** 
+         * Checks if value is not null.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.hasValue = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is not null.
-            /// </summary>
             if (value == null) {
                 if (errors) errors.push(helper.formatString(i18N.valueCannotBeNull, name));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is object.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isObject = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is object.
-            /// </summary>
             if (value == null || !core.dataTypes.object.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'object'));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is function.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isFunction = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is function.
-            /// </summary>
             if (value == null || !core.dataTypes.func.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'function'));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is a non-empty string.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isNotEmptyString = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is a non-empty string.
-            /// </summary>
             if (value == null || value === '' || !ctor.isTypeOf(value, 'string', errors)) {
                 if (errors) errors.push(helper.formatString(i18N.cannotBeEmptyString, name));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is an object of given type.
+         * @param {any} value - Value to check.
+         * @param {string} typeName - Name of the javascript type.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isTypeOf = function (value, typeName, errors, name) {
-            /// <summary>
-            /// Checks if value is an object of given type.
-            /// </summary>
             if (!ctor.hasValue(value)) return false;
             var type = core.dataTypes.byName(typeName);
             if (!type.isValid(value)) {
@@ -1158,30 +1165,41 @@
             }
             return true;
         };
+        /** 
+         * Checks if value is array.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isArray = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is array.
-            /// </summary>
             if (value == null || !core.dataTypes.array.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'array'));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is an symbol of given enum.
+         * @param {any} value - Value to check.
+         * @param {libs.Enum} enumType - Type of the enum.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isEnum = function (value, enumType, errors, name) {
-            /// <summary>
-            /// Checks if value is an symbol of given enum.
-            /// </summary>
             if (!enumType.contains(value)) {
-                if (errors) errors.push(helper.formatString(i18N.invalidEnumValue, enumType, value));
+                if (errors) errors.push(helper.formatString(i18N.invalidEnumValue, [enumType, name], value));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is instance of given type.
+         * @param {any} value - Value to check.
+         * @param {any} type - Javascript function or class to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isInstanceOf = function (value, type, errors, name) {
-            /// <summary>
-            /// Checks if value is instance of given type.
-            /// </summary>
             if (value == null) {
                 if (errors) errors.push(i18N.cannotCheckInstanceOnNull);
                 return false;
@@ -1780,10 +1798,10 @@
         return expose;
     })();
     var baseTypes = (function () {
-        /// <summary>
-        /// Base types, can be considered as abstract classes.
-        /// This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
-        /// </summary>
+        /**
+         * Base types, can be considered as abstract classes.
+         * This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
+         */
         return {
             DateConverterBase: (function () {
                 var ctor = function (name) {
@@ -10770,7 +10788,6 @@
         serviceTypes: enums.serviceTypes
     };
 });
-(function jsdocTypeDefinitions() {
 
 /**
  * String options.
@@ -10840,4 +10857,3 @@
  * @typedef {Object} QueryContext
  * @property {any} varContext - Variables for the query. Can be used for parameterization.
  */
-})();
