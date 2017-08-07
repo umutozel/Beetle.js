@@ -3001,7 +3001,10 @@
      * @namespace
      */
     var impls = {
-        /// <field>Default date converter class. Uses browser's default Date object.</field>
+        /** 
+         * Default date converter class. Uses browser's default Date object.
+         * @class
+         */
         DefaultDateConverter: (function () {
             var ctor = function () {
                 baseTypes.DateConverterBase.call(this, 'Default Date Converter');
@@ -3028,7 +3031,10 @@
 
             return ctor;
         })(),
-        /// <field>Knockout observable provider class. Makes given object's properties observable.</field>
+        /** 
+         * Knockout observable provider class. Makes given object's properties observable.
+         * @class
+         */
         KoObservableProvider: (function () {
 
             var ctor = function (ko) {
@@ -3147,7 +3153,10 @@
 
             return ctor;
         })(),
-        /// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
+        /** 
+         * Property observable provider class. Makes given object's fields properties with getter setter and tracks values.
+         * @class
+         */
         PropertyObservableProvider: (function () {
             var ctor = function () {
                 baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
@@ -3263,7 +3272,10 @@
 
             return ctor;
         })(),
-        /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
+        /** 
+         * jQuery ajax provider class. Operates ajax operations via jQuery.
+         * @class
+         */
         JQueryAjaxProvider: (function () {
             var ctor = function ($) {
                 baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
@@ -3313,7 +3325,10 @@
 
             return ctor;
         })(),
-        /// <field>Angularjs ajax provider class. Operates ajax operations via angularjs.</field>
+        /** 
+         * Angularjs ajax provider class. Operates ajax operations via angularjs.
+         * @class
+         */
         AngularjsAjaxProvider: (function () {
             var ctor = function (angularjs) {
                 baseTypes.AjaxProviderBase.call(this, 'Angular.js Ajax Provider');
@@ -3359,7 +3374,10 @@
 
             return ctor;
         })(),
-        /// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
+        /** 
+         * Angular ajax provider class. Operates ajax operations via angular.
+         * @class
+         */
         AngularAjaxProvider: (function () {
             var ctor = function (http, RequestConstructor, HeadersConstructor) {
                 baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
@@ -3411,7 +3429,10 @@
 
             return ctor;
         })(),
-        /// <field>Pure javascript ajax provider class.</field>
+        /**
+         * Pure javascript ajax provider class.
+         * @class
+         */
         VanillajsAjaxProvider: (function () {
             var ctor = function () {
                 baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
@@ -3463,7 +3484,10 @@
 
             return ctor;
         })(),
-        /// <field>Node.js ajax provider class.</field>
+        /**
+         * Node.js ajax provider class.
+         * @class
+         */
         NodejsAjaxProvider: (function () {
             var ctor = function (http, https) {
                 baseTypes.AjaxProviderBase.call(this, 'Node.js Ajax Provider');
@@ -3552,7 +3576,10 @@
 
             return ctor;
         })(),
-        /// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
+        /** 
+         * JSON serialization class. Deserializes incoming data and serializes outgoing data.
+         * @class
+         */
         JsonSerializationService: (function () {
             var ctor = function () {
                 baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
@@ -3572,7 +3599,10 @@
 
             return ctor;
         })(),
-        /// <field>Q promise provider class.</field>
+        /** 
+         * Q promise provider class.
+         * @class
+         */
         QPromiseProvider: (function () {
             var ctor = function (Q) {
                 baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
@@ -3599,7 +3629,10 @@
 
             return ctor;
         })(),
-        /// <field>Angular.js promise provider.</field>
+        /** 
+         * Angular.js promise provider.
+         * @class
+         */
         AngularjsPromiseProvider: (function () {
             var ctor = function (angularjs) {
                 baseTypes.PromiseProviderBase.call(this, 'Angular.js Promise Provider');
@@ -3630,7 +3663,10 @@
 
             return ctor;
         })(),
-        /// <field>jQuery promise provider.</field>
+        /** 
+         * jQuery promise provider.
+         * @class
+         */
         JQueryPromiseProvider: (function () {
             var ctor = function ($) {
                 baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
@@ -3657,7 +3693,10 @@
 
             return ctor;
         })(),
-        /// <field>ES6 promise provider.</field>
+        /** 
+         * ES6 promise provider.
+         * @class
+         */
         Es6PromiseProvider: (function () {
             var ctor = function () {
                 baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
