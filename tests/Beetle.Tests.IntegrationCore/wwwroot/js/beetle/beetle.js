@@ -1,6 +1,6 @@
 ﻿/**
 * Beetle module.
-* @module
+* @module beetle
 */
 (function (root, factory) {
     var deps = {
@@ -64,1023 +64,1101 @@
     "use strict";
 
     /**
-    * Helper class for common codes. We are not using ECMA 5, so we must write these helper methods.
-    * @namespace
-    */
-    var helper = (function () {
-
-        return {
-            assertPrm: function (value, name) {
-                /**
-                 * Creates an assert instance to work with, a shortcut.  Usage: assertPrm(prm, 'prm').isArray().check().
-                 * @param {*} value - The value of parameter.
-                 * @param {string} name - The name of the parameter.
-                 * @returns {Assert} Assert instance.
-                 */
-                return new Assert(value, name);
-            },
-            combine: function (obj1, obj2) {
-                /**
-                 * Combines first object's properties with second object's properties on a new object.
-                 * @param {Object} obj1 - The first object.
-                 * @param {Object} obj2 - The second object.
-                 * @returns {Object} New object containing all properties from both objects.
-                 */
-                if (obj1 == obj2) return obj1;
-                var obj = {};
-                if (obj1 != null) {
-                    for (var p1 in obj1) {
-                        obj[p1] = obj1[p1];
-                    }
+     * Helper functions. We are trying not to use ECMA 5, so we polyfill some methods.
+     * @namespace helper
+     */
+    var helper = {
+        /**
+         * Creates an assert instance to work with, a shortcut.
+         * @example
+         * helper.assertPrm(prm, 'prm').isArray().check()
+         * @param {any} value - The value of parameter.
+         * @param {string} name - The name of the parameter.
+         * @returns {Assert} Assert instance.
+         */
+        assertPrm: function (value, name) {
+            return new Assert(value, name);
+        },
+        /**
+         * Combines first object's properties with second object's properties on a new object.
+         * @param {Object} obj1 - The first object.
+         * @param {Object} obj2 - The second object.
+         * @returns {Object} New object containing all properties from both objects.
+         */
+        combine: function (obj1, obj2) {
+            if (obj1 == obj2) return obj1;
+            var obj = {};
+            if (obj1 != null) {
+                for (var p1 in obj1) {
+                    obj[p1] = obj1[p1];
                 }
-                if (obj2 != null) {
-                    for (var p2 in obj2) {
-                        var v1 = obj[p2];
-                        var v2 = obj2[p2];
-                        var v = Assert.isTypeOf(v1, 'object') && Assert.isTypeOf(v2, 'object') ? helper.combine(v1, v2) : v2;
-                        obj[p2] = v;
-                    }
-                }
-                return obj;
-            },
-            extend: function (objMain, objExt) {
-                /**
-                 * Extends objMain with objExt's properties.
-                 * @param {Object} objMain - The main object.
-                 * @param {Object} objExt - Object to extend with.
-                 * @returns {Object} objMain is returned.
-                 */
-                if (objMain != null && objExt != null) {
-                    for (var p in objExt) {
-                        if (!objMain.hasOwnProperty(p))
-                            objMain[p] = objExt[p];
-                    }
-                }
-                return objMain;
-            },
-            objEquals: function (obj1, obj2) {
-                /**
-                 * Checks if the given two are equal. if parameters are both objects, recursively controls their properties too.
-                 * @param {Object} obj1 - The first object.
-                 * @param {Object} obj2 - The second object.
-                 * @returns {boolean} True when two objects are equal, otherwise false.
-                 */
-                if (obj1 == obj2)
-                    return true;
-
-                if (obj1 == null || obj2 == null)
-                    return false;
-
-                if (Assert.isObject(obj1) && Assert.isObject(obj2)) {
-                    var count1 = 0;
-                    var count2 = 0;
-                    for (var p in obj1) {
-                        if (!(p in obj2)) return false;
-                        if (helper.getValue(obj1, p) != helper.getValue(obj2, p)) return false;
-                        count1++;
-                    }
-                    for (var p2 in obj2) count2++;
-                    return count1 == count2;
-                }
-
-                return false;
-            },
-            isCaseSensitive: function (options) {
-                /**
-                 * Returns string case option for current operation context.
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {boolean} True when given options' isCaseSensitive is true (or null and global options' isCaseSensitive is true), otherwise false.
-                 */
-                var isCaseSensitive = options && options.isCaseSensitive;
-                return isCaseSensitive == null ? settings.isCaseSensitive : isCaseSensitive;
-            },
-            ignoreWhiteSpaces: function (options) {
-                /**
-                 * Returns whitespace ignore option for current operation context.
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {boolean} True when given options' ignoreWhiteSpaces is true (or null and global options' ignoreWhiteSpaces is true), otherwise false.
-                 */
-                var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
-                return ignoreWhiteSpaces == null ? settings.ignoreWhiteSpaces : ignoreWhiteSpaces;
-            },
-            handleStrOptions: function (str, options) {
-                /**
-                 * Applies current operation context string options to given parameter.
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {string} Modified string (using the options).
-                 */
-                if (str == null || typeof str !== "string") return str;
-                if (!helper.isCaseSensitive(options)) {
-                    str = str.replace("İ", "i");
-                    str = str.toLowerCase();
-                    str = str.replace("ı", "i");
-                }
-                return helper.ignoreWhiteSpaces(options) ? str.trim() : str;
-            },
-            equals: function (obj1, obj2, isStrict, options) {
-                /**
-                 * Compares two objects. Uses given options when necessary.
-                 * @param {Object} obj1 - The first object.
-                 * @param {Object} obj2 - The second object.
-                 * @param {bool} isStrict - Use strict comparing (===).
-                 * @param {StringOptions} options - String options for the context.
-                 * @returns {boolean} True when two values are equal (options will be used for string values).
-                 */
-                if (typeof obj1 === 'string' && typeof obj2 === 'string') {
-                    obj1 = helper.handleStrOptions(obj1, options);
-                    obj2 = helper.handleStrOptions(obj2, options);
-                }
-
-                if (obj1 != null && obj2 != null && core.dataTypes.date.isValid(obj1) && core.dataTypes.date.isValid(obj2)) {
-                    obj1 = obj1.valueOf();
-                    obj2 = obj2.valueOf();
-                }
-
-                return isStrict ? obj1 === obj2 : obj1 == obj2;
-            },
-            formatString: function (string, params) {
-                /**
-                 * Format string using given arguments. %1 and {1} format can be used for placeholders.
-                 * @param {string} string - String to format.
-                 * @param {...string} params - Values to replace.
-                 * @returns {string} Formatted string.
-                 */
-                var args = arguments;
-                var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
-                var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
-                return string
-                    .replace(pattern1, function (match, index) {
-                        return args[Number(index) + 1] || '';
-                    })
-                    .replace(pattern2, function (match, index) {
-                        return args[Number(index) + 1] || '';
-                    });
-            },
-            indexOf: function (array, item, index) {
-                /**
-                 * Finds the index of the given item in the array.
-                 * @param {any[]} array - Array to search.
-                 * @param {*} item - Item to find.
-                 * @param {number=} index - Start index.
-                 * @returns {number} Found index. If the item could not be found returns '-1'.
-                 */
-                for (var i = index || 0; i < array.length; i++)
-                    if (array[i] === item) return i;
-                return -1;
-            },
-            forEach: function (array, callback) {
-                /**
-                 * Calls given callback with item and current index parameters for each item in the array.
-                 * @param {any[]} array - Array to iterate.
-                 * @param {forEachCallback} callback - Method to call for each item.
-                 */
-                for (var i = 0; i < array.length; i++) {
-                    var obj = array[i];
-                    callback.call(null, obj, i);
-                }
-            },
-            forEachProperty: function (object, callback) {
-                /**
-                 * Iterate objects properties and skips ones starting with '$'.
-                 * @param {Object} object - Object to iterate.
-                 * @param {forEachPropertyCallback} callback - Method to call for each property.
-                 */
-                for (var p in object) {
-                    if (p[0] == '$') continue;
-                    var v = object[p];
-                    if (Assert.isFunction(v)) continue;
-                    callback(p, v);
-                }
-            },
-            findInArray: function (array, value, property) {
-                /**
-                 * Finds given item in the array.
-                 * When property is given, looks item's property value, otherwise compares item's itself.
-                 * @param {any[]} array - Array to search.
-                 * @param {*} value - Value to find.
-                 * @param {string=} property - Property to look for the value.
-                 */
-                for (var i = 0; i < array.length; i++)
-                    if (property) {
-                        if (array[i][property] === value) return array[i];
-                    } else if (array[i] === value) return value;
-                return null;
-            },
-            filterArray: function (array, predicate) {
-                /// <summary>Copies array items that match the given conditions to another array and returns the new array.</summary>
-                /// <param name="array">Array to filter.</param>
-                /// <param name="predicate">Select conditions.</param>
-                var retVal = [];
-                for (var i = 0; i < array.length; i++) {
-                    var item = array[i];
-                    if (predicate(item) === true)
-                        retVal.push(item);
-                }
-                return retVal;
-            },
-            removeFromArray: function (array, item, property) {
-                /// <summary>Removes the item from given array.</summary>
-                /// <param name="array">The array.</param>
-                /// <param name="item">The item to remove.</param>
-                /// <param name="property">The property that holds the value (item).</param>
-                /// <returns type="Number">Returns how many item removed.</returns>
-                var indexes = [];
-                this.forEach(array, function (current, index) {
-                    if (property) {
-                        if (current[property] === item) indexes.push(index);
-                    } else if (current === item) indexes.push(index);
-                });
-                for (var i = indexes.length - 1; i >= 0; i--)
-                    array.splice(indexes[i], 1);
-                return indexes.length;
-            },
-            mapArray: function (array, callback) {
-                var retVal = [];
-                for (var i = 0; i < array.length; i++) {
-                    var item = array[i];
-                    retVal.push(callback.call(item, item, i));
-                }
-                return retVal;
-            },
-            createGuid: function () {
-                /// <summary>Creates a guid.</summary>
-
-                function s4() {
-                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-                }
-
-                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                    s4() + '-' + s4() + s4() + s4();
-            },
-            funcToLambda: function (func) {
-                helper.assertPrm(func, "func").isFunction().check();
-
-                var f = func.toString().replace(/function(.*?){/g, "$1=>").replace(/{|}|;|return /g, "").trim();
-
-                var l1 = f.indexOf("=>");
-                var p = f.substr(0, l1).trim();
-                f = f.substr(l1 + 2).trim();
-
-                var xs = f.split(",");
-                var s = [];
-                for (var i = 0; i < xs.length; i++) {
-                    var x = xs[i];
-                    var ps = x.split(":");
-                    if (ps.length > 1) {
-                        s.push(ps[1].trim() + " as " + ps[0].trim());
-                    }
-                    else s.push(x.trim());
-                }
-                f = s.join(", ");
-
-                return p ? (p + " => " + f) : f;
-            },
-            getFuncName: function (func) {
-                var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
-                var results = funcNameRegex.exec(func.toString());
-                return results[1] || results[2];
-            },
-            inherit: function (derivedClass, baseClass) {
-                /// <summary>
-                /// Inherits given derivedClass from baseClass.
-                /// Generates prototypal relation, sets constructor 
-                /// and creates a 'baseClass' property on derived type points to base type.
-                /// </summary>
-                /// <param name="derivedClass">Derived class.</param>
-                /// <param name="baseClass">Base class.</param>
-                var f = new Function();
-                f.prototype = baseClass.prototype;
-
-                derivedClass.prototype = new f();
-                derivedClass.prototype.constructor = derivedClass;
-                derivedClass.baseClass = baseClass.prototype;
-            },
-            getValue: function (object, propertyPath) {
-                /// <summary>Reads property of value, used when we are not sure if property is observable.</summary>
-                /// <param name="object">The object.</param>
-                /// <param name="property">The property.</param>
-                if (object == null) return undefined;
-                var op = settings.getObservableProvider();
-                // split propertyPath path and read every items value
-                var paths = propertyPath.trim().split('.');
-                var retVal = object;
-                for (var i = 0; i < paths.length; i++) {
-                    retVal = getValue(retVal, paths[i]);
-                    if (retVal == null) break;
-                }
-                return retVal;
-
-                function getValue(o, p) {
-                    // get tracker
-                    var tracker = o.$tracker;
-                    // if o is an entity, get value from its tracker
-                    if (tracker)
-                        return tracker.getValue(p);
-                    if (op.isObservable(o, p)) // if o's p is observable get value from default observable provider
-                        return op.getValue(o, p);
-                    var value = o[p];
-                    return value; // if its not observable get value of p
-                }
-            },
-            getResourceValue: function (resourceName, altValue) {
-                var localizeFunc = settings.getLocalizeFunction();
-                return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
-            },
-            createValidationError: function (entity, value, property, message, validator) {
-                /// <summary>Creates validation error object using given parameters.</summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="value">Current value.</param>
-                /// <param name="property">The property.</param>
-                /// <param name="message">Validation message.</param>
-                /// <param name="validator">Validator instance.</param>
-                return { message: message, entity: entity, validator: validator, value: value, property: property };
-            },
-            createError: function (message, arg1, arg2) {
-                /// <summary>Creates error object with given message and populates with given object's values.</summary>
-                /// <param name="message">Error message.</param>
-                /// <param name="arg1">Message format arguments.</param>
-                /// <param name="arg2">Extra informations, will be attached to error object.</param>
-                var args = null, obj = arg2;
-                if (Assert.isArray(arg1)) args = arg1;
-                else if (Assert.isObject(arg1)) obj = arg1;
-
-                if (args && args.length > 0) {
-                    args.splice(0, 0, message);
-                    message = helper.formatString.apply(null, args);
-                }
-                var retVal = new Error(message);
-                if (obj) {
-                    for (var p in obj)
-                        retVal[p] = obj[p];
-                }
-                events.error.notify(retVal);
-                return retVal;
-            },
-            setForeignKeys: function (entity, navProperty, newValue) {
-                /// <summary>Updates foreign keys of given navigation property with new values.</summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="navProperty">The navigation property.</param>
-                /// <param name="newValue">New value.</param>
-                for (var i = 0; i < navProperty.foreignKeyNames.length; i++) {
-                    // We get each related foreign key for this navigation property.
-                    var fk = navProperty.foreignKeyNames[i];
-                    var tracker = entity.$tracker;
-                    if (newValue) {
-                        // When foreign key is built with more than one column, we presume foreign key-primary key order is same
-                        // Example:
-                        //  When we create an association between Product and Supplier using Name and Location fields
-                        //  we presume Supplier's corresponding primary keys are in exactly same order.
-                        var k = newValue.$tracker.entityType.keys[i];
-                        var v = newValue.$tracker.getValue(k.name);
-                        tracker.setValue(fk, v);
-                    } else {
-                        var fkp = helper.findInArray(tracker.entityType.dataProperties, fk, 'name');
-                        tracker.setValue(fk, fkp.getDefaultValue());
-                    }
-                }
-            },
-            createTrackableArray: function (initial, object, property, after) {
-                var array = initial || [];
-                array.object = object;
-                array.property = property;
-                array.after = after;
-
-                array.changing = new core.Event(property + "ArrayChanging", array);
-                array.changed = new core.Event(property + "ArrayChanged", array);
-
-                array.pop = function () {
-                    var items = [this[this.length - 1]];
-                    // call base method
-                    this.changing.notify({ added: [], removed: items });
-                    var retVal = Array.prototype.pop.call(this);
-                    this.after(this.object, this.property, this, items, null);
-                    this.changed.notify({ added: [], removed: items });
-                    return retVal;
-                };
-
-                array.push = function (items) {
-                    this.changing.notify({ added: arguments, removed: [] });
-                    beforeAdd(arguments, this);
-                    var retVal = Array.prototype.push.apply(this, arguments);
-                    this.after(this.object, this.property, this, null, arguments);
-                    this.changed.notify({ added: arguments, removed: [] });
-                    return retVal;
-                };
-
-                array.unshift = function (items) {
-                    this.changing.notify({ added: arguments, removed: [] });
-                    beforeAdd(arguments, this);
-                    var retVal = Array.prototype.unshift.apply(this, arguments);
-                    this.after(this.object, this.property, this, null, arguments);
-                    this.changed.notify({ added: arguments, removed: [] });
-                    return retVal;
-                };
-
-                array.shift = function () {
-                    var items = [this[0]];
-                    this.changing.notify({ added: [], removed: items });
-                    var retVal = Array.prototype.shift.call(this);
-                    this.after(this.object, this.property, this, items, null);
-                    this.changed.notify({ added: [], removed: items });
-                    return retVal;
-                };
-
-                array.splice = function (start, count) {
-                    count = count || this.length;
-                    var addedItems = null;
-                    if (arguments.length > 2)
-                        addedItems = Array.prototype.slice.call(arguments).slice(2); // convert arguments to array then slice
-                    var removedItems = this.slice(start, start + count);
-                    this.changing.notify({ added: addedItems, removed: removedItems });
-                    if (addedItems)
-                        beforeAdd(addedItems, this);
-                    var retVal = Array.prototype.splice.apply(this, arguments);
-                    this.after(this.object, this.property, this, removedItems, addedItems);
-                    this.changed.notify({ added: addedItems, removed: removedItems });
-                    return retVal;
-                };
-
-                array.remove = function (items) {
-                    var removed = [];
-                    this.changing.notify({ added: [], removed: arguments });
-                    var that = this;
-                    helper.forEach(arguments, function (item) {
-                        var index = helper.indexOf(that, item);
-                        if (index >= 0) {
-                            Array.prototype.splice.call(that, index, 1);
-                            removed.push(item);
-                        }
-                    });
-                    this.after(this.object, this.property, this, removed, null);
-                    this.changed.notify({ added: [], removed: removed });
-                    return removed;
-                };
-
-                array.load = function (expands, resourceName, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Loads the navigation property.
-                    /// </summary>
-                    /// <param name="expands">Expand navigations to apply when loading navigation property.</param>
-                    /// <param name="resourceName">Resource name to query entities.</param>
-                    /// <param name="options">Query options.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    return this.object.$tracker.loadNavigationProperty(this.propertyName, expands, resourceName, options, successCallback, errorCallback);
-                };
-
-                function beforeAdd(added, instance) {
-                    var o = instance.object;
-                    var p = instance.property;
-                    if (p) {
-                        var handleUnmappedProperties;
-                        if (o.$tracker && o.$tracker.manager)
-                            handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
-                        if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
-
-                        if (Assert.isInstanceOf(p, metadata.NavigationProperty))
-                            helper.forEach(added, function (a) { p.checkAssign(a); });
-                        else if (Assert.isInstanceOf(p, metadata.DataProperty))
-                            helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
-                        else if (handleUnmappedProperties === true)
-                            helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
-                    }
-                }
-
-                return array;
-            },
-            runSelectExp: function (array, exp, queryContext) {
-                if (array.length == 0) return array;
-
-                exp = libs.jsep(exp);
-                var exps = exp.type == 'Compound' ? exp.body : [exp];
-                var projector = helper.jsepToProjector(exps, queryContext);
-                return helper.mapArray(array, projector);
-            },
-            jsepToODataQuery: function (exp, queryContext, firstExp) {
-                /// <summary>Converts parsed javascript expression (jsep) to OData format query string.</summary>
-                /// <param name="exp">Jsep expression.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                firstExp = firstExp || exp;
-                if (!queryContext) queryContext = { aliases: [] };
-                else if (!queryContext.aliases) queryContext.aliases = [];
-                if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                    if (exp.operator == '=>') {
-                        if (exp != firstExp)
-                            throw helper.createError(i18N.odataDoesNotSupportAlias);
-                        queryContext.aliases.push({ alias: exp.left.name, value: null });
-                        var r = helper.jsepToODataQuery(exp.right, queryContext, firstExp);
-                        if (exp != firstExp)
-                            queryContext.aliases.pop();
-                        return r;
-                    }
-                    var op = enums.langOperators.find(exp.operator).oData;
-                    if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
-                    return '(' + helper.jsepToODataQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext, firstExp) + ')';
-                }
-                else if (exp.type == 'UnaryExpression')
-                    return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
-                else if (exp.type == 'Identifier') {
-                    var n = exp.name;
-                    var val = undefined;
-                    var isPrm = false;
-                    if (n[0] == '@') {
-                        isPrm = true;
-                        n = n.slice(1);
-                    }
-
-                    if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
-                        val = queryContext.expVarContext[n];
-                    else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
-                        val = queryContext.varContext[n];
-
-                    if (val !== undefined)
-                        return core.dataTypes.toODataValue(val);
-                    if (isPrm)
-                        throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-
-                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                    if (a) return a.value;
-
-                    return n;
-                }
-                else if (exp.type == 'Literal')
-                    return core.dataTypes.toODataValue(exp.value);
-                else if (exp.type == 'MemberExpression') {
-                    if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
-                        return exp.property.name;
-                    else {
-                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
-                        if (ali) o = ali.value;
-                        else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
-
-                        if (o && o[exp.property.name] !== undefined)
-                            return core.dataTypes.toODataValue(o[exp.property.name]);
-                        return o ? o + '/' + exp.property.name : exp.property.name;
-                    }
-                }
-                else if (exp.type == 'Compound') {
-                    var sts = [];
-                    for (var i = 0; i < exp.body.length; i++) {
-                        var st = exp.body[i];
-                        var s = helper.jsepToODataQuery(st, queryContext);
-                        var ls = s.toLowerCase();
-                        if (ls == 'desc' || ls == 'asc') {
-                            if (sts.length == 0)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' ' + s;
-                        }
-                        else if (ls == 'as') {
-                            if (sts.length == 0 || exp.body.length < i + 1)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
-                            i++;
-                        }
-                        else sts.push(s);
-                    }
-                    return sts.join(', ');
-                }
-                else if (exp.type == 'CallExpression') {
-                    var argList = exp.arguments, args = [], alias = null;
-                    if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                        alias = { alias: argList[0].left.name };
-                        alias.value = alias.alias;
-                        argList = [argList[0].right];
-                    }
-                    if (alias) {
-                        queryContext.currentAlias = alias;
-                        queryContext.aliases.push(alias);
-                    }
-                    for (var j = 0; j < argList.length; j++) {
-                        var arg = argList[j];
-                        if (arg != null)
-                            args.push(helper.jsepToODataQuery(arg, queryContext, firstExp));
-                    }
-                    var funcName;
-                    if (exp.callee.type == 'MemberExpression') {
-                        args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext, firstExp));
-                        funcName = exp.callee.property.name;
-                    }
-                    else funcName = exp.callee.name;
-                    var func = querying.queryFuncs.getFunc(funcName);
-                    if (func.needsAlias == true) {
-                        if (alias)
-                            args.splice(0, 0, alias);
-                        else throw helper.createError(i18N.functionNeedsAlias, [funcName], { expression: exp });
-                    }
-                    var retVal = func.toODataFunction.apply(func, args);
-                    if (alias) {
-                        queryContext.currentAlias = null;
-                        queryContext.aliases.pop();
-                    }
-                    return retVal;
-                }
-                throw helper.createError(i18N.unknownExpression, { expression: exp });
-            },
-            jsepToBeetleQuery: function (exp, queryContext, firstExp) {
-                /// <summary>Converts parsed javascript expression (jsep) to Beetle format query string.</summary>
-                /// <param name="exp">Jsep expression.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                firstExp = firstExp || exp;
-                if (!queryContext) queryContext = { aliases: [] };
-                else if (!queryContext.aliases) queryContext.aliases = [];
-                if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                    if (exp.operator == '=>') {
-                        queryContext.aliases.push({ alias: exp.left.name, value: 'it' });
-                        var r = helper.jsepToBeetleQuery(exp.right, queryContext, firstExp);
-                        if (exp != firstExp)
-                            queryContext.aliases.pop();
-                        return r;
-                    }
-                    var op = enums.langOperators.find(exp.operator).code;
-                    return '(' + helper.jsepToBeetleQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext, firstExp) + ')';
-                }
-                else if (exp.type == 'UnaryExpression')
-                    return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
-                else if (exp.type == 'Identifier') {
-                    var n = exp.name;
-                    var val = undefined;
-                    var isPrm = false;
-                    if (n[0] == '@') {
-                        isPrm = true;
-                        n = n.slice(1);
-                    }
-
-                    if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
-                        val = queryContext.expVarContext[n];
-                    else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
-                        val = queryContext.varContext[n];
-
-                    if (val !== undefined)
-                        return core.dataTypes.toBeetleValue(val);
-                    if (isPrm)
-                        throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-
-                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                    if (a) return a.value;
-
-                    return n;
-                }
-                else if (exp.type == 'Literal')
-                    return core.dataTypes.toBeetleValue(exp.value);
-                else if (exp.type == 'MemberExpression') {
-                    if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
-                        return exp.property.name;
-                    else {
-                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
-                        if (ali) o = ali.value;
-                        else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
-
-                        if (o[exp.property.name] !== undefined)
-                            return core.dataTypes.toBeetleValue(o[exp.property.name]);
-                        return o + '.' + exp.property.name;
-                    }
-                }
-                else if (exp.type == 'Compound') {
-                    var sts = [];
-                    for (var i = 0; i < exp.body.length; i++) {
-                        var st = exp.body[i];
-                        var s = helper.jsepToBeetleQuery(st, queryContext);
-                        var ls = s.toLowerCase();
-                        if (ls == 'desc' || ls == 'asc') {
-                            if (sts.length == 0)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' ' + s;
-                        }
-                        else if (ls == 'as') {
-                            if (sts.length == 0 || exp.body.length < i + 1)
-                                throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
-                            sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
-                            i++;
-                        }
-                        else sts.push(s);
-                    }
-                    return sts.join(', ');
-                }
-                else if (exp.type == 'CallExpression') {
-                    var argList = exp.arguments, args = [], alias = null;
-                    if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                        alias = { alias: argList[0].left.name };
-                        alias.value = alias.alias;
-                        argList = [argList[0].right];
-                    }
-                    if (alias) {
-                        queryContext.currentAlias = alias;
-                        queryContext.aliases.push(alias);
-                    }
-                    for (var j = 0; j < argList.length; j++) {
-                        var arg = argList[j];
-                        if (arg != null)
-                            args.push(helper.jsepToBeetleQuery(arg, queryContext, firstExp));
-                    }
-                    var funcName;
-                    if (exp.callee.type == 'MemberExpression') {
-                        args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext, firstExp));
-                        funcName = exp.callee.property.name;
-                    }
-                    else funcName = exp.callee.name;
-                    var func = querying.queryFuncs.getFunc(funcName);
-                    var retVal = func.toBeetleFunction.apply(func, args);
-                    if (alias) {
-                        queryContext.currentAlias = null;
-                        queryContext.aliases.pop();
-                    }
-                    return retVal;
-                }
-                throw helper.createError(i18N.unknownExpression, { expression: exp });
-            },
-            jsepToFunction: function (exp, queryContext) {
-                /// <summary>Converts parsed javascript expression (jsep) to Javascript function.</summary>
-                /// <param name="exp">Jsep expression.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                return function (value) {
-                    if (!queryContext) queryContext = { aliases: [] };
-                    else if (!queryContext.aliases) queryContext.aliases = [];
-                    if (queryContext.currentAlias)
-                        queryContext.currentAlias.value = value;
-                    if (exp.type === undefined) return value;
-                    else if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
-                        if (exp.operator == '=>') {
-                            if (queryContext.currentAlias)
-                                queryContext.aliases.push(queryContext.currentAlias);
-                            queryContext.currentAlias = { alias: exp.left.name };
-                            var r = helper.jsepToFunction(exp.right, queryContext)(value);
-                            queryContext.currentAlias = queryContext.aliases.pop();
-                            return r;
-                        }
-                        var op = enums.langOperators.find(exp.operator);
-                        var varContext = queryContext.varContext;
-                        var arg1 = function () { return helper.jsepToFunction(exp.left, queryContext)(value); };
-                        var arg2 = function () { return helper.jsepToFunction(exp.right, queryContext)(value); };
-                        return op.asFunc.call(varContext, arg1, arg2);
-                    }
-                    else if (exp.type == 'UnaryExpression') {
-                        var arg = function () { return helper.jsepToFunction(exp.argument, queryContext)(value); };
-                        var uop = enums.langOperators.find(exp.operator);
-                        return uop.asFunc.call(varContext, arg);
-                    }
-                    else if (exp.type == 'Identifier') {
-                        var n = exp.name;
-                        if (n == 'null') return null;
-                        if (n == 'true') return true;
-                        if (n == 'false') return false;
-                        if (n[0] == '@') {
-                            var val = undefined;
-                            var varName = n.slice(1);
-                            if (queryContext.expVarContext && queryContext.expVarContext[varName] !== undefined)
-                                val = queryContext.expVarContext[varName];
-                            else if (queryContext.varContext)
-                                val = queryContext.varContext[varName];
-                            if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
-                            return val;
-                        }
-                        if (queryContext.currentAlias && queryContext.currentAlias.alias == n)
-                            return value;
-                        var a = helper.findInArray(queryContext.aliases, n, 'alias');
-                        if (a) return a.value;
-                        var v = helper.getValue(value, n);
-                        if (v === undefined) return root[n];
-                        return v;
-                    }
-                    else if (exp.type == 'Literal')
-                        return exp.value;
-                    else if (exp.type == 'MemberExpression') {
-                        if (exp.object.name) {
-                            if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
-                                return helper.getValue(value, exp.property.name);
-                            var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias');
-                            if (ali) return helper.getValue(ali.value, exp.property.name);
-                        }
-                        return helper.getValue(helper.jsepToFunction(exp.object, queryContext)(value), exp.property.name);
-                    }
-                    else if (exp.type == 'CallExpression') {
-                        var argList = exp.arguments, args = [], alias = null;
-                        if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
-                            alias = argList[0].left.name;
-                            argList = [argList[0].right];
-                        }
-                        if (alias) {
-                            if (queryContext.currentAlias)
-                                queryContext.aliases.push(queryContext.currentAlias);
-                            queryContext.currentAlias = { alias: alias };
-                        }
-                        var funcName;
-                        helper.forEach(argList, function (farg) {
-                            if (farg != null)
-                                args.push(helper.jsepToFunction(farg, queryContext));
-                        });
-
-                        funcName = exp.callee.type == 'MemberExpression' ? exp.callee.property.name : exp.callee.name;
-
-                        var retVal;
-                        var func = querying.queryFuncs.getFunc(funcName, false);
-                        if (func) {
-                            if (exp.callee.type == 'MemberExpression')
-                                args.splice(0, 0, helper.jsepToFunction(exp.callee.object, queryContext));
-                            args.splice(0, 0, value);
-
-                            retVal = func.impl.apply(queryContext, args);
-                        }
-                        else {
-                            if (funcName[0] == '@') {
-                                var varFuncName = funcName.slice(1);
-                                if (queryContext.expVarContext && queryContext.expVarContext[varFuncName])
-                                    func = queryContext.expVarContext[varFuncName];
-                                else if (queryContext.varContext && queryContext.varContext[varFuncName])
-                                    func = queryContext.varContext[varFuncName];
-                                else throw helper.createError(i18N.unknownParameter, [varFuncName], { expression: exp, queryContext: queryContext });
-                            } else {
-                                var obj;
-                                if (exp.callee.type == 'MemberExpression')
-                                    obj = helper.jsepToFunction(exp.callee.object, queryContext)(value);
-                                else
-                                    obj = root;
-
-                                if (obj == null || (func = obj[funcName]) == null)
-                                    throw helper.createError(i18N.unknownFunction, [funcName]);
-                            }
-
-                            args = helper.mapArray(args, function () { return this(value); });
-                            retVal = func.apply(obj, args);
-                        }
-
-                        if (alias)
-                            queryContext.currentAlias = queryContext.aliases.pop();
-                        return retVal;
-                    }
-                    else throw helper.createError(i18N.unknownExpression, { expression: exp });
-                };
-            },
-            jsepToProjector: function (exps, queryContext) {
-                /// <summary>Converts parsed javascript expression (jsep) to Javascript projection selector (creates new projected object).</summary>
-                /// <param name="exps">Jsep expressions.</param>
-                /// <param name="queryContext">Query execution context, query options, variable context etc.</param>
-                var projectExps = [];
-                if (!Assert.isArray(exps)) exps = [exps];
-                for (var i = 0; i < exps.length; i++) {
-                    var propertyName = null;
-                    var e = exps[i];
-                    // list expression property names and value evaluators
-                    switch (e.type) {
-                        case 'Identifier':
-                            propertyName = e.name;
-                            break;
-                        case 'MemberExpression':
-                            propertyName = e.property.name;
-                            break;
-                    }
-                    if (exps.length > i + 2 && exps[i + 1].name && exps[i + 1].name.toLowerCase() == 'as') {
-                        i = i + 2;
-                        var pExp = exps[i];
-                        if (pExp.type != 'Identifier')
-                            throw helper.createError(i18N.invalidPropertyAlias, { expressions: exps, aliasExpression: pExp });
-                        propertyName = pExp.name;
-                    }
-                    if (exps.length > 1 && !propertyName)
-                        throw helper.createError(i18N.projectionsMustHaveAlias, { expressions: exps, expression: e });
-
-                    projectExps.push({ p: propertyName, func: helper.jsepToFunction(e, queryContext) });
-                }
-
-                return function (item) {
-                    var projection = {};
-                    for (var k = 0; k < projectExps.length; k++) {
-                        var pe = projectExps[k];
-                        var value = pe.func(item);
-                        if (exps.length == 1) return value;
-                        projection[pe.p] = value;
-                    }
-                    return projection;
-                };
             }
-        };
-    })();
+            if (obj2 != null) {
+                for (var p2 in obj2) {
+                    var v1 = obj[p2];
+                    var v2 = obj2[p2];
+                    var v = Assert.isTypeOf(v1, 'object') && Assert.isTypeOf(v2, 'object') ? helper.combine(v1, v2) : v2;
+                    obj[p2] = v;
+                }
+            }
+            return obj;
+        },
+        /**
+         * Extends objMain with objExt's properties.
+         * @param {Object} objMain - The main object.
+         * @param {Object} objExt - Object to extend with.
+         * @returns {Object} objMain is returned.
+         */
+        extend: function (objMain, objExt) {
+            if (objMain != null && objExt != null) {
+                for (var p in objExt) {
+                    if (!objMain.hasOwnProperty(p))
+                        objMain[p] = objExt[p];
+                }
+            }
+            return objMain;
+        },
+        /**
+         * Checks if the given two are equal. if parameters are both objects, recursively controls their properties too.
+         * @param {Object} obj1 - The first object.
+         * @param {Object} obj2 - The second object.
+         * @returns {boolean} True when two objects are equal, otherwise false.
+         */
+        objEquals: function (obj1, obj2) {
+            if (obj1 == obj2)
+                return true;
+
+            if (obj1 == null || obj2 == null)
+                return false;
+
+            if (Assert.isObject(obj1) && Assert.isObject(obj2)) {
+                var count1 = 0;
+                var count2 = 0;
+                for (var p in obj1) {
+                    if (!(p in obj2)) return false;
+                    if (helper.getValue(obj1, p) != helper.getValue(obj2, p)) return false;
+                    count1++;
+                }
+                for (var p2 in obj2) count2++;
+                return count1 == count2;
+            }
+
+            return false;
+        },
+        /**
+         * Returns string case option for current operation context.
+         * @param {StringOptions} options - String options for the context.
+         * @returns {boolean} True when given options' isCaseSensitive is true (or null and global options' isCaseSensitive is true), otherwise false.
+         */
+        isCaseSensitive: function (options) {
+            var isCaseSensitive = options && options.isCaseSensitive;
+            return isCaseSensitive == null ? settings.isCaseSensitive : isCaseSensitive;
+        },
+        /**
+         * Returns whitespace ignore option for current operation context.
+         * @param {StringOptions} options - String options for the context.
+         * @returns {boolean} True when given options' ignoreWhiteSpaces is true (or null and global options' ignoreWhiteSpaces is true), otherwise false.
+         */
+        ignoreWhiteSpaces: function (options) {
+            var ignoreWhiteSpaces = options && options.ignoreWhiteSpaces;
+            return ignoreWhiteSpaces == null ? settings.ignoreWhiteSpaces : ignoreWhiteSpaces;
+        },
+        /**
+         * Applies current operation context string options to given parameter.
+         * @param {StringOptions} options - String options for the context.
+         * @returns {string} Modified string (using the options).
+         */
+        handleStrOptions: function (str, options) {
+            if (str == null || typeof str !== "string") return str;
+            if (!helper.isCaseSensitive(options)) {
+                str = str.replace("İ", "i");
+                str = str.toLowerCase();
+                str = str.replace("ı", "i");
+            }
+            return helper.ignoreWhiteSpaces(options) ? str.trim() : str;
+        },
+        /**
+         * Compares two objects. Uses given options when necessary.
+         * @param {Object} obj1 - The first object.
+         * @param {Object} obj2 - The second object.
+         * @param {bool} isStrict - Use strict comparing (===).
+         * @param {StringOptions} options - String options for the context.
+         * @returns {boolean} True when two values are equal (options will be used for string values).
+         */
+        equals: function (obj1, obj2, isStrict, options) {
+            if (typeof obj1 === 'string' && typeof obj2 === 'string') {
+                obj1 = helper.handleStrOptions(obj1, options);
+                obj2 = helper.handleStrOptions(obj2, options);
+            }
+
+            if (obj1 != null && obj2 != null && core.dataTypes.date.isValid(obj1) && core.dataTypes.date.isValid(obj2)) {
+                obj1 = obj1.valueOf();
+                obj2 = obj2.valueOf();
+            }
+
+            return isStrict ? obj1 === obj2 : obj1 == obj2;
+        },
+        /**
+         * Format string using given arguments. %1 and {1} format can be used for placeholders.
+         * @param {string} string - String to format.
+         * @param {...string} params - Values to replace.
+         * @returns {string} Formatted string.
+         */
+        formatString: function (string, params) {
+            var args = arguments;
+            var pattern1 = RegExp("%([0-" + (arguments.length - 1) + "])", "g");
+            var pattern2 = RegExp("{([0-" + (arguments.length - 2) + "])}", "g");
+            return string
+                .replace(pattern1, function (match, index) {
+                    return args[Number(index) + 1] || '';
+                })
+                .replace(pattern2, function (match, index) {
+                    return args[Number(index) + 1] || '';
+                });
+        },
+        /**
+         * Finds the index of the given item in the array.
+         * @param {any[]} array - Array to search.
+         * @param {any} item - Item to find.
+         * @param {number=} index - Start index.
+         * @returns {number} Found index. If the item could not be found returns '-1'.
+         */
+        indexOf: function (array, item, index) {
+            for (var i = index || 0; i < array.length; i++)
+                if (array[i] === item) return i;
+            return -1;
+        },
+        /**
+         * Calls given callback with item and current index parameters for each item in the array.
+         * @param {any[]} array - Array to iterate.
+         * @param {forEachCallback} callback - Method to call for each item.
+         */
+        forEach: function (array, callback) {
+            for (var i = 0; i < array.length; i++) {
+                var obj = array[i];
+                callback.call(null, obj, i);
+            }
+        },
+        /**
+         * Iterate objects properties and skips ones starting with '$'.
+         * @param {Object} object - Object to iterate.
+         * @param {forEachPropertyCallback} callback - Method to call for each property.
+         */
+        forEachProperty: function (object, callback) {
+            for (var p in object) {
+                if (p[0] == '$') continue;
+                var v = object[p];
+                if (Assert.isFunction(v)) continue;
+                callback(p, v);
+            }
+        },
+        /**
+         * Finds given item in the array.
+         * When property is given, looks item's property value, otherwise compares item's itself.
+         * @param {any[]} array - Array to search.
+         * @param {any} value - Value to find.
+         * @param {string=} property - Property to look for the value.
+         * @returns {any} When value is found; if property is provided, the array item containing the given value, otherwise value itself. When not found, null.
+         */
+        findInArray: function (array, value, property) {
+            for (var i = 0; i < array.length; i++)
+                if (property) {
+                    if (array[i][property] === value) return array[i];
+                } else if (array[i] === value) return value;
+            return null;
+        },
+        /**
+         * Copies array items that match the given conditions to another array and returns the new array.
+         * @param {any[]} array - The array to filter.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @returns {any[]} New array with filtered items.
+         */
+        filterArray: function (array, predicate) {
+            var retVal = [];
+            for (var i = 0; i < array.length; i++) {
+                var item = array[i];
+                if (predicate(item) === true)
+                    retVal.push(item);
+            }
+            return retVal;
+        },
+        /**
+         * Removes the item from given array.
+         * @param {any[]} array - The array to remove item from.
+         * @param {any} item - Item to remove.
+         * @param {string=} property - Property to look for the value.
+         * @returns {number[]} Removed item indexes.
+         */
+        removeFromArray: function (array, item, property) {
+            var indexes = [];
+            this.forEach(array, function (current, index) {
+                if (property) {
+                    if (current[property] === item) indexes.push(index);
+                } else if (current === item) indexes.push(index);
+            });
+            for (var i = indexes.length - 1; i >= 0; i--)
+                array.splice(indexes[i], 1);
+            return indexes.length;
+        },
+        /**
+         * Creates a new array with the results of calling the provided function on every element in the given array.
+         * @param {any[]} array - The array to map.
+         * @param {mapCallback} callback - Function that produces new element.
+         * @returns {any[]} New array with mapped values.
+         */
+        mapArray: function (array, callback) {
+            var retVal = [];
+            for (var i = 0; i < array.length; i++) {
+                var item = array[i];
+                retVal.push(callback.call(item, item, i));
+            }
+            return retVal;
+        },
+        /**
+         * Creates a GUID string with "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" format.
+         * @returns {string} Newly generated GUID.
+         */
+        createGuid: function () {
+            
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+            }
+
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+        },
+        /**
+         * Creates string representation of given function with arrow syntax.
+         * @param {function} func - The function.
+         * @returns {string} Arrow style code for given function.
+         */
+        funcToLambda: function (func) {
+            helper.assertPrm(func, "func").isFunction().check();
+
+            var f = func.toString().replace(/function(.*?){/g, "$1=>").replace(/{|}|;|return /g, "").trim();
+
+            var l1 = f.indexOf("=>");
+            var p = f.substr(0, l1).trim();
+            f = f.substr(l1 + 2).trim();
+
+            var xs = f.split(",");
+            var s = [];
+            for (var i = 0; i < xs.length; i++) {
+                var x = xs[i];
+                var ps = x.split(":");
+                if (ps.length > 1) {
+                    s.push(ps[1].trim() + " as " + ps[0].trim());
+                }
+                else s.push(x.trim());
+            }
+            f = s.join(", ");
+
+            return p ? (p + " => " + f) : f;
+        },
+        /**
+         * Finds and returns function name. Works for ES6 classes too.
+         * @param {function} func - The function (or class).
+         * @returns {string} Name of the given function.
+         */
+        getFuncName: function (func) {
+            var funcNameRegex = /function (.*?)[\s|\(]|class (.*?)\s|\{/;
+            var results = funcNameRegex.exec(func.toString());
+            return results[1] || results[2];
+        },
+        /**
+         * Implements prototypal inheritance. Uses a "Function" instance to avoid unnecessary instantiations.
+         * @param {function} derivedClass - Deriving type.
+         * @param {function} baseClass - Base type.
+         */
+        inherit: function (derivedClass, baseClass) {
+            var f = new Function();
+            f.prototype = baseClass.prototype;
+
+            derivedClass.prototype = new f();
+            derivedClass.prototype.constructor = derivedClass;
+            derivedClass.baseClass = baseClass.prototype;
+        },
+        /**
+         * Reads property of value, used when we are not sure if property is observable.
+         * @param {Object} object - Deriving type.
+         * @param {string} property - Property path. Can be a chain like "address.city.name".
+         * @returns {any} Value of property (undefined when a property cannot be found).
+         */
+        getValue: function (object, propertyPath) {
+            if (object == null) return undefined;
+            var op = settings.getObservableProvider();
+            // split propertyPath path and read every items value
+            var paths = propertyPath.trim().split('.');
+            var retVal = object;
+            for (var i = 0; i < paths.length; i++) {
+                retVal = getValue(retVal, paths[i]);
+                if (retVal == null) break;
+            }
+            return retVal;
+
+            function getValue(o, p) {
+                // get tracker
+                var tracker = o.$tracker;
+                // if o is an entity, get value from its tracker
+                if (tracker)
+                    return tracker.getValue(p);
+                if (op.isObservable(o, p)) // if o's p is observable get value from default observable provider
+                    return op.getValue(o, p);
+                var value = o[p];
+                return value; // if its not observable get value of p
+            }
+        },
+        /**
+         * Gets localized value for given name using "settings.localizeFunc" function.
+         * @param {string} resourceName - Resource name.
+         * @param {string} altValue - Alternative value to use when resource cannot be found.
+         * @returns {string} Value for the given resource name.
+         */
+        getResourceValue: function (resourceName, altValue) {
+            var localizeFunc = settings.getLocalizeFunction();
+            return (localizeFunc && resourceName && localizeFunc(resourceName)) || altValue;
+        },
+        /**
+         * Creates validation error object using given parameters.
+         * @param {any} entity - Entity containing invalid value.
+         * @param {any} value - Invalid value itself.
+         * @param {string} property - Property containing invalid value.
+         * @param {string} message - Validation message.
+         * @param {core.Validator} validator - Validator instance.
+         * @returns {Object} Validation error object.
+         */
+        createValidationError: function (entity, value, property, message, validator) {
+            return { message: message, entity: entity, validator: validator, value: value, property: property };
+        },
+        /**
+         * Creates error object by formatting provided message and populates with given object's values.
+         * @param {string} message - Error message.
+         * @param {string[]} arg1 - Message format arguments.
+         * @param {Object=} arg2 - Extra informations, properties will be attached to error object.
+         * @returns {Error} Error object.
+         */
+        createError: function (message, arg1, arg2) {
+            var args = null, obj = arg2;
+            if (Assert.isArray(arg1)) args = arg1;
+            else if (Assert.isObject(arg1)) obj = arg1;
+
+            if (args && args.length > 0) {
+                args.splice(0, 0, message);
+                message = helper.formatString.apply(null, args);
+            }
+            var retVal = new Error(message);
+            if (obj) {
+                for (var p in obj)
+                    retVal[p] = obj[p];
+            }
+            events.error.notify(retVal);
+            return retVal;
+        },
+        /**
+         * Updates foreign keys of given navigation property with new values.
+         * @param {any} entity - The entity.
+         * @param {meta.NavigationProperty} navProperty - The navigation property.
+         * @param {Object} newValue - Value of the navigation property.
+         */
+        setForeignKeys: function (entity, navProperty, newValue) {
+            for (var i = 0; i < navProperty.foreignKeyNames.length; i++) {
+                // We get each related foreign key for this navigation property.
+                var fk = navProperty.foreignKeyNames[i];
+                var tracker = entity.$tracker;
+                if (newValue) {
+                    // When foreign key is built with more than one column, we presume foreign key-primary key order is same
+                    // Example:
+                    //  When we create an association between Product and Supplier using Name and Location fields
+                    //  we presume Supplier's corresponding primary keys are in exactly same order.
+                    var k = newValue.$tracker.entityType.keys[i];
+                    var v = newValue.$tracker.getValue(k.name);
+                    tracker.setValue(fk, v);
+                } else {
+                    var fkp = helper.findInArray(tracker.entityType.dataProperties, fk, 'name');
+                    tracker.setValue(fk, fkp.getDefaultValue());
+                }
+            }
+        },
+        /**
+         * Creates an array and overrides methods to provide callbacks on array changes.
+         * @param {any[]} initial - Initial values for the array.
+         * @param {Object} object - Owner object of the array.
+         * @param {metadata.NavigationProperty} property - Navigation property metadata.
+         * @param {arrayChangeCallback} after - Array change callback.
+         * @returns {TrackableArray} Trackable array, an array with change events.
+         */
+        createTrackableArray: function (initial, object, property, after) {
+            var array = initial || [];
+            array.object = object;
+            array.property = property;
+            array.after = after;
+
+            array.changing = new core.Event(property + "ArrayChanging", array);
+            array.changed = new core.Event(property + "ArrayChanged", array);
+
+            array.pop = function () {
+                var items = [this[this.length - 1]];
+                // call base method
+                this.changing.notify({ added: [], removed: items });
+                var retVal = Array.prototype.pop.call(this);
+                this.after(this.object, this.property, this, items, null);
+                this.changed.notify({ added: [], removed: items });
+                return retVal;
+            };
+
+            array.push = function (items) {
+                this.changing.notify({ added: arguments, removed: [] });
+                beforeAdd(arguments, this);
+                var retVal = Array.prototype.push.apply(this, arguments);
+                this.after(this.object, this.property, this, null, arguments);
+                this.changed.notify({ added: arguments, removed: [] });
+                return retVal;
+            };
+
+            array.unshift = function (items) {
+                this.changing.notify({ added: arguments, removed: [] });
+                beforeAdd(arguments, this);
+                var retVal = Array.prototype.unshift.apply(this, arguments);
+                this.after(this.object, this.property, this, null, arguments);
+                this.changed.notify({ added: arguments, removed: [] });
+                return retVal;
+            };
+
+            array.shift = function () {
+                var items = [this[0]];
+                this.changing.notify({ added: [], removed: items });
+                var retVal = Array.prototype.shift.call(this);
+                this.after(this.object, this.property, this, items, null);
+                this.changed.notify({ added: [], removed: items });
+                return retVal;
+            };
+
+            array.splice = function (start, count) {
+                count = count || this.length;
+                var addedItems = null;
+                if (arguments.length > 2)
+                    addedItems = Array.prototype.slice.call(arguments).slice(2); // convert arguments to array then slice
+                var removedItems = this.slice(start, start + count);
+                this.changing.notify({ added: addedItems, removed: removedItems });
+                if (addedItems)
+                    beforeAdd(addedItems, this);
+                var retVal = Array.prototype.splice.apply(this, arguments);
+                this.after(this.object, this.property, this, removedItems, addedItems);
+                this.changed.notify({ added: addedItems, removed: removedItems });
+                return retVal;
+            };
+
+            array.remove = function (items) {
+                var removed = [];
+                this.changing.notify({ added: [], removed: arguments });
+                var that = this;
+                helper.forEach(arguments, function (item) {
+                    var index = helper.indexOf(that, item);
+                    if (index >= 0) {
+                        Array.prototype.splice.call(that, index, 1);
+                        removed.push(item);
+                    }
+                });
+                this.after(this.object, this.property, this, removed, null);
+                this.changed.notify({ added: [], removed: removed });
+                return removed;
+            };
+
+            array.load = function (expands, resourceName, options, successCallback, errorCallback) {
+                /**
+                * Loads the navigation property using EntityManager.
+                * @param {string[]} expands - Expand navigations to apply when loading navigation property.
+                * @param {Object} resourceName - Resource name to query entities.
+                * @param {queryOptions} options - Query options.
+                * @param {successCallback=} successCallback - Success callback function.
+                * @param {errorCallback=} errorCallback - Error callback function.
+                * @returns {Promise} A Promise when available, otherwise return value of the AjaxProvider.
+                */
+                return this.object.$tracker.loadNavigationProperty(this.property.name, expands, resourceName, options, successCallback, errorCallback);
+            };
+
+            function beforeAdd(added, instance) {
+                var o = instance.object;
+                var p = instance.property;
+                if (p) {
+                    var handleUnmappedProperties;
+                    if (o.$tracker && o.$tracker.manager)
+                        handleUnmappedProperties = o.$tracker.manager.handleUnmappedProperties;
+                    if (handleUnmappedProperties == null) handleUnmappedProperties = settings.handleUnmappedProperties;
+
+                    if (Assert.isInstanceOf(p, metadata.NavigationProperty))
+                        helper.forEach(added, function (a) { p.checkAssign(a); });
+                    else if (Assert.isInstanceOf(p, metadata.DataProperty))
+                        helper.forEach(added, function (a, i) { added[i] = p.handle(a); });
+                    else if (handleUnmappedProperties === true)
+                        helper.forEach(added, function (a, i) { added[i] = core.dataTypes.handle(a); });
+                }
+            }
+
+            return array;
+        },
+        /**
+         * Creates a new array with the results of evaluating provided expression on every element in the given array.
+         * @param {any[]} array - Array to run projection on.
+         * @param {string} exp - Projection expression.
+         * @param {QueryContext} queryContext - Query execution context.
+         * @returns {any[]} Projected new object.
+         */
+        runSelectExp: function (array, exp, queryContext) {
+            if (array.length == 0) return array;
+
+            exp = libs.jsep(exp);
+            var exps = exp.type === 'Compound' ? exp.body : [exp];
+            var projector = helper.jsepToProjector(exps, queryContext);
+            return helper.mapArray(array, projector);
+        },
+        /**
+        * Converts parsed javascript expression (jsep) to OData format query string.
+        * @param {Object} exp - Jsep expression (tokenized).
+        * @param {QueryContext} queryContext - Query execution context.
+        * @param {Object=} firstExp - First evaluated expression (for internal use only).
+        * @returns {string} OData query string.
+        */
+        jsepToODataQuery: function (exp, queryContext, firstExp) {
+            firstExp = firstExp || exp;
+            if (!queryContext) queryContext = { aliases: [] };
+            else if (!queryContext.aliases) queryContext.aliases = [];
+            if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
+                if (exp.operator == '=>') {
+                    if (exp != firstExp)
+                        throw helper.createError(i18N.odataDoesNotSupportAlias);
+                    queryContext.aliases.push({ alias: exp.left.name, value: null });
+                    var r = helper.jsepToODataQuery(exp.right, queryContext, firstExp);
+                    if (exp != firstExp)
+                        queryContext.aliases.pop();
+                    return r;
+                }
+                var op = enums.langOperators.find(exp.operator).oData;
+                if (!op) throw helper.createError(i18N.operatorNotSupportedForOData, [exp.operator], { expression: exp });
+                return '(' + helper.jsepToODataQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToODataQuery(exp.right, queryContext, firstExp) + ')';
+            }
+            else if (exp.type == 'UnaryExpression')
+                return exp.operator + helper.jsepToODataQuery(exp.argument, queryContext, firstExp);
+            else if (exp.type == 'Identifier') {
+                var n = exp.name;
+                var val = undefined;
+                var isPrm = false;
+                if (n[0] == '@') {
+                    isPrm = true;
+                    n = n.slice(1);
+                }
+
+                if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
+                    val = queryContext.expVarContext[n];
+                else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
+                    val = queryContext.varContext[n];
+
+                if (val !== undefined)
+                    return core.dataTypes.toODataValue(val);
+                if (isPrm)
+                    throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+
+                var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                if (a) return a.value;
+
+                return n;
+            }
+            else if (exp.type == 'Literal')
+                return core.dataTypes.toODataValue(exp.value);
+            else if (exp.type == 'MemberExpression') {
+                if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                    return exp.property.name;
+                else {
+                    var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
+                    if (ali) o = ali.value;
+                    else o = helper.jsepToODataQuery(exp.object, queryContext, firstExp);
+
+                    if (o && o[exp.property.name] !== undefined)
+                        return core.dataTypes.toODataValue(o[exp.property.name]);
+                    return o ? o + '/' + exp.property.name : exp.property.name;
+                }
+            }
+            else if (exp.type == 'Compound') {
+                var sts = [];
+                for (var i = 0; i < exp.body.length; i++) {
+                    var st = exp.body[i];
+                    var s = helper.jsepToODataQuery(st, queryContext);
+                    var ls = s.toLowerCase();
+                    if (ls == 'desc' || ls == 'asc') {
+                        if (sts.length == 0)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' ' + s;
+                    }
+                    else if (ls == 'as') {
+                        if (sts.length == 0 || exp.body.length < i + 1)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
+                        i++;
+                    }
+                    else sts.push(s);
+                }
+                return sts.join(', ');
+            }
+            else if (exp.type == 'CallExpression') {
+                var argList = exp.arguments, args = [], alias = null;
+                if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
+                    alias = { alias: argList[0].left.name };
+                    alias.value = alias.alias;
+                    argList = [argList[0].right];
+                }
+                if (alias) {
+                    queryContext.currentAlias = alias;
+                    queryContext.aliases.push(alias);
+                }
+                for (var j = 0; j < argList.length; j++) {
+                    var arg = argList[j];
+                    if (arg != null)
+                        args.push(helper.jsepToODataQuery(arg, queryContext, firstExp));
+                }
+                var funcName;
+                if (exp.callee.type == 'MemberExpression') {
+                    args.splice(0, 0, helper.jsepToODataQuery(exp.callee.object, queryContext, firstExp));
+                    funcName = exp.callee.property.name;
+                }
+                else funcName = exp.callee.name;
+                var func = querying.queryFuncs.getFunc(funcName);
+                if (func.needsAlias == true) {
+                    if (alias)
+                        args.splice(0, 0, alias);
+                    else throw helper.createError(i18N.functionNeedsAlias, [funcName], { expression: exp });
+                }
+                var retVal = func.toODataFunction.apply(func, args);
+                if (alias) {
+                    queryContext.currentAlias = null;
+                    queryContext.aliases.pop();
+                }
+                return retVal;
+            }
+            throw helper.createError(i18N.unknownExpression, { expression: exp });
+        },
+        /**
+        * Converts parsed javascript expression (jsep) to Beetle format query string.
+        * @param {Object} exp - Jsep expression (tokenized).
+        * @param {QueryContext} queryContext - Query execution context.
+        * @param {Object=} firstExp - First evaluated expression (for internal use only).
+        * @returns {string} OData query string.
+        */
+        jsepToBeetleQuery: function (exp, queryContext, firstExp) {
+            firstExp = firstExp || exp;
+            if (!queryContext) queryContext = { aliases: [] };
+            else if (!queryContext.aliases) queryContext.aliases = [];
+            if (exp.type === 'LogicalExpression' || exp.type == 'BinaryExpression') {
+                if (exp.operator == '=>') {
+                    queryContext.aliases.push({ alias: exp.left.name, value: 'it' });
+                    var r = helper.jsepToBeetleQuery(exp.right, queryContext, firstExp);
+                    if (exp != firstExp)
+                        queryContext.aliases.pop();
+                    return r;
+                }
+                var op = enums.langOperators.find(exp.operator).code;
+                return '(' + helper.jsepToBeetleQuery(exp.left, queryContext, firstExp) + ' ' + op + ' ' + helper.jsepToBeetleQuery(exp.right, queryContext, firstExp) + ')';
+            }
+            else if (exp.type === 'UnaryExpression')
+                return exp.operator + helper.jsepToBeetleQuery(exp.argument, queryContext, firstExp);
+            else if (exp.type === 'Identifier') {
+                var n = exp.name;
+                var val = undefined;
+                var isPrm = false;
+                if (n[0] == '@') {
+                    isPrm = true;
+                    n = n.slice(1);
+                }
+
+                if (queryContext.expVarContext && queryContext.expVarContext[n] !== undefined)
+                    val = queryContext.expVarContext[n];
+                else if (queryContext.varContext && queryContext.varContext[n] !== undefined)
+                    val = queryContext.varContext[n];
+
+                if (val !== undefined)
+                    return core.dataTypes.toBeetleValue(val);
+                if (isPrm)
+                    throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+
+                var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                if (a) return a.value;
+
+                return n;
+            }
+            else if (exp.type === 'Literal')
+                return core.dataTypes.toBeetleValue(exp.value);
+            else if (exp.type === 'MemberExpression') {
+                if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                    return exp.property.name;
+                else {
+                    var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias'), o;
+                    if (ali) o = ali.value;
+                    else o = helper.jsepToBeetleQuery(exp.object, queryContext, firstExp);
+
+                    if (o[exp.property.name] !== undefined)
+                        return core.dataTypes.toBeetleValue(o[exp.property.name]);
+                    return o + '.' + exp.property.name;
+                }
+            }
+            else if (exp.type === 'Compound') {
+                var sts = [];
+                for (var i = 0; i < exp.body.length; i++) {
+                    var st = exp.body[i];
+                    var s = helper.jsepToBeetleQuery(st, queryContext);
+                    var ls = s.toLowerCase();
+                    if (ls == 'desc' || ls == 'asc') {
+                        if (sts.length == 0)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' ' + s;
+                    }
+                    else if (ls == 'as') {
+                        if (sts.length == 0 || exp.body.length < i + 1)
+                            throw helper.createError(i18N.invalidStatement, { expression: exp, statement: st });
+                        sts[sts.length - 1] += ' as ' + exp.body[i + 1].name;
+                        i++;
+                    }
+                    else sts.push(s);
+                }
+                return sts.join(', ');
+            }
+            else if (exp.type === 'CallExpression') {
+                var argList = exp.arguments, args = [], alias = null;
+                if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
+                    alias = { alias: argList[0].left.name };
+                    alias.value = alias.alias;
+                    argList = [argList[0].right];
+                }
+                if (alias) {
+                    queryContext.currentAlias = alias;
+                    queryContext.aliases.push(alias);
+                }
+                for (var j = 0; j < argList.length; j++) {
+                    var arg = argList[j];
+                    if (arg != null)
+                        args.push(helper.jsepToBeetleQuery(arg, queryContext, firstExp));
+                }
+                var funcName;
+                if (exp.callee.type == 'MemberExpression') {
+                    args.splice(0, 0, helper.jsepToBeetleQuery(exp.callee.object, queryContext, firstExp));
+                    funcName = exp.callee.property.name;
+                }
+                else funcName = exp.callee.name;
+                var func = querying.queryFuncs.getFunc(funcName);
+                var retVal = func.toBeetleFunction.apply(func, args);
+                if (alias) {
+                    queryContext.currentAlias = null;
+                    queryContext.aliases.pop();
+                }
+                return retVal;
+            }
+            throw helper.createError(i18N.unknownExpression, { expression: exp });
+        },
+        /**
+         * Converts parsed javascript expression (jsep) to Javascript function (not using evil "eval").
+         * @param {Object} exp - Jsep expression (tokenized).
+         * @param {QueryContext} queryContext - Query execution context.
+         * @returns {Function} Javascript function.
+         */
+        jsepToFunction: function (exp, queryContext) {
+            return function (value) {
+                if (!queryContext) queryContext = { aliases: [] };
+                else if (!queryContext.aliases) queryContext.aliases = [];
+                if (queryContext.currentAlias)
+                    queryContext.currentAlias.value = value;
+                if (exp.type === undefined) return value;
+                else if (exp.type == 'LogicalExpression' || exp.type == 'BinaryExpression') {
+                    if (exp.operator == '=>') {
+                        if (queryContext.currentAlias)
+                            queryContext.aliases.push(queryContext.currentAlias);
+                        queryContext.currentAlias = { alias: exp.left.name };
+                        var r = helper.jsepToFunction(exp.right, queryContext)(value);
+                        queryContext.currentAlias = queryContext.aliases.pop();
+                        return r;
+                    }
+                    var op = enums.langOperators.find(exp.operator);
+                    var varContext = queryContext.varContext;
+                    var arg1 = function () { return helper.jsepToFunction(exp.left, queryContext)(value); };
+                    var arg2 = function () { return helper.jsepToFunction(exp.right, queryContext)(value); };
+                    return op.asFunc.call(varContext, arg1, arg2);
+                }
+                else if (exp.type == 'UnaryExpression') {
+                    var arg = function () { return helper.jsepToFunction(exp.argument, queryContext)(value); };
+                    var uop = enums.langOperators.find(exp.operator);
+                    return uop.asFunc.call(varContext, arg);
+                }
+                else if (exp.type == 'Identifier') {
+                    var n = exp.name;
+                    if (n == 'null') return null;
+                    if (n == 'true') return true;
+                    if (n == 'false') return false;
+                    if (n[0] == '@') {
+                        var val = undefined;
+                        var varName = n.slice(1);
+                        if (queryContext.expVarContext && queryContext.expVarContext[varName] !== undefined)
+                            val = queryContext.expVarContext[varName];
+                        else if (queryContext.varContext)
+                            val = queryContext.varContext[varName];
+                        if (val === undefined) throw helper.createError(i18N.unknownParameter, [n], { expression: exp, queryContext: queryContext });
+                        return val;
+                    }
+                    if (queryContext.currentAlias && queryContext.currentAlias.alias == n)
+                        return value;
+                    var a = helper.findInArray(queryContext.aliases, n, 'alias');
+                    if (a) return a.value;
+                    var v = helper.getValue(value, n);
+                    if (v === undefined) return root[n];
+                    return v;
+                }
+                else if (exp.type == 'Literal')
+                    return exp.value;
+                else if (exp.type == 'MemberExpression') {
+                    if (exp.object.name) {
+                        if (queryContext.currentAlias && exp.object.name == queryContext.currentAlias.alias)
+                            return helper.getValue(value, exp.property.name);
+                        var ali = helper.findInArray(queryContext.aliases, exp.object.name, 'alias');
+                        if (ali) return helper.getValue(ali.value, exp.property.name);
+                    }
+                    return helper.getValue(helper.jsepToFunction(exp.object, queryContext)(value), exp.property.name);
+                }
+                else if (exp.type == 'CallExpression') {
+                    var argList = exp.arguments, args = [], alias = null;
+                    if (argList.length == 1 && argList[0] && argList[0].type == 'BinaryExpression' && argList[0].operator == '=>') {
+                        alias = argList[0].left.name;
+                        argList = [argList[0].right];
+                    }
+                    if (alias) {
+                        if (queryContext.currentAlias)
+                            queryContext.aliases.push(queryContext.currentAlias);
+                        queryContext.currentAlias = { alias: alias };
+                    }
+                    var funcName;
+                    helper.forEach(argList, function (farg) {
+                        if (farg != null)
+                            args.push(helper.jsepToFunction(farg, queryContext));
+                    });
+
+                    funcName = exp.callee.type == 'MemberExpression' ? exp.callee.property.name : exp.callee.name;
+
+                    var retVal;
+                    var func = querying.queryFuncs.getFunc(funcName, false);
+                    if (func) {
+                        if (exp.callee.type == 'MemberExpression')
+                            args.splice(0, 0, helper.jsepToFunction(exp.callee.object, queryContext));
+                        args.splice(0, 0, value);
+
+                        retVal = func.impl.apply(queryContext, args);
+                    }
+                    else {
+                        if (funcName[0] == '@') {
+                            var varFuncName = funcName.slice(1);
+                            if (queryContext.expVarContext && queryContext.expVarContext[varFuncName])
+                                func = queryContext.expVarContext[varFuncName];
+                            else if (queryContext.varContext && queryContext.varContext[varFuncName])
+                                func = queryContext.varContext[varFuncName];
+                            else throw helper.createError(i18N.unknownParameter, [varFuncName], { expression: exp, queryContext: queryContext });
+                        } else {
+                            var obj;
+                            if (exp.callee.type == 'MemberExpression')
+                                obj = helper.jsepToFunction(exp.callee.object, queryContext)(value);
+                            else
+                                obj = root;
+
+                            if (obj == null || (func = obj[funcName]) == null)
+                                throw helper.createError(i18N.unknownFunction, [funcName]);
+                        }
+
+                        args = helper.mapArray(args, function () { return this(value); });
+                        retVal = func.apply(obj, args);
+                    }
+
+                    if (alias)
+                        queryContext.currentAlias = queryContext.aliases.pop();
+                    return retVal;
+                }
+                else throw helper.createError(i18N.unknownExpression, { expression: exp });
+            };
+        },
+        /**
+         * Converts parsed javascript expression (jsep) to Javascript projection function (not using evil "eval").
+         * @param {Object} exp - Jsep expression (tokenized).
+         * @param {QueryContext} queryContext - Query execution context.
+         * @returns {Function} Javascript projector function.
+         */
+        jsepToProjector: function (exps, queryContext) {
+            var projectExps = [];
+            if (!Assert.isArray(exps)) exps = [exps];
+            for (var i = 0; i < exps.length; i++) {
+                var propertyName = null;
+                var e = exps[i];
+                // list expression property names and value evaluators
+                switch (e.type) {
+                    case 'Identifier':
+                        propertyName = e.name;
+                        break;
+                    case 'MemberExpression':
+                        propertyName = e.property.name;
+                        break;
+                }
+                if (exps.length > i + 2 && exps[i + 1].name && exps[i + 1].name.toLowerCase() == 'as') {
+                    i = i + 2;
+                    var pExp = exps[i];
+                    if (pExp.type != 'Identifier')
+                        throw helper.createError(i18N.invalidPropertyAlias, { expressions: exps, aliasExpression: pExp });
+                    propertyName = pExp.name;
+                }
+                if (exps.length > 1 && !propertyName)
+                    throw helper.createError(i18N.projectionsMustHaveAlias, { expressions: exps, expression: e });
+
+                projectExps.push({ p: propertyName, func: helper.jsepToFunction(e, queryContext) });
+            }
+
+            return function (item) {
+                var projection = {};
+                for (var k = 0; k < projectExps.length; k++) {
+                    var pe = projectExps[k];
+                    var value = pe.func(item);
+                    if (exps.length == 1) return value;
+                    projection[pe.p] = value;
+                }
+                return projection;
+            };
+        }
+    };
+
+    /**
+     * Assertion methods. Two different usage possible, static methods and instance methods.
+     * Static methods returns true or false.Instance methods can be chained and they collect errors in an array, 
+     * Check method throws error if there are any.
+     * @class
+     */
     var Assert = (function () {
+
+        /** @constructor
+         * @param {any} value - Value to check.
+         * @param {string=} name - Property name representing the value (will be used in error messages).
+         */
         var ctor = function (value, name) {
-            /// <summary>
-            /// Assertion methods. Two different usage possible, static methods and instance methods. 
-            /// Static methods returns true or false.Instance methods can be chained and they collect errors in an array, 
-            /// after all assertions check methods throws error if there is any.(adapted from breezejs)
-            /// </summary>
-            /// <param name="value">Value to check.</param>
-            /// <param name="name">Property or field name represanting the value (will be used in error messages).</param>
             this.value = value;
             this.name = name;
             this.errors = [];
         };
         var proto = ctor.prototype;
 
+        /** Checks if value is not null or undefined. */
         proto.hasValue = function () {
-            /// <summary>
-            /// Checks if value is not null.
-            /// </summary>
             ctor.hasValue(this.value, this.errors, this.name);
             return this;
         };
+        /** Checks if value is object. */
         proto.isObject = function () {
-            /// <summary>
-            /// Checks if value is object.
-            /// </summary>
             ctor.isObject(this.value, this.errors, this.name);
             return this;
         };
+        /** Checks if value is function. */
         proto.isFunction = function () {
-            /// <summary>
-            /// Checks if value is function.
-            /// </summary>
             ctor.isFunction(this.value, this.errors, this.name);
             return this;
         };
+        /** Checks if value is a non-empty string. */
         proto.isNotEmptyString = function () {
-            /// <summary>
-            /// Checks if value is a non-empty string.
-            /// </summary>
             ctor.isNotEmptyString(this.value, this.errors, this.name);
             return this;
         };
+        /** 
+         * Checks if value is an object of given type.
+         * @param {string} typeName - Name of the javascript type.
+         */
         proto.isTypeOf = function (typeName) {
-            /// <summary>
-            /// Checks if value is an object of given type.
-            /// </summary>
-            /// <param name="typeName">Name of the javascript type.</param>
             ctor.isTypeOf(this.value, typeName, this.errors, this.name);
             return this;
         };
+        /** Checks if value is array. */
         proto.isArray = function () {
-            /// <summary>
-            /// Checks if value is array.
-            /// </summary>
             ctor.isArray(this.value, this.errors, this.name);
             return this;
         };
+        /** 
+         * Checks if value is an symbol of given enum.
+         * @param {libs.Enum} enumType - Type of the enum.
+         */
         proto.isEnum = function (enumType) {
-            /// <summary>
-            /// Checks if value is an symbol of given enum.
-            /// </summary>
-            /// <param name="typeName">Type of the enum.</param>
             ctor.isEnum(this.value, enumType, this.errors, this.name);
             return this;
         };
+        /** 
+         * Checks if value is an instance of given type.
+         * @param {any} type - Javascript function or class to check.
+         */
         proto.isInstanceOf = function (type) {
-            /// <summary>
-            /// Checks if value is instance of given type.
-            /// </summary>
-            /// <param name="type">Type of the javascript class.</param>
             ctor.isInstanceOf(this.value, type, this.errors, this.name);
             return this;
         };
 
+        /** If previous checks created any error, joins them with a new line and throws an Error. */
         proto.check = function () {
-            /// <summary>
-            /// If previous checks created any error, joins them with ',' and throws an Error.
-            /// </summary>
             if (this.errors.length > 0)
                 throw helper.createError(this.errors.join('\n'), { name: this.name, value: this.value });
         };
 
+        /** 
+         * Checks if value is not null.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.hasValue = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is not null.
-            /// </summary>
             if (value == null) {
                 if (errors) errors.push(helper.formatString(i18N.valueCannotBeNull, name));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is object.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isObject = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is object.
-            /// </summary>
             if (value == null || !core.dataTypes.object.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'object'));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is function.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isFunction = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is function.
-            /// </summary>
             if (value == null || !core.dataTypes.func.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'function'));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is a non-empty string.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isNotEmptyString = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is a non-empty string.
-            /// </summary>
             if (value == null || value === '' || !ctor.isTypeOf(value, 'string', errors)) {
                 if (errors) errors.push(helper.formatString(i18N.cannotBeEmptyString, name));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is an object of given type.
+         * @param {any} value - Value to check.
+         * @param {string} typeName - Name of the javascript type.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isTypeOf = function (value, typeName, errors, name) {
-            /// <summary>
-            /// Checks if value is an object of given type.
-            /// </summary>
             if (!ctor.hasValue(value)) return false;
             var type = core.dataTypes.byName(typeName);
             if (!type.isValid(value)) {
@@ -1089,30 +1167,41 @@
             }
             return true;
         };
+        /** 
+         * Checks if value is array.
+         * @param {any} value - Value to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isArray = function (value, errors, name) {
-            /// <summary>
-            /// Checks if value is array.
-            /// </summary>
             if (value == null || !core.dataTypes.array.isValid(value)) {
                 if (errors) errors.push(helper.formatString(i18N.typeError, name, 'array'));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is an symbol of given enum.
+         * @param {any} value - Value to check.
+         * @param {libs.Enum} enumType - Type of the enum.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isEnum = function (value, enumType, errors, name) {
-            /// <summary>
-            /// Checks if value is an symbol of given enum.
-            /// </summary>
             if (!enumType.contains(value)) {
-                if (errors) errors.push(helper.formatString(i18N.invalidEnumValue, enumType, value));
+                if (errors) errors.push(helper.formatString(i18N.invalidEnumValue, [enumType, name], value));
                 return false;
             }
             return true;
         };
+        /** 
+         * Checks if value is instance of given type.
+         * @param {any} value - Value to check.
+         * @param {any} type - Javascript function or class to check.
+         * @param {string[]=} errors - Previously generated error messages for the value.
+         * @param {string=} name - Property name representing the value.
+         */
         ctor.isInstanceOf = function (value, type, errors, name) {
-            /// <summary>
-            /// Checks if value is instance of given type.
-            /// </summary>
             if (value == null) {
                 if (errors) errors.push(i18N.cannotCheckInstanceOnNull);
                 return false;
@@ -1126,8 +1215,12 @@
 
         return ctor;
     })();
+
+    /**  
+     * 3rd party libraries and snippets.
+     * @namespace
+     */
     var libs = (function () {
-        /// <summary>3rd party libraries and snippets.</summary>
         var expose = {};
 
         // A simple enum implementation for JavaScript
@@ -1710,2572 +1803,2586 @@
 
         return expose;
     })();
-    var baseTypes = (function () {
-        /// <summary>
-        /// Base types, can be considered as abstract classes.
-        /// This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
-        /// </summary>
-        return {
-            DateConverterBase: (function () {
-                var ctor = function (name) {
-                    /// <summary>
-                    /// Data conversion base type (interface). With this we can abstract date conversion and users can choose (or write) their implementation.
-                    /// </summary>
-                    this.name = name;
-                };
-                var proto = ctor.prototype;
 
-                proto.toString = function () {
-                    /// <summary>
-                    /// Returns string representation of the type.
-                    /// </summary>
-                    return this.name;
-                };
+    /**
+     * Base types, can be considered as abstract classes.
+     * This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
+     * @namespace
+     */
+    var baseTypes = {
+        /** 
+         * Data conversion base type (interface). With this we can abstract date conversion and users can choose (or write) their implementation.
+         * @class
+         */
+        DateConverterBase: (function () {
+            /*
+             * Base for Date related types.
+             * @constructor
+             */
+            var ctor = function (name) {
+                this.name = name;
+            };
+            var proto = ctor.prototype;
 
-                proto.parse = function (value) {
-                    /// <summary>
-                    /// Converts given value to date.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, ['DateConverterBase', 'parse']);
-                };
-                proto.toISOString = function (value) {
-                    /// <summary>
-                    /// Converts given date to ISO string.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, ['DateConverterBase', 'toISOString']);
-                };
+            proto.toString = function () {
+                return this.name;
+            };
 
-                return ctor;
-            })(),
-            DataTypeBase: (function () {
-                var ctor = function (name) {
-                    /// <summary>
-                    /// Base of all types.
-                    /// </summary>
-                    /// <param name="name">Name of the type.</param>
-                    this.name = name || 'DataTypeBase';
-                    this.isComplex = false;
-                };
-                var proto = ctor.prototype;
+            /** Converts given value to date. */
+            proto.parse = function (value) {
+                throw helper.createError(i18N.notImplemented, ['DateConverterBase', 'parse']);
+            };
+            /** Converts given date to ISO string. */
+            proto.toISOString = function (value) {
+                throw helper.createError(i18N.notImplemented, ['DateConverterBase', 'toISOString']);
+            };
 
-                proto.toString = function () {
-                    /// <summary>
-                    /// Returns string representation of the type.
-                    /// </summary>
-                    return this.name;
-                };
+            return ctor;
+        })(),
+        /** 
+         * Base of all data types.
+         * @class
+         */
+        DataTypeBase: (function () {
 
-                proto.getRawValue = function (value) {
-                    /// <summary>
-                    /// Returns raw value represanting given value.
-                    /// </summary>
-                    return value;
-                };
+            /*
+             * Base of all data types.
+             * @constructor
+             * @param {string} name - Name of the data type.
+             */
+            var ctor = function (name) {
+                this.name = name || 'DataTypeBase';
+                this.isComplex = false;
+            };
+            var proto = ctor.prototype;
 
-                proto.isValid = function (value) {
-                    /// <summary>
-                    /// Checks if given value is valid for this type.
-                    /// </summary>
-                    return typeof value === this.name;
-                };
+            proto.toString = function () {
+                return this.name;
+            };
 
-                proto.toODataValue = function (value) {
-                    /// <summary>
-                    /// Converts given value to OData format.
-                    /// </summary>
-                    return value.toString();
-                };
+            /** 
+             * Returns raw value representing given value.
+             * @param {any} value - The value to use. It must be a valid value for the type.
+             * @returns {any} Portable value. i.e: Enum->number and Date->string
+             */
+            proto.getRawValue = function (value) {
+                return value;
+            };
 
-                proto.toBeetleValue = function (value) {
-                    /// <summary>
-                    /// Converts given value to Beetle format.
-                    /// </summary>
-                    return value.toString();
-                };
+            /** 
+             * Checks if given value is valid for this type.
+             * @param {any} value - The value to check.
+             */
+            proto.isValid = function (value) {
+                return typeof value === this.name;
+            };
 
-                proto.defaultValue = function () {
-                    /// <summary>
-                    /// Gets default value for type.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'defaultValue']);
-                };
-                proto.autoValue = function () {
-                    /// <summary>
-                    /// Generates a new unique value for this type. Used for auto-incremented values.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'autoValue']);
-                };
-                proto.handle = function (value) {
-                    /// <summary>
-                    /// Tries to convert given value to this type.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'handle']);
-                };
+            /** 
+             * Converts given value to OData format.
+             * @param {any} value - The value to use.
+             * @returns {string} OData query string compatible value.
+             */
+            proto.toODataValue = function (value) {
+                return value.toString();
+            };
 
-                return ctor;
-            })(),
-            ExpressionBase: (function () {
-                var ctor = function (name, order, onlyBeetle, isProjection) {
-                    /// <summary>
-                    /// Javascript expression base class -like linq expressions.
-                    /// </summary>
-                    /// <param name="name">Name of the expression.</param>
-                    /// <param name="order">
-                    /// OData order for the expression. 
-                    ///  When an expression with 2 comes after 3 this means the query cannot be executed as OData.
-                    ///  eg. query.where().select().where() should not be run as OData query, result differs when it is run as beetle query or local query.
-                    /// </param>
-                    /// <param name="onlyBeetle">Is this expression is supported only by beetle?</param>
-                    /// <param name="isProjection">
-                    /// Is this expression alters result type.
-                    ///  after result type is changed, if an expression is added to query, query becomes OData incompatible.
-                    /// </param>
-                    this.name = name || 'ExpressionBase';
-                    this.order = order;
-                    this.onlyBeetle = onlyBeetle;
-                    this.isProjection = isProjection;
-                };
-                var proto = ctor.prototype;
+            /** 
+             * Converts given value to Beetle format.
+             * @param {any} value - The value to use.
+             * @returns {string} Beetle query string compatible value.
+             */
+            proto.toBeetleValue = function (value) {
+                return value.toString();
+            };
 
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.toBeetleQuery({});
-                };
+            /** Gets default value for type. */
+            proto.defaultValue = function () {
+                throw helper.createError(i18N.notImplemented, [this.name, 'defaultValue']);
+            };
+            /** Generates a new unique value for this type. Used for auto-incremented values. */
+            proto.autoValue = function () {
+                throw helper.createError(i18N.notImplemented, [this.name, 'autoValue']);
+            };
+            /** Tries to convert given value to this type. */
+            proto.handle = function (value) {
+                throw helper.createError(i18N.notImplemented, [this.name, 'handle']);
+            };
 
-                proto.toODataQuery = function (queryContext) {
-                    /// <summary>
-                    /// Converts expression to OData representation.
-                    /// </summary>
-                    if (this.onlyBeetle === true) return this.toBeetleQuery(queryContext);
+            return ctor;
+        })(),
+        /** 
+         * Base of all Expressions.
+         * @class
+         */
+        ExpressionBase: (function () {
+            /**
+             * Javascript expression base class -like linq expressions.
+             * @constructor
+             * @param {any} name - Name of the expression.
+             * @param {any} order - OData order for the expression.
+                ///  When an expression with 2 comes after 3 this means the query cannot be executed as OData.
+                ///  eg. query.where().select().where() should not be run as OData query, result differs when it is run as beetle query or local query.
+             * @param {any} onlyBeetle - Is this expression is supported only by beetle?
+             * @param {any} isProjection - Is this expression alters result type.
+                ///  after result type is changed, if an expression is added to query, query becomes OData incompatible.
+             */
+            var ctor = function (name, order, onlyBeetle, isProjection) {
+                this.name = name || 'ExpressionBase';
+                this.order = order;
+                this.onlyBeetle = onlyBeetle;
+                this.isProjection = isProjection;
+            };
+            var proto = ctor.prototype;
 
-                    var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
-                    return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
-                };
+            proto.toString = function () {
+                return this.toBeetleQuery({});
+            };
 
-                proto.toBeetleQuery = function (queryContext) {
-                    /// <summary>
-                    /// Converts expression to Beetle representation.
-                    /// </summary>
-                    if (!this.exp) return '';
+            /** 
+             * Converts expression to OData representation.
+             * @param {QueryContext} queryContext - Query execution context.
+             * @returns {string} OData query string compatible expression.
+             */
+            proto.toODataQuery = function (queryContext) {
+                if (this.onlyBeetle === true) return this.toBeetleQuery(queryContext);
 
-                    var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
-                    return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
-                };
+                var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+                return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
+            };
 
-                proto.clone = function () {
-                    /// <summary>
-                    /// Clones the expression.
-                    /// </summary> 
-                    throw helper.createError(i18N.notImplemented, [this.name, 'clone']);
-                };
+            /** 
+             * Converts expression to Beetle representation.
+             * @param {QueryContext} queryContext - Query execution context.
+             * @returns {string} OData query string compatible expression.
+             */
+            proto.toBeetleQuery = function (queryContext) {
+                if (!this.exp) return '';
 
-                proto.execute = function (array) {
-                    /// <summary>
-                    /// Executes expression.
-                    /// </summary> 
-                    throw helper.createError(i18N.notImplemented, [this.name, 'execute']);
-                };
+                var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp) : this.exp;
+                return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
+            };
 
-                return ctor;
-            })(),
-            QueryFuncBase: (function () {
-                var ctor = function (name, beetleName, argCount) {
-                    /// <summary>
-                    /// Query function base class
-                    /// </summary>
-                    /// <param name="name">Name of the function.</param>
-                    /// <param name="beetleName">Name to use for beetle queries.</param>
-                    /// <param name="argCount">Argument count for method.</param>
-                    this.name = name;
-                    this.beetleName = beetleName;
-                    this.argCount = argCount;
-                };
-                var proto = ctor.prototype;
+            /*
+             * Clones the expression.
+             * Queries are immutable like Linq;
+             */
+            proto.clone = function () {
+                throw helper.createError(i18N.notImplemented, [this.name, 'clone']);
+            };
 
-                proto.toODataFunction = function () {
-                    /// <summary>
-                    /// function's OData representation 
-                    /// </summary>
-                    var args = [];
-                    for (var i = 0; i < arguments.length; i++)
-                        args.push(arguments[i]);
+            /*
+             * Executes the expression on the provided array
+             * @param {any[]} array - The array to use.
+             * @returns {any} - Expression result.
+             */
+            proto.execute = function (array) {
+                throw helper.createError(i18N.notImplemented, [this.name, 'execute']);
+            };
 
-                    return this.name + '(' + args.join(', ') + ')';
-                };
+            return ctor;
+        })(),
+        /** 
+         * Base of all query functions.
+         * @class
+         */
+        QueryFuncBase: (function () {
+            /**
+             * Query function base class
+             * @constructor
+             * @param {any} name - Name of the function.
+             * @param {any} beetleName - Name to use for beetle queries.
+             * @param {any} argCount - Argument count for method.
+             */
+            var ctor = function (name, beetleName, argCount) {
+                this.name = name;
+                this.beetleName = beetleName;
+                this.argCount = argCount;
+            };
+            var proto = ctor.prototype;
 
-                proto.toBeetleFunction = function () {
-                    /// <summary>
-                    /// function's Beetle representation 
-                    /// </summary>
-                    var source = '';
-                    var i = 0;
-                    if (arguments.length == this.argCount) {
-                        source = arguments[0] + '.';
-                        ++i;
-                    }
+            /** 
+             * Converts function to OData representation.
+             * @returns {string} OData query string compatible expression.
+             */
+            proto.toODataFunction = function () {
+                var args = [];
+                for (var i = 0; i < arguments.length; i++)
+                    args.push(arguments[i]);
 
-                    var args = Array.prototype.slice.call(arguments, i);
-                    return source + this.beetleName + '(' + args.join(', ') + ')';
-                };
+                return this.name + '(' + args.join(', ') + ')';
+            };
 
-                proto.impl = function () {
-                    /// <summary>
-                    /// function's javascript implementation
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'impl']);
-                };
+            /** 
+             * Converts function to Beetle representation.
+             * @returns {string} Beetle query string compatible expression.
+             */
+            proto.toBeetleFunction = function () {
+                var source = '';
+                var i = 0;
+                if (arguments.length == this.argCount) {
+                    source = arguments[0] + '.';
+                    ++i;
+                }
 
-                return ctor;
-            })(),
-            QueryBase: (function () {
-                var ctor = function () {
-                    /// <summary>
-                    /// Query base class. Contains common query methods. 
-                    /// </summary>
-                    this.expressions = [];
+                var args = Array.prototype.slice.call(arguments, i);
+                return source + this.beetleName + '(' + args.join(', ') + ')';
+            };
 
-                    this.inlineCountEnabled = false;
-                    this.lastExpOrder = 0;
-                    this.isMultiTyped = false;
-                    this.lastProjection = 0;
-                    this.isClosed = false;
-                    this.hasBeetlePrm = false;
-                    this.options = null;
-                };
-                var proto = ctor.prototype;
-                proto.executeAfterExecuter = false;
+            /** 
+             * Function's javascript implementation.
+             * @returns {string} Beetle query string compatible expression.
+             */
+            proto.impl = function () {
+                throw helper.createError(i18N.notImplemented, [this.name, 'impl']);
+            };
 
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    var params = [];
-                    helper.forEach(this.parameters, function (prm) {
-                        params.push(prm.name + ': ' + (prm.value == null ? '' : prm.value));
-                    });
+            return ctor;
+        })(),
+        /** 
+         * Base of all queries.
+         * @class
+         */
+        QueryBase: (function () {
+            /** 
+             * Query base class. Contains common query methods.
+             * @constructor
+             */
+            var ctor = function () {
+                this.expressions = [];
 
-                    if (this.inlineCountEnabled === true)
-                        params.push('inlinecount: allpages');
+                this.inlineCountEnabled = false;
+                this.lastExpOrder = 0;
+                this.isMultiTyped = false;
+                this.lastProjection = 0;
+                this.isClosed = false;
+                this.hasBeetlePrm = false;
+                this.options = null;
+            };
+            var proto = ctor.prototype;
+            proto.executeAfterExecuter = false;
 
-                    var qc = {};
-                    helper.forEach(this.expressions, function (exp) {
+            proto.toString = function () {
+                var params = [];
+                helper.forEach(this.parameters, function (prm) {
+                    params.push(prm.name + ': ' + (prm.value == null ? '' : prm.value));
+                });
+
+                if (this.inlineCountEnabled === true)
+                    params.push('inlinecount: allpages');
+
+                var qc = {};
+                helper.forEach(this.expressions, function (exp) {
+                    qc.expVarContext = exp.varContext;
+                    params.push(exp.name + ': ' + exp.toBeetleQuery(qc));
+                    qc.expVarContext = undefined;
+                });
+
+                return params.join(', ');
+            };
+
+            /**
+             * Adds given expression to expression list and decides if now this query is projected and multi-typed.
+             * @param {baseTypes.ExpressionBase} exp - Expression to add.
+             */
+            proto.addExpression = function (exp) {
+                if (this.isClosed) throw helper.createError(i18N.queryClosed, null, { query: this });
+                helper.assertPrm(exp, 'expression').isInstanceOf(baseTypes.ExpressionBase).check();
+                this.expressions.push(exp);
+                if (exp.isExecuter === true) {
+                    var executeAfterExecuter = this.options && this.options.executeAfterExecuter;
+                    if (executeAfterExecuter == null) executeAfterExecuter = this.executeAfterExecuter;
+                    if (executeAfterExecuter)
+                        return this.execute();
+                    this.isClosed = true;
+                }
+
+                // to support both odata and beetle queries, I added an order for expressions.
+                if (exp.order < this.lastExpOrder || (this.hasBeetlePrm && !exp.onlyBeetle))
+                    this.isMultiTyped = true;
+                if (exp.isProjection === true)
+                    this.lastProjection = this.expressions.length - 1;
+                if (exp.onlyBeetle)
+                    this.hasBeetlePrm = true;
+
+                return this;
+            };
+
+            /**
+             * Indicates wheter or not include total count in result.
+             * @param {boolean=} isEnabled - When true, total count will be included in result. Default value: true.
+             */
+            proto.inlineCount = function (isEnabled) {
+                var q = this.clone();
+                q.inlineCountEnabled = isEnabled !== false;
+                return q;
+            };
+
+            /**
+             * If model has inheritance, when querying base type we can tell which derived type we want to load.
+             * @param {string} typeName - Derived type name.
+             */
+            proto.ofType = function (typeName) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.OfTypeExp(typeName));
+            };
+
+            /**
+             * Filter query based on given expression.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.where = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.WhereExp(predicate, varContext));
+            };
+
+            /**
+             * Sorts results based on given properties.
+             * @param {string|propertySelectFunction} properties - The properties to sort by.
+             * @param {boolean=} isDesc - Indicates if sorting will be descending. Default value is false.
+             */
+            proto.orderBy = function (properties, isDesc) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
+            };
+
+            /**
+             * Sorts results based on given properties descendingly.
+             * @param {string|propertySelectFunction} properties - The properties to sort by.
+             */
+            proto.orderByDesc = function (properties) {
+                return this.orderBy(properties, true);
+            };
+
+            /**
+             * Selects only given properties using projection.
+             * @param {string|string[]} properties - Properties or PropertyPaths to select (project).
+             *
+             */
+            proto.select = function (properties) {
+                var q = this.clone();
+                if (arguments.length == 1) {
+                    var arg = arguments[0];
+                    if (Assert.isArray(arg))
+                        properties = arg.join(', ');
+                } else properties = Array.prototype.slice.call(arguments).join(', ');
+                return q.addExpression(new querying.expressions.SelectExp(properties));
+            };
+
+            /**
+             * Skips given count records and start reading.
+             * @param {number} count - The number of items to skip.
+             */
+            proto.skip = function (count) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.SkipExp(count));
+            };
+
+            /**
+             * Takes only given count records .
+             * @param {number} count - The number of items to take.
+             */
+            proto.take = function (count) {
+                return this.top(count);
+            };
+
+            /**
+             * Takes only given count records .
+             * @param {number} count - The number of items to take.
+             */
+            proto.top = function (count) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.TopExp(count));
+            };
+
+            /**
+             * Groups query by given keys (projects them into a new type) and returns values (projecting into new type).
+             * @param {string|string[]} keySelector - A projection to extract the key for each element.
+             * @param {string|string[]} valueSelector - A projection to create a result value from each group.
+             */
+            proto.groupBy = function (keySelector, valueSelector) {
+                var q = this.clone();
+                if (Assert.isArray(keySelector))
+                    keySelector = keySelector.join(', ');
+                if (Assert.isArray(valueSelector))
+                    valueSelector = valueSelector.join(', ');
+                return q.addExpression(new querying.expressions.GroupByExp(keySelector, valueSelector));
+            };
+
+            /**
+             * Gets only distinct items, when selector is given it will be used as comparer (project and compares projected objects).
+             * @param {string|string[]} selector - A projection to extract the key for each element.
+             */
+            proto.distinct = function (selector) {
+                var q = this.clone();
+                if (Assert.isArray(selector))
+                    selector = selector.join(', ');
+                return q.addExpression(new querying.expressions.DistinctExp(selector));
+            };
+
+            /** Reverse the collection. */
+            proto.reverse = function () {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.ReverseExp());
+            };
+
+            /**
+             * Selects given collection property for each element and returns all in a new array.
+             * @param {string|string[]} properties - Properties or PropertyPaths to select (project).
+             */
+            proto.selectMany = function (properties) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.SelectManyExp(properties));
+            };
+
+            /**
+             * Gets all the items after first succesfull predicate.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.skipWhile = function (predicate, varContext) {
+                /// <param name="predicate"></param>
+                /// <param name="varContext">Variable context for the expression.</param>
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.SkipWhileExp(predicate, varContext));
+            };
+
+            /**
+             * Gets all the items before first succesfull predicate.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.takeWhile = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.TakeWhileExp(predicate, varContext));
+            };
+
+            /**
+             * If all items suits given predication returns true, otherwise false.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.all = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.AllExp(predicate, varContext));
+            };
+
+            /**
+             * If there is at least one item in query result (or any item suits given predication) returns true, otherwise false.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.any = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.AnyExp(predicate, varContext));
+            };
+
+            /**
+             * Calculates average of items of query (or from given projection result).
+             * @param {string=} selector - Property path to use on calculation.
+             */
+            proto.avg = function (selector) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.AvgExp(selector));
+            };
+
+            /**
+             * Finds maximum value from items of query (or from given projection result).
+             * @param {string=} selector - Property path to use on calculation.
+             */
+            proto.max = function (selector) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.MaxExp(selector));
+            };
+
+            /**
+             * Finds minimum value from items of query (or from given projection result).
+             * @param {string=} selector - Property path to use on calculation.
+             */
+            proto.min = function (selector) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.MinExp(selector));
+            };
+
+            /**
+             * Finds summary value from items of query (or from given projection result).
+             * @param {string=} selector - Property path to use on calculation.
+             */
+            proto.sum = function (selector) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.SumExp(selector));
+            };
+
+            /**
+             * Gets the count of items of query.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.count = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.CountExp(predicate, varContext));
+            };
+
+            /**
+             * Gets the first value from items of query (or from given predication result). When there is no item, throws exception.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.first = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.FirstExp(predicate, varContext));
+            };
+
+            /**
+             * Gets the first value (or null when there is no items) from items of query (or from given predication result).
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.firstOrDefault = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.FirstOrDefaultExp(predicate, varContext));
+            };
+
+            /**
+             * Gets the single value from items (or from given predication result). Where zero or more than one item exists throws exception.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.single = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.SingleExp(predicate, varContext));
+            };
+
+            /**
+             * Gets the single value (or null when there is no items) from items (or from given predication result). Where more than one item exists throws exception.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.singleOrDefault = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.SingleOrDefaultExp(predicate, varContext));
+            };
+
+            /**
+             * Gets the last value from items of query (or from given predication result). When there is no item, throws exception.
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.last = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.LastExp(predicate, varContext));
+            };
+
+            /**
+             * Gets the last value (or null when there is no items) from items of query (or from given predication result).
+             * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+             * @param {Object|any[]} varContext - Variable context for the expression.
+             */
+            proto.lastOrDefault = function (predicate, varContext) {
+                var q = this.clone();
+                return q.addExpression(new querying.expressions.LastOrDefaultExp(predicate, varContext));
+            };
+
+            /**
+             * Sets options to be used at execution
+             * @param {queryOptions} options - Query options. Multiple call to this function will override previous settings.
+             */
+            proto.withOptions = function (options) {
+                var q = this.clone();
+                q.options = helper.combine(this.options, options);
+                return q;
+            };
+
+            /** Executes the query. */
+            proto.execute = function () {
+                throw helper.createError(i18N.notImplemented, ['Query', 'execute']);
+            };
+
+            /** Executes the query. Shortcut for execute. */
+            proto.x = function () {
+                return this.execute.apply(this, arguments);
+            };
+
+            /** * Creates a function that can execute query operations against given array. */
+            proto.toFunction = function () {
+                var that = this;
+                return function (array, varContext) {
+                    var qc = { varContext: varContext };
+                    qc.aliases = [];
+                    if (that.inlineCountEnabled)
+                        qc.inlineCount = array.length;
+                    helper.forEach(that.expressions, function (exp) {
                         qc.expVarContext = exp.varContext;
-                        params.push(exp.name + ': ' + exp.toBeetleQuery(qc));
-                        qc.expVarContext = undefined;
-                    });
-
-                    return params.join(', ');
-                };
-
-                proto.addExpression = function (exp) {
-                    /// <summary>
-                    /// Adds given expression to expression list and decides if now this query is projected and multi-typed.
-                    /// </summary>
-                    /// <param name="exp">Expression to add.</param>
-                    if (this.isClosed) throw helper.createError(i18N.queryClosed, null, { query: this });
-                    helper.assertPrm(exp, 'expression').isInstanceOf(baseTypes.ExpressionBase).check();
-                    this.expressions.push(exp);
-                    if (exp.isExecuter === true) {
-                        var executeAfterExecuter = this.options && this.options.executeAfterExecuter;
-                        if (executeAfterExecuter == null) executeAfterExecuter = this.executeAfterExecuter;
-                        if (executeAfterExecuter)
-                            return this.execute();
-                        this.isClosed = true;
-                    }
-
-                    // to support both odata and beetle queries, I added an order for expressions.
-                    if (exp.order < this.lastExpOrder || (this.hasBeetlePrm && !exp.onlyBeetle))
-                        this.isMultiTyped = true;
-                    if (exp.isProjection === true)
-                        this.lastProjection = this.expressions.length - 1;
-                    if (exp.onlyBeetle)
-                        this.hasBeetlePrm = true;
-
-                    return this;
-                };
-
-                proto.inlineCount = function (isEnabled) {
-                    /// <summary>
-                    /// Indicates wheter or not include total count in result.
-                    /// </summary>
-                    /// <param name="isEnabled">When true, total count will be included in result. Default value: true.</param>
-                    var q = this.clone();
-                    q.inlineCountEnabled = isEnabled !== false;
-                    return q;
-                };
-
-                proto.ofType = function (type) {
-                    /// <summary>
-                    /// if model has inheritance, when querying base type we can tell which derived type we want to load.
-                    /// </summary>
-                    /// <param name="type">Derived type.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.OfTypeExp(type));
-                };
-
-                proto.where = function (predicate, varContext) {
-                    /// <summary>
-                    /// Filter query based on given parameters.
-                    /// </summary>
-                    /// <param name="property">Property to filter. This parameter must be string for single parameter calls, eg. Name == "Alan".</param>
-                    /// <param name="filterOp">Filter operation: [Equals, NotEqual, Greater, Lesser, GreaterEqual, LesserEqual, Contains, StartsWith, EndsWith].</param>
-                    /// <param name="value">Filter value.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.WhereExp(predicate, varContext));
-                };
-
-                proto.orderBy = function (properties, isDesc) {
-                    /// <summary>
-                    /// Sorts results based on given properties.
-                    /// </summary>
-                    /// <param name="properties">The properties to sort by.</param>
-                    /// <param name="desc">Is it descending?</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.OrderByExp(properties, isDesc));
-                };
-
-                proto.orderByDesc = function (properties) {
-                    /// <summary>
-                    /// Sorts descendingly results based on given properties.
-                    /// </summary>
-                    /// <param name="properties">Properties to order.</param>
-                    return this.orderBy(properties, true);
-                };
-
-                proto.select = function (properties) {
-                    /// <summary>
-                    /// Selects only given properties using projection.
-                    /// </summary>
-                    /// <param name="properties">Properties or PropertyPaths to select (project).
-                    /// Can be string arguments (eg. ('Name', 'Surname', 'Customer.Name'))
-                    ///  or single strings seperated with comma (eg. ('Name, Surname, Customer.Name'))
-                    ///  or array of strings (eg. (['Name', 'Surname', 'Customer.Name']))
-                    /// </param>
-                    var q = this.clone();
-                    if (arguments.length == 1) {
-                        var arg = arguments[0];
-                        if (Assert.isArray(arg))
-                            properties = arg.join(', ');
-                    } else properties = Array.prototype.slice.call(arguments).join(', ');
-                    return q.addExpression(new querying.expressions.SelectExp(properties));
-                };
-
-                proto.skip = function (count) {
-                    /// <summary>
-                    /// Skips given count records and start reading.
-                    /// </summary>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.SkipExp(count));
-                };
-
-                proto.take = function (count) {
-                    /// <summary>
-                    /// Takes only given count records .
-                    /// </summary>
-                    return this.top(count);
-                };
-
-                proto.top = function (count) {
-                    /// <summary>
-                    /// Takes only first given count records.
-                    /// </summary>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.TopExp(count));
-                };
-
-                proto.groupBy = function (keySelector, valueSelector) {
-                    /// <summary>
-                    /// Groups query by given keys (projects them into a new type) and returns values (projecting into new type).
-                    /// </summary>
-                    /// <param name="keySelector">A projection to extract the key for each element.</param>
-                    /// <param name="valueSelector">A projection to create a result value from each group.</param>
-                    var q = this.clone();
-                    if (Assert.isArray(keySelector))
-                        keySelector = keySelector.join(', ');
-                    if (Assert.isArray(valueSelector))
-                        valueSelector = valueSelector.join(', ');
-                    return q.addExpression(new querying.expressions.GroupByExp(keySelector, valueSelector));
-                };
-
-                proto.distinct = function (selector) {
-                    /// <summary>
-                    /// Gets only distinct items, when selector is given it will be used as comparer (project and compares projected objects).
-                    /// </summary>
-                    /// <param name="selector">A projection to extract the key for each element.</param>
-                    var q = this.clone();
-                    if (Assert.isArray(selector))
-                        selector = selector.join(', ');
-                    return q.addExpression(new querying.expressions.DistinctExp(selector));
-                };
-
-                proto.reverse = function () {
-                    /// <summary>
-                    /// Reverse the collection.
-                    /// </summary>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.ReverseExp());
-                };
-
-                proto.selectMany = function (properties) {
-                    /// <summary>
-                    /// Selects given collection property for each element and returns all in a new array.
-                    /// </summary>
-                    /// <param name="properties">Collection property path.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.SelectManyExp(properties));
-                };
-
-                proto.skipWhile = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets all the items after first succesfull predicate.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.SkipWhileExp(predicate, varContext));
-                };
-
-                proto.takeWhile = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets all the items before first succesfull predicate.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.TakeWhileExp(predicate, varContext));
-                };
-
-                proto.all = function (predicate, varContext) {
-                    /// <summary>
-                    /// If all items suits given predication returns true, otherwise false.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.AllExp(predicate, varContext));
-                };
-
-                proto.any = function (predicate, varContext) {
-                    /// <summary>
-                    /// If there is at least one item in query result (or any item suits given predication) returns true, otherwise false.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.AnyExp(predicate, varContext));
-                };
-
-                proto.avg = function (selector) {
-                    /// <summary>
-                    /// Calculates average of items of query (or from given projection result).
-                    /// </summary>
-                    /// <param name="selector">A sequence of Number values to calculate the average of.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.AvgExp(selector));
-                };
-
-                proto.max = function (selector) {
-                    /// <summary>
-                    /// Finds maximum value from items of query (or from given projection result).
-                    /// </summary>
-                    /// <param name="selector">A sequence of Number values to calculate the maximum of.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.MaxExp(selector));
-                };
-
-                proto.min = function (selector) {
-                    /// <summary>
-                    /// Finds minimum value from items of query (or from given projection result).
-                    /// </summary>
-                    /// <param name="selector">A sequence of Number values to calculate the minimum of.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.MinExp(selector));
-                };
-
-                proto.sum = function (selector) {
-                    /// <summary>
-                    /// Finds summary value from items of query (or from given projection result).
-                    /// </summary>
-                    /// <param name="selector">A sequence of Number values to calculate the sum of.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.SumExp(selector));
-                };
-
-                proto.count = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the count of items of query.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.CountExp(predicate, varContext));
-                };
-
-                proto.first = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the first value from items of query (or from given predication result). When there is no item, throws exception.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.FirstExp(predicate, varContext));
-                };
-
-                proto.firstOrDefault = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the first value (or null when there is no items) from items of query (or from given predication result).
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.FirstOrDefaultExp(predicate, varContext));
-                };
-
-                proto.single = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the single value from items (or from given predication result). Where zero or more than one item exists throws exception.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.SingleExp(predicate, varContext));
-                };
-
-                proto.singleOrDefault = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the single value (or null when there is no items) from items (or from given predication result). Where more than one item exists throws exception.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.SingleOrDefaultExp(predicate, varContext));
-                };
-
-                proto.last = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the last value from items of query (or from given predication result). When there is no item, throws exception.
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.LastExp(predicate, varContext));
-                };
-
-                proto.lastOrDefault = function (predicate, varContext) {
-                    /// <summary>
-                    /// Gets the last value (or null when there is no items) from items of query (or from given predication result).
-                    /// </summary>
-                    /// <param name="predicate">A function to test each element for a condition.</param>
-                    /// <param name="varContext">Variable context for the expression.</param>
-                    var q = this.clone();
-                    return q.addExpression(new querying.expressions.LastOrDefaultExp(predicate, varContext));
-                };
-
-                proto.withOptions = function (options) {
-                    /// <summary>
-                    /// Sets options to be used at execution
-                    /// </summary>
-                    /// <param name="options">Query options.</param>
-                    var q = this.clone();
-                    q.options = helper.combine(this.options, options);
-                    return q;
-                };
-
-                proto.execute = function () {
-                    /// <summary>
-                    /// Executes the query.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, ['Query', 'execute']);
-                };
-
-                proto.x = function () {
-                    /// <summary>
-                    /// Executes the query.
-                    /// </summary>
-                    return this.execute.apply(this, arguments);
-                };
-
-                proto.toFunction = function () {
-                    /// <summary>
-                    /// Creates a function that can execute query operations against given array.
-                    /// </summary>
-                    var that = this;
-                    return function (array, varContext) {
-                        var qc = { varContext: varContext };
-                        qc.aliases = [];
-                        if (that.inlineCountEnabled)
+                        array = exp.execute(array, qc);
+                        if (that.inlineCountEnabled
+                                && !Assert.isInstanceOf(exp, querying.expressions.TopExp)
+                                && !Assert.isInstanceOf(exp, querying.expressions.SkipExp)) {
                             qc.inlineCount = array.length;
-                        helper.forEach(that.expressions, function (exp) {
-                            qc.expVarContext = exp.varContext;
-                            array = exp.execute(array, qc);
-                            if (that.inlineCountEnabled && !Assert.isInstanceOf(exp, querying.expressions.TopExp) && !Assert.isInstanceOf(exp, querying.expressions.SkipExp))
-                                qc.inlineCount = array.length;
-                            qc.expVarContext = undefined;
-                        });
-                        if (that.inlineCountEnabled)
-                            array.$inlineCount = qc.inlineCount;
-                        return array;
-                    };
-                };
-
-                proto.clone = function () {
-                    /// <summary>
-                    /// Clones whole query.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, ['Query', 'clone']);
-                };
-
-                proto.copy = function (query) {
-                    /// <summary>
-                    /// Copies properties to given query.
-                    /// </summary>
-                    helper.forEach(this.expressions, function (exp) {
-                        query.expressions.push(exp.clone());
-                    });
-                    query.inlineCountEnabled = this.inlineCountEnabled;
-                    query.lastExpOrder = this.lastExpOrder;
-                    query.isMultiTyped = this.isMultiTyped;
-                    query.lastProjection = this.lastProjection;
-                    query.isClosed = this.isClosed;
-                    query.hasBeetlePrm = this.hasBeetlePrm;
-                    if (this.options)
-                        query.options = helper.combine(null, this.options);
-                };
-
-                proto.getExpression = function (type, throwIfNotFound) {
-                    /// <summary>
-                    /// Finds given typed expression.
-                    /// </summary>
-                    for (var i = this.lastProjection; i < this.expressions.length; i++) {
-                        var exp = this.expressions[i];
-                        if (Assert.isInstanceOf(exp, type)) return exp;
-                    }
-                    if (throwIfNotFound === true)
-                        throw helper.createError(i18N.expressionCouldNotBeFound, { type: type, query: this });
-                    return null;
-                };
-
-                proto.removeExpression = function (type) {
-                    /// <summary>
-                    /// Removes given typed expressions.
-                    /// </summary>
-                    for (var i = this.expressions.length - 1; i >= 0; i--) {
-                        var exp = this.expressions[i];
-                        if (Assert.isInstanceOf(exp, type))
-                            this.expressions.splice(i, 1);
-                    }
-                    return this;
-                };
-
-                return ctor;
-            })(),
-            ObservableProviderBase: (function () {
-                var ctor = function (name) {
-                    /// <summary>
-                    /// Observable provider base class. Makes given object's properties observable.
-                    /// </summary>
-                    /// <param name="name">Name of the provider.</param>
-                    this.name = name || 'ObservableProviderBase';
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.name;
-                };
-
-                proto.isObservable = function (object, property) {
-                    /// <summary>
-                    /// When given property for given object is observable returns true, otherwise false.
-                    /// </summary>
-                    /// <param name="object">The object.</param>
-                    /// <param name="property">The property to check.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'isObservable']);
-                };
-                proto.toObservable = function (object, type, callbacks) {
-                    /// <summary>
-                    /// Makes given object observable.
-                    /// </summary>
-                    /// <param name="object">The obect.</param>
-                    /// <param name="type">The entity type.</param>
-                    /// <param name="callbacks">The callbacks, beetle tracks entities using these callbacks.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'toObservable']);
-                };
-                proto.getValue = function (object, property) {
-                    /// <summary>
-                    /// Reads an observable property value from object.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'getValue']);
-                };
-                proto.setValue = function (object, property, value) {
-                    /// <summary>
-                    /// Sets the value of observable property of given object.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'setValue']);
-                };
-
-                return ctor;
-            })(),
-            AjaxProviderBase: (function () {
-                var ctor = function (name) {
-                    /// <summary>
-                    /// Ajax provider base class. Operates ajax operations.
-                    /// </summary>
-                    /// <param name="name">Name of the provider.</param>
-                    this.name = name || 'AjaxProviderBase';
-                    this.syncSupported = true;
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.name;
-                };
-
-                proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Ajax operation virtual method.
-                    /// </summary>
-                    /// <param name="uri">Uri to make request.</param>
-                    /// <param name="type">Request type (POST, GET..)</param>
-                    /// <param name="dataType">Request data type (xml, json..)</param>
-                    /// <param name="contentType">Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)</param>
-                    /// <param name="data">Request data.</param>
-                    /// <param name="async">If set to false, request will be made synchronously.</param>
-                    /// <param name="timeout">AJAX call timeout value. if call won't be completed after given time, exception will be thrown.</param>
-                    /// <param name="extra">implementor specific arguments.</param>
-                    /// <param name="headers">custom HTTP headers.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
-                };
-
-                proto.createError = function (xhr) {
-                    /// <summary>
-                    /// Creates an error object by parsing XHR result.
-                    /// </summary>
-                    /// <param name="xhr">XML Http Request object.</param>
-                    var obj = { status: xhr.status, xhr: xhr, detail: xhr.responseText };
-                    return helper.createError(xhr.statusText, obj);
-                }
-
-                proto.getHeaderGetter = function (xhr) {
-                    return function (header) {
-                        return xhr.getResponseHeader(header);
-                    };
-                }
-
-                return ctor;
-            })(),
-            SerializationServiceBase: (function () {
-                var ctor = function (name) {
-                    /// <summary>
-                    /// Serialization service base class. Deserializes incoming data and serializes outgoing data.
-                    /// </summary>
-                    /// <param name="name">Name of the service.</param>
-                    this.name = name || 'SerializationServiceBase';
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.name;
-                };
-
-                proto.serialize = function (data) {
-                    /// <summary>
-                    /// Serializes given data to string.
-                    /// </summary>
-                    /// <param name="data">Serialized string.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'serialize']);
-                };
-                proto.deserialize = function (string) {
-                    /// <summary>
-                    /// Deserializes given string to object.
-                    /// </summary>
-                    /// <param name="string">Deserialized object.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'deserialize']);
-                };
-
-                return ctor;
-            })(),
-            PromiseProviderBase: (function () {
-                var ctor = function (name) {
-                    /// <summary>
-                    /// Promise provider base class. Creates deferred promises for async operations..
-                    /// </summary>
-                    /// <param name="name">Name of the provider.</param>
-                    this.name = name || 'PromiseProviderBase';
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.name;
-                };
-
-                proto.deferred = function () {
-                    /// <summary>
-                    /// Creates deferred object.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'deferred']);
-                };
-                proto.getPromise = function (deferred) {
-                    /// <summary>
-                    /// Gets promise for deferred object.
-                    /// </summary>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'getPromise']);
-                };
-                proto.resolve = function (deferred, data) {
-                    /// <summary>
-                    /// Resolves given promise for succesfull operation.
-                    /// </summary>
-                    /// <param name="deferred">Promise object.</param>
-                    /// <param name="data">Data to pass success callback.</param>
-                    /// <param name="extra">Extra data for operation.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'resolve']);
-                };
-                proto.reject = function (deferred, error) {
-                    /// <summary>
-                    /// Rejects given promise for failed operation.
-                    /// </summary>
-                    /// <param name="deferred">Promise object.</param>
-                    /// <param name="error">Error to pass failed callback.</param>
-                    throw helper.createError(i18N.notImplemented, [this.name, 'reject']);
-                };
-
-                return ctor;
-            })(),
-            DataServiceBase: (function () {
-                // cache metadata to reduce network traffic.
-                var _metadataCache = [];
-
-                var ctor = function (uri, metadataPrm, injections) {
-                    /// <summary>
-                    /// Data service base class.
-                    /// </summary>
-                    /// <param name="uri">Service URI.</param>
-                    /// <param name="metadataPrm">[Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used, no auto relation fix]</param>
-                    /// <param name="injections">
-                    /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService, ajaxTimeout, dataType, contentType. 
-                    ///  When not given, defaults will be used.
-                    /// </param>
-                    initialize(uri, metadataPrm, injections, this);
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.uri;
-                };
-
-                proto.isReady = function () {
-                    /// <summary>
-                    /// Checks if service is ready.
-                    /// </summary>
-                    return !this._awaitingMetadata;
-                };
-
-                proto.ready = function (callback) {
-                    /// <summary>
-                    /// Subscribe ready callback.
-                    /// </summary>
-                    this._readyCallbacks.push(callback);
-
-                    checkReady(this);
-                };
-
-                proto.getEntityType = function (shortName) {
-                    /// <summary>
-                    /// Gets entity type from metadata by its short name.
-                    /// </summary>
-                    /// <param name="shortName">Entity type short name.</param>
-                    return this.metadataManager ? this.metadataManager.getEntityType(shortName) : null;
-                };
-
-                proto.createQuery = function (resourceName, shortName, manager) {
-                    /// <summary>
-                    /// Creates a query for a resource. Every data service can have their own query types.
-                    /// </summary>
-                    /// <param name="resourceName">Resource to query (mandatory).</param>
-                    /// <param name="shortName">Short name of the entity type.</param>
-                    /// <param name="manager">Entity manager.</param>
-                    helper.assertPrm(resourceName, 'resourceName').isNotEmptyString().check();
-                    if (shortName) return this.createEntityQuery(shortName, resourceName, manager);
-                    if (this.metadataManager) return this.metadataManager.createQuery(resourceName, null, manager);
-                    return new querying.EntityQuery(resourceName, null, manager);
-                };
-
-                proto.createEntityQuery = function (shortName, resourceName, manager) {
-                    /// <summary>
-                    /// Creates a query for a resource. Every data service can have their own query types.
-                    /// </summary>
-                    /// <param name="shortName">Short name of the entity type (mandatory).</param>
-                    /// <param name="resourceName">Resource to query.</param>
-                    if (!this.metadataManager)
-                        throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
-                    return this.metadataManager.createQuery(resourceName, shortName, manager);
-                };
-
-                proto.registerCtor = function (shortName, constructor, initializer) {
-                    /// <summary>
-                    /// Register constructor and initializer (optional) for given type.
-                    ///  Constructor is called right after the entity object is generated.
-                    ///  Initializer is called after entity started to being tracked (properties converted to observable).
-                    /// </summary>
-                    /// <param name="shortName">Entity type short name.</param>
-                    /// <param name="constructor">Constructor function.</param>
-                    /// <param name="initializer">Initializer function.</param>
-                    if (this.metadataManager == null)
-                        throw helper.createError(i18N.noMetadataEntityQuery);
-                    this.metadataManager.registerCtor(shortName, constructor, initializer);
-                };
-
-                proto.createEntity = function (shortName, initialValues) {
-                    /// <summary>
-                    /// Creates an entity based on metadata information.
-                    /// </summary>
-                    /// <param name="shortName">Short name of the entity type.</param>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
-                    return this.metadataManager.createEntity(shortName, initialValues);
-                };
-
-                proto.createRawEntity = function (shortName, initialValues) {
-                    /// <summary>
-                    /// Create the entity by its type's short name but do not convert to observable and do not add to manager.
-                    /// </summary>
-                    /// <param name="shortName">Entity type short name.</param>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
-                    return this.metadataManager.createRawEntity(shortName, initialValues);
-                };
-
-                proto.toEntity = function (result, typeName) {
-                    /// <summary>
-                    /// Creates an entity based on metadata information.
-                    /// </summary>
-                    /// <param name="result">Raw result to make entity (observable).</param>
-                    /// <param name="typeName">Entity type name.</param>
-                    var type = null;
-                    if (this.metadataManager)
-                        type = this.metadataManager.getEntityTypeByFullName(typeName);
-                    if (!type) type = new metadata.EntityType(typeName);
-                    return core.EntityTracker.toEntity(result, type, settings.getObservableProvider());
-                };
-
-                proto.toODataQueryParams = function (query, varContext) {
-                    /// <summary>
-                    /// Converts given query to a OData query string format.
-                    /// </summary>
-                    /// <param name="query">The query..</param>
-                    /// <param name="varContext">Variable context for the query.</param>
-                    if (query.isMultiTyped === true)
-                        throw helper.createError(i18N.oDataNotSupportMultiTyped, { query: query });
-
-                    var qc = { varContext: varContext };
-                    var params = [];
-                    helper.forEach(query.parameters, function (prm) {
-                        params.push({ name: prm.name, value: prm.value == null ? '' : prm.value });
-                    });
-
-                    if (query.inlineCountEnabled === true)
-                        params.push({ name: '$inlinecount', value: 'allpages' });
-
-                    helper.forEach(query.expressions, function (exp, i) {
-                        qc.expVarContext = exp.varContext;
-                        var name, value;
-                        if (exp.onlyBeetle === true) {
-                            name = '!e' + i;
-                            value = exp.toBeetleQuery(qc);
-                            value = exp.name + ':' + value;
-                        } else {
-                            name = '$' + exp.name;
-                            value = exp.toODataQuery(qc);
                         }
-                        params.push({ name: name, value: value });
                         qc.expVarContext = undefined;
                     });
-
-                    return params;
+                    if (that.inlineCountEnabled)
+                        array.$inlineCount = qc.inlineCount;
+                    return array;
                 };
+            };
 
-                proto.toBeetleQueryParams = function (query, varContext) {
-                    /// <summary>
-                    /// Converts given query to a Beetle query string format.
-                    /// </summary>
-                    /// <param name="query">The query..</param>
-                    /// <param name="varContext">Variable context for the query.</param>
-                    var qc = { varContext: varContext };
-                    var params = [];
-                    helper.forEach(query.parameters, function (prm) {
-                        params.push({ name: prm.name, value: prm.value == null ? '' : prm.value });
-                    });
+            /** Clones whole query. */
+            proto.clone = function () {
+                throw helper.createError(i18N.notImplemented, ['Query', 'clone']);
+            };
 
-                    if (query.inlineCountEnabled === true)
-                        params.push({ name: '!e0', value: 'inlinecount:allpages' });
+            /** 
+             * Copies properties to given query.
+             * @param {baseTypes.QueryBase} query - The query to populate. Must be a subclass of QueryBase.
+             */
+            proto.copy = function (query) {
+                helper.forEach(this.expressions, function (exp) {
+                    query.expressions.push(exp.clone());
+                });
+                query.inlineCountEnabled = this.inlineCountEnabled;
+                query.lastExpOrder = this.lastExpOrder;
+                query.isMultiTyped = this.isMultiTyped;
+                query.lastProjection = this.lastProjection;
+                query.isClosed = this.isClosed;
+                query.hasBeetlePrm = this.hasBeetlePrm;
+                if (this.options)
+                    query.options = helper.combine(null, this.options);
+            };
 
-                    helper.forEach(query.expressions, function (exp, i) {
-                        qc.expVarContext = exp.varContext;
-                        params.push({ name: '!e' + (i + 1), value: exp.name + ':' + exp.toBeetleQuery(qc) });
-                        qc.expVarContext = undefined;
-                    });
+            /** Finds given typed expression. */
+            proto.getExpression = function (type, throwIfNotFound) {
+                for (var i = this.lastProjection; i < this.expressions.length; i++) {
+                    var exp = this.expressions[i];
+                    if (Assert.isInstanceOf(exp, type)) return exp;
+                }
+                if (throwIfNotFound === true)
+                    throw helper.createError(i18N.expressionCouldNotBeFound, { type: type, query: this });
+                return null;
+            };
 
-                    return params;
-                };
+            /** Removes given typed expressions. */
+            proto.removeExpression = function (type) {
+                for (var i = this.expressions.length - 1; i >= 0; i--) {
+                    var exp = this.expressions[i];
+                    if (Assert.isInstanceOf(exp, type))
+                        this.expressions.splice(i, 1);
+                }
+                return this;
+            };
 
-                proto.fetchMetadata = function (options) {
-                    /// <summary>
-                    /// Fetch metadata from server.
-                    ///  Fetch metadata options;
-                    ///  async: When false, ajax call will be made synchronously (default: true).
-                    /// </summary>
-                    /// <param name="options">Fetch metadata options, for details read summary.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'fetchMetadata']);
-                };
-                proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// When there is no metadata available services may be able to create entities asynchronously (server side must be able to support this).
-                    ///  Asynchronous entity creation options;
-                    ///  makeObservable: When true raw entity will be converted to observable.
-                    ///  async: When false, ajax call will be made synchronously (default: true).
-                    /// </summary>
-                    /// <param name="typeName">Type name to create.</param>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    /// <param name="options">Asynchronous entity creation options, for details read summary.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'createEntityAsync']);
-                };
-                proto.executeQuery = function (query, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Executes given query.
-                    /// 
-                    ///  Query options;
-                    ///  merge: Merge strategy
-                    ///  execution: Execution strategy
-                    ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                    ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
-                    ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
-                    ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
-                    ///  uri: Overrides dataService's uri.
-                    ///  headers: Extra http headers
-                    ///  
-                    ///  -Options will be passed to services also, so we can pass service specific options too, these are available for OData and Beetle services;
-                    ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
-                    ///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
-                    ///  dataType: We can set ajax call's dataType with this option
-                    ///  contentType: We can set ajax call's contentType with this option
-                    ///  async: When false, ajax call will be made synchronously (default: true).
-                    /// </summary>
-                    /// <param name="query">The query.</param>
-                    /// <param name="options">Query options, for detail read summary.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQuery']);
-                };
-                proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Executes given query string.
-                    /// </summary>
-                    /// <param name="resource">The resource.</param>
-                    /// <param name="queryParams">The query parameters.</param>
-                    /// <param name="options">makeObservable, usePost etc. query execution parameters.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQueryParams']);
-                };
-                proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
-                    /// <summary>
-                    /// Posts all changes to server.
-                    ///  Save options,
-                    ///  async: When false, ajax call will be made synchronously (default: true).
-                    ///  uri: Overrides dataService's uri.
-                    ///  saveAction: Custom save action on server side (default is SaveChanges).
-                    ///  headers: Extra http headers
-                    /// </summary>
-                    /// <param name="savePackage">Save package to send to server.</param>
-                    /// <param name="options">Save options, for details read summary.</param>
-                    /// <param name="successCallback">Function to call after operation succeeded.</param>
-                    /// <param name="errorCallback">Function to call when operation fails.</param>
-                    throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'saveChanges']);
-                };
+            return ctor;
+        })(),
+        /**
+         * Observable provider base class. Makes given object's properties observable.
+         * @class
+         */
+        ObservableProviderBase: (function () {
+            var ctor = function (name) {
+                this.name = name || 'ObservableProviderBase';
+            };
+            var proto = ctor.prototype;
 
-                var registerMetadataTypes;
-                function initialize(uri, metadataPrm, injections, instance) {
-                    instance._awaitingMetadata = false;
+            proto.toString = function () {
+                /// <summary>
+                /// String representation of the object.
+                /// </summary>
+                return this.name;
+            };
+
+            proto.isObservable = function (object, property) {
+                /// <summary>
+                /// When given property for given object is observable returns true, otherwise false.
+                /// </summary>
+                /// <param name="object">The object.</param>
+                /// <param name="property">The property to check.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'isObservable']);
+            };
+            proto.toObservable = function (object, type, callbacks) {
+                /// <summary>
+                /// Makes given object observable.
+                /// </summary>
+                /// <param name="object">The obect.</param>
+                /// <param name="type">The entity type.</param>
+                /// <param name="callbacks">The callbacks, beetle tracks entities using these callbacks.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'toObservable']);
+            };
+            proto.getValue = function (object, property) {
+                /// <summary>
+                /// Reads an observable property value from object.
+                /// </summary>
+                throw helper.createError(i18N.notImplemented, [this.name, 'getValue']);
+            };
+            proto.setValue = function (object, property, value) {
+                /// <summary>
+                /// Sets the value of observable property of given object.
+                /// </summary>
+                throw helper.createError(i18N.notImplemented, [this.name, 'setValue']);
+            };
+
+            return ctor;
+        })(),
+        AjaxProviderBase: (function () {
+            var ctor = function (name) {
+                /// <summary>
+                /// Ajax provider base class. Operates ajax operations.
+                /// </summary>
+                /// <param name="name">Name of the provider.</param>
+                this.name = name || 'AjaxProviderBase';
+                this.syncSupported = true;
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// String representation of the object.
+                /// </summary>
+                return this.name;
+            };
+
+            proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                /// <summary>
+                /// Ajax operation virtual method.
+                /// </summary>
+                /// <param name="uri">Uri to make request.</param>
+                /// <param name="type">Request type (POST, GET..)</param>
+                /// <param name="dataType">Request data type (xml, json..)</param>
+                /// <param name="contentType">Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)</param>
+                /// <param name="data">Request data.</param>
+                /// <param name="async">If set to false, request will be made synchronously.</param>
+                /// <param name="timeout">AJAX call timeout value. if call won't be completed after given time, exception will be thrown.</param>
+                /// <param name="extra">implementor specific arguments.</param>
+                /// <param name="headers">custom HTTP headers.</param>
+                /// <param name="successCallback">Function to call after operation succeeded.</param>
+                /// <param name="errorCallback">Function to call when operation fails.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
+            };
+
+            proto.createError = function (xhr) {
+                /// <summary>
+                /// Creates an error object by parsing XHR result.
+                /// </summary>
+                /// <param name="xhr">XML Http Request object.</param>
+                var obj = { status: xhr.status, xhr: xhr, detail: xhr.responseText };
+                return helper.createError(xhr.statusText, obj);
+            }
+
+            proto.getHeaderGetter = function (xhr) {
+                return function (header) {
+                    return xhr.getResponseHeader(header);
+                };
+            }
+
+            return ctor;
+        })(),
+        SerializationServiceBase: (function () {
+            var ctor = function (name) {
+                /// <summary>
+                /// Serialization service base class. Deserializes incoming data and serializes outgoing data.
+                /// </summary>
+                /// <param name="name">Name of the service.</param>
+                this.name = name || 'SerializationServiceBase';
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// String representation of the object.
+                /// </summary>
+                return this.name;
+            };
+
+            proto.serialize = function (data) {
+                /// <summary>
+                /// Serializes given data to string.
+                /// </summary>
+                /// <param name="data">Serialized string.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'serialize']);
+            };
+            proto.deserialize = function (string) {
+                /// <summary>
+                /// Deserializes given string to object.
+                /// </summary>
+                /// <param name="string">Deserialized object.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'deserialize']);
+            };
+
+            return ctor;
+        })(),
+        PromiseProviderBase: (function () {
+            var ctor = function (name) {
+                /// <summary>
+                /// Promise provider base class. Creates deferred promises for async operations..
+                /// </summary>
+                /// <param name="name">Name of the provider.</param>
+                this.name = name || 'PromiseProviderBase';
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// String representation of the object.
+                /// </summary>
+                return this.name;
+            };
+
+            proto.deferred = function () {
+                /// <summary>
+                /// Creates deferred object.
+                /// </summary>
+                throw helper.createError(i18N.notImplemented, [this.name, 'deferred']);
+            };
+            proto.getPromise = function (deferred) {
+                /// <summary>
+                /// Gets promise for deferred object.
+                /// </summary>
+                throw helper.createError(i18N.notImplemented, [this.name, 'getPromise']);
+            };
+            proto.resolve = function (deferred, data) {
+                /// <summary>
+                /// Resolves given promise for succesfull operation.
+                /// </summary>
+                /// <param name="deferred">Promise object.</param>
+                /// <param name="data">Data to pass success callback.</param>
+                /// <param name="extra">Extra data for operation.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'resolve']);
+            };
+            proto.reject = function (deferred, error) {
+                /// <summary>
+                /// Rejects given promise for failed operation.
+                /// </summary>
+                /// <param name="deferred">Promise object.</param>
+                /// <param name="error">Error to pass failed callback.</param>
+                throw helper.createError(i18N.notImplemented, [this.name, 'reject']);
+            };
+
+            return ctor;
+        })(),
+        DataServiceBase: (function () {
+            // cache metadata to reduce network traffic.
+            var _metadataCache = [];
+
+            var ctor = function (uri, metadataPrm, injections) {
+                /// <summary>
+                /// Data service base class.
+                /// </summary>
+                /// <param name="uri">Service URI.</param>
+                /// <param name="metadataPrm">[Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used, no auto relation fix]</param>
+                /// <param name="injections">
+                /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService, ajaxTimeout, dataType, contentType. 
+                ///  When not given, defaults will be used.
+                /// </param>
+                initialize(uri, metadataPrm, injections, this);
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// String representation of the object.
+                /// </summary>
+                return this.uri;
+            };
+
+            proto.isReady = function () {
+                /// <summary>
+                /// Checks if service is ready.
+                /// </summary>
+                return !this._awaitingMetadata;
+            };
+
+            proto.ready = function (callback) {
+                /// <summary>
+                /// Subscribe ready callback.
+                /// </summary>
+                this._readyCallbacks.push(callback);
+
+                checkReady(this);
+            };
+
+            proto.getEntityType = function (shortName) {
+                /// <summary>
+                /// Gets entity type from metadata by its short name.
+                /// </summary>
+                /// <param name="shortName">Entity type short name.</param>
+                return this.metadataManager ? this.metadataManager.getEntityType(shortName) : null;
+            };
+
+            proto.createQuery = function (resourceName, shortName, manager) {
+                /// <summary>
+                /// Creates a query for a resource. Every data service can have their own query types.
+                /// </summary>
+                /// <param name="resourceName">Resource to query (mandatory).</param>
+                /// <param name="shortName">Short name of the entity type.</param>
+                /// <param name="manager">Entity manager.</param>
+                helper.assertPrm(resourceName, 'resourceName').isNotEmptyString().check();
+                if (shortName) return this.createEntityQuery(shortName, resourceName, manager);
+                if (this.metadataManager) return this.metadataManager.createQuery(resourceName, null, manager);
+                return new querying.EntityQuery(resourceName, null, manager);
+            };
+
+            proto.createEntityQuery = function (shortName, resourceName, manager) {
+                /// <summary>
+                /// Creates a query for a resource. Every data service can have their own query types.
+                /// </summary>
+                /// <param name="shortName">Short name of the entity type (mandatory).</param>
+                /// <param name="resourceName">Resource to query.</param>
+                if (!this.metadataManager)
+                    throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
+                return this.metadataManager.createQuery(resourceName, shortName, manager);
+            };
+
+            proto.registerCtor = function (shortName, constructor, initializer) {
+                /// <summary>
+                /// Register constructor and initializer (optional) for given type.
+                ///  Constructor is called right after the entity object is generated.
+                ///  Initializer is called after entity started to being tracked (properties converted to observable).
+                /// </summary>
+                /// <param name="shortName">Entity type short name.</param>
+                /// <param name="constructor">Constructor function.</param>
+                /// <param name="initializer">Initializer function.</param>
+                if (this.metadataManager == null)
+                    throw helper.createError(i18N.noMetadataEntityQuery);
+                this.metadataManager.registerCtor(shortName, constructor, initializer);
+            };
+
+            proto.createEntity = function (shortName, initialValues) {
+                /// <summary>
+                /// Creates an entity based on metadata information.
+                /// </summary>
+                /// <param name="shortName">Short name of the entity type.</param>
+                /// <param name="initialValues">Entity initial values.</param>
+                if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
+                return this.metadataManager.createEntity(shortName, initialValues);
+            };
+
+            proto.createRawEntity = function (shortName, initialValues) {
+                /// <summary>
+                /// Create the entity by its type's short name but do not convert to observable and do not add to manager.
+                /// </summary>
+                /// <param name="shortName">Entity type short name.</param>
+                /// <param name="initialValues">Entity initial values.</param>
+                if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
+                return this.metadataManager.createRawEntity(shortName, initialValues);
+            };
+
+            proto.toEntity = function (result, typeName) {
+                /// <summary>
+                /// Creates an entity based on metadata information.
+                /// </summary>
+                /// <param name="result">Raw result to make entity (observable).</param>
+                /// <param name="typeName">Entity type name.</param>
+                var type = null;
+                if (this.metadataManager)
+                    type = this.metadataManager.getEntityTypeByFullName(typeName);
+                if (!type) type = new metadata.EntityType(typeName);
+                return core.EntityTracker.toEntity(result, type, settings.getObservableProvider());
+            };
+
+            proto.toODataQueryParams = function (query, varContext) {
+                /// <summary>
+                /// Converts given query to a OData query string format.
+                /// </summary>
+                /// <param name="query">The query..</param>
+                /// <param name="varContext">Variable context for the query.</param>
+                if (query.isMultiTyped === true)
+                    throw helper.createError(i18N.oDataNotSupportMultiTyped, { query: query });
+
+                var qc = { varContext: varContext };
+                var params = [];
+                helper.forEach(query.parameters, function (prm) {
+                    params.push({ name: prm.name, value: prm.value == null ? '' : prm.value });
+                });
+
+                if (query.inlineCountEnabled === true)
+                    params.push({ name: '$inlinecount', value: 'allpages' });
+
+                helper.forEach(query.expressions, function (exp, i) {
+                    qc.expVarContext = exp.varContext;
+                    var name, value;
+                    if (exp.onlyBeetle === true) {
+                        name = '!e' + i;
+                        value = exp.toBeetleQuery(qc);
+                        value = exp.name + ':' + value;
+                    } else {
+                        name = '$' + exp.name;
+                        value = exp.toODataQuery(qc);
+                    }
+                    params.push({ name: name, value: value });
+                    qc.expVarContext = undefined;
+                });
+
+                return params;
+            };
+
+            proto.toBeetleQueryParams = function (query, varContext) {
+                /// <summary>
+                /// Converts given query to a Beetle query string format.
+                /// </summary>
+                /// <param name="query">The query..</param>
+                /// <param name="varContext">Variable context for the query.</param>
+                var qc = { varContext: varContext };
+                var params = [];
+                helper.forEach(query.parameters, function (prm) {
+                    params.push({ name: prm.name, value: prm.value == null ? '' : prm.value });
+                });
+
+                if (query.inlineCountEnabled === true)
+                    params.push({ name: '!e0', value: 'inlinecount:allpages' });
+
+                helper.forEach(query.expressions, function (exp, i) {
+                    qc.expVarContext = exp.varContext;
+                    params.push({ name: '!e' + (i + 1), value: exp.name + ':' + exp.toBeetleQuery(qc) });
+                    qc.expVarContext = undefined;
+                });
+
+                return params;
+            };
+
+            proto.fetchMetadata = function (options) {
+                /// <summary>
+                /// Fetch metadata from server.
+                ///  Fetch metadata options;
+                ///  async: When false, ajax call will be made synchronously (default: true).
+                /// </summary>
+                /// <param name="options">Fetch metadata options, for details read summary.</param>
+                /// <param name="successCallback">Function to call after operation succeeded.</param>
+                /// <param name="errorCallback">Function to call when operation fails.</param>
+                throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'fetchMetadata']);
+            };
+            proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
+                /// <summary>
+                /// When there is no metadata available services may be able to create entities asynchronously (server side must be able to support this).
+                ///  Asynchronous entity creation options;
+                ///  makeObservable: When true raw entity will be converted to observable.
+                ///  async: When false, ajax call will be made synchronously (default: true).
+                /// </summary>
+                /// <param name="typeName">Type name to create.</param>
+                /// <param name="initialValues">Entity initial values.</param>
+                /// <param name="options">Asynchronous entity creation options, for details read summary.</param>
+                /// <param name="successCallback">Function to call after operation succeeded.</param>
+                /// <param name="errorCallback">Function to call when operation fails.</param>
+                throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'createEntityAsync']);
+            };
+            proto.executeQuery = function (query, options, successCallback, errorCallback) {
+                /// <summary>
+                /// Executes given query.
+                /// 
+                ///  Query options;
+                ///  merge: Merge strategy
+                ///  execution: Execution strategy
+                ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
+                ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
+                ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
+                ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
+                ///  uri: Overrides dataService's uri.
+                ///  headers: Extra http headers
+                ///  
+                ///  -Options will be passed to services also, so we can pass service specific options too, these are available for OData and Beetle services;
+                ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
+                ///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
+                ///  dataType: We can set ajax call's dataType with this option
+                ///  contentType: We can set ajax call's contentType with this option
+                ///  async: When false, ajax call will be made synchronously (default: true).
+                /// </summary>
+                /// <param name="query">The query.</param>
+                /// <param name="options">Query options, for detail read summary.</param>
+                /// <param name="successCallback">Function to call after operation succeeded.</param>
+                /// <param name="errorCallback">Function to call when operation fails.</param>
+                throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQuery']);
+            };
+            proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
+                /// <summary>
+                /// Executes given query string.
+                /// </summary>
+                /// <param name="resource">The resource.</param>
+                /// <param name="queryParams">The query parameters.</param>
+                /// <param name="options">makeObservable, usePost etc. query execution parameters.</param>
+                /// <param name="successCallback">Function to call after operation succeeded.</param>
+                /// <param name="errorCallback">Function to call when operation fails.</param>
+                throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQueryParams']);
+            };
+            proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
+                /// <summary>
+                /// Posts all changes to server.
+                ///  Save options,
+                ///  async: When false, ajax call will be made synchronously (default: true).
+                ///  uri: Overrides dataService's uri.
+                ///  saveAction: Custom save action on server side (default is SaveChanges).
+                ///  headers: Extra http headers
+                /// </summary>
+                /// <param name="savePackage">Save package to send to server.</param>
+                /// <param name="options">Save options, for details read summary.</param>
+                /// <param name="successCallback">Function to call after operation succeeded.</param>
+                /// <param name="errorCallback">Function to call when operation fails.</param>
+                throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'saveChanges']);
+            };
+
+            var registerMetadataTypes;
+            function initialize(uri, metadataPrm, injections, instance) {
+                instance._awaitingMetadata = false;
+                instance._readyCallbacks = [];
+
+                if (uri == null) uri = '';
+                else if (uri[uri.length - 1] !== '/') uri += '/';
+                instance.uri = uri;
+
+                injections = injections || {};
+                instance.ajaxProvider = injections.ajaxProvider || settings.getAjaxProvider();
+                instance.serializationService = injections.serializationService || settings.getSerializationService();
+
+                instance.ajaxTimeout = injections.ajaxTimeout;
+                instance.dataType = injections.dataType || 'json';
+                instance.contentType = injections.contentType || 'application/json; charset=utf-8';
+
+                registerMetadataTypes = injections.registerMetadataTypes;
+                if (registerMetadataTypes == null)
+                    registerMetadataTypes = settings.registerMetadataTypes;
+
+                // If metadata parameter is false or undefined, it means do not use metadata
+                if (metadataPrm !== false || metadataPrm === undefined) {
+                    // When there is no metadata or metadata is true fetch metadata from server.
+                    if (metadataPrm == null) {
+                        // try to get metadata from cache
+                        var cached = null;
+                        if (settings.cacheMetadata === true)
+                            cached = helper.findInArray(_metadataCache, uri, 'uri');
+                        if (cached)
+                            instance.metadataManager = cached.data;
+                        else {
+                            instance._awaitingMetadata = true;
+                            instance.fetchMetadata(
+                                null,
+                                function (metadataObject) {
+                                    instance._awaitingMetadata = false;
+                                    instance.metadataManager = new metadata.MetadataManager(metadataObject);
+                                    // cache retrieved and parsed metadata
+                                    if (settings.cacheMetadata === true)
+                                        _metadataCache.push({ uri: uri, data: instance.metadataManager });
+                                    checkReady(instance);
+                                },
+                                function (e) {
+                                    throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
+                                });
+                        }
+                    } else if (Assert.isInstanceOf(metadataPrm, metadata.MetadataManager))
+                        instance.metadataManager = metadataPrm;
+                    else if (Assert.isObject(metadataPrm)) {
+                        try {
+                            instance.metadataManager = new metadata.MetadataManager(metadataPrm);
+                        } catch (e) {
+                            throw helper.createError(i18N.invalidArguments, { exception: e, args: arguments, dataService: this });
+                        }
+                    }
+                }
+                if (!instance._awaitingMetadata)
+                    checkReady(instance);
+            }
+
+            function checkReady(instance) {
+                if (instance.isReady()) {
+                    var metadata = instance.metadataManager;
+                    if (registerMetadataTypes && metadata) {
+                        var managerName = metadata.name;
+                        if (!(managerName in root))
+                            root[managerName] = core.EntityManager;
+                    }
+
+                    var cs = instance._readyCallbacks.slice(0);
                     instance._readyCallbacks = [];
-
-                    if (uri == null) uri = '';
-                    else if (uri[uri.length - 1] !== '/') uri += '/';
-                    instance.uri = uri;
-
-                    injections = injections || {};
-                    instance.ajaxProvider = injections.ajaxProvider || settings.getAjaxProvider();
-                    instance.serializationService = injections.serializationService || settings.getSerializationService();
-
-                    instance.ajaxTimeout = injections.ajaxTimeout;
-                    instance.dataType = injections.dataType || 'json';
-                    instance.contentType = injections.contentType || 'application/json; charset=utf-8';
-
-                    registerMetadataTypes = injections.registerMetadataTypes;
-                    if (registerMetadataTypes == null)
-                        registerMetadataTypes = settings.registerMetadataTypes;
-
-                    // If metadata parameter is false or undefined, it means do not use metadata
-                    if (metadataPrm !== false || metadataPrm === undefined) {
-                        // When there is no metadata or metadata is true fetch metadata from server.
-                        if (metadataPrm == null) {
-                            // try to get metadata from cache
-                            var cached = null;
-                            if (settings.cacheMetadata === true)
-                                cached = helper.findInArray(_metadataCache, uri, 'uri');
-                            if (cached)
-                                instance.metadataManager = cached.data;
-                            else {
-                                instance._awaitingMetadata = true;
-                                instance.fetchMetadata(
-                                    null,
-                                    function (metadataObject) {
-                                        instance._awaitingMetadata = false;
-                                        instance.metadataManager = new metadata.MetadataManager(metadataObject);
-                                        // cache retrieved and parsed metadata
-                                        if (settings.cacheMetadata === true)
-                                            _metadataCache.push({ uri: uri, data: instance.metadataManager });
-                                        checkReady(instance);
-                                    },
-                                    function (e) {
-                                        throw helper.createError(i18N.couldNotLoadMetadata, { exception: e, args: arguments, dataService: this });
-                                    });
-                            }
-                        } else if (Assert.isInstanceOf(metadataPrm, metadata.MetadataManager))
-                            instance.metadataManager = metadataPrm;
-                        else if (Assert.isObject(metadataPrm)) {
-                            try {
-                                instance.metadataManager = new metadata.MetadataManager(metadataPrm);
-                            } catch (e) {
-                                throw helper.createError(i18N.invalidArguments, { exception: e, args: arguments, dataService: this });
-                            }
-                        }
-                    }
-                    if (!instance._awaitingMetadata)
-                        checkReady(instance);
-                }
-
-                function checkReady(instance) {
-                    if (instance.isReady()) {
-                        var metadata = instance.metadataManager;
-                        if (registerMetadataTypes && metadata) {
-                            var managerName = metadata.name;
-                            if (!(managerName in root))
-                                root[managerName] = core.EntityManager;
-                        }
-
-                        var cs = instance._readyCallbacks.slice(0);
-                        instance._readyCallbacks = [];
-                        for (var i = 0; i < cs.length; i++) {
-                            var c = cs[i];
-                            if (c) c.call(instance);
-                        }
+                    for (var i = 0; i < cs.length; i++) {
+                        var c = cs[i];
+                        if (c) c.call(instance);
                     }
                 }
-
-                return ctor;
-            })()
-        };
-    })();
-    var impls = (function () {
-        /// <summary>Base type implementations.</summary>
-
-        return {
-            /// <field>Default date converter class. Uses browser's default Date object.</field>
-            DefaultDateConverter: (function () {
-                var ctor = function () {
-                    baseTypes.DateConverterBase.call(this, 'Default Date Converter');
-                };
-                helper.inherit(ctor, baseTypes.DateConverterBase);
-                var proto = ctor.prototype;
-
-                proto.parse = function (value) {
-                    if (typeof value != "string") return null;
-                    if (value.length < 10) return null;
-                    if (!/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(value.substr(0, 10))) return null;
-                    if (/.\d{3}$/.test(value)) value += 'Z';
-                    try {
-                        var d = Date.parse(value);
-                        return isNaN(d) ? null : new Date(d);
-                    } catch (e) {
-                        return null;
-                    }
-                };
-
-                proto.toISOString = function (value) {
-                    return value.toISOString();
-                };
-
-                return ctor;
-            })(),
-            /// <field>Knockout observable provider class. Makes given object's properties observable.</field>
-            KoObservableProvider: (function () {
-
-                var ctor = function (ko) {
-                    baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
-                    this.ko = ko;
-
-                    /// <summary>
-                    /// Observable value read-write interceptor. 
-                    /// Because ko does not give old and new values together when notifying subscribers, I had to write this extender.
-                    /// </summary>
-                    /// <param name="target">Observable to extend.</param>
-                    /// <param name="interceptor">Extender parameter. We pass before and after callbacks with this.</param>
-                    if (ko.extenders.intercept == null) {
-                        ko.extenders.intercept = function (target, interceptor) {
-                            var result = ko.computed({
-                                read: target,
-                                write: function (newValue) {
-                                    var callback = interceptor && interceptor.callback;
-                                    if (callback)
-                                        callback(interceptor.object, interceptor.property, target, newValue);
-                                }
-                            });
-
-                            return result;
-                        };
-                    }
-                };
-                helper.inherit(ctor, baseTypes.ObservableProviderBase);
-                var proto = ctor.prototype;
-
-                proto.isObservable = function (object, property) {
-                    return this.ko.isObservable(object[property]);
-                };
-
-                proto.toObservable = function (object, type, callbacks) {
-                    var pc = callbacks && callbacks.propertyChange;
-                    var ac = callbacks && callbacks.arrayChange;
-                    var dpc = callbacks && callbacks.dataPropertyChange;
-                    var snpc = callbacks && callbacks.scalarNavigationPropertyChange;
-                    var pnpc = callbacks && callbacks.pluralNavigationPropertyChange;
-                    var as = callbacks && callbacks.arraySet;
-                    var that = this;
-
-                    var ps = [];
-                    helper.forEachProperty(object, function (p, v) {
-                        ps.push({ p: p, v: v });
-                    });
-                    if (type && type.hasMetadata) {
-                        helper.forEach(type.dataProperties, function (dp) {
-                            var v = object[dp.name];
-                            if (v === undefined) v = null;
-                            else v = dp.handle(v);
-                            object[dp.name] = toObservableProperty(dp, v, dpc);
-                            helper.removeFromArray(ps, dp.name, 'p');
-                        });
-                        helper.forEach(type.navigationProperties, function (np) {
-                            var v = object[np.name];
-                            if (v === undefined) v = null;
-                            if (np.isScalar)
-                                object[np.name] = toObservableProperty(np, v, snpc);
-                            else
-                                object[np.name] = toObservableArray(np, np.name, v, pnpc, as);
-                            helper.removeFromArray(ps, np.name, 'p');
-                        });
-                    }
-                    helper.forEach(ps, function (pv) {
-                        var p = pv.p;
-                        var v = pv.v;
-                        if (Assert.isArray(v))
-                            object[p] = toObservableArray(p, p, v, ac, as);
-                        else
-                            object[p] = toObservableProperty(p, v, pc);
-                        if (!helper.findInArray(type.properties, p))
-                            type.properties.push(p);
-                    });
-
-                    function toObservableProperty(property, value, callback) {
-                        var retVal = that.ko.observable(value);
-                        if (callback)
-                            return that.ko.observable(value).extend({
-                                intercept: {
-                                    object: object,
-                                    property: property,
-                                    callback: callback
-                                }
-                            });
-                        return retVal;
-                    }
-
-                    function toObservableArray(property, propertyName, value, after, setCallback) {
-                        var retVal;
-                        value = value || [];
-                        if (after)
-                            value = helper.createTrackableArray(value, object, property,
-                                function (o, p, i, r, a) {
-                                    if (retVal.$fromKo !== true)
-                                        object[propertyName].valueHasMutated();
-                                    retVal.$fromKo = false;
-                                    after(o, p, i, r, a);
-                                });
-                        retVal = that.ko.observableArray(value);
-                        retVal.subscribe(function () { retVal.$fromKo = true; }, null, "beforeChange");
-                        if (setCallback)
-                            retVal.equalityComparer = function (items, newItems) {
-                                setCallback(object, property, items, newItems);
-                            };
-                        return retVal;
-                    }
-                };
-
-                proto.getValue = function (object, property) {
-                    return this.ko.utils.unwrapObservable(object[property]);
-                };
-
-                proto.setValue = function (object, property, value) {
-                    object[property](value);
-                };
-
-                return ctor;
-            })(),
-            /// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
-            PropertyObservableProvider: (function () {
-                var ctor = function () {
-                    baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
-                };
-                helper.inherit(ctor, baseTypes.ObservableProviderBase);
-                var proto = ctor.prototype;
-
-                proto.isObservable = function (object, property) {
-                    return object['$fields'] !== undefined && object['$fields'][property] !== undefined;
-                };
-
-                proto.toObservable = function (object, type, callbacks) {
-                    var pc = callbacks && callbacks.propertyChange;
-                    var ac = callbacks && callbacks.arrayChange;
-                    var dpc = callbacks && callbacks.dataPropertyChange;
-                    var snpc = callbacks && callbacks.scalarNavigationPropertyChange;
-                    var pnpc = callbacks && callbacks.pluralNavigationPropertyChange;
-                    var as = callbacks && callbacks.arraySet;
-
-                    var fields = {};
-                    var ps = [];
-                    helper.forEachProperty(object, function (p, v) {
-                        ps.push({ p: p, v: v });
-                    });
-                    if (type && type.hasMetadata) {
-                        helper.forEach(type.dataProperties, function (dp) {
-                            var v = object[dp.name];
-                            if (v === undefined) v = null;
-                            else v = dp.handle(v);
-                            delete object[dp.name];
-                            toObservableProperty(dp, dp.name, dpc);
-                            helper.removeFromArray(ps, dp.name, 'p');
-                            fields[dp.name] = v;
-                        });
-                        helper.forEach(type.navigationProperties, function (np) {
-                            var v = object[np.name];
-                            if (v === undefined) v = null;
-                            delete object[np.name];
-                            if (np.isScalar) {
-                                toObservableProperty(np, np.name, snpc);
-                                fields[np.name] = v;
-                            } else
-                                toObservableArray(np, np.name, v, pnpc, as);
-                            helper.removeFromArray(ps, np.name, 'p');
-                        });
-                    }
-                    helper.forEach(ps, function (pv) {
-                        var p = pv.p;
-                        var v = pv.v;
-                        delete object[p];
-                        if (Assert.isArray(v))
-                            toObservableArray(p, p, v, ac, as);
-                        else {
-                            toObservableProperty(p, p, pc);
-                            fields[p] = v;
-                        }
-                        if (!helper.findInArray(type.properties, p))
-                            type.properties.push(p);
-                    });
-                    object['$fields'] = fields;
-                    return object;
-
-                    function toObservableProperty(property, propertyName, callback) {
-                        return Object.defineProperty(object, propertyName, {
-                            get: function () {
-                                return object['$fields'][propertyName];
-                            },
-                            set: function (newValue) {
-                                if (callback) {
-                                    var a = getAccessor(object, propertyName);
-                                    callback(object, property, a, newValue);
-                                } else
-                                    object['$fields'][propertyName] = newValue;
-                            },
-                            enumerable: true,
-                            configurable: true
-                        });
-                    }
-
-                    function toObservableArray(property, propertyName, value, after, setCallback) {
-                        value = value || [];
-                        if (after)
-                            value = helper.createTrackableArray(value, object, property, after);
-                        fields[propertyName] = value;
-
-                        return Object.defineProperty(object, propertyName, {
-                            get: function () {
-                                return object['$fields'][propertyName];
-                            },
-                            set: function (newItems) {
-                                if (setCallback)
-                                    setCallback(object, property, items, newItems);
-                                else
-                                    object['$fields'][propertyName] = newItems;
-                            }
-                        });
-                    }
-
-                    function getAccessor(o, p) {
-                        return function () {
-                            return arguments.length == 0 ? o['$fields'][p] : o['$fields'][p] = arguments[0];
-                        };
-                    }
-                };
-
-                proto.getValue = function (object, property) {
-                    return object[property];
-                };
-
-                proto.setValue = function (object, property, value) {
-                    object[property] = value;
-                };
-
-                return ctor;
-            })(),
-            /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
-            JQueryAjaxProvider: (function () {
-                var ctor = function ($) {
-                    baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
-                    this.$ = $;
-                };
-                helper.inherit(ctor, baseTypes.AjaxProviderBase);
-                var proto = ctor.prototype;
-
-                proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                    var that = this;
-                    var o = {
-                        url: uri,
-                        accepts: {
-                            json: 'application/json; odata=verbose',
-                            xml: 'text/xml; application/xhtml+xml;application/xml',
-                            text: 'text/xml'
-                        },
-                        type: method,
-                        dataType: dataType,
-                        contentType: contentType,
-                        traditional: false,
-                        data: data,
-                        async: async,
-                        headers: headers,
-                        success: function (result, status, xhr) {
-                            xhr.onreadystatechange = null;
-                            xhr.abort = null;
-                            if (result && result.Error) {
-                                var err = that.createError(xhr);
-                                err.message = result.Error;
-                                errorCallback(err);
-                            } else successCallback(result, that.getHeaderGetter(xhr), xhr);
-                        },
-                        error: function (xhr) {
-                            xhr.onreadystatechange = null;
-                            xhr.abort = null;
-                            errorCallback(that.createError(xhr));
-                        }
-                    };
-                    if (async !== false)
-                        o.timeout = timeout;
-                    if (extra != null)
-                        this.$.extend(o, extra);
-                    if (o.cache == null) o.cache = false;
-                    return this.$.ajax(o);
-                };
-
-                return ctor;
-            })(),
-            /// <field>Angularjs ajax provider class. Operates ajax operations via angularjs.</field>
-            AngularjsAjaxProvider: (function () {
-                var ctor = function (angularjs) {
-                    baseTypes.AjaxProviderBase.call(this, 'Angular.js Ajax Provider');
-                    this.syncSupported = false;
-                    this.$http = angularjs.injector(["ng"]).get('$http');
-                };
-                helper.inherit(ctor, baseTypes.AjaxProviderBase);
-                var proto = ctor.prototype;
-
-                proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                    if (async === false)
-                        throw helper.createError(i18N.syncNotSupported, [this.name]);
-
-                    var o = {
-                        method: method,
-                        url: uri,
-                        contentType: contentType,
-                        data: data,
-                        timeout: timeout,
-                        headers: headers,
-                        responseType: dataType,
-                        transformResponse: [function (data) {
-                            return data;
-                        }]
-                    };
-                    if (extra != null)
-                        helper.extend(o, extra);
-                    if (o.cache == null) o.cache = false;
-                    return this.$http(o)
-                        .then(function (resp) {
-                            var headers = resp.headers();
-                            return successCallback(resp.data, function (header) {
-                                if (!header) return headers;
-                                return headers[header.toLowerCase()];
-                            });
-                        }, function (error) {
-                            var obj = { status: error.status, detail: error.data, error: error };
-                            var e = helper.createError(error.statusText, obj);
-                            errorCallback(e);
-                            return e;
-                        });
-                };
-
-                return ctor;
-            })(),
-            /// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
-            AngularAjaxProvider: (function () {
-                var ctor = function (http, RequestConstructor, HeadersConstructor) {
-                    baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
-                    this.syncSupported = false;
-                    this.http = http;
-                    this.RequestConstructor = RequestConstructor;
-                    this.HeadersConstructor = HeadersConstructor;
-                };
-                helper.inherit(ctor, baseTypes.AjaxProviderBase);
-                var proto = ctor.prototype;
-
-                proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                    var hs = new this.HeadersConstructor();
-
-                    hs.append("Content-Type", contentType);
-                    if (headers != null) {
-                        for (var p in headers) {
-                            hs.append(p, headers[p]);
-                        }
-                    }
-
-                    var requestOptions = {
-                        url: uri,
-                        method: method,
-                        body: data,
-                        headers: hs,
-                        timeout: timeout
-                    };
-
-                    if (extra != null) {
-                        helper.extend(requestOptions, extra);
-                    }
-
-                    var request = new this.RequestConstructor(requestOptions);
-
-                    return this.http.request(request)
-                        .subscribe(resp => {
-                            return successCallback(resp.text(), name => {
-                                return resp.headers[name];
-                            });
-                        },
-                        error => {
-                            var obj = { status: error.status, detail: error._body, error: error };
-                            var e = helper.createError(error.statusText, obj);
-                            errorCallback(e);
-                            return e;
-                        });
-                };
-
-                return ctor;
-            })(),
-            /// <field>Pure javascript ajax provider class.</field>
-            VanillajsAjaxProvider: (function () {
-                var ctor = function () {
-                    baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
-                    this.syncSupported = true;
-                };
-                helper.inherit(ctor, baseTypes.AjaxProviderBase);
-                var proto = ctor.prototype;
-
-                proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                    var that = this;
-
-                    var xhr = new XMLHttpRequest();
-                    xhr.open(method, uri, async);
-
-                    xhr.setRequestHeader("Accept", "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml");
-                    xhr.setRequestHeader("Content-Type", contentType);
-                    if (async !== false)
-                        xhr.timeout = timeout;
-
-                    if (headers) {
-                        for (var p in headers) {
-                            xhr.setRequestHeader(p, headers[p]);
-                        }
-                    }
-
-                    xhr.onload = function () {
-                        xhr.onreadystatechange = null;
-                        xhr.abort = null;
-
-                        if (xhr.status === 200) {
-                            successCallback(xhr.responseText, that.getHeaderGetter(xhr), xhr);
-                        }
-                        else {
-                            errorCallback(that.createError(xhr));
-                        }
-                    };
-
-                    xhr.ontimeout = function () {
-                        xhr.onreadystatechange = null;
-                        xhr.abort = null;
-
-                        errorCallback(that.createError(xhr));
-                    };
-
-                    xhr.send(data);
-
-                    return xhr;
-                }
-
-                return ctor;
-            })(),
-            /// <field>Node.js ajax provider class.</field>
-            NodejsAjaxProvider: (function () {
-                var ctor = function (http, https) {
-                    baseTypes.AjaxProviderBase.call(this, 'Node.js Ajax Provider');
-                    this.syncSupported = false;
-                    this.http = http;
-                    this.https = https;
-                };
-                helper.inherit(ctor, baseTypes.AjaxProviderBase);
-                var proto = ctor.prototype;
-
-                proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                    if (async === false)
-                        throw helper.createError(i18N.syncNotSupported, [this.name]);
-
-                    var reURLInformation = new RegExp([
-                        '^(https?:)//', // protocol
-                        '(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
-                        '(/{0,1}[^?#]*)', // pathname
-                        '(\\?[^#]*|)', // search
-                        '(#.*|)$' // hash
-                    ].join(''));
-                    var uriParts = uri.match(reURLInformation),
-                        protocol = uriParts[1] == "https:" ? this.https : this.http,
-                        host = uriParts[3],
-                        port = uriParts[4],
-                        path = uriParts[5],
-                        search = uriParts[6];
-                    path += search;
-
-                    headers = headers || {};
-                    headers["Content-Type"] = contentType;
-                    headers["Accept"] = "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml";
-                    headers["Content-Length"] = (data && data.length) || 0;
-
-                    var options = {
-                        host: host,
-                        path: path,
-                        method: method,
-                        headers: headers,
-                        port: port || 80
-                    };
-
-                    var req = protocol.request(options, function (res) {
-                        res.setEncoding("utf8");
-
-                        var body = "";
-                        res.on('data', function (chunk) {
-                            body += chunk;
-                        });
-                        res.on("end", function () {
-                            if (res.statusCode == 200) {
-                                successCallback(body, function (name) {
-                                    if (!name) return res.headers;
-                                    return res.headers[name.toLowerCase()];
-                                });
-                            }
-                            else {
-                                var obj = { status: res.statusCode, detail: body };
-                                var e = helper.createError(res.statusMessage, obj);
-                                errorCallback(e);
-                            }
-                        });
-                    });
-
-                    if (data) {
-                        req.write(data);
-                    }
-
-                    if (timeout) {
-                        req.on("socket", function (socket) {
-                            socket.setTimeout(timeout);
-                            socket.on("timeout", function () {
-                                req.abort();
-                            });
-                        });
-                    }
-
-                    req.on('error', function (e) {
-                        errorCallback(e);
-                    });
-
-                    req.end();
-
-                    return req;
-                }
-
-                return ctor;
-            })(),
-            /// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
-            JsonSerializationService: (function () {
-                var ctor = function () {
-                    baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
-                };
-                helper.inherit(ctor, baseTypes.SerializationServiceBase);
-                var proto = ctor.prototype;
-
-                proto.serialize = function (data) {
-                    return JSON.stringify(data);
-                };
-
-                proto.deserialize = function (value) {
-                    if (Assert.isTypeOf(value, 'string'))
-                        return JSON.parse(value);
-                    return value;
-                };
-
-                return ctor;
-            })(),
-            /// <field>Q promise provider class.</field>
-            QPromiseProvider: (function () {
-                var ctor = function (Q) {
-                    baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
-                    this.Q = Q;
-                };
-                helper.inherit(ctor, baseTypes.PromiseProviderBase);
-                var proto = ctor.prototype;
-
-                proto.deferred = function () {
-                    return this.Q.defer();
-                };
-
-                proto.getPromise = function (deferred) {
-                    return deferred.promise;
-                };
-
-                proto.resolve = function (deferred, data) {
-                    deferred.resolve(data);
-                };
-
-                proto.reject = function (deferred, error) {
-                    deferred.reject(error);
-                };
-
-                return ctor;
-            })(),
-            /// <field>Angular.js promise provider.</field>
-            AngularjsPromiseProvider: (function () {
-                var ctor = function (angularjs) {
-                    baseTypes.PromiseProviderBase.call(this, 'Angular.js Promise Provider');
-                    this.ng = angularjs.injector(['ng']);
-                    this.$q = this.ng.get('$q');
-                    this.$rootScope = this.ng.get('$rootScope');
-                };
-                helper.inherit(ctor, baseTypes.PromiseProviderBase);
-                var proto = ctor.prototype;
-
-                proto.deferred = function () {
-                    return this.$q.defer();
-                };
-
-                proto.getPromise = function (deferred) {
-                    return deferred.promise;
-                };
-
-                proto.resolve = function (deferred, data) {
-                    deferred.resolve(data);
-                    this.$rootScope.$apply();
-                };
-
-                proto.reject = function (deferred, error) {
-                    deferred.reject(error);
-                    this.$rootScope.$apply();
-                };
-
-                return ctor;
-            })(),
-            /// <field>jQuery promise provider.</field>
-            JQueryPromiseProvider: (function () {
-                var ctor = function ($) {
-                    baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
-                    this.$ = $;
-                };
-                helper.inherit(ctor, baseTypes.PromiseProviderBase);
-                var proto = ctor.prototype;
-
-                proto.deferred = function () {
-                    return this.$.Deferred();
-                };
-
-                proto.getPromise = function (deferred) {
-                    return deferred.promise();
-                };
-
-                proto.resolve = function (deferred, data) {
-                    deferred.resolve(data);
-                };
-
-                proto.reject = function (deferred, error) {
-                    deferred.reject(error);
-                };
-
-                return ctor;
-            })(),
-            /// <field>ES6 promise provider.</field>
-            Es6PromiseProvider: (function () {
-                var ctor = function () {
-                    baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
-                };
-                helper.inherit(ctor, baseTypes.PromiseProviderBase);
-                var proto = ctor.prototype;
-
-                proto.deferred = function () {
-                    var deferred = {
-                        resolve: null,
-                        reject: null
-                    };
-
-                    deferred.promise = new Promise(function (resolve, reject) {
-                        deferred.resolve = resolve;
-                        deferred.reject = reject;
-                    });
-
-                    return deferred;
-                };
-
-                proto.getPromise = function (deferred) {
-                    return deferred.promise;
-                };
-
-                proto.resolve = function (deferred, data) {
-                    deferred.resolve(data);
-                };
-
-                proto.reject = function (deferred, error) {
-                    deferred.reject(error);
-                };
-
-                return ctor;
-            })()
-        };
-    })();
-    var metadata = (function () {
-        /// <summary>Metadata related types.</summary>
-
-        return {
-            DataProperty: (function () {
-                var ctor = function (owner, name, displayName, dataType, isNullable, isKeyPart, genPattern, defaultValue, useForConcurrency) {
-                    /// <summary>
-                    /// Data property default implementation.
-                    /// </summary>
-                    this.owner = owner;
-                    this.name = name;
-                    this.displayName = displayName || name;
-                    this.dataType = dataType;
-                    this.isNullable = isNullable;
-                    this.isKeyPart = isKeyPart;
-                    this.generationPattern = genPattern;
-                    this.defaultValue = defaultValue;
-                    this.useForConcurrency = useForConcurrency;
-                    this.relatedNavigationProperties = [];
-                    this.validators = [];
-                    this.isEnum = dataType instanceof core.dataTypes.enumeration;
-                    this.isComplex = dataType.isComplex;
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// toString override. Returns name.
-                    /// </summary>
-                    return this.displayName;
-                };
-
-                proto.isValid = function (value) {
-                    /// <summary>
-                    /// Checks if given value is valid for this property.
-                    /// </summary>
-                    /// <param name="value">Value to check.</param>
-                    if (value == null) return !this.isNullable;
-                    else return this.dataType.isValid(value, this);
-                };
-
-                proto.handle = function (value) {
-                    /// <summary>
-                    /// Tries to convert given value to this type.
-                    /// </summary>
-                    /// <param name="value">Value to check.</param>
-                    /// <returns type="">When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.</returns>
-                    if (this.dataType != core.dataTypes.string && value === "")
-                        value = null;
-
-                    if (value == null) {
-                        if (!this.isNullable)
-                            throw helper.createError(i18N.notNullable, [this.displayName], { property: this });
-                        return null;
-                    }
-                    value = this.dataType.handle(value, this);
-
-                    if (this.dataType == core.dataTypes.number && this.precision && value.toString().replace(/\./g, '').length > this.precision)
-                        throw helper.createError(i18N.maxPrecisionError, [value, this.precision],
-                            { dataType: dataType, value: value });
-                    if (this.dataType == core.dataTypes.number && this.scale != null) value = Number(value.toFixed(this.scale));
-
-                    return value;
-                };
-
-                proto.getDefaultValue = function () {
-                    /// <summary>
-                    /// Gets default value for this type.
-                    /// </summary>
-                    if (this.defaultValue != null) return this.defaultValue;
-                    if (this.isNullable) return null;
-                    if (this.generationPattern == enums.generationPattern.Identity && this.isKeyPart === true) return this.dataType.autoValue();
-                    return this.dataType.defaultValue();
-                };
-
-                proto.addValidation = function (name, func, message, args) {
-                    /// <summary>
-                    /// Add new validation method to data property.
-                    /// </summary>
-                    /// <param name="name">Name of the validation.</param>
-                    /// <param name="func">Validation function.</param>
-                    /// <param name="message">Message to show when validation fails.</param>
-                    /// <param name="args">Validator arguments.</param>
-                    helper.assertPrm(name, 'name').isNotEmptyString().check();
-                    helper.assertPrm(func, 'func').isFunction().check();
-                    this.validators.push(new core.Validator(name, func, message, args));
-                };
-
-                proto.validate = function (entity) {
-                    /// <summary>
-                    /// Validates entity agains entity, data property and navigation property validations.
-                    /// </summary>
-                    /// <param name="entity">Entity to validate.</param>
-                    var retVal = [];
-                    if (this.validators.length > 0) {
-                        var that = this;
-                        var value = helper.getValue(entity, this.name);
-                        helper.forEach(this.validators, function (v) {
-                            var result = v.validate(value, entity);
-                            if (result) retVal.push(helper.createValidationError(entity, value, that, result, v));
-                        });
-                    }
-                    return retVal;
-                };
-
-                return ctor;
-            })(),
-            NavigationProperty: (function () {
-                var ctor = function (owner, name, displayName, entityTypeName, isScalar, associationName, cascadeDelete, foreignKeyNames) {
-                    /// <summary>
-                    /// Navigation property default implemantation.
-                    /// </summary>
-                    this.owner = owner;
-                    this.name = name;
-                    this.displayName = displayName || name;
-                    this.entityTypeName = entityTypeName;
-                    this.entityType = null;
-                    this.isScalar = isScalar;
-                    this.isComplex = associationName === undefined;
-                    this.associationName = associationName;
-                    this.cascadeDelete = cascadeDelete === true;
-                    this.foreignKeyNames = foreignKeyNames || [];
-                    this.inverse = null;
-                    this.foreignKeys = [];
-                    this.validators = [];
-                    this.triggerOwnerModify = false;
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// toString override. Returns name.
-                    /// </summary>
-                    return this.displayName;
-                };
-
-                proto.checkAssign = function (value) {
-                    /// <summary>
-                    /// Checks if given value can be assigned to this property. If not throws an error.
-                    /// </summary>
-                    /// <param name="value">Value to check.</param>
-                    if (value == null) return;
-                    if (!value.$tracker) throw helper.createError(i18N.assignErrorNotEntity, [this], { property: this, value: value });
-                    var t = value.$tracker.entityType;
-                    if (!this.entityType.isAssignableWith(t)) throw helper.createError(i18N.assignError, [this.name, t.shortName], { property: this, value: value });
-                };
-
-                proto.addValidation = function (name, func, message, args) {
-                    /// <summary>
-                    /// Add new validation method to navigation property.
-                    /// </summary>
-                    /// <param name="name">Name of the validation.</param>
-                    /// <param name="func">Validation function.</param>
-                    /// <param name="message">Message to show when validation fails.</param>
-                    /// <param name="args">Validator arguments.</param>
-                    helper.assertPrm(name, 'name').isNotEmptyString().check();
-                    helper.assertPrm(func, 'func').isFunction().check();
-                    this.validators.push(new core.Validator(name, func, message, args));
-                };
-
-                proto.validate = function (entity) {
-                    /// <summary>
-                    /// Validates entity agains entity, data property and navigation property validations.
-                    /// </summary>
-                    /// <param name="entity">Entity to validate.</param>
-                    var retVal = [];
-                    if (this.validators.length > 0) {
-                        var that = this;
-                        var value = helper.getValue(entity, that.name);
-                        helper.forEach(this.validators, function (v) {
-                            var result = v.validate(value);
-                            if (result) retVal.push(helper.createValidationError(entity, value, that, result, v));
-                        });
-                    }
-                    return retVal;
-                };
-
-                return ctor;
-            })(),
-            EntityType: (function () {
-                var ctor = function (name, displayName, shortName, keyNames, baseTypeName, setName, setTypeName, isComplexType, metadataManager) {
-                    /// <summary>
-                    /// Entity type class. Defines an entity type. When there is no metadata for type, holds only the type name.
-                    /// </summary>
-                    this.name = name;
-                    this.displayName = displayName || name;
-                    this.shortName = shortName;
-                    this.keyNames = keyNames || [];
-                    this.baseTypeName = baseTypeName;
-                    this.setName = setName;
-                    this.setTypeName = setTypeName;
-                    this.metadataManager = metadataManager;
-                    this.hasMetadata = metadataManager != null;
-                    this.properties = [];
-                    this.dataProperties = [];
-                    this.navigationProperties = [];
-                    this.keys = [];
-                    this.floorType = this;
-                    this.baseType = null;
-                    this.validators = [];
-                    this.isComplexType = isComplexType == true;
-                    this.constructor = null;
-                    this.initializer = null;
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// toString override. Returns name.
-                    /// </summary>
-                    return this.name;
-                };
-
-                proto.getProperty = function (propertyPath) {
-                    /// <summary>
-                    /// Parses given string and finds property, looks recursively to navigation properties when needed.
-                    /// Example: if given path is OrderDetails.Supplier.Address.City, 
-                    /// this method will look to related navigation properties until Address and it will retun City property as dataProperty (if exists).
-                    /// </summary>
-                    /// <param name="propertyPath">Property path to navigate.</param>
-                    return getProperty(propertyPath.split('.'), this);
-                };
-
-                proto.createQuery = function (resourceName, manager) {
-                    /// <summary>
-                    /// Creates a new query for this type.
-                    /// </summary>
-                    /// <param name="resourceName">OData query resource name (Service controller action).</param>
-                    /// <param name="manager">The entity manager.</param>
-                    if (resourceName) return new querying.EntityQuery(resourceName, this, manager);
-
-                    var q = new querying.EntityQuery(this.setName, this, manager);
-                    return this.shortName == this.setTypeName ? q : q.ofType(this.shortName);
-                };
-
-                proto.registerCtor = function (constructor, initializer) {
-                    /// <summary>
-                    /// Register constructor and initializer (optional) for given type.
-                    ///  Constructor is called right after the entity object is generated.
-                    ///  Initializer is called after entity started to being tracked (properties converted to observable).
-                    /// </summary>
-                    /// <param name="constructor">Constructor function.</param>
-                    /// <param name="initializer">Initializer function.</param>
-                    if (constructor != null)
-                        helper.assertPrm(constructor, 'constructor').isFunction().check();
-                    if (initializer != null)
-                        helper.assertPrm(initializer, 'initializer').isFunction().check();
-                    this.constructor = constructor;
-                    this.initializer = initializer;
-                };
-
-                proto.createEntity = function (initialValues) {
-                    /// <summary>
-                    /// Creates a new entity for this type.
-                    /// </summary>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    var result = this.createRawEntity(initialValues);
-                    // make it observable
-                    return core.EntityTracker.toEntity(result, this, settings.getObservableProvider());
-                };
-
-                proto.createRawEntity = function (initialValues) {
-                    /// <summary>
-                    /// Creates a new entity for this type but do not convert it to observable.
-                    /// </summary>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    var result = initialValues || {};
-                    // create properties with default values for each data property defined in metadata.
-                    helper.forEach(this.dataProperties, function (dp) {
-                        if (result[dp.name] === undefined)
-                            result[dp.name] = dp.getDefaultValue();
-                    });
-                    // create properties with default values for each navigation property defined in metadata.
-                    helper.forEach(this.navigationProperties, function (np) {
-                        if (np.isComplex)
-                            result[np.name] = np.entityType.createRawEntity();
-                        else {
-                            if (np.isScalar) result[np.name] = null;
-                            else result[np.name] = [];
-                        }
-                    });
-                    callCtor(this, result);
-                    result.$type = this.name;
-                    return result;
-                };
-
-                function callCtor(type, entity) {
-                    /// <summary>
-                    /// Called after entity object is created.
-                    /// </summary>
-                    /// <param name="type">Type of the entity.</param>
-                    /// <param name="entity">The entity.</param>
-                    if (type.baseType) callCtor(type.baseType, entity);
-                    if (type.constructor)
-                        type.constructor.call(entity, entity);
-                }
-
-                proto.isAssignableWith = function (otherType) {
-                    /// <summary>
-                    /// Checks if this type can be set with given type.
-                    /// </summary>
-                    /// <param name="otherType">Type to assign.</param>
-                    return isAssignableWith(this, otherType);
-                };
-
-                proto.isAssignableTo = function (otherType) {
-                    /// <summary>
-                    /// Checks if this type can be set to given type.
-                    /// </summary>
-                    /// <param name="otherType">Type to check.</param>
-                    return isAssignableTo(this, otherType);
-                };
-
-                proto.hasSameBaseType = function (type) {
-                    /// <summary>
-                    /// Checks if this type and given type has common ancestor.
-                    /// This method is used to check key violation between different types.
-                    /// </summary>
-                    /// <param name="type">Other type.</param>
-                    return this.floorType.name === type.floorType.name;
-                };
-
-                proto.addDataProperty = function (name, displayName, dataType, isNullable, defaultValue) {
-                    /// <summary>
-                    /// Adds new dataProperty to this type.
-                    /// </summary>
-                    /// <param name="name">Name of the property.</param>
-                    /// <param name="name">Display name of the property.</param>
-                    /// <param name="dataType">Type of the property.</param>
-                    /// <param name="isNullable">Indicates if this property can be set with null.</param>
-                    /// <param name="defaultValue">Default value for the property.</param>
-                    helper.assertPrm(name, 'name').isNotEmptyString().check();
-                    var dp = helper.findInArray(this.dataProperties, name, 'name');
-                    if (dp)
-                        throw helper.createError(i18N.dataPropertyAlreadyExists, [name], { entityType: this, existing: dp });
-                    if (Assert.isNotEmptyString(dataType))
-                        dataType = core.dataTypes.byName(dataType);
-                    helper.assertPrm(dataType, 'dataType').isInstanceOf(core.dataTypes.baseType).check();
-                    if (defaultValue != null && !dataType.isValid(defaultValue))
-                        throw helper.createError(i18N.invalidDefaultValue, [defaultValue, dataType.name],
-                            { entityType: this, dataType: dataType, defaultValue: defaultValue });
-                    var property = new metadata.DataProperty(this, name, displayName, dataType, isNullable === true, false, null, defaultValue);
-                    this.dataProperties.push(property);
-                };
-
-                proto.addValidation = function (name, func, message, args) {
-                    /// <summary>
-                    /// Add new validation method to entity type.
-                    /// </summary>
-                    /// <param name="name">Name of the validation.</param>
-                    /// <param name="func">Validation function.</param>
-                    /// <param name="message">Message to show when validation fails.</param>
-                    /// <param name="args">Validator arguments.</param>
-                    helper.assertPrm(name, 'name').isNotEmptyString().check();
-                    helper.assertPrm(func, 'func').isFunction().check();
-                    this.validators.push(new core.Validator(name, func, message, args));
-                };
-
-                proto.validate = function (entity) {
-                    /// <summary>
-                    /// Validates entity agains entity, data property and navigation property validations.
-                    /// </summary>
-                    /// <param name="entity">Entity to validate.</param>
-                    var retVal = [];
-                    if (this.validators.length > 0) {
-                        helper.forEach(this.validators, function (v) {
-                            var result = v.validate(entity);
-                            if (result) retVal.push(helper.createValidationError(entity, null, null, result, v));
-                        });
-                    }
-                    helper.forEach(this.dataProperties, function (dp) {
-                        var result = dp.validate(entity);
-                        if (result) retVal = retVal.concat(result);
-                    });
-                    helper.forEach(this.navigationProperties, function (np) {
-                        var result = np.validate(entity);
-                        if (result) retVal = retVal.concat(result);
-                    });
-                    return retVal;
-                };
-
-                function getProperty(propertyPaths, type) {
-                    /// <summary>
-                    /// Finds given property paths one by one, looks recursively to navigation properties when needed.
-                    /// </summary>
-                    /// <param name="propertyPath">Property path array.</param>
-                    /// <param name="type">The type of the entity.</param>
-                    var len = propertyPaths.length;
-                    for (var i = 0; i < len; i++) {
-                        var p = propertyPaths[i];
-                        if (i == len - 1) {
-                            // if it is last property path, look it in all properties.
-                            var dp = helper.findInArray(type.dataProperties, p, 'name');
-                            return dp ? dp : helper.findInArray(type.navigationProperties, p, 'name');
-                        } else {
-                            // if it is not last property path, look it in navigation properties.
-                            var np = helper.findInArray(type.navigationProperties, p, 'name');
-                            if (np) type = np.entityType;
-                            else return null;
-                        }
-                    }
+            }
+
+            return ctor;
+        })()
+    };
+
+    /**
+     * Base type implementations.
+     * @namespace
+     */
+    var impls = {
+        /// <field>Default date converter class. Uses browser's default Date object.</field>
+        DefaultDateConverter: (function () {
+            var ctor = function () {
+                baseTypes.DateConverterBase.call(this, 'Default Date Converter');
+            };
+            helper.inherit(ctor, baseTypes.DateConverterBase);
+            var proto = ctor.prototype;
+
+            proto.parse = function (value) {
+                if (typeof value != "string") return null;
+                if (value.length < 10) return null;
+                if (!/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(value.substr(0, 10))) return null;
+                if (/.\d{3}$/.test(value)) value += 'Z';
+                try {
+                    var d = Date.parse(value);
+                    return isNaN(d) ? null : new Date(d);
+                } catch (e) {
                     return null;
                 }
+            };
 
-                function isAssignableWith(type1, type2) {
-                    /// <summary>
-                    /// Checks if this type can be set with given type.
-                    /// </summary>
-                    /// <param name="type1">Type to be assigned.</param>
-                    /// <param name="type2">Type to assign.</param>
-                    if (type1.name === type2.name)
-                        return true;
-                    else if (type2.baseType != null)
-                        return isAssignableWith(type1, type2.baseType);
+            proto.toISOString = function (value) {
+                return value.toISOString();
+            };
 
-                    return false;
-                }
+            return ctor;
+        })(),
+        /// <field>Knockout observable provider class. Makes given object's properties observable.</field>
+        KoObservableProvider: (function () {
 
-                function isAssignableTo(type1, type2) {
-                    /// <summary>
-                    /// Checks if this type can be set to given type.
-                    /// </summary>
-                    /// <param name="type1">Type to set.</param>
-                    /// <param name="type2">Type to check.</param>
-                    var name = Assert.isTypeOf(type2, 'string') ? type2 : type2.name;
-                    if (type1.name === name)
-                        return true;
-                    else if (type1.baseType != null)
-                        return isAssignableTo(type1.baseType, type2);
+            var ctor = function (ko) {
+                baseTypes.ObservableProviderBase.call(this, 'Knockout Observable Provider');
+                this.ko = ko;
 
-                    return false;
-                }
-
-                return ctor;
-            })(),
-            MetadataManager: (function () {
-                var ctor = function (metadataPrm) {
-                    /// <summary>
-                    /// Metadata manager default implementation.
-                    /// </summary>
-                    this.types = [];
-                    this.typesDict = {};
-                    this.enums = {};
-                    this.name = null;
-                    this.displayName = null;
-
-                    if (metadataPrm)
-                        this.parseBeetleMetadata(metadataPrm);
-                };
-                var proto = ctor.prototype;
-
-                proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
-                    return this.types.join(', ');
-                };
-
-                proto.getEntityTypeByFullName = function (typeName, throwIfNotFound) {
-                    /// <summary>
-                    /// Finds entity type by given entity type name (fully qualified).
-                    /// </summary>
-                    /// <param name="typeName">Type name</param>
-                    /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
-                    var type = helper.findInArray(this.types, typeName, 'name');
-                    if (!type && throwIfNotFound === true)
-                        throw helper.createError(i18N.notFoundInMetadata, [typeName], { metadataManager: this, typeName: typeName });
-                    return type;
-                };
-
-                proto.getEntityType = function (shortName, throwIfNotFound) {
-                    /// <summary>
-                    /// Finds entity type by given entity type short name (only class name).
-                    /// </summary>
-                    /// <param name="shortName">Type name</param>
-                    /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
-                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
-                    var type = this.typesDict[shortName];
-                    if (!type && throwIfNotFound === true)
-                        throw helper.createError(i18N.notFoundInMetadata, [shortName], { metadataManager: this, typeShortName: shortName });
-                    return type;
-                };
-
-                proto.createQuery = function (resourceName, shortName, manager) {
-                    /// <summary>
-                    /// Creates a new query for this type.
-                    /// </summary>
-                    /// <param name="resourceName">Query resource name.</param>
-                    /// <param name="shortName">Type name</param>
-                    /// <param name="manager">Entity manager</param>
-                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
-                    // if shortName is given find entityType and create query for it.
-                    if (shortName) return this.getEntityType(shortName, true).createQuery(resourceName, manager);
-                    // try to find entity type by its resource (set) name.
-                    var typeList = helper.filterArray(this.types, function (item) { return item.setName == resourceName; });
-                    return typeList.length == 1 ? typeList[0].createQuery(resourceName, manager) : new querying.EntityQuery(resourceName, null, manager);
-                };
-
-                proto.registerCtor = function (shortName, constructor, initializer) {
-                    /// <summary>
-                    /// Register constructor and initializer (optional) for given type.
-                    ///  Constructor is called right after the entity object is generated.
-                    ///  Initializer is called after entity started to being tracked (properties converted to observable).
-                    /// </summary>
-                    /// <param name="shortName">Entity type short name.</param>
-                    /// <param name="constructor">Constructor function.</param>
-                    /// <param name="initializer">Initializer function.</param>
-                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
-                    var type = this.getEntityType(shortName, true);
-                    type.registerCtor(constructor, initializer);
-                };
-
-                proto.createEntity = function (shortName, initialValues) {
-                    /// <summary>
-                    /// Creates an entity using the type that has given entity type short name (only class name).
-                    /// </summary>
-                    /// <param name="shortName">Type name</param>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
-                    // find entity type.
-                    var type = this.getEntityType(shortName, true);
-                    // create entity for this type
-                    return type.createEntity(initialValues);
-                };
-
-                proto.createRawEntity = function (shortName, initialValues) {
-                    /// <summary>
-                    /// Create the entity by its type's short name but do not convert to observable and do not add to manager.
-                    /// </summary>
-                    /// <param name="shortName">Entity type short name.</param>
-                    /// <param name="initialValues">Entity initial values.</param>
-                    if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
-                    // find entity type.
-                    var type = this.getEntityType(shortName, true);
-                    // create entity for this type
-                    return type.createRawEntity(initialValues);
-                };
-
-                proto.parseBeetleMetadata = function (metadataPrm) {
-                    /// <summary>
-                    /// Imports metadata from given object.
-                    /// </summary>
-                    /// <param name="metadataPrm">Metadata object.</param>
-                    /// <param name="types">Type list to hold imported data.</param>
-                    /// <param name="instance">Metadata manager instance.</param>
-                    if (Assert.isTypeOf(metadataPrm, 'string'))
-                        metadataPrm = JSON.parse(metadataPrm);
-
-                    this.types = [];
-                    this.typesDict = {};
-                    this.enums = {};
-                    this.name = metadataPrm.n;
-                    this.displayName = helper.getResourceValue(metadataPrm.r, metadataPrm.l || metadataPrm.n);
-
-                    var es = metadataPrm.e;
-                    var enumTypes = {};
-                    if (es) {
-                        for (var i = 0; i < es.length; i++) {
-                            var e = es[i];
-                            var enumObj = {};
-                            helper.forEach(e.m, function (m) {
-                                enumObj[m.n] = { name: m.n, value: m.v, displayName: helper.getResourceValue(m.r, m.l || m.n) };
-                            });
-                            var enm = new libs.Enum(enumObj);
-                            this.enums[e.n] = enm;
-                            enumTypes[e.n] = new core.dataTypes.enumeration(enm, e.n, helper.getResourceValue(e.r, e.l || e.n));
-                        }
-                    }
-
-                    var that = this;
-                    var maps = metadataPrm.m;
-                    // first create an entityType for each entity.
-                    for (var j = 0; j < maps.length; j++) {
-                        var map = maps[j];
-                        var t = new metadata.EntityType(map.n, helper.getResourceValue(map.rn, map.s), map.s, map.k, map.b, map.q, map.t, map.c, this);
-                        // create data properties
-                        helper.forEach(map.d, function (dp) {
-                            var dataType;
-                            if (dp.e)
-                                dataType = enumTypes[dp.t];
-                            else
-                                dataType = core.dataTypes.byName(dp.t);
-                            var dn = helper.getResourceValue(dp.r, dp.l || dp.n);
-                            var property = new metadata.DataProperty(t, dp.n, dn, dataType, dp.i === true, map.k && helper.findInArray(map.k, dp.n) != null,
-                                dp.g ? (dp.g == "I" ? enums.generationPattern.Identity : enums.generationPattern.Computed) : null,
-                                dp.d ? dataType.handle(dp.d) : null, dp.c);
-                            if (dp.v)
-                                helper.forEach(dp.v, function (v) {
-                                    property.validators.push(core.Validator.byCode(v.t, v.a, v.m, v.r, property.displayName, dp.r));
-                                });
-                            if (dp.p) property.precision = Number(dp.p);
-                            if (dp.s) property.scale = Number(dp.s);
-                            t.dataProperties.push(property);
+                /// <summary>
+                /// Observable value read-write interceptor. 
+                /// Because ko does not give old and new values together when notifying subscribers, I had to write this extender.
+                /// </summary>
+                /// <param name="target">Observable to extend.</param>
+                /// <param name="interceptor">Extender parameter. We pass before and after callbacks with this.</param>
+                if (ko.extenders.intercept == null) {
+                    ko.extenders.intercept = function (target, interceptor) {
+                        var result = ko.computed({
+                            read: target,
+                            write: function (newValue) {
+                                var callback = interceptor && interceptor.callback;
+                                if (callback)
+                                    callback(interceptor.object, interceptor.property, target, newValue);
+                            }
                         });
-                        // create navigation properties
-                        var relations = map.r;
-                        if (relations)
-                            helper.forEach(relations, function (np) {
-                                var navProp = new metadata.NavigationProperty(t, np.n, helper.getResourceValue(np.r, np.l || np.n), np.t, np.s === true, np.a, np.c);
-                                if (np.f)
-                                    helper.forEach(np.f, function (fk) {
-                                        navProp.foreignKeyNames.push(fk);
-                                    });
-                                if (np.v)
-                                    helper.forEach(np.v, function (v) {
-                                        navProp.validators.push(core.Validator.byCode(v.t, v.a, v.m, v.r, navProp.displayName, np.r));
-                                    });
-                                t.navigationProperties.push(navProp);
-                            });
-                        var complex = map.x;
-                        if (complex)
-                            helper.forEach(complex, function (cp) {
-                                var property = new metadata.NavigationProperty(t, cp.n, helper.getResourceValue(cp.r, cp.l || cp.n), cp.t, true);
-                                t.navigationProperties.push(property);
-                            });
-                        this.types.push(t);
-                        this.typesDict[t.shortName] = t;
-                    }
 
-                    // then create relation between inherited entities.
-                    helper.forEach(this.types, function (type) {
-                        if (type.baseTypeName)
-                            type.baseType = that.getEntityType(type.baseTypeName, true);
-                        delete type.baseTypeName;
+                        return result;
+                    };
+                }
+            };
+            helper.inherit(ctor, baseTypes.ObservableProviderBase);
+            var proto = ctor.prototype;
+
+            proto.isObservable = function (object, property) {
+                return this.ko.isObservable(object[property]);
+            };
+
+            proto.toObservable = function (object, type, callbacks) {
+                var pc = callbacks && callbacks.propertyChange;
+                var ac = callbacks && callbacks.arrayChange;
+                var dpc = callbacks && callbacks.dataPropertyChange;
+                var snpc = callbacks && callbacks.scalarNavigationPropertyChange;
+                var pnpc = callbacks && callbacks.pluralNavigationPropertyChange;
+                var as = callbacks && callbacks.arraySet;
+                var that = this;
+
+                var ps = [];
+                helper.forEachProperty(object, function (p, v) {
+                    ps.push({ p: p, v: v });
+                });
+                if (type && type.hasMetadata) {
+                    helper.forEach(type.dataProperties, function (dp) {
+                        var v = object[dp.name];
+                        if (v === undefined) v = null;
+                        else v = dp.handle(v);
+                        object[dp.name] = toObservableProperty(dp, v, dpc);
+                        helper.removeFromArray(ps, dp.name, 'p');
                     });
-                    // fill inherited properties using base type informations.
-                    helper.forEach(this.types, function (type) {
-                        var base = type.baseType;
-                        while (base) {
-                            type.floorType = base;
-                            helper.forEach(base.dataProperties, function (dp) {
-                                if (!helper.findInArray(type.dataProperties, dp.name, "name")) {
-                                    type.dataProperties.push(dp);
-                                }
+                    helper.forEach(type.navigationProperties, function (np) {
+                        var v = object[np.name];
+                        if (v === undefined) v = null;
+                        if (np.isScalar)
+                            object[np.name] = toObservableProperty(np, v, snpc);
+                        else
+                            object[np.name] = toObservableArray(np, np.name, v, pnpc, as);
+                        helper.removeFromArray(ps, np.name, 'p');
+                    });
+                }
+                helper.forEach(ps, function (pv) {
+                    var p = pv.p;
+                    var v = pv.v;
+                    if (Assert.isArray(v))
+                        object[p] = toObservableArray(p, p, v, ac, as);
+                    else
+                        object[p] = toObservableProperty(p, v, pc);
+                    if (!helper.findInArray(type.properties, p))
+                        type.properties.push(p);
+                });
+
+                function toObservableProperty(property, value, callback) {
+                    var retVal = that.ko.observable(value);
+                    if (callback)
+                        return that.ko.observable(value).extend({
+                            intercept: {
+                                object: object,
+                                property: property,
+                                callback: callback
+                            }
+                        });
+                    return retVal;
+                }
+
+                function toObservableArray(property, propertyName, value, after, setCallback) {
+                    var retVal;
+                    value = value || [];
+                    if (after)
+                        value = helper.createTrackableArray(value, object, property,
+                            function (o, p, i, r, a) {
+                                if (retVal.$fromKo !== true)
+                                    object[propertyName].valueHasMutated();
+                                retVal.$fromKo = false;
+                                after(o, p, i, r, a);
                             });
-                            helper.forEach(base.navigationProperties, function (np) {
-                                if (!helper.findInArray(type.navigationProperties, np.name, "name")) {
-                                    type.navigationProperties.push(np);
-                                }
-                            });
-                            base = base.baseType;
+                    retVal = that.ko.observableArray(value);
+                    retVal.subscribe(function () { retVal.$fromKo = true; }, null, "beforeChange");
+                    if (setCallback)
+                        retVal.equalityComparer = function (items, newItems) {
+                            setCallback(object, property, items, newItems);
+                        };
+                    return retVal;
+                }
+            };
+
+            proto.getValue = function (object, property) {
+                return this.ko.utils.unwrapObservable(object[property]);
+            };
+
+            proto.setValue = function (object, property, value) {
+                object[property](value);
+            };
+
+            return ctor;
+        })(),
+        /// <field>Property observable provider class. Makes given object's fields properties with getter setter and tracks values.</field>
+        PropertyObservableProvider: (function () {
+            var ctor = function () {
+                baseTypes.ObservableProviderBase.call(this, 'Property Observable Provider');
+            };
+            helper.inherit(ctor, baseTypes.ObservableProviderBase);
+            var proto = ctor.prototype;
+
+            proto.isObservable = function (object, property) {
+                return object['$fields'] !== undefined && object['$fields'][property] !== undefined;
+            };
+
+            proto.toObservable = function (object, type, callbacks) {
+                var pc = callbacks && callbacks.propertyChange;
+                var ac = callbacks && callbacks.arrayChange;
+                var dpc = callbacks && callbacks.dataPropertyChange;
+                var snpc = callbacks && callbacks.scalarNavigationPropertyChange;
+                var pnpc = callbacks && callbacks.pluralNavigationPropertyChange;
+                var as = callbacks && callbacks.arraySet;
+
+                var fields = {};
+                var ps = [];
+                helper.forEachProperty(object, function (p, v) {
+                    ps.push({ p: p, v: v });
+                });
+                if (type && type.hasMetadata) {
+                    helper.forEach(type.dataProperties, function (dp) {
+                        var v = object[dp.name];
+                        if (v === undefined) v = null;
+                        else v = dp.handle(v);
+                        delete object[dp.name];
+                        toObservableProperty(dp, dp.name, dpc);
+                        helper.removeFromArray(ps, dp.name, 'p');
+                        fields[dp.name] = v;
+                    });
+                    helper.forEach(type.navigationProperties, function (np) {
+                        var v = object[np.name];
+                        if (v === undefined) v = null;
+                        delete object[np.name];
+                        if (np.isScalar) {
+                            toObservableProperty(np, np.name, snpc);
+                            fields[np.name] = v;
+                        } else
+                            toObservableArray(np, np.name, v, pnpc, as);
+                        helper.removeFromArray(ps, np.name, 'p');
+                    });
+                }
+                helper.forEach(ps, function (pv) {
+                    var p = pv.p;
+                    var v = pv.v;
+                    delete object[p];
+                    if (Assert.isArray(v))
+                        toObservableArray(p, p, v, ac, as);
+                    else {
+                        toObservableProperty(p, p, pc);
+                        fields[p] = v;
+                    }
+                    if (!helper.findInArray(type.properties, p))
+                        type.properties.push(p);
+                });
+                object['$fields'] = fields;
+                return object;
+
+                function toObservableProperty(property, propertyName, callback) {
+                    return Object.defineProperty(object, propertyName, {
+                        get: function () {
+                            return object['$fields'][propertyName];
+                        },
+                        set: function (newValue) {
+                            if (callback) {
+                                var a = getAccessor(object, propertyName);
+                                callback(object, property, a, newValue);
+                            } else
+                                object['$fields'][propertyName] = newValue;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                }
+
+                function toObservableArray(property, propertyName, value, after, setCallback) {
+                    value = value || [];
+                    if (after)
+                        value = helper.createTrackableArray(value, object, property, after);
+                    fields[propertyName] = value;
+
+                    return Object.defineProperty(object, propertyName, {
+                        get: function () {
+                            return object['$fields'][propertyName];
+                        },
+                        set: function (newItems) {
+                            if (setCallback)
+                                setCallback(object, property, items, newItems);
+                            else
+                                object['$fields'][propertyName] = newItems;
                         }
-                        // populate navigation properties inverse and create relation between data property and navigation property
-                        helper.forEach(type.navigationProperties, function (np) {
-                            if (!np.entityType) {
-                                np.entityType = that.getEntityType(np.entityTypeName, true);
-                                for (var k = 0; k < np.entityType.navigationProperties.length; k++) {
-                                    var tnp = np.entityType.navigationProperties[k];
-                                    if (tnp.associationName === np.associationName && np !== tnp) {
-                                        np.inverse = tnp;
-                                        break;
-                                    }
+                    });
+                }
+
+                function getAccessor(o, p) {
+                    return function () {
+                        return arguments.length == 0 ? o['$fields'][p] : o['$fields'][p] = arguments[0];
+                    };
+                }
+            };
+
+            proto.getValue = function (object, property) {
+                return object[property];
+            };
+
+            proto.setValue = function (object, property, value) {
+                object[property] = value;
+            };
+
+            return ctor;
+        })(),
+        /// <field>jQuery ajax provider class. Operates ajax operations via jQuery.</field>
+        JQueryAjaxProvider: (function () {
+            var ctor = function ($) {
+                baseTypes.AjaxProviderBase.call(this, 'jQuery Ajax Provider');
+                this.$ = $;
+            };
+            helper.inherit(ctor, baseTypes.AjaxProviderBase);
+            var proto = ctor.prototype;
+
+            proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                var that = this;
+                var o = {
+                    url: uri,
+                    accepts: {
+                        json: 'application/json; odata=verbose',
+                        xml: 'text/xml; application/xhtml+xml;application/xml',
+                        text: 'text/xml'
+                    },
+                    type: method,
+                    dataType: dataType,
+                    contentType: contentType,
+                    traditional: false,
+                    data: data,
+                    async: async,
+                    headers: headers,
+                    success: function (result, status, xhr) {
+                        xhr.onreadystatechange = null;
+                        xhr.abort = null;
+                        if (result && result.Error) {
+                            var err = that.createError(xhr);
+                            err.message = result.Error;
+                            errorCallback(err);
+                        } else successCallback(result, that.getHeaderGetter(xhr), xhr);
+                    },
+                    error: function (xhr) {
+                        xhr.onreadystatechange = null;
+                        xhr.abort = null;
+                        errorCallback(that.createError(xhr));
+                    }
+                };
+                if (async !== false)
+                    o.timeout = timeout;
+                if (extra != null)
+                    this.$.extend(o, extra);
+                if (o.cache == null) o.cache = false;
+                return this.$.ajax(o);
+            };
+
+            return ctor;
+        })(),
+        /// <field>Angularjs ajax provider class. Operates ajax operations via angularjs.</field>
+        AngularjsAjaxProvider: (function () {
+            var ctor = function (angularjs) {
+                baseTypes.AjaxProviderBase.call(this, 'Angular.js Ajax Provider');
+                this.syncSupported = false;
+                this.$http = angularjs.injector(["ng"]).get('$http');
+            };
+            helper.inherit(ctor, baseTypes.AjaxProviderBase);
+            var proto = ctor.prototype;
+
+            proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                if (async === false)
+                    throw helper.createError(i18N.syncNotSupported, [this.name]);
+
+                var o = {
+                    method: method,
+                    url: uri,
+                    contentType: contentType,
+                    data: data,
+                    timeout: timeout,
+                    headers: headers,
+                    responseType: dataType,
+                    transformResponse: [function (data) {
+                        return data;
+                    }]
+                };
+                if (extra != null)
+                    helper.extend(o, extra);
+                if (o.cache == null) o.cache = false;
+                return this.$http(o)
+                    .then(function (resp) {
+                        var headers = resp.headers();
+                        return successCallback(resp.data, function (header) {
+                            if (!header) return headers;
+                            return headers[header.toLowerCase()];
+                        });
+                    }, function (error) {
+                        var obj = { status: error.status, detail: error.data, error: error };
+                        var e = helper.createError(error.statusText, obj);
+                        errorCallback(e);
+                        return e;
+                    });
+            };
+
+            return ctor;
+        })(),
+        /// <field>Angular ajax provider class. Operates ajax operations via angular.</field>
+        AngularAjaxProvider: (function () {
+            var ctor = function (http, RequestConstructor, HeadersConstructor) {
+                baseTypes.AjaxProviderBase.call(this, 'Angular Ajax Provider');
+                this.syncSupported = false;
+                this.http = http;
+                this.RequestConstructor = RequestConstructor;
+                this.HeadersConstructor = HeadersConstructor;
+            };
+            helper.inherit(ctor, baseTypes.AjaxProviderBase);
+            var proto = ctor.prototype;
+
+            proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                var hs = new this.HeadersConstructor();
+
+                hs.append("Content-Type", contentType);
+                if (headers != null) {
+                    for (var p in headers) {
+                        hs.append(p, headers[p]);
+                    }
+                }
+
+                var requestOptions = {
+                    url: uri,
+                    method: method,
+                    body: data,
+                    headers: hs,
+                    timeout: timeout
+                };
+
+                if (extra != null) {
+                    helper.extend(requestOptions, extra);
+                }
+
+                var request = new this.RequestConstructor(requestOptions);
+
+                return this.http.request(request)
+                    .subscribe(resp => {
+                        return successCallback(resp.text(), name => {
+                            return resp.headers[name];
+                        });
+                    },
+                    error => {
+                        var obj = { status: error.status, detail: error._body, error: error };
+                        var e = helper.createError(error.statusText, obj);
+                        errorCallback(e);
+                        return e;
+                    });
+            };
+
+            return ctor;
+        })(),
+        /// <field>Pure javascript ajax provider class.</field>
+        VanillajsAjaxProvider: (function () {
+            var ctor = function () {
+                baseTypes.AjaxProviderBase.call(this, 'Vanilla-js Ajax Provider');
+                this.syncSupported = true;
+            };
+            helper.inherit(ctor, baseTypes.AjaxProviderBase);
+            var proto = ctor.prototype;
+
+            proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                var that = this;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open(method, uri, async);
+
+                xhr.setRequestHeader("Accept", "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml");
+                xhr.setRequestHeader("Content-Type", contentType);
+                if (async !== false)
+                    xhr.timeout = timeout;
+
+                if (headers) {
+                    for (var p in headers) {
+                        xhr.setRequestHeader(p, headers[p]);
+                    }
+                }
+
+                xhr.onload = function () {
+                    xhr.onreadystatechange = null;
+                    xhr.abort = null;
+
+                    if (xhr.status === 200) {
+                        successCallback(xhr.responseText, that.getHeaderGetter(xhr), xhr);
+                    }
+                    else {
+                        errorCallback(that.createError(xhr));
+                    }
+                };
+
+                xhr.ontimeout = function () {
+                    xhr.onreadystatechange = null;
+                    xhr.abort = null;
+
+                    errorCallback(that.createError(xhr));
+                };
+
+                xhr.send(data);
+
+                return xhr;
+            }
+
+            return ctor;
+        })(),
+        /// <field>Node.js ajax provider class.</field>
+        NodejsAjaxProvider: (function () {
+            var ctor = function (http, https) {
+                baseTypes.AjaxProviderBase.call(this, 'Node.js Ajax Provider');
+                this.syncSupported = false;
+                this.http = http;
+                this.https = https;
+            };
+            helper.inherit(ctor, baseTypes.AjaxProviderBase);
+            var proto = ctor.prototype;
+
+            proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
+                if (async === false)
+                    throw helper.createError(i18N.syncNotSupported, [this.name]);
+
+                var reURLInformation = new RegExp([
+                    '^(https?:)//', // protocol
+                    '(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
+                    '(/{0,1}[^?#]*)', // pathname
+                    '(\\?[^#]*|)', // search
+                    '(#.*|)$' // hash
+                ].join(''));
+                var uriParts = uri.match(reURLInformation),
+                    protocol = uriParts[1] == "https:" ? this.https : this.http,
+                    host = uriParts[3],
+                    port = uriParts[4],
+                    path = uriParts[5],
+                    search = uriParts[6];
+                path += search;
+
+                headers = headers || {};
+                headers["Content-Type"] = contentType;
+                headers["Accept"] = "application/json; odata=verbose, text/xml;application/xhtml+xml;application/xml";
+                headers["Content-Length"] = (data && data.length) || 0;
+
+                var options = {
+                    host: host,
+                    path: path,
+                    method: method,
+                    headers: headers,
+                    port: port || 80
+                };
+
+                var req = protocol.request(options, function (res) {
+                    res.setEncoding("utf8");
+
+                    var body = "";
+                    res.on('data', function (chunk) {
+                        body += chunk;
+                    });
+                    res.on("end", function () {
+                        if (res.statusCode == 200) {
+                            successCallback(body, function (name) {
+                                if (!name) return res.headers;
+                                return res.headers[name.toLowerCase()];
+                            });
+                        }
+                        else {
+                            var obj = { status: res.statusCode, detail: body };
+                            var e = helper.createError(res.statusMessage, obj);
+                            errorCallback(e);
+                        }
+                    });
+                });
+
+                if (data) {
+                    req.write(data);
+                }
+
+                if (timeout) {
+                    req.on("socket", function (socket) {
+                        socket.setTimeout(timeout);
+                        socket.on("timeout", function () {
+                            req.abort();
+                        });
+                    });
+                }
+
+                req.on('error', function (e) {
+                    errorCallback(e);
+                });
+
+                req.end();
+
+                return req;
+            }
+
+            return ctor;
+        })(),
+        /// <field>JSON serialization class. Deserializes incoming data and serializes outgoing data.</field>
+        JsonSerializationService: (function () {
+            var ctor = function () {
+                baseTypes.SerializationServiceBase.call(this, 'Json Serializer');
+            };
+            helper.inherit(ctor, baseTypes.SerializationServiceBase);
+            var proto = ctor.prototype;
+
+            proto.serialize = function (data) {
+                return JSON.stringify(data);
+            };
+
+            proto.deserialize = function (value) {
+                if (Assert.isTypeOf(value, 'string'))
+                    return JSON.parse(value);
+                return value;
+            };
+
+            return ctor;
+        })(),
+        /// <field>Q promise provider class.</field>
+        QPromiseProvider: (function () {
+            var ctor = function (Q) {
+                baseTypes.PromiseProviderBase.call(this, 'Q Promise Provider');
+                this.Q = Q;
+            };
+            helper.inherit(ctor, baseTypes.PromiseProviderBase);
+            var proto = ctor.prototype;
+
+            proto.deferred = function () {
+                return this.Q.defer();
+            };
+
+            proto.getPromise = function (deferred) {
+                return deferred.promise;
+            };
+
+            proto.resolve = function (deferred, data) {
+                deferred.resolve(data);
+            };
+
+            proto.reject = function (deferred, error) {
+                deferred.reject(error);
+            };
+
+            return ctor;
+        })(),
+        /// <field>Angular.js promise provider.</field>
+        AngularjsPromiseProvider: (function () {
+            var ctor = function (angularjs) {
+                baseTypes.PromiseProviderBase.call(this, 'Angular.js Promise Provider');
+                this.ng = angularjs.injector(['ng']);
+                this.$q = this.ng.get('$q');
+                this.$rootScope = this.ng.get('$rootScope');
+            };
+            helper.inherit(ctor, baseTypes.PromiseProviderBase);
+            var proto = ctor.prototype;
+
+            proto.deferred = function () {
+                return this.$q.defer();
+            };
+
+            proto.getPromise = function (deferred) {
+                return deferred.promise;
+            };
+
+            proto.resolve = function (deferred, data) {
+                deferred.resolve(data);
+                this.$rootScope.$apply();
+            };
+
+            proto.reject = function (deferred, error) {
+                deferred.reject(error);
+                this.$rootScope.$apply();
+            };
+
+            return ctor;
+        })(),
+        /// <field>jQuery promise provider.</field>
+        JQueryPromiseProvider: (function () {
+            var ctor = function ($) {
+                baseTypes.PromiseProviderBase.call(this, 'jQuery Promise Provider');
+                this.$ = $;
+            };
+            helper.inherit(ctor, baseTypes.PromiseProviderBase);
+            var proto = ctor.prototype;
+
+            proto.deferred = function () {
+                return this.$.Deferred();
+            };
+
+            proto.getPromise = function (deferred) {
+                return deferred.promise();
+            };
+
+            proto.resolve = function (deferred, data) {
+                deferred.resolve(data);
+            };
+
+            proto.reject = function (deferred, error) {
+                deferred.reject(error);
+            };
+
+            return ctor;
+        })(),
+        /// <field>ES6 promise provider.</field>
+        Es6PromiseProvider: (function () {
+            var ctor = function () {
+                baseTypes.PromiseProviderBase.call(this, 'ES6 Promise Provider');
+            };
+            helper.inherit(ctor, baseTypes.PromiseProviderBase);
+            var proto = ctor.prototype;
+
+            proto.deferred = function () {
+                var deferred = {
+                    resolve: null,
+                    reject: null
+                };
+
+                deferred.promise = new Promise(function (resolve, reject) {
+                    deferred.resolve = resolve;
+                    deferred.reject = reject;
+                });
+
+                return deferred;
+            };
+
+            proto.getPromise = function (deferred) {
+                return deferred.promise;
+            };
+
+            proto.resolve = function (deferred, data) {
+                deferred.resolve(data);
+            };
+
+            proto.reject = function (deferred, error) {
+                deferred.reject(error);
+            };
+
+            return ctor;
+        })()
+    };
+
+    /** 
+     * Metadata related types.
+     * @namespace
+     */
+    var metadata = {
+        DataProperty: (function () {
+            var ctor = function (owner, name, displayName, dataType, isNullable, isKeyPart, genPattern, defaultValue, useForConcurrency) {
+                /// <summary>
+                /// Data property default implementation.
+                /// </summary>
+                this.owner = owner;
+                this.name = name;
+                this.displayName = displayName || name;
+                this.dataType = dataType;
+                this.isNullable = isNullable;
+                this.isKeyPart = isKeyPart;
+                this.generationPattern = genPattern;
+                this.defaultValue = defaultValue;
+                this.useForConcurrency = useForConcurrency;
+                this.relatedNavigationProperties = [];
+                this.validators = [];
+                this.isEnum = dataType instanceof core.dataTypes.enumeration;
+                this.isComplex = dataType.isComplex;
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// toString override. Returns name.
+                /// </summary>
+                return this.displayName;
+            };
+
+            proto.isValid = function (value) {
+                /// <summary>
+                /// Checks if given value is valid for this property.
+                /// </summary>
+                /// <param name="value">Value to check.</param>
+                if (value == null) return !this.isNullable;
+                else return this.dataType.isValid(value, this);
+            };
+
+            proto.handle = function (value) {
+                /// <summary>
+                /// Tries to convert given value to this type.
+                /// </summary>
+                /// <param name="value">Value to check.</param>
+                /// <returns type="">When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.</returns>
+                if (this.dataType != core.dataTypes.string && value === "")
+                    value = null;
+
+                if (value == null) {
+                    if (!this.isNullable)
+                        throw helper.createError(i18N.notNullable, [this.displayName], { property: this });
+                    return null;
+                }
+                value = this.dataType.handle(value, this);
+
+                if (this.dataType == core.dataTypes.number && this.precision && value.toString().replace(/\./g, '').length > this.precision)
+                    throw helper.createError(i18N.maxPrecisionError, [value, this.precision],
+                        { dataType: dataType, value: value });
+                if (this.dataType == core.dataTypes.number && this.scale != null) value = Number(value.toFixed(this.scale));
+
+                return value;
+            };
+
+            proto.getDefaultValue = function () {
+                /// <summary>
+                /// Gets default value for this type.
+                /// </summary>
+                if (this.defaultValue != null) return this.defaultValue;
+                if (this.isNullable) return null;
+                if (this.generationPattern == enums.generationPattern.Identity && this.isKeyPart === true) return this.dataType.autoValue();
+                return this.dataType.defaultValue();
+            };
+
+            proto.addValidation = function (name, func, message, args) {
+                /// <summary>
+                /// Add new validation method to data property.
+                /// </summary>
+                /// <param name="name">Name of the validation.</param>
+                /// <param name="func">Validation function.</param>
+                /// <param name="message">Message to show when validation fails.</param>
+                /// <param name="args">Validator arguments.</param>
+                helper.assertPrm(name, 'name').isNotEmptyString().check();
+                helper.assertPrm(func, 'func').isFunction().check();
+                this.validators.push(new core.Validator(name, func, message, args));
+            };
+
+            proto.validate = function (entity) {
+                /// <summary>
+                /// Validates entity agains entity, data property and navigation property validations.
+                /// </summary>
+                /// <param name="entity">Entity to validate.</param>
+                var retVal = [];
+                if (this.validators.length > 0) {
+                    var that = this;
+                    var value = helper.getValue(entity, this.name);
+                    helper.forEach(this.validators, function (v) {
+                        var result = v.validate(value, entity);
+                        if (result) retVal.push(helper.createValidationError(entity, value, that, result, v));
+                    });
+                }
+                return retVal;
+            };
+
+            return ctor;
+        })(),
+        NavigationProperty: (function () {
+            var ctor = function (owner, name, displayName, entityTypeName, isScalar, associationName, cascadeDelete, foreignKeyNames) {
+                /// <summary>
+                /// Navigation property default implemantation.
+                /// </summary>
+                this.owner = owner;
+                this.name = name;
+                this.displayName = displayName || name;
+                this.entityTypeName = entityTypeName;
+                this.entityType = null;
+                this.isScalar = isScalar;
+                this.isComplex = associationName === undefined;
+                this.associationName = associationName;
+                this.cascadeDelete = cascadeDelete === true;
+                this.foreignKeyNames = foreignKeyNames || [];
+                this.inverse = null;
+                this.foreignKeys = [];
+                this.validators = [];
+                this.triggerOwnerModify = false;
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// toString override. Returns name.
+                /// </summary>
+                return this.displayName;
+            };
+
+            proto.checkAssign = function (value) {
+                /// <summary>
+                /// Checks if given value can be assigned to this property. If not throws an error.
+                /// </summary>
+                /// <param name="value">Value to check.</param>
+                if (value == null) return;
+                if (!value.$tracker) throw helper.createError(i18N.assignErrorNotEntity, [this], { property: this, value: value });
+                var t = value.$tracker.entityType;
+                if (!this.entityType.isAssignableWith(t)) throw helper.createError(i18N.assignError, [this.name, t.shortName], { property: this, value: value });
+            };
+
+            proto.addValidation = function (name, func, message, args) {
+                /// <summary>
+                /// Add new validation method to navigation property.
+                /// </summary>
+                /// <param name="name">Name of the validation.</param>
+                /// <param name="func">Validation function.</param>
+                /// <param name="message">Message to show when validation fails.</param>
+                /// <param name="args">Validator arguments.</param>
+                helper.assertPrm(name, 'name').isNotEmptyString().check();
+                helper.assertPrm(func, 'func').isFunction().check();
+                this.validators.push(new core.Validator(name, func, message, args));
+            };
+
+            proto.validate = function (entity) {
+                /// <summary>
+                /// Validates entity agains entity, data property and navigation property validations.
+                /// </summary>
+                /// <param name="entity">Entity to validate.</param>
+                var retVal = [];
+                if (this.validators.length > 0) {
+                    var that = this;
+                    var value = helper.getValue(entity, that.name);
+                    helper.forEach(this.validators, function (v) {
+                        var result = v.validate(value);
+                        if (result) retVal.push(helper.createValidationError(entity, value, that, result, v));
+                    });
+                }
+                return retVal;
+            };
+
+            return ctor;
+        })(),
+        EntityType: (function () {
+            var ctor = function (name, displayName, shortName, keyNames, baseTypeName, setName, setTypeName, isComplexType, metadataManager) {
+                /// <summary>
+                /// Entity type class. Defines an entity type. When there is no metadata for type, holds only the type name.
+                /// </summary>
+                this.name = name;
+                this.displayName = displayName || name;
+                this.shortName = shortName;
+                this.keyNames = keyNames || [];
+                this.baseTypeName = baseTypeName;
+                this.setName = setName;
+                this.setTypeName = setTypeName;
+                this.metadataManager = metadataManager;
+                this.hasMetadata = metadataManager != null;
+                this.properties = [];
+                this.dataProperties = [];
+                this.navigationProperties = [];
+                this.keys = [];
+                this.floorType = this;
+                this.baseType = null;
+                this.validators = [];
+                this.isComplexType = isComplexType == true;
+                this.constructor = null;
+                this.initializer = null;
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// toString override. Returns name.
+                /// </summary>
+                return this.name;
+            };
+
+            proto.getProperty = function (propertyPath) {
+                /// <summary>
+                /// Parses given string and finds property, looks recursively to navigation properties when needed.
+                /// Example: if given path is OrderDetails.Supplier.Address.City, 
+                /// this method will look to related navigation properties until Address and it will retun City property as dataProperty (if exists).
+                /// </summary>
+                /// <param name="propertyPath">Property path to navigate.</param>
+                return getProperty(propertyPath.split('.'), this);
+            };
+
+            proto.createQuery = function (resourceName, manager) {
+                /// <summary>
+                /// Creates a new query for this type.
+                /// </summary>
+                /// <param name="resourceName">OData query resource name (Service controller action).</param>
+                /// <param name="manager">The entity manager.</param>
+                if (resourceName) return new querying.EntityQuery(resourceName, this, manager);
+
+                var q = new querying.EntityQuery(this.setName, this, manager);
+                return this.shortName == this.setTypeName ? q : q.ofType(this.shortName);
+            };
+
+            proto.registerCtor = function (constructor, initializer) {
+                /// <summary>
+                /// Register constructor and initializer (optional) for given type.
+                ///  Constructor is called right after the entity object is generated.
+                ///  Initializer is called after entity started to being tracked (properties converted to observable).
+                /// </summary>
+                /// <param name="constructor">Constructor function.</param>
+                /// <param name="initializer">Initializer function.</param>
+                if (constructor != null)
+                    helper.assertPrm(constructor, 'constructor').isFunction().check();
+                if (initializer != null)
+                    helper.assertPrm(initializer, 'initializer').isFunction().check();
+                this.constructor = constructor;
+                this.initializer = initializer;
+            };
+
+            proto.createEntity = function (initialValues) {
+                /// <summary>
+                /// Creates a new entity for this type.
+                /// </summary>
+                /// <param name="initialValues">Entity initial values.</param>
+                var result = this.createRawEntity(initialValues);
+                // make it observable
+                return core.EntityTracker.toEntity(result, this, settings.getObservableProvider());
+            };
+
+            proto.createRawEntity = function (initialValues) {
+                /// <summary>
+                /// Creates a new entity for this type but do not convert it to observable.
+                /// </summary>
+                /// <param name="initialValues">Entity initial values.</param>
+                var result = initialValues || {};
+                // create properties with default values for each data property defined in metadata.
+                helper.forEach(this.dataProperties, function (dp) {
+                    if (result[dp.name] === undefined)
+                        result[dp.name] = dp.getDefaultValue();
+                });
+                // create properties with default values for each navigation property defined in metadata.
+                helper.forEach(this.navigationProperties, function (np) {
+                    if (np.isComplex)
+                        result[np.name] = np.entityType.createRawEntity();
+                    else {
+                        if (np.isScalar) result[np.name] = null;
+                        else result[np.name] = [];
+                    }
+                });
+                callCtor(this, result);
+                result.$type = this.name;
+                return result;
+            };
+
+            function callCtor(type, entity) {
+                /// <summary>
+                /// Called after entity object is created.
+                /// </summary>
+                /// <param name="type">Type of the entity.</param>
+                /// <param name="entity">The entity.</param>
+                if (type.baseType) callCtor(type.baseType, entity);
+                if (type.constructor)
+                    type.constructor.call(entity, entity);
+            }
+
+            proto.isAssignableWith = function (otherType) {
+                /// <summary>
+                /// Checks if this type can be set with given type.
+                /// </summary>
+                /// <param name="otherType">Type to assign.</param>
+                return isAssignableWith(this, otherType);
+            };
+
+            proto.isAssignableTo = function (otherType) {
+                /// <summary>
+                /// Checks if this type can be set to given type.
+                /// </summary>
+                /// <param name="otherType">Type to check.</param>
+                return isAssignableTo(this, otherType);
+            };
+
+            proto.hasSameBaseType = function (type) {
+                /// <summary>
+                /// Checks if this type and given type has common ancestor.
+                /// This method is used to check key violation between different types.
+                /// </summary>
+                /// <param name="type">Other type.</param>
+                return this.floorType.name === type.floorType.name;
+            };
+
+            proto.addDataProperty = function (name, displayName, dataType, isNullable, defaultValue) {
+                /// <summary>
+                /// Adds new dataProperty to this type.
+                /// </summary>
+                /// <param name="name">Name of the property.</param>
+                /// <param name="name">Display name of the property.</param>
+                /// <param name="dataType">Type of the property.</param>
+                /// <param name="isNullable">Indicates if this property can be set with null.</param>
+                /// <param name="defaultValue">Default value for the property.</param>
+                helper.assertPrm(name, 'name').isNotEmptyString().check();
+                var dp = helper.findInArray(this.dataProperties, name, 'name');
+                if (dp)
+                    throw helper.createError(i18N.dataPropertyAlreadyExists, [name], { entityType: this, existing: dp });
+                if (Assert.isNotEmptyString(dataType))
+                    dataType = core.dataTypes.byName(dataType);
+                helper.assertPrm(dataType, 'dataType').isInstanceOf(core.dataTypes.baseType).check();
+                if (defaultValue != null && !dataType.isValid(defaultValue))
+                    throw helper.createError(i18N.invalidDefaultValue, [defaultValue, dataType.name],
+                        { entityType: this, dataType: dataType, defaultValue: defaultValue });
+                var property = new metadata.DataProperty(this, name, displayName, dataType, isNullable === true, false, null, defaultValue);
+                this.dataProperties.push(property);
+            };
+
+            proto.addValidation = function (name, func, message, args) {
+                /// <summary>
+                /// Add new validation method to entity type.
+                /// </summary>
+                /// <param name="name">Name of the validation.</param>
+                /// <param name="func">Validation function.</param>
+                /// <param name="message">Message to show when validation fails.</param>
+                /// <param name="args">Validator arguments.</param>
+                helper.assertPrm(name, 'name').isNotEmptyString().check();
+                helper.assertPrm(func, 'func').isFunction().check();
+                this.validators.push(new core.Validator(name, func, message, args));
+            };
+
+            proto.validate = function (entity) {
+                /// <summary>
+                /// Validates entity agains entity, data property and navigation property validations.
+                /// </summary>
+                /// <param name="entity">Entity to validate.</param>
+                var retVal = [];
+                if (this.validators.length > 0) {
+                    helper.forEach(this.validators, function (v) {
+                        var result = v.validate(entity);
+                        if (result) retVal.push(helper.createValidationError(entity, null, null, result, v));
+                    });
+                }
+                helper.forEach(this.dataProperties, function (dp) {
+                    var result = dp.validate(entity);
+                    if (result) retVal = retVal.concat(result);
+                });
+                helper.forEach(this.navigationProperties, function (np) {
+                    var result = np.validate(entity);
+                    if (result) retVal = retVal.concat(result);
+                });
+                return retVal;
+            };
+
+            function getProperty(propertyPaths, type) {
+                /// <summary>
+                /// Finds given property paths one by one, looks recursively to navigation properties when needed.
+                /// </summary>
+                /// <param name="propertyPath">Property path array.</param>
+                /// <param name="type">The type of the entity.</param>
+                var len = propertyPaths.length;
+                for (var i = 0; i < len; i++) {
+                    var p = propertyPaths[i];
+                    if (i == len - 1) {
+                        // if it is last property path, look it in all properties.
+                        var dp = helper.findInArray(type.dataProperties, p, 'name');
+                        return dp ? dp : helper.findInArray(type.navigationProperties, p, 'name');
+                    } else {
+                        // if it is not last property path, look it in navigation properties.
+                        var np = helper.findInArray(type.navigationProperties, p, 'name');
+                        if (np) type = np.entityType;
+                        else return null;
+                    }
+                }
+                return null;
+            }
+
+            function isAssignableWith(type1, type2) {
+                /// <summary>
+                /// Checks if this type can be set with given type.
+                /// </summary>
+                /// <param name="type1">Type to be assigned.</param>
+                /// <param name="type2">Type to assign.</param>
+                if (type1.name === type2.name)
+                    return true;
+                else if (type2.baseType != null)
+                    return isAssignableWith(type1, type2.baseType);
+
+                return false;
+            }
+
+            function isAssignableTo(type1, type2) {
+                /// <summary>
+                /// Checks if this type can be set to given type.
+                /// </summary>
+                /// <param name="type1">Type to set.</param>
+                /// <param name="type2">Type to check.</param>
+                var name = Assert.isTypeOf(type2, 'string') ? type2 : type2.name;
+                if (type1.name === name)
+                    return true;
+                else if (type1.baseType != null)
+                    return isAssignableTo(type1.baseType, type2);
+
+                return false;
+            }
+
+            return ctor;
+        })(),
+        MetadataManager: (function () {
+            var ctor = function (metadataPrm) {
+                /// <summary>
+                /// Metadata manager default implementation.
+                /// </summary>
+                this.types = [];
+                this.typesDict = {};
+                this.enums = {};
+                this.name = null;
+                this.displayName = null;
+
+                if (metadataPrm)
+                    this.parseBeetleMetadata(metadataPrm);
+            };
+            var proto = ctor.prototype;
+
+            proto.toString = function () {
+                /// <summary>
+                /// String representation of the object.
+                /// </summary>
+                return this.types.join(', ');
+            };
+
+            proto.getEntityTypeByFullName = function (typeName, throwIfNotFound) {
+                /// <summary>
+                /// Finds entity type by given entity type name (fully qualified).
+                /// </summary>
+                /// <param name="typeName">Type name</param>
+                /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
+                var type = helper.findInArray(this.types, typeName, 'name');
+                if (!type && throwIfNotFound === true)
+                    throw helper.createError(i18N.notFoundInMetadata, [typeName], { metadataManager: this, typeName: typeName });
+                return type;
+            };
+
+            proto.getEntityType = function (shortName, throwIfNotFound) {
+                /// <summary>
+                /// Finds entity type by given entity type short name (only class name).
+                /// </summary>
+                /// <param name="shortName">Type name</param>
+                /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
+                if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
+                var type = this.typesDict[shortName];
+                if (!type && throwIfNotFound === true)
+                    throw helper.createError(i18N.notFoundInMetadata, [shortName], { metadataManager: this, typeShortName: shortName });
+                return type;
+            };
+
+            proto.createQuery = function (resourceName, shortName, manager) {
+                /// <summary>
+                /// Creates a new query for this type.
+                /// </summary>
+                /// <param name="resourceName">Query resource name.</param>
+                /// <param name="shortName">Type name</param>
+                /// <param name="manager">Entity manager</param>
+                if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
+                // if shortName is given find entityType and create query for it.
+                if (shortName) return this.getEntityType(shortName, true).createQuery(resourceName, manager);
+                // try to find entity type by its resource (set) name.
+                var typeList = helper.filterArray(this.types, function (item) { return item.setName == resourceName; });
+                return typeList.length == 1 ? typeList[0].createQuery(resourceName, manager) : new querying.EntityQuery(resourceName, null, manager);
+            };
+
+            proto.registerCtor = function (shortName, constructor, initializer) {
+                /// <summary>
+                /// Register constructor and initializer (optional) for given type.
+                ///  Constructor is called right after the entity object is generated.
+                ///  Initializer is called after entity started to being tracked (properties converted to observable).
+                /// </summary>
+                /// <param name="shortName">Entity type short name.</param>
+                /// <param name="constructor">Constructor function.</param>
+                /// <param name="initializer">Initializer function.</param>
+                if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
+                var type = this.getEntityType(shortName, true);
+                type.registerCtor(constructor, initializer);
+            };
+
+            proto.createEntity = function (shortName, initialValues) {
+                /// <summary>
+                /// Creates an entity using the type that has given entity type short name (only class name).
+                /// </summary>
+                /// <param name="shortName">Type name</param>
+                /// <param name="initialValues">Entity initial values.</param>
+                if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
+                // find entity type.
+                var type = this.getEntityType(shortName, true);
+                // create entity for this type
+                return type.createEntity(initialValues);
+            };
+
+            proto.createRawEntity = function (shortName, initialValues) {
+                /// <summary>
+                /// Create the entity by its type's short name but do not convert to observable and do not add to manager.
+                /// </summary>
+                /// <param name="shortName">Entity type short name.</param>
+                /// <param name="initialValues">Entity initial values.</param>
+                if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
+                // find entity type.
+                var type = this.getEntityType(shortName, true);
+                // create entity for this type
+                return type.createRawEntity(initialValues);
+            };
+
+            proto.parseBeetleMetadata = function (metadataPrm) {
+                /// <summary>
+                /// Imports metadata from given object.
+                /// </summary>
+                /// <param name="metadataPrm">Metadata object.</param>
+                /// <param name="types">Type list to hold imported data.</param>
+                /// <param name="instance">Metadata manager instance.</param>
+                if (Assert.isTypeOf(metadataPrm, 'string'))
+                    metadataPrm = JSON.parse(metadataPrm);
+
+                this.types = [];
+                this.typesDict = {};
+                this.enums = {};
+                this.name = metadataPrm.n;
+                this.displayName = helper.getResourceValue(metadataPrm.r, metadataPrm.l || metadataPrm.n);
+
+                var es = metadataPrm.e;
+                var enumTypes = {};
+                if (es) {
+                    for (var i = 0; i < es.length; i++) {
+                        var e = es[i];
+                        var enumObj = {};
+                        helper.forEach(e.m, function (m) {
+                            enumObj[m.n] = { name: m.n, value: m.v, displayName: helper.getResourceValue(m.r, m.l || m.n) };
+                        });
+                        var enm = new libs.Enum(enumObj);
+                        this.enums[e.n] = enm;
+                        enumTypes[e.n] = new core.dataTypes.enumeration(enm, e.n, helper.getResourceValue(e.r, e.l || e.n));
+                    }
+                }
+
+                var that = this;
+                var maps = metadataPrm.m;
+                // first create an entityType for each entity.
+                for (var j = 0; j < maps.length; j++) {
+                    var map = maps[j];
+                    var t = new metadata.EntityType(map.n, helper.getResourceValue(map.rn, map.s), map.s, map.k, map.b, map.q, map.t, map.c, this);
+                    // create data properties
+                    helper.forEach(map.d, function (dp) {
+                        var dataType;
+                        if (dp.e)
+                            dataType = enumTypes[dp.t];
+                        else
+                            dataType = core.dataTypes.byName(dp.t);
+                        var dn = helper.getResourceValue(dp.r, dp.l || dp.n);
+                        var property = new metadata.DataProperty(t, dp.n, dn, dataType, dp.i === true, map.k && helper.findInArray(map.k, dp.n) != null,
+                            dp.g ? (dp.g == "I" ? enums.generationPattern.Identity : enums.generationPattern.Computed) : null,
+                            dp.d ? dataType.handle(dp.d) : null, dp.c);
+                        if (dp.v)
+                            helper.forEach(dp.v, function (v) {
+                                property.validators.push(core.Validator.byCode(v.t, v.a, v.m, v.r, property.displayName, dp.r));
+                            });
+                        if (dp.p) property.precision = Number(dp.p);
+                        if (dp.s) property.scale = Number(dp.s);
+                        t.dataProperties.push(property);
+                    });
+                    // create navigation properties
+                    var relations = map.r;
+                    if (relations)
+                        helper.forEach(relations, function (np) {
+                            var navProp = new metadata.NavigationProperty(t, np.n, helper.getResourceValue(np.r, np.l || np.n), np.t, np.s === true, np.a, np.c);
+                            if (np.f)
+                                helper.forEach(np.f, function (fk) {
+                                    navProp.foreignKeyNames.push(fk);
+                                });
+                            if (np.v)
+                                helper.forEach(np.v, function (v) {
+                                    navProp.validators.push(core.Validator.byCode(v.t, v.a, v.m, v.r, navProp.displayName, np.r));
+                                });
+                            t.navigationProperties.push(navProp);
+                        });
+                    var complex = map.x;
+                    if (complex)
+                        helper.forEach(complex, function (cp) {
+                            var property = new metadata.NavigationProperty(t, cp.n, helper.getResourceValue(cp.r, cp.l || cp.n), cp.t, true);
+                            t.navigationProperties.push(property);
+                        });
+                    this.types.push(t);
+                    this.typesDict[t.shortName] = t;
+                }
+
+                // then create relation between inherited entities.
+                helper.forEach(this.types, function (type) {
+                    if (type.baseTypeName)
+                        type.baseType = that.getEntityType(type.baseTypeName, true);
+                    delete type.baseTypeName;
+                });
+                // fill inherited properties using base type informations.
+                helper.forEach(this.types, function (type) {
+                    var base = type.baseType;
+                    while (base) {
+                        type.floorType = base;
+                        helper.forEach(base.dataProperties, function (dp) {
+                            if (!helper.findInArray(type.dataProperties, dp.name, "name")) {
+                                type.dataProperties.push(dp);
+                            }
+                        });
+                        helper.forEach(base.navigationProperties, function (np) {
+                            if (!helper.findInArray(type.navigationProperties, np.name, "name")) {
+                                type.navigationProperties.push(np);
+                            }
+                        });
+                        base = base.baseType;
+                    }
+                    // populate navigation properties inverse and create relation between data property and navigation property
+                    helper.forEach(type.navigationProperties, function (np) {
+                        if (!np.entityType) {
+                            np.entityType = that.getEntityType(np.entityTypeName, true);
+                            for (var k = 0; k < np.entityType.navigationProperties.length; k++) {
+                                var tnp = np.entityType.navigationProperties[k];
+                                if (tnp.associationName === np.associationName && np !== tnp) {
+                                    np.inverse = tnp;
+                                    break;
                                 }
                             }
-                            helper.forEach(np.foreignKeyNames, function (fkName) {
-                                if (!helper.findInArray(np.foreignKeys, fkName, 'name')) {
-                                    var dp = helper.findInArray(type.dataProperties, fkName, 'name');
-                                    if (dp) {
-                                        dp.relatedNavigationProperties.push(np);
-                                        np.foreignKeys.push(dp);
-                                    }
+                        }
+                        helper.forEach(np.foreignKeyNames, function (fkName) {
+                            if (!helper.findInArray(np.foreignKeys, fkName, 'name')) {
+                                var dp = helper.findInArray(type.dataProperties, fkName, 'name');
+                                if (dp) {
+                                    dp.relatedNavigationProperties.push(np);
+                                    np.foreignKeys.push(dp);
                                 }
-                            });
-                        });
-                        // find keys from data properties. When using inheritance key property lives in base (floor) entity.
-                        // so we could not find that until we fill inherited properties.
-                        helper.forEach(type.keyNames, function (keyName) {
-                            type.keys.push(helper.findInArray(type.dataProperties, keyName, 'name'));
+                            }
                         });
                     });
-                };
+                    // find keys from data properties. When using inheritance key property lives in base (floor) entity.
+                    // so we could not find that until we fill inherited properties.
+                    helper.forEach(type.keyNames, function (keyName) {
+                        type.keys.push(helper.findInArray(type.dataProperties, keyName, 'name'));
+                    });
+                });
+            };
 
-                return ctor;
-            })()
-        };
-    })();
+            return ctor;
+        })()
+    };
+
+    /** 
+     * Querying related types.
+     * @namespace
+     */
     var querying = (function () {
-        /// <summary>Querying related types.</summary>
 
         (function queryFuncExtensions() {
             // add missing query functions
@@ -4318,9 +4425,6 @@
                 return {
                     OfTypeExp: (function () {
                         var ctor = function (typeName) {
-                            /// <summary>
-                            /// Holds query concrete type name.
-                            /// </summary>
                             if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
                             baseTypes.ExpressionBase.call(this, 'oftype', -1, true, true);
                             this.typeName = typeName;
@@ -4347,9 +4451,6 @@
                     })(),
                     WhereExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Builds filter queries.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
 
                             this.exp = exp;
@@ -4372,9 +4473,6 @@
                     OrderByExp: (function () {
                         var defaultExp = 'x => x';
                         var ctor = function (exp, isDesc) {
-                            /// <summary>
-                            /// Holds query order by parameters.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'orderby', 1, false, false);
 
                             this.exp = exp || defaultExp;
@@ -4484,9 +4582,6 @@
                     })(),
                     ExpandExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query expand list.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'expand', 1, false, false);
                             this.exp = exp;
                         };
@@ -4505,9 +4600,6 @@
                     })(),
                     SelectExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query projection parameters.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'select', 2, false, true);
                             this.exp = exp;
                         };
@@ -4527,9 +4619,6 @@
                     })(),
                     SkipExp: (function () {
                         var ctor = function (count) {
-                            /// <summary>
-                            /// Holds query skip count.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'skip', 2, false, false);
                             this.count = count;
                         };
@@ -4556,9 +4645,6 @@
                     })(),
                     TopExp: (function () {
                         var ctor = function (count) {
-                            /// <summary>
-                            /// Holds query top information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'top', 2, false, false);
                             this.count = count;
                         };
@@ -4585,9 +4671,6 @@
                     })(),
                     GroupByExp: (function () {
                         var ctor = function (keySelector, elementSelector) {
-                            /// <summary>
-                            /// Holds query groupBy information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'groupby', 3, true, true);
 
                             this.keySelector = keySelector;
@@ -4666,9 +4749,6 @@
                     })(),
                     DistinctExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query distinct information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'distinct', 3, true, true);
                             this.exp = exp;
                         };
@@ -4705,9 +4785,6 @@
                     })(),
                     ReverseExp: (function () {
                         var ctor = function () {
-                            /// <summary>
-                            /// Holds query reverse information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'reverse', 3, true, false);
                         };
                         helper.inherit(ctor, baseTypes.ExpressionBase);
@@ -4729,9 +4806,6 @@
                     })(),
                     SelectManyExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query distinct information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'selectMany', 3, true, true);
                             this.exp = exp;
                         };
@@ -4763,9 +4837,6 @@
                     })(),
                     SkipWhileExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query skipWhile information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'skipWhile', 3, true, false);
                             this.exp = exp;
                             this.varContext = varContext;
@@ -4789,9 +4860,6 @@
                     })(),
                     TakeWhileExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query takeWhile information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'takeWhile', 3, true, false);
                             this.exp = exp;
                             this.varContext = varContext;
@@ -4815,9 +4883,6 @@
                     })(),
                     AllExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query all information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;all', 3, true, true);
                             this.exp = exp;
                             this.varContext = varContext;
@@ -4839,9 +4904,6 @@
                     })(),
                     AnyExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query any information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;any', 3, true, true);
                             if (exp)
                                 this.exp = exp;
@@ -4867,9 +4929,6 @@
                     })(),
                     AvgExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query average information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;avg', 3, true, true);
                             if (exp)
                                 this.exp = exp;
@@ -4891,9 +4950,6 @@
                     })(),
                     MaxExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query maximum information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;max', 3, true, true);
                             if (exp)
                                 this.exp = exp;
@@ -4915,9 +4971,6 @@
                     })(),
                     MinExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query minimum information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;min', 3, true, true);
                             if (exp)
                                 this.exp = exp;
@@ -4939,9 +4992,6 @@
                     })(),
                     SumExp: (function () {
                         var ctor = function (exp) {
-                            /// <summary>
-                            /// Holds query sum information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;sum', 3, true, true);
                             if (exp)
                                 this.exp = exp;
@@ -4963,9 +5013,6 @@
                     })(),
                     CountExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query count information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;count', 3, true, true);
                             if (exp)
                                 this.exp = exp;
@@ -4991,9 +5038,6 @@
                     })(),
                     FirstExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query first information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;first', 3, true, false);
                             if (exp)
                                 this.exp = exp;
@@ -5020,9 +5064,6 @@
                     })(),
                     FirstOrDefaultExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query firstOrDefault information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;firstOD', 3, true, false);
                             if (exp)
                                 this.exp = exp;
@@ -5048,9 +5089,6 @@
                     })(),
                     SingleExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query single information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;single', 3, true, false);
                             if (exp)
                                 this.exp = exp;
@@ -5077,9 +5115,6 @@
                     })(),
                     SingleOrDefaultExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query singleOrDefault information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;singleOD', 3, true, false);
                             if (exp)
                                 this.exp = exp;
@@ -5106,9 +5141,6 @@
                     })(),
                     LastExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query last information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;last', 3, true, false);
                             if (exp)
                                 this.exp = exp;
@@ -5135,9 +5167,6 @@
                     })(),
                     LastOrDefaultExp: (function () {
                         var ctor = function (exp, varContext) {
-                            /// <summary>
-                            /// Holds query lastOrDefault information.
-                            /// </summary>
                             baseTypes.ExpressionBase.call(this, 'exec;lastOD', 3, true, false);
                             if (exp)
                                 this.exp = exp;
@@ -6047,9 +6076,12 @@
             })()
         };
     })();
-    var core = (function () {
-        /// <summary>Core types.</summary>
 
+    /** 
+     * Core types.
+     * @namespace
+     */
+    var core = (function () {
         return {
             ValueNotifyWrapper: (function () {
                 var ctor = function (value, fromBeetle) {
@@ -9898,9 +9930,12 @@
             })()
         };
     })();
-    var services = (function () {
-        /// <summary>Data service implementations like ODataService, BeetleService etc..</summary>
 
+    /** 
+     * Data service implementations like ODataService, BeetleService etc..
+     * @namespace
+     */
+    var services = (function () {
         var expose = {};
 
         expose.BeetleService = (function () {
@@ -10218,134 +10253,144 @@
 
         return expose;
     })();
-    var enums = (function () {
-        /// <summary>Beetle enums.</summary>
 
-        return {
-            /// <field>
-            /// Entity states. Possible values;
-            ///  Detached, Unchanged, Added, Deleted, Modified
-            /// </field>
-            entityStates: new libs.Enum('Detached', 'Unchanged', 'Added', 'Deleted', 'Modified'),
-            /// <field>
-            /// Language operators. Possible values;
-            ///  !, - (unary), &&, ||, ==, ===, !=, !==, >, <, >=, <=, +, -, *, /, %, &, |, <<, >>
-            /// </field>
-            langOperators: (function () {
-                var ctor = function (name, code, func, oData, js) {
-                    this.name = name;
-                    this.code = code;
-                    this.asFunc = func;
-                    this.oData = oData,
-                        this.js = js || code;
-                };
+    /** 
+     * Beetle enums.
+     * @namespace
+     */
+    var enums = {
+        /**
+         * Entity states.
+         * Possible values: Detached, Unchanged, Added, Deleted, Modified
+         */
+        entityStates: new libs.Enum('Detached', 'Unchanged', 'Added', 'Deleted', 'Modified'),
+        /**
+         * Language operators.
+         * Possible values: !, - (unary), &&, ||, ==, ===, !=, !==, >, <, >=, <=, +, -, *, /, %, &, |, <<, >>
+         */
+        langOperators: (function () {
+            var ctor = function (name, code, func, oData, js) {
+                this.name = name;
+                this.code = code;
+                this.asFunc = func;
+                this.oData = oData,
+                    this.js = js || code;
+            };
 
-                var ops = [];
-                // unary
-                ops.push(new ctor('Not', '!', function (obj) { return !obj(); }, 'not '));
-                ops.push(new ctor('Negative', '-', function (obj) { return -1 * obj(); }));
-                // logical
-                ops.push(new ctor('And', '&&', function (obj1, obj2) { return obj1() && obj2(); }, 'and'));
-                ops.push(new ctor('Or', '||', function (obj1, obj2) { return obj1() || obj2(); }, 'or'));
-                ops.push(new ctor('Equals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), false, this); }, 'eq'));
-                ops.push(new ctor('StrictEquals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), true, this); }, 'eq', '==='));
-                ops.push(new ctor('NotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
-                ops.push(new ctor('StrictNotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
-                ops.push(new ctor('Greater', '>', function (obj1, obj2) {
-                    return obj1() > obj2();
-                }, 'gt'));
-                ops.push(new ctor('Lesser', '<', function (obj1, obj2) {
-                    return obj1() < obj2();
-                }, 'lt'));
-                ops.push(new ctor('GreaterEqual', '>=', function (obj1, obj2) {
-                    var o1 = obj1(), o2 = obj2();
-                    return o1 == o2 || o1 > o2;
-                }, 'ge'));
-                ops.push(new ctor('LesserEqual', '<=', function (obj1, obj2) {
-                    var o1 = obj1(), o2 = obj2();
-                    return o1 == o2 || o1 < o2;
-                }, 'le'));
-                // arithmetic
-                ops.push(new ctor('Sum', '+', function (obj1, obj2) { return obj1() + obj2(); }, 'add'));
-                ops.push(new ctor('Subtract', '-', function (obj1, obj2) { return obj1() - obj2(); }, 'sub'));
-                ops.push(new ctor('Multiply', '*', function (obj1, obj2) { return obj1() * obj2(); }, 'mul'));
-                ops.push(new ctor('Divide', '/', function (obj1, obj2) { return obj1() / obj2(); }, 'div'));
-                ops.push(new ctor('Modulo', '%', function (obj1, obj2) { return obj1() % obj2(); }, 'mod'));
-                // bitwise
-                ops.push(new ctor('BitAnd', '&', function (obj1, obj2) { return obj1() & obj2(); }));
-                ops.push(new ctor('BitOr', '|', function (obj1, obj2) { return obj1() | obj2(); }));
-                ops.push(new ctor('BitShiftLeft', '<<', function (obj1, obj2) { return obj1() << obj2(); }));
-                ops.push(new ctor('BitShiftRight', '>>', function (obj1, obj2) { return obj1() >> obj2(); }));
+            var ops = [];
+            // unary
+            ops.push(new ctor('Not', '!', function (obj) { return !obj(); }, 'not '));
+            ops.push(new ctor('Negative', '-', function (obj) { return -1 * obj(); }));
+            // logical
+            ops.push(new ctor('And', '&&', function (obj1, obj2) { return obj1() && obj2(); }, 'and'));
+            ops.push(new ctor('Or', '||', function (obj1, obj2) { return obj1() || obj2(); }, 'or'));
+            ops.push(new ctor('Equals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), false, this); }, 'eq'));
+            ops.push(new ctor('StrictEquals', '==', function (obj1, obj2) { return helper.equals(obj1(), obj2(), true, this); }, 'eq', '==='));
+            ops.push(new ctor('NotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), false, this); }, 'ne'));
+            ops.push(new ctor('StrictNotEqual', '!=', function (obj1, obj2) { return !helper.equals(obj1(), obj2(), true, this); }, 'ne', '!=='));
+            ops.push(new ctor('Greater', '>', function (obj1, obj2) {
+                return obj1() > obj2();
+            }, 'gt'));
+            ops.push(new ctor('Lesser', '<', function (obj1, obj2) {
+                return obj1() < obj2();
+            }, 'lt'));
+            ops.push(new ctor('GreaterEqual', '>=', function (obj1, obj2) {
+                var o1 = obj1(), o2 = obj2();
+                return o1 == o2 || o1 > o2;
+            }, 'ge'));
+            ops.push(new ctor('LesserEqual', '<=', function (obj1, obj2) {
+                var o1 = obj1(), o2 = obj2();
+                return o1 == o2 || o1 < o2;
+            }, 'le'));
+            // arithmetic
+            ops.push(new ctor('Sum', '+', function (obj1, obj2) { return obj1() + obj2(); }, 'add'));
+            ops.push(new ctor('Subtract', '-', function (obj1, obj2) { return obj1() - obj2(); }, 'sub'));
+            ops.push(new ctor('Multiply', '*', function (obj1, obj2) { return obj1() * obj2(); }, 'mul'));
+            ops.push(new ctor('Divide', '/', function (obj1, obj2) { return obj1() / obj2(); }, 'div'));
+            ops.push(new ctor('Modulo', '%', function (obj1, obj2) { return obj1() % obj2(); }, 'mod'));
+            // bitwise
+            ops.push(new ctor('BitAnd', '&', function (obj1, obj2) { return obj1() & obj2(); }));
+            ops.push(new ctor('BitOr', '|', function (obj1, obj2) { return obj1() | obj2(); }));
+            ops.push(new ctor('BitShiftLeft', '<<', function (obj1, obj2) { return obj1() << obj2(); }));
+            ops.push(new ctor('BitShiftRight', '>>', function (obj1, obj2) { return obj1() >> obj2(); }));
 
-                ctor.find = function (code) {
-                    var a = helper.filterArray(ops, function (op) {
-                        return op.code == code || op.oData == code || op.js == code;
-                    });
-                    return a.length > 0 ? a[0] : null;
-                };
+            ctor.find = function (code) {
+                var a = helper.filterArray(ops, function (op) {
+                    return op.code == code || op.oData == code || op.js == code;
+                });
+                return a.length > 0 ? a[0] : null;
+            };
 
-                return ctor;
-            })(),
-            /// <field>
-            /// Merge strategies. Can be passed to execute query method of entity manager. Possible values;
-            ///  Preserve: Cached entities are preserved and will be returned as query result (when entity with same key found).
-            ///  Overwrite: Cached entity values will be overwritten and cached entity will be returned as query result (when entity with same key found).
-            ///  ThrowError: Error will be thrown (when entity with same key found).
-            ///  NoTracking: Query result will not be merged into the cache.
-            ///  NoTrackingRaw: Query results will not be merged into the cache and will not be converted to entities (raw objects will be returned).
-            /// </field>
-            mergeStrategy: new libs.Enum('Preserve', 'Overwrite', 'ThrowError', 'NoTracking', 'NoTrackingRaw'),
-            /// <field>
-            /// Query execution strategies. Can be passed to execute query method of entity manager. Possible values;
-            ///  Server: Get entities only from server.
-            ///  Local: Get entities only from local cache.
-            ///  Both: Get entities from local cache then from server and then mix them up.
-            ///  LocalIfEmptyServer: Get entities from local cache if no result is found get them from server.
-            /// </field>
-            executionStrategy: new libs.Enum('Server', 'Local', 'Both', 'LocalIfEmptyServer'),
-            /// <field>
-            /// Property value auto generation type. Possible values;
-            ///  Identity: Auto-Increment identity column.
-            ///  Server: Calculated column.
-            /// </field>
-            generationPattern: new libs.Enum('Identity', 'Computed'),
-            /// <field>
-            /// What to do when user sets an observable array's value with a new array.
-            ///  NotAllowed: An exception will be thrown.
-            ///  Replace: Old items will be replaced with next array items.
-            ///  Append: New array items will be appended to existing array.
-            /// </field>
-            arraySetBehaviour: new libs.Enum('NotAllowed', 'Replace', 'Append'),
-            /// <field>
-            /// Supported service types.
-            /// </field>
-            serviceTypes: new libs.Enum('OData', 'Beetle')
-        };
-    })();
-    var events = (function () {
-        /// <summary>Manager independent static events.</summary>
+            return ctor;
+        })(),
+        /**
+         * Merge strategies. Can be passed to execute query method of entity manager.
+         * Possible values:
+         *  Preserve: Cached entities are preserved and will be returned as query result (when entity with same key found).
+         *  Overwrite: Cached entity values will be overwritten and cached entity will be returned as query result (when entity with same key found).
+         *  ThrowError: Error will be thrown (when entity with same key found).
+         *  NoTracking: Query result will not be merged into the cache.
+         *  NoTrackingRaw: Query results will not be merged into the cache and will not be converted to entities (raw objects will be returned).
+         */
+        mergeStrategy: new libs.Enum('Preserve', 'Overwrite', 'ThrowError', 'NoTracking', 'NoTrackingRaw'),
+        /**
+         * Query execution strategies. Can be passed to execute query method of entity manager.
+         * Possible values:
+         *  Server: Get entities only from server.
+         *  Local: Get entities only from local cache.
+         *  Both: Get entities from local cache then from server and then mix them up.
+         *  LocalIfEmptyServer: Get entities from local cache if no result is found get them from server.
+         */
+        executionStrategy: new libs.Enum('Server', 'Local', 'Both', 'LocalIfEmptyServer'),
+        /**
+         * Property value auto generation type.
+         * Possible values:
+         *  Identity: Auto-Increment identity column.
+         *  Server: Calculated column.
+         */
+        generationPattern: new libs.Enum('Identity', 'Computed'),
+        /**
+         * What to do when user sets an observable array's value with a new array.
+         * Possible values:
+         *  NotAllowed: An exception will be thrown.
+         *  Replace: Old items will be replaced with next array items.
+         *  Append: New array items will be appended to existing array.
+         */
+        arraySetBehaviour: new libs.Enum('NotAllowed', 'Replace', 'Append'),
+        /**
+         * Supported service types.
+         * Possible values: OData, Beetle
+         */
+        serviceTypes: new libs.Enum('OData', 'Beetle')
+    };
 
-        return {
-            /// <field>Notifies before a query is being executed. You can modify query and options from the args.</field>
-            queryExecuting: new core.Event('beetleQueryExecuting', this),
-            /// <field>Notifies after a query is executed. You can modify result from the args.</field>
-            queryExecuted: new core.Event('beetleQueryExecuted', this),
-            /// <field>Notifies before save call started. You can modify options from the args.</field>
-            saving: new core.Event('beetleSaving', this),
-            /// <field>Notifies after save call completed.</field>
-            saved: new core.Event('beetleSaved', this),
-            /// <field>Notifies when a information level event is occurred.</field>
-            info: new core.Event('beetleInfo', this),
-            /// <field>Notifies when a warning level event is occurred.</field>
-            warning: new core.Event('beetleWarning', this),
-            /// <field>Notifies when a error level event is occurred.</field>
-            error: new core.Event('beetleError', this)
-        };
-    })();
+    /** 
+     * Manager independent static events.
+     * @namespace
+     */
+    var events = {
+        /** Notifies before a query is being executed. You can modify query and options from the args. */
+        queryExecuting: new core.Event('beetleQueryExecuting', this),
+        /** Notifies after a query is executed. You can modify result from the args. */
+        queryExecuted: new core.Event('beetleQueryExecuted', this),
+        /** Notifies before save call started. You can modify options from the args. */
+        saving: new core.Event('beetleSaving', this),
+        /** Notifies after save call completed. */
+        saved: new core.Event('beetleSaved', this),
+        /** Notifies when a information level event is occurred. */
+        info: new core.Event('beetleInfo', this),
+        /** Notifies when a warning level event is occurred. */
+        warning: new core.Event('beetleWarning', this),
+        /** Notifies when a error level event is occurred. */
+        error: new core.Event('beetleError', this)
+    };
+
+    /** 
+     * Core settings.
+     * @namespace
+     */
     var settings = (function () {
-        /// <summary>Core settings.</summary>
-
-        // set default values backing fields
+        // set default values with backing fields
         var _observableProvider;
         if (ko)
             _observableProvider = new impls.KoObservableProvider(ko);
@@ -10384,162 +10429,174 @@
 
         var expose = {};
 
-        // When an entity loaded into manager, navigation fixer tries to fix all navigation properties.
-        // But fixing plural navigations may take time (getting cached entities by their foreign keys).
-        // These are the default settings, these settings also can be given by query options,
-        // example: manager.executeQuery(query, {merge: mergeStrategy.Preserve, autoFixScalar: false})
-        /// <field>Auto fix scalar navigation properties (after merge and after foreign key change).</field>
+        /** When an entity loaded into manager, navigation fixer tries to fix all navigation properties.
+         * But fixing plural navigations may take time (getting cached entities by their foreign keys).
+         * These are the default settings, these settings also can be given by query options,
+         * example: manager.executeQuery(query, {merge: mergeStrategy.Preserve, autoFixScalar: false})
+         */
+
+        /** Auto fix scalar navigation properties (after merge and after foreign key change). */
         expose.autoFixScalar = true;
-        /// <field>Auto fix plural navigation properties (after merge).</field>
+        /** Auto fix plural navigation properties (after merge). */
         expose.autoFixPlural = false;
-        /// <field>Validate entities before adding to manager cache.</field>
+        /** Validate entities before adding to manager cache. */
         expose.validateOnMerge = true;
-        /// <field>Validate entities before saving to server.</field>
+        /** Validate entities before saving to server. */
         expose.validateOnSave = true;
-        /// <field>Validate entities on every property change.</field>
+        /** Validate entities on every property change. */
         expose.liveValidate = true;
-        /// <field>When a value is set, try to change its type by its data property or value (for anon types).</field>
+        /** When a value is set, try to change its type by its data property or value (for anon types). */
         expose.handleUnmappedProperties = true;
-        /// <field>for local queries use case sensitive string comparisons.</field>
+        /** for local queries use case sensitive string comparisons. */
         expose.isCaseSensitive = false;
-        /// <field>for local queries trim values before string comparisons.</field>
+        /** for local queries trim values before string comparisons. */
         expose.ignoreWhiteSpaces = false;
-        /// <field>when true, each entity will be updated -even there is no modified property.</field>
+        /** when true, each entity will be updated -even there is no modified property. */
         expose.forceUpdate = false;
-        /// <field>when true, loaded meta-data will be cached for url.</field>
+        /** when true, loaded meta-data will be cached for url. */
         expose.cacheMetadata = true;
-        /// <field>when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope.</field>
+        /** when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope. */
         expose.registerMetadataTypes = false;
-        /// <field>
-        /// when not equals to false all Ajax calls will be made asynchronously, 
-        /// when false createEntityAsync, executeQuery, saveChanges will returns results immediately.</field>
+        /** 
+         * when not equals to false all Ajax calls will be made asynchronously, 
+         * when false createEntityAsync, executeQuery, saveChanges will returns results immediately (when supported).
+         */
         expose.workAsync = true;
-        /// <field>
-        /// default timeout for AJAX calls. this value is used when not given with options argument.</field>
+        /** default timeout for AJAX calls. this value is used when not given with options argument. */
         expose.ajaxTimeout = null;
-        /// <field>
-        /// when true, while creating raw objects for entities, for modified only changed properties, for deleted only key properties will be used.
-        /// entities will be created with only sent properties filled, other properties will have default values, please use carefully.</field>
+        /** 
+         * when true, while creating raw objects for entities, for modified only changed properties, for deleted only key properties will be used.
+         * entities will be created with only sent properties filled, other properties will have default values, please use carefully.
+         */
         expose.minimizePackage = false;
 
+        /** 
+         * Gets observable provider instance.
+         * @returns {baseTypes.ObservableProviderBase} Current observable provider instance.
+         */
         expose.getObservableProvider = function () {
-            /// <summary>
-            /// Gets static observable provider instance.
-            /// </summary>
             return _observableProvider;
         };
 
+        /** 
+         * Sets observable provider instance. All generated entities after this call will use given observable provider instance.
+         * @param {baseTypes.ObservableProviderBase} provider - Observable provider instance.
+         */
         expose.setObservableProvider = function (provider) {
-            /// <summary>
-            /// Sets static observable provider instance. All generated entities after this call will use given observable provider instance.
-            /// </summary>
-            /// <param name="provider">Observable provider parameter.</param>
             _observableProvider = getValue(provider, baseTypes.ObservableProviderBase);
         };
 
+        /** 
+         * Gets static promise provider instance.
+         * @returns {baseTypes.PromiseProviderBase} Current promise provider instance.
+         */
         expose.getPromiseProvider = function () {
-            /// <summary>
-            /// Gets static promise provider instance.
-            /// </summary>
             return _promiseProvider;
         };
 
+        /** 
+         * Sets static promise provider instance. All async operations after this call will use given promise provider instance.
+         * @param {baseTypes.PromiseProviderBase} provider - Promise provider instance.
+         */
         expose.setPromiseProvider = function (provider) {
-            /// <summary>
-            /// Sets static promise provider instance. All async operations after this call will use given promise provider instance.
-            /// </summary>
-            /// <param name="provider">Promise provider parameter.</param>
             _promiseProvider = provider != null ? getValue(provider, baseTypes.PromiseProviderBase) : null;
         };
 
+        /** 
+         * Gets static ajax provider instance.
+         * @returns {baseTypes.AjaxProviderBase} Current ajax provider instance.
+         */
         expose.getAjaxProvider = function () {
-            /// <summary>
-            /// Gets static ajax provider instance.
-            /// </summary>
             return _ajaxProvider;
         };
 
+        /** 
+         * Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
+         * @param {baseTypes.AjaxProviderBase} provider - Ajax provider instance.
+         */
         expose.setAjaxProvider = function (provider) {
-            /// <summary>
-            /// Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
-            /// </summary>
-            /// <param name="provider">Ajax provider parameter.</param>
             _ajaxProvider = getValue(provider, baseTypes.AjaxProviderBase);
         };
 
+        /** 
+         * Gets static serialization service instance.
+         * @returns {baseTypes.SerializationServiceBase} Current serialization service instance.
+         */
         expose.getSerializationService = function () {
-            /// <summary>
-            /// Gets static serialization service instance.
-            /// </summary>
             return _serializationService;
         };
 
+        /**
+         * Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
+         * @param {baseTypes.SerializationServiceBase} service - Serialization service instance.
+         */
         expose.setSerializationService = function (service) {
-            /// <summary>
-            /// Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
-            /// </summary>
-            /// <param name="provider">Serialization service parameter.</param>
             _serializationService = getValue(service, baseTypes.SerializationServiceBase);
         };
 
+        /** 
+         * Gets array set behaviour.
+         * @returns {enums.arraySetBehaviour} Current array set behaviour enum value.
+         */
         expose.getArraySetBehaviour = function () {
-            /// <summary>
-            /// Gets array set behaviour.
-            /// </summary>
             return _arraySetBehaviour;
         };
 
+        /**
+         * Sets array set behaviour.
+         * @param {enums.arraySetBehaviour} behaviour - Array set behaviour enum value.
+         */
         expose.setArraySetBehaviour = function (behaviour) {
-            /// <summary>
-            /// Sets array set behaviour.
-            /// </summary>
             /// <param name="provider">Array set behaviour.</param>
             _arraySetBehaviour = getValue(behaviour, null, enums.arraySetBehaviour);
         };
 
+        /** 
+         * Gets default service type.
+         * @returns {enums.serviceTypes} Current service type enum value.
+         */
         expose.getDefaultServiceType = function () {
-            /// <summary>
-            /// Gets default service type.
-            /// </summary>
             return _defaultServiceType;
         };
 
+        /**
+         * Sets default service type.
+         * @param {enums.serviceTypes} serviceType - Service type enum value.
+         */
         expose.setDefaultServiceType = function (serviceType) {
-            /// <summary>
-            /// Sets default service type.
-            /// </summary>
             /// <param name="serviceType">Service type enum value.</param>
             _defaultServiceType = getValue(serviceType, null, enums.serviceTypes);
         };
 
+        /**
+         * Gets date converter.
+         * @returns {baseTypes.SerializationServiceBase} Current date converter instance.
+         */
         expose.getDateConverter = function () {
-            /// <summary>
-            /// Gets date converter.
-            /// </summary>
             return _dateConverter;
         };
 
+        /**
+         * Sets date converter.
+         * @param {baseTypes.SerializationServiceBase} service - Date converter instance.
+         */
         expose.setDateConverter = function (converter) {
-            /// <summary>
-            /// Sets date converter.
-            /// </summary>
-            /// <param name="serviceType">Date converter parameter.</param>
             _dateConverter = getValue(converter, baseTypes.DateConverterBase);
         };
 
+        /**
+         * Gets the localization function.
+         * @returns {Function} Current localization function: (string) => string.
+         */
         expose.getLocalizeFunction = function () {
-            /// <summary>
-            /// Gets localized function (used for validation).
-            /// </summary>
             return _localizeFunction;
         };
 
+        /**
+         * Sets the localization function.
+         * @param {Function} func - Localization function: (string) => string.
+         */
         expose.setLocalizeFunction = function (func) {
-            /// <summary>
-            /// Sets array set behaviour.
-            /// </summary>
-            /// <param name="func">Localized function to be used.</param>
-            // check if parameter is arraySetBehaviour.
             helper.assertPrm(func, 'func').isFunction().check();
             _localizeFunction = func;
         };
@@ -10565,6 +10622,8 @@
 
         return expose;
     })();
+
+    /** localization */
     var i18N = {
         argCountMismatch: 'Argument count mismatch for "%0".',
         arrayEmpty: 'The array does not contain any element.',
@@ -10649,13 +10708,23 @@
     };
     var i18Ns = { en: i18N };
 
+    /** Export types */
     return {
-        // Export types
         version: '2.3.1',
+        /** 
+         * Register localization
+         * @param {string} code - Language code.
+         * @param {Object} i18n - Localization object.
+         * @param {boolean} active - Make this the current localization.
+         */
         registerI18N: function (code, i18n, active) {
             i18Ns[code] = i18n;
             if (active) i18N = i18n;
         },
+        /** 
+         * Change current localization. Code must be registered before.
+         * @param {string} code - Language code.
+         */
         setI18N: function (code) {
             var i18n = i18Ns[code];
             if (!i18n)
@@ -10697,25 +10766,4 @@
         arraySetBehaviour: enums.arraySetBehaviour,
         serviceTypes: enums.serviceTypes
     };
-    });
-
-/**
- * String options.
- * @typedef {Object} StringOptions
- * @property {boolean} isCaseSensitive - Indicates whether call toLowerCase on strings before comparison.
- * @property {boolean} ignoreWhiteSpaces - Indicates whether trim strings before comparison.
- */
-
-/**
- * forEach callback.
- * @callback forEachCallback
- * @param {*} item - The current item in iteration.
- * @property {number} index - The current index.
- */
-
-/**
- * forEachProperty callback.
- * @callback forEachPropertyCallback
- * @param {string} property - The current property name in iteration.
- * @property {*} value - The value of current property.
- */
+});

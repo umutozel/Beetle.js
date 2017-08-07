@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
+    <PackageVersion>3.0.0-alpha-01</PackageVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Authors>Umut Özel</Authors>
     <Description>Beetle Asp.Net Mvc Core implementation.</Description>

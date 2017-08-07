@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
+    <PackageVersion>3.0.0-alpha-01</PackageVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Authors>Umut Özel</Authors>
     <Description>Beetle metadata types.</Description>
@@ -12,6 +13,7 @@
     <PackageTags>Asp.Net Mvc Core Unit of Work Client Side Change Tracker Beetle</PackageTags>
     <RepositoryUrl>https://github.com/umutozel/Beetle</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <VersionSuffix>$(VersionSuffix)</VersionSuffix>
   </PropertyGroup>
 
 </Project>
