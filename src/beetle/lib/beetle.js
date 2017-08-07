@@ -2484,9 +2484,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// String representation of the object.
-                /// </summary>
                 return this.name;
             };
 
@@ -2527,47 +2524,44 @@
 
             return ctor;
         })(),
+        /**
+         * Ajax provider base class. Operates ajax operations.
+         * @class
+         */
         AjaxProviderBase: (function () {
             var ctor = function (name) {
-                /// <summary>
-                /// Ajax provider base class. Operates ajax operations.
-                /// </summary>
-                /// <param name="name">Name of the provider.</param>
                 this.name = name || 'AjaxProviderBase';
                 this.syncSupported = true;
             };
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// String representation of the object.
-                /// </summary>
                 return this.name;
             };
 
             proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
-                /// <summary>
-                /// Ajax operation virtual method.
-                /// </summary>
-                /// <param name="uri">Uri to make request.</param>
-                /// <param name="type">Request type (POST, GET..)</param>
-                /// <param name="dataType">Request data type (xml, json..)</param>
-                /// <param name="contentType">Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)</param>
-                /// <param name="data">Request data.</param>
-                /// <param name="async">If set to false, request will be made synchronously.</param>
-                /// <param name="timeout">AJAX call timeout value. if call won't be completed after given time, exception will be thrown.</param>
-                /// <param name="extra">implementor specific arguments.</param>
-                /// <param name="headers">custom HTTP headers.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
+                /**
+                 * Ajax operation virtual method.
+                 * @uri {string} - Uri to make request.
+                 * @type {string} - Request type (POST, GET..)
+                 * @dataType {string} - Request data type (xml, json..)
+                 * @contentType {string} - Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)
+                 * @data {any} - Request data.
+                 * @async {boolean} - If set to false, request will be made synchronously.
+                 * @timeout {number} - AJAX call timeout value. if call won't be completed after given time, exception will be thrown.
+                 * @extra {Object} - Implementor specific arguments.
+                 * @headers {Object} - custom HTTP headers.
+                 * @successCallback {successCallback} - Function to call after operation succeeded.
+                 * @errorCallback {errorCallback} - Function to call when operation fails.
+                 */
                 throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
             };
 
+            /** 
+             * Creates an error object by parsing XHR result.
+             * @param {XMLHttpRequest} xhr - XML Http Request object. Can be used from implementors using Xhr.
+             */
             proto.createError = function (xhr) {
-                /// <summary>
-                /// Creates an error object by parsing XHR result.
-                /// </summary>
-                /// <param name="xhr">XML Http Request object.</param>
                 var obj = { status: xhr.status, xhr: xhr, detail: xhr.responseText };
                 return helper.createError(xhr.statusText, obj);
             }
@@ -2591,9 +2585,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// String representation of the object.
-                /// </summary>
                 return this.name;
             };
 
@@ -2625,9 +2616,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// String representation of the object.
-                /// </summary>
                 return this.name;
             };
 
@@ -2682,9 +2670,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// String representation of the object.
-                /// </summary>
                 return this.uri;
             };
 
@@ -3733,9 +3718,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// toString override. Returns name.
-                /// </summary>
                 return this.displayName;
             };
 
@@ -3837,9 +3819,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// toString override. Returns name.
-                /// </summary>
                 return this.displayName;
             };
 
@@ -3914,9 +3893,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// toString override. Returns name.
-                /// </summary>
                 return this.name;
             };
 
@@ -4159,9 +4135,6 @@
             var proto = ctor.prototype;
 
             proto.toString = function () {
-                /// <summary>
-                /// String representation of the object.
-                /// </summary>
                 return this.types.join(', ');
             };
 
@@ -6782,9 +6755,6 @@
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
                     var args = [];
                     if (this.args)
                         for (var p in this.args) {
@@ -7011,9 +6981,6 @@
                     var p = c.prototype;
 
                     p.toString = function () {
-                        /// <summary>
-                        /// String representation of the object.
-                        /// </summary>
                         return this.typeName + ': ' + this.keyIndex.length;
                     };
 
@@ -7157,9 +7124,6 @@
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
                     return this.allEntities.length;
                 };
 
@@ -7328,9 +7292,6 @@
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
                     return 'EntitySet: ' + this.entityType.shortName;
                 };
 
@@ -7411,9 +7372,6 @@
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
                     return 'EntityTracker: ' + this.entityType.shortName + ', key: ' + this.key;
                 };
 
@@ -8289,9 +8247,6 @@
                 var proto = ctor.prototype;
 
                 proto.toString = function () {
-                    /// <summary>
-                    /// String representation of the object.
-                    /// </summary>
                     return this.dataService.toString() + ', ' +
                         i18N.pendingChanges + ': ' + this.pendingChangeCount + ', ' +
                         i18N.validationErrors + ': ' + this.validationErrors.length;
