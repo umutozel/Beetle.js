@@ -9166,18 +9166,6 @@
             }
 
             function mergeEntities(newEntities, flatList, merge, state, instance, autoFixScalar, autoFixPlural) {
-                /// <summary>
-                /// Merges entities to cache by given merge strategy.
-                /// </summary>
-                /// <param name="newEntities">Entities to merge.</param>
-                /// <param name="flatList">Flatten entity list, includes all related entities and their relations etc..
-                /// optional-for performance improvements: usually entities are already flattened before this call, with this parameter we re-use that list.
-                /// </param>
-                /// <param name="merge">Merge strategy.</param>
-                /// <param name="state">Change merged entities' state to this.</param>
-                /// <param name="instance">Manager instance.</param>
-                /// <param name="autoFixScalar">When true all scalar navigations will be fixed after merge (optional, default value will be read from settings).</param>
-                /// <param name="autoFixPlural">When true all plural navigations will be fixed after merge (optional, default value will be read from settings).</param>
                 if (!state) state = enums.entityStates.Added;
                 else if (state === enums.entityStates.Detached) return;
 
@@ -9261,19 +9249,12 @@
             }
 
             function checkEntity(entity, instance) {
-                /// <summary>
-                /// If given entity is not being tracked by this manager, throws an error.
-                /// </summary>
+                /** If given entity is not being tracked by this manager, throws an error. */
                 if (!instance.isInManager(entity))
                     throw helper.createError(i18N.entityNotBeingTracked, { entity: entity, manager: instance });
             }
 
             function setEntityState(entity, state) {
-                /// <summary>
-                /// Change the state of the entity for merging.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="state">New state.</param>
                 if (state === enums.entityStates.Unchanged)
                     entity.$tracker.toUnchanged();
                 else if (state === enums.entityStates.Modified)
@@ -9286,11 +9267,6 @@
             }
 
             function overwriteEntity(oldEntity, newEntity) {
-                /// <summary>
-                /// Overwrite the properties of existing entity.
-                /// </summary>
-                /// <param name="oldEntity">Existing entity.</param>
-                /// <param name="newEntity">Entity to use values when overwrite.</param>
                 var tracker = newEntity.$tracker;
                 // Overwrite all properties.
                 helper.forEach(tracker.entityType.dataProperties, function (dp) {
@@ -9298,13 +9274,8 @@
                 });
             }
 
+            /** Finds navigation and fixes navigation properties for given attached entity. */
             function entityAttached(entity, autoFixScalar, autoFixPlural, instance) {
-                /// <summary>
-                /// Finds navigation and fixes navigation properties for given attached entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="autoFixScalar">When true all scalar navigations will be fixed.</param>
-                /// <param name="autoFixPlural">When true all plural navigations will be fixed.</param>
                 if (autoFixScalar != true && autoFixPlural != true) return;
                 var tracker = entity.$tracker;
                 var type = tracker.entityType;
@@ -9360,10 +9331,8 @@
                 });
             }
 
+            /** If scalar navigation value is replaced with existing entity, fixes it. */
             function handleScalar(tracker, value, np, npName, autoFix, instance) {
-                /// <summary>
-                /// If scalar navigation value is replaced with existing entity, fixes it
-                /// </summary>
                 if (value) {
                     if (value.$tracker && value.$tracker.manager != instance) {
                         value = instance.getEntityByKey(value.$tracker.key, value.$tracker.entityType);
@@ -9375,10 +9344,8 @@
                     fixScalar(tracker, np, instance);
             }
 
+            /** If plural navigation items is replaced with existing entities, fixes them. */
             function handlePlural(array, instance) {
-                /// <summary>
-                /// If plural navigation items is replaced with existing entities, fixes them
-                /// </summary>
                 for (var i = array.length - 1; i >= 0; i--) {
                     var item = array[i];
                     if (item && item.$tracker && item.$tracker.manager != instance) {
@@ -9389,15 +9356,8 @@
                 }
             }
 
+            /** When a query result entity already exists in cache existing entity will be returned as result. This method fixes missing navigations. */
             function resultReplaced(result, existing, autoFixScalar, autoFixPlural, instance) {
-                /// <summary>
-                /// When a query result entity already exists in cache existing entity will be returned as result.
-                /// This method fixes missing navigations.
-                /// </summary>
-                /// <param name="result">Query result.</param>
-                /// <param name="existing">Cached entity.</param>
-                /// <param name="autoFixScalar">When true all scalar navigations will be fixed.</param>
-                /// <param name="autoFixPlural">When true all plural navigations will be fixed.</param>
                 var te = existing.$tracker;
                 if (te.entityState == enums.entityStates.Deleted) return;
 
@@ -9446,20 +9406,16 @@
                 });
             }
 
+            /** Fixes scalar navigation property. */
             function fixScalar(tracker, np, instance) {
-                /// <summary>
-                /// Fixes scalar navigation property
-                /// </summary>
                 var fk = tracker.foreignKey(np);
                 var found = instance.entities.getEntityByKey(fk, np.entityType);
                 if (found && found.$tracker.entityState == enums.entityStates.Deleted) found = null;
                 tracker.setValue(np.name, found);
             }
 
+            /** Fixes plural navigation property. */
             function fixPlural(entity, np, array, instance) {
-                /// <summary>
-                /// Fixes plural navigation property
-                /// </summary>
                 // get related items from entity container.
                 var relations = instance.entities.getRelations(entity, np);
                 if (relations)
@@ -9469,12 +9425,11 @@
                     });
             }
 
+            /** 
+             * Clears navigation properties of given entity.
+             * @param {boolean} preserveFK - When true, we can keep beetle from emptying related foreign key properties.
+             */
             function clearNavigations(entity, preserveFK) {
-                /// <summary>
-                /// Clears navigation properties of given entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="preserveFK">When true, we can keep beetle from emptying related foreign key properties.</param>
                 var tracker = entity.$tracker;
                 var type = tracker.entityType;
                 var nullValue = preserveFK ? new core.ValueNotifyWrapper(null, true) : null;
@@ -9489,13 +9444,8 @@
                 }
             }
 
+            /** Accept all changes made via this entity manager, remove deleted from cache, change state of Added and Modified to Unchanged. */
             function acceptSaves(changes, entities, instance) {
-                /// <summary>
-                /// Accept all changes made via this entity manager, remove deleted from cache, change state of Added and Modified to Unchanged.
-                /// </summary>
-                /// <param name="changes">Changed entities.</param>
-                /// <param name="entities">Entity container.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 helper.forEach(changes, function (entity) {
                     if (entity.$tracker.entityState == enums.entityStates.Deleted) {
                         entity.$tracker.toDetached();
@@ -9508,12 +9458,13 @@
                 });
             }
 
+            /**
+             * Merges old and new errors and make callback.
+             * @param {Entity} entity - The entity.
+             * @param {Object} changes - Validation error changes.
+             * @param {EntityManager} instance - Entity manager instance.
+             */
             function mergeErrors(entity, changes, instance) {
-                /// <summary>
-                /// Merges old and new errors and make callback.
-                /// </summary>
-                /// <param name="changes">Validation error changes.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 if (changes.removed.length > 0)
                     for (var i = changes.removed.length - 1; i >= 0; i--)
                         instance.validationErrors.splice(helper.indexOf(instance.validationErrors, changes.removed[i]), 1);
@@ -9523,12 +9474,8 @@
                     instance.validationErrorsChanged.notify({ errors: instance.validationErrors, added: changes.added, removed: changes.removed });
             }
 
+            /** Subscribe to entity events. */
             function subscribeToEntity(entity, instance) {
-                /// <summary>
-                /// Subscribe to entity events.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 entity.$tracker.entityStateChanged.subscribe(function (change) {
                     var oldCount = instance.pendingChangeCount;
                     if (change.newChanged === true) instance.pendingChangeCount++;
@@ -9544,12 +9491,8 @@
                 });
             }
 
+            /** Unsubscribe from entity events. */
             function unsubscribeFromEntity(entity, instance) {
-                /// <summary>
-                /// Unsubscribe from entity events.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 // unsubscribe from entity events.
                 entity.$tracker.entityStateChanged.unsubscribe(instance.entityStateChanged.notify);
                 entity.$tracker.validationErrorsChanged.unsubscribe(instance.validationErrorsChanged.notify);
@@ -9559,57 +9502,45 @@
                 instance.validationErrorsChanged.notify({ errors: instance.validationErrors, removed: errors, added: [] });
             }
 
+            /** Notifies subscribers about executing query. */
             function notifyExecuting(manager, query, options) {
-                /// <summary>
-                /// Notifies subscribers about executing query.
-                /// </summary>
                 var obj = { manager: manager, query: query, options: options };
                 manager.queryExecuting.notify(obj);
                 events.queryExecuting.notify(obj);
                 return obj;
             }
 
+            /** Notifies subscribers about executed query. */
             function notifyExecuted(manager, query, options, result) {
-                /// <summary>
-                /// Notifies subscribers about executed query.
-                /// </summary>
                 var obj = { manager: manager, query: query, options: options, result: result };
                 manager.queryExecuted.notify(obj);
                 events.queryExecuted.notify(obj);
                 return obj.result;
             }
 
+            /** Notifies subscribers about save operation. */
             function notifySaving(manager, changes, pkg, options) {
-                /// <summary>
-                /// Notifies subscribers about save operation.
-                /// </summary>
                 var obj = { manager: manager, changes: changes, savePackage: pkg, options: options };
                 manager.saving.notify(obj);
                 events.saving.notify(obj);
                 return obj.options;
             }
 
+            /** Notifies subscribers about save completion. */
             function notifySaved(manager, changes, pkg, options) {
-                /// <summary>
-                /// Notifies subscribers about save completion.
-                /// </summary>
                 var obj = { manager: manager, changes: changes, savePackage: pkg, options: options };
                 manager.saved.notify(obj);
                 events.saved.notify(obj);
             }
 
+            /** Called when a operation is completed succesfully. */
             function onSuccess(successCallback, promiseProvider, deferred, data) {
-                /// <summary>
-                /// Called when a operation is completed succesfully.
-                /// </summary>
                 if (successCallback) successCallback(data);
                 if (promiseProvider) promiseProvider.resolve(deferred, data);
             }
 
+            /** Called when a operation is failed. */
             function onError(errorCallback, promiseProvider, deferred, error, manager) {
-                /// <summary>
-                /// Called when a operation is failed.
-                /// </summary>
                 error.manager = manager;
                 if (errorCallback) errorCallback(error);
                 if (promiseProvider) promiseProvider.reject(deferred, error);
@@ -9619,17 +9550,23 @@
 
             return ctor;
         })(),
-        EntityBase: (function () {
-            return function (type, manager, initialValues) {
-                if (initialValues)
-                    helper.extend(this, initialValues);
+        /**
+         * Base entity class.
+         * @constructor
+         * @param {EntityType} type - Entity type object.
+         * @param {EntityManager=} manager - Entity manager.
+         * @param {Object=} initialValues - Entity's initial values.
+         * @returns {Entity} 
+         */
+        EntityBase: function (type, manager, initialValues) {
+            if (initialValues)
+                helper.extend(this, initialValues);
 
-                type.createEntity(this);
+            type.createEntity(this);
 
-                if (manager != null)
-                    manager.addEntity(this);
-            };
-        })()
+            if (manager != null)
+                manager.addEntity(this);
+        }
     };
 
     /** 
