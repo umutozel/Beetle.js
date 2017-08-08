@@ -564,16 +564,16 @@
                 return removed;
             };
 
+            /**
+             * Loads the navigation property using EntityManager.
+             * @param {string[]} expands - Expand navigations to apply when loading navigation property.
+             * @param {Object} resourceName - Resource name to query entities.
+             * @param {queryOptions} options - Query options.
+             * @param {successCallback=} successCallback - Success callback function.
+             * @param {errorCallback=} errorCallback - Error callback function.
+             * @returns {Promise} A Promise when available, otherwise return value of the AjaxProvider.
+             */
             array.load = function (expands, resourceName, options, successCallback, errorCallback) {
-                /**
-                * Loads the navigation property using EntityManager.
-                * @param {string[]} expands - Expand navigations to apply when loading navigation property.
-                * @param {Object} resourceName - Resource name to query entities.
-                * @param {queryOptions} options - Query options.
-                * @param {successCallback=} successCallback - Success callback function.
-                * @param {errorCallback=} errorCallback - Error callback function.
-                * @returns {Promise} A Promise when available, otherwise return value of the AjaxProvider.
-                */
                 return this.object.$tracker.loadNavigationProperty(this.property.name, expands, resourceName, options, successCallback, errorCallback);
             };
 
@@ -1026,7 +1026,7 @@
 
     /**
      * Assertion methods. Two different usage possible, static methods and instance methods.
-     * Static methods returns true or false.Instance methods can be chained and they collect errors in an array, 
+     * Static methods returns true or false. Instance methods can be chained and they collect errors in an array.
      * Check method throws error if there are any.
      * @class
      */
@@ -3735,15 +3735,28 @@
     };
 
     /** 
-     * Metadata related types.
+     * Represents a primitive value member.
      * @namespace
      */
     var metadata = {
+        /**
+         * Represents a data (primitive) member.
+         * @class
+         */
         DataProperty: (function () {
+            /**
+             * @constructor
+             * @param {EntityType} owner - Owner entity type.
+             * @param {string} name - Name of the property.
+             * @param {string} displayName - Value to use for displaying purposes.
+             * @param {DataType} dataType - One of the supported Beetle data types.
+             * @param {boolean} isNullable - Can be assigned with null or undefined.
+             * @param {boolean} isKeyPart - Whether this property is one of the primary keys.
+             * @param {generationPattern} genPattern - Auto generation strategy for the property (Identity, Computed, None).
+             * @param {any} defaultValue - Default value for the property.
+             * @param {boolean} useForConcurrency - When true, this property will be used in updates.
+             */
             var ctor = function (owner, name, displayName, dataType, isNullable, isKeyPart, genPattern, defaultValue, useForConcurrency) {
-                /// <summary>
-                /// Data property default implementation.
-                /// </summary>
                 this.owner = owner;
                 this.name = name;
                 this.displayName = displayName || name;
@@ -3764,21 +3777,17 @@
                 return this.displayName;
             };
 
+            /** Checks if given value is valid for this property. */
             proto.isValid = function (value) {
-                /// <summary>
-                /// Checks if given value is valid for this property.
-                /// </summary>
-                /// <param name="value">Value to check.</param>
                 if (value == null) return !this.isNullable;
                 else return this.dataType.isValid(value, this);
             };
 
+            /**
+             * Tries to convert given value to this type.
+             * @returns {any} When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.
+             */
             proto.handle = function (value) {
-                /// <summary>
-                /// Tries to convert given value to this type.
-                /// </summary>
-                /// <param name="value">Value to check.</param>
-                /// <returns type="">When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.</returns>
                 if (this.dataType != core.dataTypes.string && value === "")
                     value = null;
 
@@ -3797,34 +3806,33 @@
                 return value;
             };
 
+            /** Gets default value for this property. */
             proto.getDefaultValue = function () {
-                /// <summary>
-                /// Gets default value for this type.
-                /// </summary>
                 if (this.defaultValue != null) return this.defaultValue;
                 if (this.isNullable) return null;
                 if (this.generationPattern == enums.generationPattern.Identity && this.isKeyPart === true) return this.dataType.autoValue();
                 return this.dataType.defaultValue();
             };
 
+            /**
+             * Add new validation method to data property.
+             * @param {string} name - Name of the validation.
+             * @param {PredicateFunction} func - Validation function.
+             * @param {string} message - Message to show when validation fails.
+             * @param {any[]} args - Validator arguments.
+             */
             proto.addValidation = function (name, func, message, args) {
-                /// <summary>
-                /// Add new validation method to data property.
-                /// </summary>
-                /// <param name="name">Name of the validation.</param>
-                /// <param name="func">Validation function.</param>
-                /// <param name="message">Message to show when validation fails.</param>
-                /// <param name="args">Validator arguments.</param>
                 helper.assertPrm(name, 'name').isNotEmptyString().check();
                 helper.assertPrm(func, 'func').isFunction().check();
                 this.validators.push(new core.Validator(name, func, message, args));
             };
 
+            /** 
+             * Validates property for provided entity.
+             * @param {Entity} entity - Beetle entity. Will be used in validation messages (otherwise we could have used only value).
+             * @returns {ValidationError[]} Validation result array. Empty when property is valid.
+             */
             proto.validate = function (entity) {
-                /// <summary>
-                /// Validates entity agains entity, data property and navigation property validations.
-                /// </summary>
-                /// <param name="entity">Entity to validate.</param>
                 var retVal = [];
                 if (this.validators.length > 0) {
                     var that = this;
@@ -3839,11 +3847,23 @@
 
             return ctor;
         })(),
+        /**
+         * Represents a navigation (relation) member.
+         * @class
+         */
         NavigationProperty: (function () {
+            /**
+             * @constructor
+             * @param {EntityType} owner - Owner entity type.
+             * @param {string} name - Name of the property.
+             * @param {string} displayName - Value to use for displaying purposes.
+             * @param {string} entityTypeName - Related entity type name.
+             * @param {boolean} isScalar - Indicates if this property is a reference or array.
+             * @param {string} associationName - To be able to match two way relations. Same relations have same association name for both side.
+             * @param {boolean} cascadeDelete - Indicates if deleting this related entity causes cascade deletion.
+             * @param {string[]} foreignKeyNames - Foreign key names binding this relation.
+             */
             var ctor = function (owner, name, displayName, entityTypeName, isScalar, associationName, cascadeDelete, foreignKeyNames) {
-                /// <summary>
-                /// Navigation property default implemantation.
-                /// </summary>
                 this.owner = owner;
                 this.name = name;
                 this.displayName = displayName || name;
@@ -3865,35 +3885,33 @@
                 return this.displayName;
             };
 
+            /** Checks if given value can be assigned to this property. If not throws an error. */
             proto.checkAssign = function (value) {
-                /// <summary>
-                /// Checks if given value can be assigned to this property. If not throws an error.
-                /// </summary>
-                /// <param name="value">Value to check.</param>
                 if (value == null) return;
                 if (!value.$tracker) throw helper.createError(i18N.assignErrorNotEntity, [this], { property: this, value: value });
                 var t = value.$tracker.entityType;
                 if (!this.entityType.isAssignableWith(t)) throw helper.createError(i18N.assignError, [this.name, t.shortName], { property: this, value: value });
             };
 
+            /**
+             * Add new validation method to navigation property.
+             * @param {string} name - Name of the validation.
+             * @param {PredicateFunction} func - Validation function.
+             * @param {string} message - Message to show when validation fails.
+             * @param {any[]} args - Validator arguments.
+             */
             proto.addValidation = function (name, func, message, args) {
-                /// <summary>
-                /// Add new validation method to navigation property.
-                /// </summary>
-                /// <param name="name">Name of the validation.</param>
-                /// <param name="func">Validation function.</param>
-                /// <param name="message">Message to show when validation fails.</param>
-                /// <param name="args">Validator arguments.</param>
                 helper.assertPrm(name, 'name').isNotEmptyString().check();
                 helper.assertPrm(func, 'func').isFunction().check();
                 this.validators.push(new core.Validator(name, func, message, args));
             };
 
+            /** 
+             * Validates property for provided entity.
+             * @param {Entity} entity - Beetle entity. Will be used in validation messages (otherwise we could have used only value).
+             * @returns {ValidationError[]} Validation result array. Empty when property is valid.
+             */
             proto.validate = function (entity) {
-                /// <summary>
-                /// Validates entity agains entity, data property and navigation property validations.
-                /// </summary>
-                /// <param name="entity">Entity to validate.</param>
                 var retVal = [];
                 if (this.validators.length > 0) {
                     var that = this;
@@ -3908,11 +3926,24 @@
 
             return ctor;
         })(),
+        /**
+         * Represents an entity type.
+         * @class
+         */
         EntityType: (function () {
+            /**
+             * @constructor
+             * @param {string} name - Name of the property.
+             * @param {string} displayName - Value to use for displaying purposes.
+             * @param {string} shortName - Entity's short name.
+             * @param {string[]} keyNames - Primary key names.
+             * @param {string} baseTypeName - Name of the base types - if any.
+             * @param {string} setName - Entity set name. If this Entity is derived from another, set name is the root entity's name.
+             * @param {string} setTypeName - Entity set type name. If this Entity is derived from another, set type is the root entity's type.
+             * @param {boolean} isComplexType - Indicates if this is a complex type.
+             * @param {MetadataManager} metadataManager - Owner metadata manager.
+             */
             var ctor = function (name, displayName, shortName, keyNames, baseTypeName, setName, setTypeName, isComplexType, metadataManager) {
-                /// <summary>
-                /// Entity type class. Defines an entity type. When there is no metadata for type, holds only the type name.
-                /// </summary>
                 this.name = name;
                 this.displayName = displayName || name;
                 this.shortName = shortName;
@@ -3939,36 +3970,36 @@
                 return this.name;
             };
 
+            /**
+             * Parses given string and finds property, looks recursively to navigation properties when needed.
+             * @example
+             *  if given path is OrderDetails.Supplier.Address.City,
+             *  this method will look to related navigation properties until Address and it will retun City property as dataProperty (if exists).
+             * @param {string} propertyPath - Path to desired property.
+             * @returns {DataProperty|NavigationProperty} When found data or navigation property, otherwise null.
+             */
             proto.getProperty = function (propertyPath) {
-                /// <summary>
-                /// Parses given string and finds property, looks recursively to navigation properties when needed.
-                /// Example: if given path is OrderDetails.Supplier.Address.City, 
-                /// this method will look to related navigation properties until Address and it will retun City property as dataProperty (if exists).
-                /// </summary>
-                /// <param name="propertyPath">Property path to navigate.</param>
                 return getProperty(propertyPath.split('.'), this);
             };
 
+            /**
+             * Creates a new query for this type.
+             * @param {string} resourceName - Server resource name to combine with base uri.
+             * @param {EntityManager=} manager - Entity manager.
+             */
             proto.createQuery = function (resourceName, manager) {
-                /// <summary>
-                /// Creates a new query for this type.
-                /// </summary>
-                /// <param name="resourceName">OData query resource name (Service controller action).</param>
-                /// <param name="manager">The entity manager.</param>
                 if (resourceName) return new querying.EntityQuery(resourceName, this, manager);
 
                 var q = new querying.EntityQuery(this.setName, this, manager);
                 return this.shortName == this.setTypeName ? q : q.ofType(this.shortName);
             };
 
+            /**
+             * Register constructor and initializer (optional) for the type.
+             * @param {Function} constructor - Constructor function. Called right after the entity object is generated.
+             * @param {Function} initializer - Initializer function. Called after entity started to being tracked (properties converted to observable).
+             */
             proto.registerCtor = function (constructor, initializer) {
-                /// <summary>
-                /// Register constructor and initializer (optional) for given type.
-                ///  Constructor is called right after the entity object is generated.
-                ///  Initializer is called after entity started to being tracked (properties converted to observable).
-                /// </summary>
-                /// <param name="constructor">Constructor function.</param>
-                /// <param name="initializer">Initializer function.</param>
                 if (constructor != null)
                     helper.assertPrm(constructor, 'constructor').isFunction().check();
                 if (initializer != null)
@@ -3977,21 +4008,23 @@
                 this.initializer = initializer;
             };
 
+            /**
+             * Creates an entity for this type.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity with observable properties. 
+             */
             proto.createEntity = function (initialValues) {
-                /// <summary>
-                /// Creates a new entity for this type.
-                /// </summary>
-                /// <param name="initialValues">Entity initial values.</param>
                 var result = this.createRawEntity(initialValues);
                 // make it observable
                 return core.EntityTracker.toEntity(result, this, settings.getObservableProvider());
             };
 
+            /**
+             * Creates a raw entity for this type.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity without observable properties. 
+             */
             proto.createRawEntity = function (initialValues) {
-                /// <summary>
-                /// Creates a new entity for this type but do not convert it to observable.
-                /// </summary>
-                /// <param name="initialValues">Entity initial values.</param>
                 var result = initialValues || {};
                 // create properties with default values for each data property defined in metadata.
                 helper.forEach(this.dataProperties, function (dp) {
@@ -4013,50 +4046,38 @@
             };
 
             function callCtor(type, entity) {
-                /// <summary>
-                /// Called after entity object is created.
-                /// </summary>
-                /// <param name="type">Type of the entity.</param>
-                /// <param name="entity">The entity.</param>
                 if (type.baseType) callCtor(type.baseType, entity);
                 if (type.constructor)
                     type.constructor.call(entity, entity);
             }
 
+            /** Checks if this type can be set with given type. */
             proto.isAssignableWith = function (otherType) {
-                /// <summary>
-                /// Checks if this type can be set with given type.
-                /// </summary>
-                /// <param name="otherType">Type to assign.</param>
                 return isAssignableWith(this, otherType);
             };
 
+            /** Checks if this type can be set to given type. */
             proto.isAssignableTo = function (otherType) {
-                /// <summary>
-                /// Checks if this type can be set to given type.
-                /// </summary>
-                /// <param name="otherType">Type to check.</param>
                 return isAssignableTo(this, otherType);
             };
 
+            /** 
+             * Checks if this type and given type has common ancestor.
+             * This method is used to check key violation between different types.
+             */
             proto.hasSameBaseType = function (type) {
-                /// <summary>
-                /// Checks if this type and given type has common ancestor.
-                /// This method is used to check key violation between different types.
-                /// </summary>
-                /// <param name="type">Other type.</param>
                 return this.floorType.name === type.floorType.name;
             };
 
+            /**
+             * Adds new dataProperty to this type.
+             * @param {string} name - Name of the property.
+             * @param {string} displayName - Display name of the property.
+             * @param {DataType} dataType - Data type for the property.
+             * @param {boolean} isNullable - Indicates if this property can be assigned with null.
+             * @param {any} defaultValue - Default value
+             */
             proto.addDataProperty = function (name, displayName, dataType, isNullable, defaultValue) {
-                /// <summary>
-                /// Adds new dataProperty to this type.
-                /// </summary>
-                /// <param name="name">Name of the property.</param>
-                /// <param name="name">Display name of the property.</param>
-                /// <param name="dataType">Type of the property.</param>
-                /// <param name="isNullable">Indicates if this property can be set with null.</param>
-                /// <param name="defaultValue">Default value for the property.</param>
                 helper.assertPrm(name, 'name').isNotEmptyString().check();
                 var dp = helper.findInArray(this.dataProperties, name, 'name');
                 if (dp)
@@ -4071,24 +4092,25 @@
                 this.dataProperties.push(property);
             };
 
+            /**
+             * Add new validation method to entity type.
+             * @param {string} name - Name of the validation.
+             * @param {PredicateFunction} func - Validation function.
+             * @param {string} message - Message to show when validation fails.
+             * @param {any[]} args - Validator arguments.
+             */
             proto.addValidation = function (name, func, message, args) {
-                /// <summary>
-                /// Add new validation method to entity type.
-                /// </summary>
-                /// <param name="name">Name of the validation.</param>
-                /// <param name="func">Validation function.</param>
-                /// <param name="message">Message to show when validation fails.</param>
-                /// <param name="args">Validator arguments.</param>
                 helper.assertPrm(name, 'name').isNotEmptyString().check();
                 helper.assertPrm(func, 'func').isFunction().check();
                 this.validators.push(new core.Validator(name, func, message, args));
             };
 
+            /** 
+             * Validates type for provided entity.
+             * @param {Entity} entity - Beetle entity. Will be used in validation messages (otherwise we could have used only value).
+             * @returns {ValidationError[]} Validation result array. Empty when property is valid.
+             */
             proto.validate = function (entity) {
-                /// <summary>
-                /// Validates entity agains entity, data property and navigation property validations.
-                /// </summary>
-                /// <param name="entity">Entity to validate.</param>
                 var retVal = [];
                 if (this.validators.length > 0) {
                     helper.forEach(this.validators, function (v) {
@@ -4108,11 +4130,6 @@
             };
 
             function getProperty(propertyPaths, type) {
-                /// <summary>
-                /// Finds given property paths one by one, looks recursively to navigation properties when needed.
-                /// </summary>
-                /// <param name="propertyPath">Property path array.</param>
-                /// <param name="type">The type of the entity.</param>
                 var len = propertyPaths.length;
                 for (var i = 0; i < len; i++) {
                     var p = propertyPaths[i];
@@ -4131,11 +4148,6 @@
             }
 
             function isAssignableWith(type1, type2) {
-                /// <summary>
-                /// Checks if this type can be set with given type.
-                /// </summary>
-                /// <param name="type1">Type to be assigned.</param>
-                /// <param name="type2">Type to assign.</param>
                 if (type1.name === type2.name)
                     return true;
                 else if (type2.baseType != null)
@@ -4145,11 +4157,6 @@
             }
 
             function isAssignableTo(type1, type2) {
-                /// <summary>
-                /// Checks if this type can be set to given type.
-                /// </summary>
-                /// <param name="type1">Type to set.</param>
-                /// <param name="type2">Type to check.</param>
                 var name = Assert.isTypeOf(type2, 'string') ? type2 : type2.name;
                 if (type1.name === name)
                     return true;
@@ -4161,11 +4168,16 @@
 
             return ctor;
         })(),
+        /**
+         * .
+         * @class
+         */
         MetadataManager: (function () {
+            /**
+             * @constructor
+             * @param {string|Object} metadataPrm - [Metadata Object] or [Metadata string]
+             */
             var ctor = function (metadataPrm) {
-                /// <summary>
-                /// Metadata manager default implementation.
-                /// </summary>
                 this.types = [];
                 this.typesDict = {};
                 this.enums = {};
@@ -4181,24 +4193,26 @@
                 return this.types.join(', ');
             };
 
+            /**
+             * Finds entity type by given entity type name (fully qualified).
+             * @param {string} typeName - Full type name.
+             * @param {boolean=} throwIfNotFound - Throws an error if given type name could not be found in cache.
+             * @returns {EntityType}
+             */
             proto.getEntityTypeByFullName = function (typeName, throwIfNotFound) {
-                /// <summary>
-                /// Finds entity type by given entity type name (fully qualified).
-                /// </summary>
-                /// <param name="typeName">Type name</param>
-                /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
                 var type = helper.findInArray(this.types, typeName, 'name');
                 if (!type && throwIfNotFound === true)
                     throw helper.createError(i18N.notFoundInMetadata, [typeName], { metadataManager: this, typeName: typeName });
                 return type;
             };
 
+            /**
+             * Finds entity type by given entity type short name (only class name).
+             * @param {string} shortName - Short type name.
+             * @param {boolean=} throwIfNotFound - Throws an error if given type name could not be found in cache.
+             * @returns {EntityType}
+             */
             proto.getEntityType = function (shortName, throwIfNotFound) {
-                /// <summary>
-                /// Finds entity type by given entity type short name (only class name).
-                /// </summary>
-                /// <param name="shortName">Type name</param>
-                /// <param name="throwIfNotFound">Throws an error if given type name could not be found in cache.</param>
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 var type = this.typesDict[shortName];
                 if (!type && throwIfNotFound === true)
@@ -4206,13 +4220,13 @@
                 return type;
             };
 
+            /**
+             * Creates a new query for this type.
+             * @param {string} resourceName - Server resource name to combine with base uri.
+             * @param {string=} shortName - Short type name.
+             * @param {EntityManager=} manager - Entity manager.
+             */
             proto.createQuery = function (resourceName, shortName, manager) {
-                /// <summary>
-                /// Creates a new query for this type.
-                /// </summary>
-                /// <param name="resourceName">Query resource name.</param>
-                /// <param name="shortName">Type name</param>
-                /// <param name="manager">Entity manager</param>
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 // if shortName is given find entityType and create query for it.
                 if (shortName) return this.getEntityType(shortName, true).createQuery(resourceName, manager);
@@ -4221,26 +4235,25 @@
                 return typeList.length == 1 ? typeList[0].createQuery(resourceName, manager) : new querying.EntityQuery(resourceName, null, manager);
             };
 
+            /**
+             * Register constructor and initializer (optional) for the type.
+             * @param {string} shortName - Short type name.
+             * @param {Function=} constructor - Constructor function. Called right after the entity object is generated.
+             * @param {Function=} initializer - Initializer function. Called after entity started to being tracked (properties converted to observable).
+             */
             proto.registerCtor = function (shortName, constructor, initializer) {
-                /// <summary>
-                /// Register constructor and initializer (optional) for given type.
-                ///  Constructor is called right after the entity object is generated.
-                ///  Initializer is called after entity started to being tracked (properties converted to observable).
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
-                /// <param name="constructor">Constructor function.</param>
-                /// <param name="initializer">Initializer function.</param>
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 var type = this.getEntityType(shortName, true);
                 type.registerCtor(constructor, initializer);
             };
 
+            /**
+             * Creates an entity for this type.
+             * @param {string} shortName - Short type name.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity with observable properties. 
+             */
             proto.createEntity = function (shortName, initialValues) {
-                /// <summary>
-                /// Creates an entity using the type that has given entity type short name (only class name).
-                /// </summary>
-                /// <param name="shortName">Type name</param>
-                /// <param name="initialValues">Entity initial values.</param>
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 // find entity type.
                 var type = this.getEntityType(shortName, true);
@@ -4248,12 +4261,13 @@
                 return type.createEntity(initialValues);
             };
 
+            /**
+             * Creates a raw entity for this type.
+             * @param {string} shortName - Short type name.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity without observable properties. 
+             */
             proto.createRawEntity = function (shortName, initialValues) {
-                /// <summary>
-                /// Create the entity by its type's short name but do not convert to observable and do not add to manager.
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 // find entity type.
                 var type = this.getEntityType(shortName, true);
@@ -4261,13 +4275,11 @@
                 return type.createRawEntity(initialValues);
             };
 
+            /**
+             * Imports metadata from given parameter.
+             * @param {string|Object} metadataPrm - [Metadata Object] or [Metadata string]
+             */
             proto.parseBeetleMetadata = function (metadataPrm) {
-                /// <summary>
-                /// Imports metadata from given object.
-                /// </summary>
-                /// <param name="metadataPrm">Metadata object.</param>
-                /// <param name="types">Type list to hold imported data.</param>
-                /// <param name="instance">Metadata manager instance.</param>
                 if (Assert.isTypeOf(metadataPrm, 'string'))
                     metadataPrm = JSON.parse(metadataPrm);
 
@@ -4406,7 +4418,7 @@
     var querying = (function () {
 
         (function queryFuncExtensions() {
-            // add missing query functions
+            /** add missing query functions */
             if (!String.prototype.hasOwnProperty("substringOf")) {
                 String.prototype.substringOf = function (source) {
                     return Assert.isNotEmptyString(source) && source.indexOf(this) >= 0;
@@ -4440,781 +4452,784 @@
         })();
 
         return {
-            expressions: (function () {
-                /// <summary>Linq like expressions to filter, order etc. arrays and server resources. Used by queries.</summary>
+            /** 
+             * Linq like expressions to filter, order etc. arrays and server resources. Used by queries.
+             * @namespace
+             */
+            expressions: {
+                OfTypeExp: (function () {
+                    var ctor = function (typeName) {
+                        if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
+                        baseTypes.ExpressionBase.call(this, 'oftype', -1, true, true);
+                        this.typeName = typeName;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                return {
-                    OfTypeExp: (function () {
-                        var ctor = function (typeName) {
-                            if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
-                            baseTypes.ExpressionBase.call(this, 'oftype', -1, true, true);
-                            this.typeName = typeName;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    proto.toBeetleQuery = function () {
+                        return this.typeName;
+                    };
 
-                        proto.toBeetleQuery = function () {
-                            return this.typeName;
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.typeName);
+                    };
 
-                        proto.clone = function () {
-                            return new ctor(this.typeName);
-                        };
+                    proto.execute = function (array) {
+                        var that = this;
+                        return helper.filterArray(array, function (item) {
+                            return item && ((item.$tracker && item.$tracker.entityType.isAssignableTo(that.typeName)) || (typeof item === that.typeName));
+                        });
+                    };
 
-                        proto.execute = function (array) {
+                    return ctor;
+                })(),
+                WhereExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
+
+                        this.exp = exp;
+                        this.varContext = varContext;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                        return helper.filterArray(array, predicate);
+                    };
+
+                    return ctor;
+                })(),
+                OrderByExp: (function () {
+                    var defaultExp = 'x => x';
+                    var ctor = function (exp, isDesc) {
+                        baseTypes.ExpressionBase.call(this, 'orderby', 1, false, false);
+
+                        this.exp = exp || defaultExp;
+                        this.isDesc = isDesc || false;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.isDesc);
+                    };
+
+                    proto.toODataQuery = function (queryContext) {
+                        var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp).replace(" as ", " ") : this.exp;
+                        if (this.isDesc) exp = invertExp(exp);
+
+                        return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
+                    };
+
+                    proto.toBeetleQuery = function (queryContext) {
+                        if (!this.exp) return '';
+
+                        var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp).replace(" as ", " ") : this.exp;
+                        if (this.isDesc) exp = invertExp(exp);
+
+                        return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var expStr;
+                        if (Assert.isFunction(this.exp)) {
                             var that = this;
-                            return helper.filterArray(array, function (item) {
-                                return item && ((item.$tracker && item.$tracker.entityType.isAssignableTo(that.typeName)) || (typeof item === that.typeName));
-                            });
-                        };
-
-                        return ctor;
-                    })(),
-                    WhereExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'filter', 2, false, false);
-
-                            this.exp = exp;
-                            this.varContext = varContext;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                            return helper.filterArray(array, predicate);
-                        };
-
-                        return ctor;
-                    })(),
-                    OrderByExp: (function () {
-                        var defaultExp = 'x => x';
-                        var ctor = function (exp, isDesc) {
-                            baseTypes.ExpressionBase.call(this, 'orderby', 1, false, false);
-
-                            this.exp = exp || defaultExp;
-                            this.isDesc = isDesc || false;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.isDesc);
-                        };
-
-                        proto.toODataQuery = function (queryContext) {
-                            var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp).replace(" as ", " ") : this.exp;
-                            if (this.isDesc) exp = invertExp(exp);
-
-                            return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
-                        };
-
-                        proto.toBeetleQuery = function (queryContext) {
-                            if (!this.exp) return '';
-
-                            var exp = Assert.isFunction(this.exp) ? helper.funcToLambda(this.exp).replace(" as ", " ") : this.exp;
-                            if (this.isDesc) exp = invertExp(exp);
-
-                            return helper.jsepToBeetleQuery(libs.jsep(exp), queryContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            var expStr;
-                            if (Assert.isFunction(this.exp)) {
-                                var that = this;
-                                if (this.exp.length == 2) {
-                                    return array.sort(function (a, b) {
-                                        var r = that.exp(a, b);
-                                        return that.isDesc ? (-1 * r) : r;
-                                    });
-                                }
-                                else expStr = helper.funcToLambda(this.exp).replace(/ as /g, " ");
-                            } else expStr = this.exp;
-
-                            var comparers = [];
-                            var expr = libs.jsep(expStr);
-                            var exps = expr.type == 'Compound' ? expr.body : [expr];
-                            var alias;
-                            if (exps[0].operator == '=>') {
-                                alias = {};
-                                alias.alias = exps[0].left.name;
-                                queryContext.aliases = [alias];
-                                exps[0] = exps[0].right;
-                            }
-                            for (var i = 0; i < exps.length; i++) {
-                                var isDesc = false;
-                                var exp = exps[i];
-                                var nexp = exps[i + 1];
-                                if (nexp && nexp.type == 'Identifier') {
-                                    var ls = nexp.name.toLowerCase();
-                                    if (ls == 'desc') {
-                                        isDesc = true;
-                                        i++;
-                                    } else if (ls == 'asc') i++;
-                                }
-                                isDesc = isDesc != this.isDesc;
-                                var comparer = (function (e, desc) {
-                                    return function (object1, object2) {
-                                        var f = helper.jsepToFunction(e, queryContext);
-                                        if (alias) alias.value = object1;
-                                        var value1 = f(object1);
-                                        if (alias) alias.value = object2;
-                                        var value2 = f(object2);
-
-                                        if (typeof value1 === "string" && typeof value2 === "string") {
-                                            var cmp = value1.localeCompare(value2);
-                                            return desc ? (cmp * -1) : cmp;
-                                        }
-
-                                        if (value1 == value2)
-                                            return 0;
-                                        else if (value1 > value2)
-                                            return desc ? -1 : 1;
-                                        else
-                                            return desc ? 1 : -1;
-                                    };
-                                })(exp, isDesc);
-                                comparers.push(comparer);
-                            }
-                            var retVal = new Array();
-                            retVal.push.apply(retVal, array);
-                            return retVal.sort(function (object1, object2) {
-                                for (var j = 0; j < comparers.length; j++) {
-                                    var result = comparers[j](object1, object2);
-                                    if (result != 0)
-                                        return result;
-                                }
-                                return 0;
-                            });
-                        };
-
-                        function invertExp(exp) {
-                            exp += ',';
-                            exp = exp.replace(/\,/, ' ,').replace(/ desc.*?\,/g, ' x,')
-                                .replace(/ \,/g, ' desc,').replace(/ x\,/g, ',');
-                            return exp.substr(0, exp.length - 1);
-                        }
-
-                        return ctor;
-                    })(),
-                    ExpandExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'expand', 1, false, false);
-                            this.exp = exp;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            return array; // do nothing for local queries.
-                        };
-
-                        return ctor;
-                    })(),
-                    SelectExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'select', 2, false, true);
-                            this.exp = exp;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (Assert.isFunction(this.exp)) return helper.mapArray(array, this.exp);
-                            return helper.runSelectExp(array, this.exp, queryContext);
-                        };
-
-                        return ctor;
-                    })(),
-                    SkipExp: (function () {
-                        var ctor = function (count) {
-                            baseTypes.ExpressionBase.call(this, 'skip', 2, false, false);
-                            this.count = count;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.toODataQuery = function () {
-                            return this.count;
-                        };
-
-                        proto.toBeetleQuery = function () {
-                            return this.count;
-                        };
-
-                        proto.clone = function () {
-                            return new ctor(this.count);
-                        };
-
-                        proto.execute = function (array) {
-                            return array.slice(this.count);
-                        };
-
-                        return ctor;
-                    })(),
-                    TopExp: (function () {
-                        var ctor = function (count) {
-                            baseTypes.ExpressionBase.call(this, 'top', 2, false, false);
-                            this.count = count;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.toODataQuery = function () {
-                            return this.count;
-                        };
-
-                        proto.toBeetleQuery = function () {
-                            return this.count;
-                        };
-
-                        proto.clone = function () {
-                            return new ctor(this.count);
-                        };
-
-                        proto.execute = function (array) {
-                            return array.slice(0, this.count);
-                        };
-
-                        return ctor;
-                    })(),
-                    GroupByExp: (function () {
-                        var ctor = function (keySelector, elementSelector) {
-                            baseTypes.ExpressionBase.call(this, 'groupby', 3, true, true);
-
-                            this.keySelector = keySelector;
-                            this.elementSelector = elementSelector;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.toBeetleQuery = function (queryContext) {
-                            var retVal = '';
-                            if (this.keySelector) {
-                                var ks = Assert.isFunction(this.keySelector) ? helper.funcToLambda(this.keySelector) : this.keySelector;
-                                retVal += helper.jsepToBeetleQuery(libs.jsep(ks), queryContext);
-                            }
-                            if (this.elementSelector) {
-                                var es = Assert.isFunction(this.elementSelector) ? helper.funcToLambda(this.elementSelector) : this.elementSelector;
-                                retVal += ';' + helper.jsepToBeetleQuery(libs.jsep(es), queryContext);
-                            }
-                            return retVal;
-                        };
-
-                        proto.clone = function () {
-                            return new ctor(this.keySelector, this.elementSelector);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            var groups = [];
-                            if (this.keySelector) {
-                                // project keys
-                                var keys = Assert.isFunction(this.keySelector)
-                                    ? helper.mapArray(array, this.keySelector)
-                                    : helper.runSelectExp(array, this.keySelector, queryContext);
-
-                                for (var i = 0; i < keys.length; i++) {
-                                    var keyGroup = null;
-                                    var key = keys[i];
-                                    for (var j = 0; j < groups.length; j++) {
-                                        // find if there is already a key with same values
-                                        var group = groups[j];
-                                        if (helper.objEquals(group.Key, key)) {
-                                            keyGroup = group;
-                                            break;
-                                        }
-                                    }
-                                    // if key not found create one group for this key
-                                    if (!keyGroup) {
-                                        keyGroup = { Key: key, Items: [] };
-                                        groups.push(keyGroup);
-                                    }
-                                    keyGroup.Items.push(array[i]);
-                                }
-                            }
-                            else groups.push({ Key: null, Items: array });
-
-                            if (this.elementSelector) {
-                                var projector;
-                                if (Assert.isFunction(this.elementSelector))
-                                    projector = this.elementSelector;
-                                else {
-                                    var es = libs.jsep(this.elementSelector);
-                                    var exps = es.type == 'Compound' ? es.body : [es];
-                                    projector = helper.jsepToProjector(exps, queryContext);
-                                }
-                                helper.forEach(groups, function (g, k) {
-                                    var items = g.Items;
-                                    items.Key = g.Key;
-                                    var result = projector(g.Items);
-                                    groups[k] = result;
+                            if (this.exp.length == 2) {
+                                return array.sort(function (a, b) {
+                                    var r = that.exp(a, b);
+                                    return that.isDesc ? (-1 * r) : r;
                                 });
                             }
+                            else expStr = helper.funcToLambda(this.exp).replace(/ as /g, " ");
+                        } else expStr = this.exp;
 
-                            return groups;
-                        };
+                        var comparers = [];
+                        var expr = libs.jsep(expStr);
+                        var exps = expr.type == 'Compound' ? expr.body : [expr];
+                        var alias;
+                        if (exps[0].operator == '=>') {
+                            alias = {};
+                            alias.alias = exps[0].left.name;
+                            queryContext.aliases = [alias];
+                            exps[0] = exps[0].right;
+                        }
+                        for (var i = 0; i < exps.length; i++) {
+                            var isDesc = false;
+                            var exp = exps[i];
+                            var nexp = exps[i + 1];
+                            if (nexp && nexp.type == 'Identifier') {
+                                var ls = nexp.name.toLowerCase();
+                                if (ls == 'desc') {
+                                    isDesc = true;
+                                    i++;
+                                } else if (ls == 'asc') i++;
+                            }
+                            isDesc = isDesc != this.isDesc;
+                            var comparer = (function (e, desc) {
+                                return function (object1, object2) {
+                                    var f = helper.jsepToFunction(e, queryContext);
+                                    if (alias) alias.value = object1;
+                                    var value1 = f(object1);
+                                    if (alias) alias.value = object2;
+                                    var value2 = f(object2);
 
-                        return ctor;
-                    })(),
-                    DistinctExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'distinct', 3, true, true);
-                            this.exp = exp;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                                    if (typeof value1 === "string" && typeof value2 === "string") {
+                                        var cmp = value1.localeCompare(value2);
+                                        return desc ? (cmp * -1) : cmp;
+                                    }
 
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
+                                    if (value1 == value2)
+                                        return 0;
+                                    else if (value1 > value2)
+                                        return desc ? -1 : 1;
+                                    else
+                                        return desc ? 1 : -1;
+                                };
+                            })(exp, isDesc);
+                            comparers.push(comparer);
+                        }
+                        var retVal = new Array();
+                        retVal.push.apply(retVal, array);
+                        return retVal.sort(function (object1, object2) {
+                            for (var j = 0; j < comparers.length; j++) {
+                                var result = comparers[j](object1, object2);
+                                if (result != 0)
+                                    return result;
+                            }
+                            return 0;
+                        });
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            if (!this.exp) return getDistincts(array);
-                            if (Assert.isFunction(this.exp)) return getDistincts(helper.mapArray(array, this.exp));
-                            return getDistincts(helper.runSelectExp(array, this.exp, queryContext));
-                        };
+                    function invertExp(exp) {
+                        exp += ',';
+                        exp = exp.replace(/\,/, ' ,').replace(/ desc.*?\,/g, ' x,')
+                            .replace(/ \,/g, ' desc,').replace(/ x\,/g, ',');
+                        return exp.substr(0, exp.length - 1);
+                    }
 
-                        function getDistincts(array) {
-                            var distincts = [];
-                            helper.forEach(array, function (item) {
-                                var found = false;
-                                for (var i = 0; i < distincts.length; i++) {
-                                    if (helper.objEquals(distincts[i], item)) {
-                                        found = true;
+                    return ctor;
+                })(),
+                ExpandExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'expand', 1, false, false);
+                        this.exp = exp;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        return array; // do nothing for local queries.
+                    };
+
+                    return ctor;
+                })(),
+                SelectExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'select', 2, false, true);
+                        this.exp = exp;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        if (Assert.isFunction(this.exp)) return helper.mapArray(array, this.exp);
+                        return helper.runSelectExp(array, this.exp, queryContext);
+                    };
+
+                    return ctor;
+                })(),
+                SkipExp: (function () {
+                    var ctor = function (count) {
+                        baseTypes.ExpressionBase.call(this, 'skip', 2, false, false);
+                        this.count = count;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.toODataQuery = function () {
+                        return this.count;
+                    };
+
+                    proto.toBeetleQuery = function () {
+                        return this.count;
+                    };
+
+                    proto.clone = function () {
+                        return new ctor(this.count);
+                    };
+
+                    proto.execute = function (array) {
+                        return array.slice(this.count);
+                    };
+
+                    return ctor;
+                })(),
+                TopExp: (function () {
+                    var ctor = function (count) {
+                        baseTypes.ExpressionBase.call(this, 'top', 2, false, false);
+                        this.count = count;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.toODataQuery = function () {
+                        return this.count;
+                    };
+
+                    proto.toBeetleQuery = function () {
+                        return this.count;
+                    };
+
+                    proto.clone = function () {
+                        return new ctor(this.count);
+                    };
+
+                    proto.execute = function (array) {
+                        return array.slice(0, this.count);
+                    };
+
+                    return ctor;
+                })(),
+                GroupByExp: (function () {
+                    var ctor = function (keySelector, elementSelector) {
+                        baseTypes.ExpressionBase.call(this, 'groupby', 3, true, true);
+
+                        this.keySelector = keySelector;
+                        this.elementSelector = elementSelector;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.toBeetleQuery = function (queryContext) {
+                        var retVal = '';
+                        if (this.keySelector) {
+                            var ks = Assert.isFunction(this.keySelector) ? helper.funcToLambda(this.keySelector) : this.keySelector;
+                            retVal += helper.jsepToBeetleQuery(libs.jsep(ks), queryContext);
+                        }
+                        if (this.elementSelector) {
+                            var es = Assert.isFunction(this.elementSelector) ? helper.funcToLambda(this.elementSelector) : this.elementSelector;
+                            retVal += ';' + helper.jsepToBeetleQuery(libs.jsep(es), queryContext);
+                        }
+                        return retVal;
+                    };
+
+                    proto.clone = function () {
+                        return new ctor(this.keySelector, this.elementSelector);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var groups = [];
+                        if (this.keySelector) {
+                            // project keys
+                            var keys = Assert.isFunction(this.keySelector)
+                                ? helper.mapArray(array, this.keySelector)
+                                : helper.runSelectExp(array, this.keySelector, queryContext);
+
+                            for (var i = 0; i < keys.length; i++) {
+                                var keyGroup = null;
+                                var key = keys[i];
+                                for (var j = 0; j < groups.length; j++) {
+                                    // find if there is already a key with same values
+                                    var group = groups[j];
+                                    if (helper.objEquals(group.Key, key)) {
+                                        keyGroup = group;
                                         break;
                                     }
                                 }
-                                if (found === false)
-                                    distincts.push(item);
+                                // if key not found create one group for this key
+                                if (!keyGroup) {
+                                    keyGroup = { Key: key, Items: [] };
+                                    groups.push(keyGroup);
+                                }
+                                keyGroup.Items.push(array[i]);
+                            }
+                        }
+                        else groups.push({ Key: null, Items: array });
+
+                        if (this.elementSelector) {
+                            var projector;
+                            if (Assert.isFunction(this.elementSelector))
+                                projector = this.elementSelector;
+                            else {
+                                var es = libs.jsep(this.elementSelector);
+                                var exps = es.type == 'Compound' ? es.body : [es];
+                                projector = helper.jsepToProjector(exps, queryContext);
+                            }
+                            helper.forEach(groups, function (g, k) {
+                                var items = g.Items;
+                                items.Key = g.Key;
+                                var result = projector(g.Items);
+                                groups[k] = result;
                             });
-                            return distincts;
                         }
 
-                        return ctor;
-                    })(),
-                    ReverseExp: (function () {
-                        var ctor = function () {
-                            baseTypes.ExpressionBase.call(this, 'reverse', 3, true, false);
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                        return groups;
+                    };
 
-                        proto.toBeetleQuery = function () {
-                            return '';
-                        };
+                    return ctor;
+                })(),
+                DistinctExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'distinct', 3, true, true);
+                        this.exp = exp;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor();
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
 
-                        proto.execute = function (array) {
-                            return array.reverse();
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (!this.exp) return getDistincts(array);
+                        if (Assert.isFunction(this.exp)) return getDistincts(helper.mapArray(array, this.exp));
+                        return getDistincts(helper.runSelectExp(array, this.exp, queryContext));
+                    };
 
-                        return ctor;
-                    })(),
-                    SelectManyExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'selectMany', 3, true, true);
-                            this.exp = exp;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (array.length == 0) return array;
-
-                            if (Assert.isFunction(this.exp)) return getMany(array, this.exp);
-                            return getMany(array, helper.jsepToFunction(libs.jsep(this.exp), queryContext));
-                        };
-
-                        function getMany(array, projector) {
-                            if (array.length == 0) return array;
-                            var projections = [];
-                            for (var j = 0; j < array.length; j++) {
-                                var arr = projector(array[j]);
-                                projections = projections.concat.apply(projections, arr);
+                    function getDistincts(array) {
+                        var distincts = [];
+                        helper.forEach(array, function (item) {
+                            var found = false;
+                            for (var i = 0; i < distincts.length; i++) {
+                                if (helper.objEquals(distincts[i], item)) {
+                                    found = true;
+                                    break;
+                                }
                             }
-                            return projections;
-                        };
+                            if (found === false)
+                                distincts.push(item);
+                        });
+                        return distincts;
+                    }
 
-                        return ctor;
-                    })(),
-                    SkipWhileExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'skipWhile', 3, true, false);
+                    return ctor;
+                })(),
+                ReverseExp: (function () {
+                    var ctor = function () {
+                        baseTypes.ExpressionBase.call(this, 'reverse', 3, true, false);
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.toBeetleQuery = function () {
+                        return '';
+                    };
+
+                    proto.clone = function () {
+                        return new ctor();
+                    };
+
+                    proto.execute = function (array) {
+                        return array.reverse();
+                    };
+
+                    return ctor;
+                })(),
+                SelectManyExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'selectMany', 3, true, true);
+                        this.exp = exp;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        if (array.length == 0) return array;
+
+                        if (Assert.isFunction(this.exp)) return getMany(array, this.exp);
+                        return getMany(array, helper.jsepToFunction(libs.jsep(this.exp), queryContext));
+                    };
+
+                    function getMany(array, projector) {
+                        if (array.length == 0) return array;
+                        var projections = [];
+                        for (var j = 0; j < array.length; j++) {
+                            var arr = projector(array[j]);
+                            projections = projections.concat.apply(projections, arr);
+                        }
+                        return projections;
+                    };
+
+                    return ctor;
+                })(),
+                SkipWhileExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'skipWhile', 3, true, false);
+                        this.exp = exp;
+                        this.varContext = varContext;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+
+                        var i = 0;
+                        while (predicate(array[i]) == true) i++;
+                        return array.slice(i + 1);
+                    };
+
+                    return ctor;
+                })(),
+                TakeWhileExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'takeWhile', 3, true, false);
+                        this.exp = exp;
+                        this.varContext = varContext;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+
+                        var i = 0;
+                        while (predicate(array[i]) == true) i++;
+                        return array.slice(0, i);
+                    };
+
+                    return ctor;
+                })(),
+                AllExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;all', 3, true, true);
+                        this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                        return querying.queryFuncs.all.impl(array, function () { return array; }, predicate);
+                    };
+
+                    return ctor;
+                })(),
+                AnyExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;any', 3, true, true);
+                        if (exp)
                             this.exp = exp;
-                            this.varContext = varContext;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
                             var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            return querying.queryFuncs.any.impl(array, function () { return array; }, predicate);
+                        }
+                        return array.length > 0;
+                    };
 
-                            var i = 0;
-                            while (predicate(array[i]) == true) i++;
-                            return array.slice(i + 1);
-                        };
-
-                        return ctor;
-                    })(),
-                    TakeWhileExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'takeWhile', 3, true, false);
+                    return ctor;
+                })(),
+                AvgExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'exec;avg', 3, true, true);
+                        if (exp)
                             this.exp = exp;
-                            this.varContext = varContext;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                    proto.execute = function (array, queryContext) {
+                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        return querying.queryFuncs.avg.impl(array, function () { return array; }, selector);
+                    };
 
-                            var i = 0;
-                            while (predicate(array[i]) == true) i++;
-                            return array.slice(0, i);
-                        };
-
-                        return ctor;
-                    })(),
-                    AllExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;all', 3, true, true);
+                    return ctor;
+                })(),
+                MaxExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'exec;max', 3, true, true);
+                        if (exp)
                             this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
 
-                        proto.execute = function (array, queryContext) {
+                    proto.execute = function (array, queryContext) {
+                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        return querying.queryFuncs.max.impl(array, function () { return array; }, selector);
+                    };
+
+                    return ctor;
+                })(),
+                MinExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'exec;min', 3, true, true);
+                        if (exp)
+                            this.exp = exp;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        return querying.queryFuncs.min.impl(array, function () { return array; }, selector);
+                    };
+
+                    return ctor;
+                })(),
+                SumExp: (function () {
+                    var ctor = function (exp) {
+                        baseTypes.ExpressionBase.call(this, 'exec;sum', 3, true, true);
+                        if (exp)
+                            this.exp = exp;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        return querying.queryFuncs.sum.impl(array, function () { return array; }, selector);
+                    };
+
+                    return ctor;
+                })(),
+                CountExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;count', 3, true, true);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
+
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
+
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
                             var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                            return querying.queryFuncs.all.impl(array, function () { return array; }, predicate);
-                        };
+                            return helper.filterArray(array, predicate).length
+                        }
+                        return array.length
+                    };
 
-                        return ctor;
-                    })(),
-                    AnyExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;any', 3, true, true);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    return ctor;
+                })(),
+                FirstExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;first', 3, true, false);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                return querying.queryFuncs.any.impl(array, function () { return array; }, predicate);
-                            }
-                            return array.length > 0;
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            array = helper.filterArray(array, predicate);
+                        }
+                        if (array.length == 0) throw helper.createError(i18N.arrayEmpty, { array: array, expression: this });
+                        return array[0];
+                    };
 
-                        return ctor;
-                    })(),
-                    AvgExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'exec;avg', 3, true, true);
-                            if (exp)
-                                this.exp = exp;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    return ctor;
+                })(),
+                FirstOrDefaultExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;firstOD', 3, true, false);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
-                            return querying.queryFuncs.avg.impl(array, function () { return array; }, selector);
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            array = helper.filterArray(array, predicate);
+                        }
+                        return array.length == 0 ? null : array[0];
+                    };
 
-                        return ctor;
-                    })(),
-                    MaxExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'exec;max', 3, true, true);
-                            if (exp)
-                                this.exp = exp;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    return ctor;
+                })(),
+                SingleExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;single', 3, true, false);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
-                            return querying.queryFuncs.max.impl(array, function () { return array; }, selector);
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            array = helper.filterArray(array, predicate);
+                        }
+                        if (array.length != 1) throw helper.createError(i18N.arrayNotSingle, { array: array, expression: this });
+                        return array[0];
+                    };
 
-                        return ctor;
-                    })(),
-                    MinExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'exec;min', 3, true, true);
-                            if (exp)
-                                this.exp = exp;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    return ctor;
+                })(),
+                SingleOrDefaultExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;singleOD', 3, true, false);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
-                            return querying.queryFuncs.min.impl(array, function () { return array; }, selector);
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            array = helper.filterArray(array, predicate);
+                        }
+                        if (array.length > 1) throw helper.createError(i18N.arrayNotSingleOrEmpty, { array: array, expression: this });
+                        return array.length == 0 ? null : array[0];
+                    };
 
-                        return ctor;
-                    })(),
-                    SumExp: (function () {
-                        var ctor = function (exp) {
-                            baseTypes.ExpressionBase.call(this, 'exec;sum', 3, true, true);
-                            if (exp)
-                                this.exp = exp;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    return ctor;
+                })(),
+                LastExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;last', 3, true, false);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
-                            return querying.queryFuncs.sum.impl(array, function () { return array; }, selector);
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            array = helper.filterArray(array, predicate);
+                        }
+                        if (array.length == 0) throw helper.createError(i18N.arrayEmpty, { array: array, expression: this });
+                        return array[array.length - 1];
+                    };
 
-                        return ctor;
-                    })(),
-                    CountExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;count', 3, true, true);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
+                    return ctor;
+                })(),
+                LastOrDefaultExp: (function () {
+                    var ctor = function (exp, varContext) {
+                        baseTypes.ExpressionBase.call(this, 'exec;lastOD', 3, true, false);
+                        if (exp)
+                            this.exp = exp;
+                        this.varContext = varContext;
+                        this.isExecuter = true;
+                    };
+                    helper.inherit(ctor, baseTypes.ExpressionBase);
+                    var proto = ctor.prototype;
 
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
+                    proto.clone = function () {
+                        return new ctor(this.exp, this.varContext);
+                    };
 
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                return helper.filterArray(array, predicate).length
-                            }
-                            return array.length
-                        };
+                    proto.execute = function (array, queryContext) {
+                        if (this.exp) {
+                            var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                            array = helper.filterArray(array, predicate);
+                        }
+                        return array.length == 0 ? null : array[array.length - 1];
+                    };
 
-                        return ctor;
-                    })(),
-                    FirstExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;first', 3, true, false);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                array = helper.filterArray(array, predicate);
-                            }
-                            if (array.length == 0) throw helper.createError(i18N.arrayEmpty, { array: array, expression: this });
-                            return array[0];
-                        };
-
-                        return ctor;
-                    })(),
-                    FirstOrDefaultExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;firstOD', 3, true, false);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                array = helper.filterArray(array, predicate);
-                            }
-                            return array.length == 0 ? null : array[0];
-                        };
-
-                        return ctor;
-                    })(),
-                    SingleExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;single', 3, true, false);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                array = helper.filterArray(array, predicate);
-                            }
-                            if (array.length != 1) throw helper.createError(i18N.arrayNotSingle, { array: array, expression: this });
-                            return array[0];
-                        };
-
-                        return ctor;
-                    })(),
-                    SingleOrDefaultExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;singleOD', 3, true, false);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                array = helper.filterArray(array, predicate);
-                            }
-                            if (array.length > 1) throw helper.createError(i18N.arrayNotSingleOrEmpty, { array: array, expression: this });
-                            return array.length == 0 ? null : array[0];
-                        };
-
-                        return ctor;
-                    })(),
-                    LastExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;last', 3, true, false);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                array = helper.filterArray(array, predicate);
-                            }
-                            if (array.length == 0) throw helper.createError(i18N.arrayEmpty, { array: array, expression: this });
-                            return array[array.length - 1];
-                        };
-
-                        return ctor;
-                    })(),
-                    LastOrDefaultExp: (function () {
-                        var ctor = function (exp, varContext) {
-                            baseTypes.ExpressionBase.call(this, 'exec;lastOD', 3, true, false);
-                            if (exp)
-                                this.exp = exp;
-                            this.varContext = varContext;
-                            this.isExecuter = true;
-                        };
-                        helper.inherit(ctor, baseTypes.ExpressionBase);
-                        var proto = ctor.prototype;
-
-                        proto.clone = function () {
-                            return new ctor(this.exp, this.varContext);
-                        };
-
-                        proto.execute = function (array, queryContext) {
-                            if (this.exp) {
-                                var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
-                                array = helper.filterArray(array, predicate);
-                            }
-                            return array.length == 0 ? null : array[array.length - 1];
-                        };
-
-                        return ctor;
-                    })()
-                };
-            })(),
+                    return ctor;
+                })()
+            },
+            /** 
+             * Supported query functions. When a query has one of these in filter, functions will be executed dynamically for local queries.
+             * @namespace
+             */
             queryFuncs: (function () {
-                /// <summary>Supported query functions. When a query has one of these in filter, functions will be executed dynamically for local queries.</summary>
 
                 var expose = {};
 
@@ -5488,7 +5503,6 @@
 
                     return new ctor();
                 })();
-
                 /// <field>Rounds given value to nearest integer</field>
                 expose.round = (function () {
                     var ctor = function () {
@@ -6103,17 +6117,16 @@
      * @namespace
      */
     var core = {
-        ValueNotifyWrapper: (function () {
-            var ctor = function (value, fromBeetle) {
-                /// <summary>
-                /// This class wraps given value to allow skipping callbacks.
-                /// </summary>
-                this.value = value;
-                this.fromBeetle = fromBeetle === true;
-            };
-
-            return ctor;
-        })(),
+        /**
+         * This class wraps given value to allow skipping callbacks.
+         * @constructor
+         * @param {any} value - Value to wrap.
+         * @param {any} fromBeetle - Indicates if Beetle triggered the change.
+         */
+        ValueNotifyWrapper: function (value, fromBeetle) {
+            this.value = value;
+            this.fromBeetle = fromBeetle === true;
+        },
         Event: (function () {
             var ctor = function (name, publisher) {
                 /// <summary>
