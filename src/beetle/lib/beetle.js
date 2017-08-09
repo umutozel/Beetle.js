@@ -1,7 +1,8 @@
 ﻿/**
-* Beetle module.
-* @module beetle
-*/
+ * Beetle module.
+ * Using UMD pattern.
+ * @module beetle
+ */
 (function (root, factory) {
     var deps = {
         jQuery: root.$,
@@ -4437,6 +4438,10 @@
             }
         })();
 
+        /** 
+         * Supported query expressions.
+         * Each query call will be collected as expressions and will be evaluated later.
+         */
         return {
             /** 
              * Linq like expressions to filter, order etc. arrays and server resources. Used by queries.
