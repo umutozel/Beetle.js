@@ -240,14 +240,14 @@ declare global {
 		selectMany<TResult>(selector: string | ((entity: T) => Array<TResult>)): beetle.querying.ArrayQuery<TResult>;
 		selectMany(selector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;
         /**
-         * Gets all the items after first succesfull predicate.
+         * Gets all the items after first succesful predicate.
          * @param predicate - A function to test each element for a condition (can be string expression).
          * @param varContext - Variable context for the expression.
          */
 		skipWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
 		skipWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
         /**
-         * Gets all the items before first succesfull predicate.
+         * Gets all the items before first succesful predicate.
          * @param predicate - A function to test each element for a condition (can be string expression).
          * @param varContext - Variable context for the expression.
          */

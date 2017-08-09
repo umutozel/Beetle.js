@@ -2082,7 +2082,7 @@
 
 				proto.skipWhile = function (predicate, varContext) {
 					/// <summary>
-					/// Gets all the items after first succesfull predicate.
+					/// Gets all the items after first succesful predicate.
 					/// </summary>
 					/// <param name="predicate">A function to test each element for a condition.</param>
 					/// <param name="varContext">Variable context for the expression.</param>
@@ -2092,7 +2092,7 @@
 
 				proto.takeWhile = function (predicate, varContext) {
 					/// <summary>
-					/// Gets all the items before first succesfull predicate.
+					/// Gets all the items before first succesful predicate.
 					/// </summary>
 					/// <param name="predicate">A function to test each element for a condition.</param>
 					/// <param name="varContext">Variable context for the expression.</param>
@@ -2491,7 +2491,7 @@
 				};
 				proto.resolve = function (deferred, data) {
 					/// <summary>
-					/// Resolves given promise for succesfull operation.
+					/// Resolves given promise for succesful operation.
 					/// </summary>
 					/// <param name="deferred">Promise object.</param>
 					/// <param name="data">Data to pass success callback.</param>

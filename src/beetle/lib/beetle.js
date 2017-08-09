@@ -2236,7 +2236,7 @@
             };
 
             /**
-             * Gets all the items after first succesfull predicate.
+             * Gets all the items after first succesful predicate.
              * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
              * @param {Object|any[]} varContext - Variable context for the expression.
              */
@@ -2248,7 +2248,7 @@
             };
 
             /**
-             * Gets all the items before first succesfull predicate.
+             * Gets all the items before first succesful predicate.
              * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
              * @param {Object|any[]} varContext - Variable context for the expression.
              */
@@ -2642,7 +2642,7 @@
                 throw helper.createError(i18N.notImplemented, [this.name, 'getPromise']);
             };
             /**
-             * Resolves given promise for succesfull operation.
+             * Resolves given promise for succesful operation.
              * @param {Object} deferred - Deferred object.
              * @param {any} data - Operation result.
              */
@@ -3737,10 +3737,10 @@
              * @param {string} displayName - Value to use for displaying purposes.
              * @param {DataType} dataType - One of the supported Beetle data types.
              * @param {boolean} isNullable - Can be assigned with null or undefined.
-             * @param {boolean} isKeyPart - Whether this property is one of the primary keys.
+             * @param {boolean} isKeyPart - Indicates if this property is one of the primary keys.
              * @param {generationPattern} genPattern - Auto generation strategy for the property (Identity, Computed, None).
              * @param {any} defaultValue - Default value for the property.
-             * @param {boolean} useForConcurrency - When true, this property will be used in updates.
+             * @param {boolean} useForConcurrency - When true, this property will be used together with keys for updates.
              */
             var ctor = function (owner, name, displayName, dataType, isNullable, isKeyPart, genPattern, defaultValue, useForConcurrency) {
                 this.owner = owner;
@@ -10151,7 +10151,7 @@
         /** default timeout for AJAX calls. this value is used when not given with options argument. */
         expose.ajaxTimeout = null;
         /** 
-         * when true, while creating raw objects for entities, for modified only changed properties, for deleted only key properties will be used.
+         * when true, while creating save package, for modified only changed and key properties, for deleted only key properties will be used.
          * entities will be created with only sent properties filled, other properties will have default values, please use carefully.
          */
         expose.minimizePackage = false;
