@@ -1,5 +1,10 @@
-﻿declare module beetle {
+﻿/**
+ * @module
+ * Beetle module.
+ */
+declare module beetle {
 
+    /** Promise abstraction. We can change Ajax Provider result via this type. */
 	type AjaxCall<T> = PromiseLike<T>;
 
 	namespace interfaces {
