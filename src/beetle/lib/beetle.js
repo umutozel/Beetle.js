@@ -1806,7 +1806,7 @@
 
     /**
      * Base types, can be considered as abstract classes.
-     * This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
+     * This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviours of core classes.
      * @namespace
      */
     var baseTypes = {
@@ -2673,7 +2673,7 @@
              * @constructor
              * @param {any} uri - Service URI.
              * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
-             * @param {ServiceOptions} injections - Injection object to change behavior of the service,
+             * @param {ServiceOptions} injections - Injection object to change behaviour of the service,
              *      Can include these properties: ajaxProvider, serializationService, ajaxTimeout, dataType, contentType.
              *      When not given, defaults will be used.
              */
@@ -2879,7 +2879,7 @@
             };
             /**
              * Executes given query parameters.
-             * @param {string} query - Server resource to query.
+             * @param {string} resource - Server resource to query.
              * @param {EntityQuery} queryParams - The query parameters.
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
@@ -8021,7 +8021,7 @@
              * @constructor
              * @param {string|DataService} service - Service url (default service from settings will be used) or service instance.
              * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
-             * @param {Object} injections - Injection object to change behavior of the manager.
+             * @param {Object} injections - Injection object to change behaviour of the manager.
              */
             var ctor = function (service, metadataPrm, injections) {
                 initialize(arguments, this);
@@ -8732,57 +8732,33 @@
                 return this.pendingChangeCount > 0;
             };
 
+            /** 
+             * Gets changes made in this manager's cache
+             * @returns {Entity[]}
+             */
             proto.getChanges = function () {
-                /// <summary>
-                /// Gets changes made in this manager's cache
-                /// </summary>
                 return this.entities.getChanges();
             };
 
+            /**
+             * Saves all changes made in this manager to server via Data Service instance.
+             * @param {SaveOptions} options - Options to modify saving behaviour.
+             * @successCallback {successCallback} - Function to call after operation succeeded.
+             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @returns {Promise} Returns promise if supported.
+             */
             proto.saveChanges = function (options, successCallback, errorCallback) {
-                /// <summary>
-                /// Saves all changes made in this manager to server via Data Service instance.
-                ///  Save options,
-                ///  entities: Entities to save
-                ///  userData: Custom user data to post
-                ///  async: When false, Ajax call will be made synchronously (default: true)
-                ///  forceUpdate: When true, each entity will be updated -even there is no modified property.
-                ///  autoFixScalar: Scalar navigations will be fixed for returned entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for returned entities (e.g: Order's OrderDetails will be searched in cache)
-                ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
-                ///  uri: Overrides dataService's uri.
-                ///  saveAction: Custom save action on server side (default is SaveChanges).
-                ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
-                ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
-                /// </summary>
-                /// <param name="options">Save options, for details read summary.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 return this.savePackage(null, options, successCallback, errorCallback)
             }
 
+            /**
+             * Saves all changes made in this manager to server via Data Service instance.
+             * @param {SavePackage} savePackage - Save package. When provided, this package will be used (no package will be created).
+             * @successCallback {successCallback} - Function to call after operation succeeded.
+             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @returns {Promise} Returns promise if supported.
+             */
             proto.savePackage = function (savePackage, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Saves all changes made in this manager to server via Data Service instance.
-                ///  Save options,
-                ///  entities: Entities to save
-                ///  userData: Custom user data to post
-                ///  async: When false, Ajax call will be made synchronously (default: true)
-                ///  forceUpdate: When true, each entity will be updated -even there is no modified property.
-                ///  autoFixScalar: Scalar navigations will be fixed for returned entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for returned entities (e.g: Order's OrderDetails will be searched in cache)
-                ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
-                ///  uri: Overrides dataService's uri.
-                ///  saveAction: Custom save action on server side (default is SaveChanges).
-                ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
-                ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
-                /// </summary>
-                /// <param name="savePackage">Save package, when null, options.entities or current changes will be saved.</param>
-                /// <param name="options">Save options, for details read summary.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 options = options || {};
 
                 // Create promise if possible.
@@ -8889,43 +8865,39 @@
                 return retVal;
             };
 
+            /**
+             * Creates an entity based on metadata information.
+             * @param {Object} result - Entity initial object. This object instance will be made observable.
+             * @param {string} typeName - Entity type name (full).
+             * @returns {Entity} Entity with observable properties. 
+             */
             proto.toEntity = function (result, typeName) {
-                /// <summary>
-                /// Creates an entity based on metadata information.
-                /// </summary>
-                /// <param name="result">Raw result to make entity (observable).</param>
-                /// <param name="typeName">Entity type name.</param>
                 if (result.$type && !typeName)
                     typeName = result.$type;
                 return this.dataService.toEntity(result, typeName);
             };
 
+            /** Fix scalar and plural navigations for entity from cache. */
             proto.fixNavigations = function (entity) {
-                /// <summary>
-                /// Fix scalar and plural navigations for entity from cache.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 if (!this.isInManager(entity))
                     throw helper.createError(i18N.entityNotBeingTracked, null, { entity: entity });
                 entityAttached(entity, true, true, this);
             };
 
+            /** Checks if given entity is being tracked by this manager. */
             proto.isInManager = function (entity) {
-                /// <summary>
-                /// Checks if given entity is being tracked by this manager.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 return entity.$tracker.manager == this;
             };
 
+            /**
+             * Flat relation to a single array. With this we can merge entities with complex navigations.
+             * @example
+             *  Lets say we have an Order with 3 OrderDetails and that OrderDetails have Supplier assigned,
+             *  with flatting this entity, we can merge Order, OrderDetails and Suppliers with one call.
+             * @param {Entity[]} entities - Entities to flat.
+             * @returns {Entity[]} All entities from all relations.
+             */
             proto.flatEntities = function (entities) {
-                /// <summary>
-                /// Flat relation to a single array. With this we can merge entities with complex navigations.
-                /// Example:
-                ///     Lets say we have an Order with 3 OrderDetails and that OrderDetails have Supplier assigned,
-                ///     with flatting this entity, we can merge Order, OrderDetails and Suppliers with one call.
-                /// </summary>
-                /// <param name="entities">Entities to float.</param>
                 var that = this;
                 var flatList = arguments[1] || [];
                 if (!Assert.isArray(entities)) entities = [entities];
@@ -9002,14 +8974,20 @@
                 return flatList;
             };
 
+            /** 
+             * Returns tracking info for given entity.
+             * @param {Entity} entity - The entity.
+             * @returns {EntityTracker} Entity tracking object.
+             */
             proto.entry = function (entity) {
-                /// <summary>
-                /// Returns tracking info for given entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 return entity.$tracker;
             };
 
+            /**
+             * Creates entity set for given type.
+             * @param {EntityType|string|Function} - Entity type.
+             * @returns {EntitySet}
+             */
             proto.createSet = function (type) {
                 if (!Assert.isInstanceOf(type, metadata.EntityType)) {
                     if (Assert.isFunction(type)) type = helper.getFuncName(type);
@@ -9018,11 +8996,17 @@
                 return new core.EntitySet(type, this);
             }
 
+            /**
+             * Finds entity set for given type name.
+             * @param {string|Function} - Entity type.
+             * @returns {EntitySet}
+             */
             proto.set = function (shortName) {
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 return this.entitySets && this.entitySets[shortName];
             }
 
+            /** Clears local cache, validation errors and resets change counter to 0.*/
             proto.clear = function () {
                 helper.forEach(this.entities.allEntities, function (e) {
                     e.$tracker.manager = null;
@@ -9033,6 +9017,7 @@
                 this.validationErrors = [];
             }
 
+            /** Initialize instance with provided arguments. */
             function initialize(args, instance) {
                 instance._readyCallbacks = [];
                 instance._readyPromises = [];
@@ -9145,6 +9130,7 @@
                 }
             }
 
+            /** Checks if manager is ready, if so calls callbacks. */
             function checkReady(instance) {
                 if (instance.isReady()) {
                     var cs = instance._readyCallbacks.slice(0);
@@ -9165,6 +9151,16 @@
                 }
             }
 
+            /**
+             * Merges entities to local cache.
+             * @param {Entity[]} newEntities - Entities to merge.
+             * @param {Entity[]} flatList - If entities were flatten before we re-use it, otherwise they will be flattened.
+             * @param {MergeStrategy} merge - Merge strategy option.
+             * @param {EntityState} state - Entity state to use while merging.
+             * @param {EntityManager} instance - Entity manager instance.
+             * @param {any} autoFixScalar - Automatically fix scalar navigations using foreign keys (fast).
+             * @param {any} autoFixPlural - Automatically fix plural navigations looking for foreign references (slow).
+             */
             function mergeEntities(newEntities, flatList, merge, state, instance, autoFixScalar, autoFixPlural) {
                 if (!state) state = enums.entityStates.Added;
                 else if (state === enums.entityStates.Detached) return;
@@ -9248,12 +9244,13 @@
                 });
             }
 
+            /** If given entity is not being tracked by this manager, throws an error. */
             function checkEntity(entity, instance) {
-                /** If given entity is not being tracked by this manager, throws an error. */
                 if (!instance.isInManager(entity))
                     throw helper.createError(i18N.entityNotBeingTracked, { entity: entity, manager: instance });
             }
 
+            /** Changes entity's state. */
             function setEntityState(entity, state) {
                 if (state === enums.entityStates.Unchanged)
                     entity.$tracker.toUnchanged();
@@ -9266,6 +9263,7 @@
                 else throw helper.createError(i18N.mergeStateError, [state], { entity: entity, state: state });
             }
 
+            /** Overwrites oldEntity's all properties with newEntity property values. */
             function overwriteEntity(oldEntity, newEntity) {
                 var tracker = newEntity.$tracker;
                 // Overwrite all properties.
@@ -9576,23 +9574,29 @@
     var services = (function () {
         var expose = {};
 
+        /**
+         * Beetle Service class.
+         * @class
+         */
         expose.BeetleService = (function () {
-            // Dependencies are injected through constructor.
+            /**
+             * @constructor
+             * @param {any} uri - Service URI.
+             * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
+             * @param {Object} injections - Injection object to change behaviour of the service.
+             */
             var ctor = function (uri, metadataPrm, injections) {
-                /// <summary>
-                /// Beetle Service class.
-                /// </summary>
-                /// <param name="uri">Service URI.</param>
-                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
-                /// <param name="injections">
-                /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService.
-                ///  When not given, defaults will be used.
-                /// </param>
                 baseTypes.DataServiceBase.call(this, uri, metadataPrm, injections);
             };
             helper.inherit(ctor, baseTypes.DataServiceBase);
             var proto = ctor.prototype;
 
+            /**
+             * Fetch metadata from server.
+             * @param {Object} options - Fetch metadata options (async: boolean).
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.fetchMetadata = function (options, successCallback, errorCallback) {
                 var retVal = null;
                 var that = this;
@@ -9615,6 +9619,14 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * When there is no metadata available services may be able to create entities asynchronously (server side must be able to support this).
+             * @param {string} typeName - Type name to create.
+             * @param {Object} initialValues - Entity initial values.
+             * @param {Object=} options - Options (makeObservable: boolean, async: boolean).
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
                 if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
                 var that = this;
@@ -9649,11 +9661,26 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * Executes given query.
+             * @param {EntityQuery} query 
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp = this.toBeetleQueryParams(query, options && options.varContext);
                 return this.executeQueryParams(query.resource, qp, options, successCallback, errorCallback);
             };
 
+            /**
+             * Executes given query parameters.
+             * @param {string} resource - Server resource to query.
+             * @param {EntityQuery} queryParams - The query parameters.
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
                 options = options || {};
                 var makeObservable = options.makeObservable;
@@ -9725,6 +9752,13 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * Saves all changes using AjaxProvider.
+             * @param {SavePackage} savePackage - Save package. When provided, this package will be used (no package will be created).
+             * @successCallback {successCallback} - Function to call after operation succeeded.
+             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @returns {Promise} Returns promise if supported.
+             */
             proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
                 var that = this;
                 options = options || {};
@@ -9768,13 +9802,13 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * Fix the relations between loaded raw data.
+             * @param {Object[]} results - Raw entity objects.
+             * @param {boolean} makeObservable - When not false entities will be converted to observables.
+             * @param {boolean} handleUnmappedProperties - When true, all values will be handled by their value (i.e. some type changes, string->Date).
+             */
             proto.fixResults = function (results, makeObservable, handleUnmappedProperties) {
-                /// <summary>
-                /// Fix the relations between loaded raw data.
-                /// </summary>
-                /// <param name="results">Raw data.</param>
-                /// <param name="makeObservable">When not false entities will be converted to observables.</param>
-                /// <param name="handleUnmappedProperties">When null, value is read from settings. When true, all values will be handled (types changed) by their value.</param>
                 var that = this;
                 var flatList = arguments[3] || [];
                 if (!Assert.isArray(results)) results = [results];
@@ -9794,11 +9828,8 @@
                 });
                 return flatList;
 
+                /** Create navigation fixes for single raw result. */
                 function fixSingle(result) {
-                    /// <summary>
-                    /// Create navigation fixes for single raw result.
-                    /// </summary>
-                    /// <param name="result">Single raw result.</param>
                     var id = result.$id;
                     delete result.$id;
 
@@ -9830,10 +9861,12 @@
                 }
             };
 
+            /** 
+             * Creates hash integer for given string.
+             * This hash will be compared to server-side generated hash to detect manipulations.
+             * Just to avoid query string hackers.
+             */
             function createHash(str) {
-                /// <summary>
-                /// creates hash integer for given string
-                /// </summary>
                 var hash = 0, i, chr, len;
                 if (str.length == 0) return hash;
                 for (i = 0, len = str.length; i < len; i++) {
@@ -9847,24 +9880,35 @@
             return ctor;
         })();
 
+        /**
+         * OData Service class.
+         * Derives from Beetle Service, so supports beetle queries.
+         * OData service tries to use OData query structure but can fallback to beetle way.
+         * @class
+         */
         expose.ODataService = (function () {
-            // Dependencies are injected through constructor.
+
+            /**
+             * @constructor
+             * @param {any} uri - Service URI.
+             * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
+             * @param {Object} injections - Injection object to change behaviour of the service.
+             */
             var ctor = function (uri, metadataPrm, injections) {
-                /// <summary>
-                /// Web API Service class.
-                /// </summary>
-                /// <param name="uri">Service URI.</param>
-                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
-                /// <param name="injections">
-                /// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
-                ///  When not given, defaults will be used.
-                /// </param>
                 services.BeetleService.call(this, uri, metadataPrm, injections);
                 this.useBeetleQueryStrings = false;
             };
             helper.inherit(ctor, expose.BeetleService);
             var proto = ctor.prototype;
 
+            /**
+             * Executes given query.
+             * Try to use OData, but might fallback to beetle way.
+             * @param {EntityQuery} query 
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp;
                 options = options || {};
@@ -10322,7 +10366,7 @@
         requiredError: '%0 property is required.',
         sameKeyExists: 'There is already an entity with same key in the manager.',
         sameKeyOnDifferentTypesError: 'Two different types of entities cannot have same keys when they are from same inheritance root (%0, %1).',
-        settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behavior).',
+        settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behaviour).',
         stringLengthError: '%0 property length must be between %1 and %2.',
         syncNotSupported: '%0 does not support sync ajax calls.',
         twoEndCascadeDeleteNotAllowed: 'Two-end cascade deletes are not supported.',
