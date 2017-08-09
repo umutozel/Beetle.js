@@ -2158,7 +2158,6 @@
             /**
              * Selects only given properties using projection.
              * @param {string|string[]} properties - Properties or PropertyPaths to select (project).
-             *
              */
             proto.select = function (properties) {
                 var q = this.clone();
@@ -2180,7 +2179,7 @@
             };
 
             /**
-             * Takes only given count records .
+             * Takes only given count records.
              * @param {number} count - The number of items to take.
              */
             proto.take = function (count) {

@@ -163,54 +163,177 @@ declare module "beetle" {
 declare global {
 
 	interface Array<T> {
+        /**
+         * Indicates wheter or not include total count in result.
+         * @param {boolean=} isEnabled - When true, total count will be included in result. Default value: true.
+         */
 		inlineCount(isEnabled?: boolean): beetle.querying.ArrayQuery<T>;
+        /**
+         * If model has inheritance, when querying base type we can tell which derived type we want to load.
+         * @param {string} typeName - Derived type name.
+         */
 		ofType<TResult extends T>(type: string | (new () => TResult)): beetle.querying.ArrayQuery<TResult>;
+        /**
+         * Filter query based on given expression.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		where(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
 		where(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
+        /**
+         * Sorts results based on given properties.
+         * @param {string|propertySelectFunction} properties - The properties to sort by.
+         * @param {boolean=} isDesc - Indicates if sorting will be descending. Default value is false.
+         */
 		orderBy(keySelector: string | ((entity: T) => any) | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
+        /**
+         * Sorts results based on given properties descendingly.
+         * @param {string|propertySelectFunction} properties - The properties to sort by.
+         */
 		orderByDesc(keySelector: string | ((entity: T) => any) | ((entity1: T, entity2: T) => number)): beetle.querying.ArrayQuery<T>;
+        /**
+         * Selects only given properties using projection.
+         * @param {string|string[]} properties - Properties or PropertyPaths to select (project).
+         */
 		select<TResult>(selector: string | string[] | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;
 		select<TResult>(...selectors: string[]): beetle.querying.ArrayQuery<TResult>;
 		select(selector: string | string[] | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;
 		select(...selectors: string[]): beetle.querying.ArrayQuery<any>;
+        /**
+         * Skips given count records and start reading.
+         * @param {number} count - The number of items to skip.
+         */
 		skip(count: number): beetle.querying.ArrayQuery<T>;
+        /**
+         * Takes only given count records.
+         * @param {number} count - The number of items to take.
+         */
 		take(count: number): beetle.querying.ArrayQuery<T>;
+        /**
+         * Takes only given count records .
+         * @param {number} count - The number of items to take.
+         */
 		top(count: number): beetle.querying.ArrayQuery<T>;
+        /**
+         * Groups query by given keys (projects them into a new type) and returns values (projecting into new type).
+         * @param {string|string[]} keySelector - A projection to extract the key for each element.
+         * @param {string|string[]} valueSelector - A projection to create a result value from each group.
+         */
 		groupBy<TKey, TResult>(keySelector: (entity: T) => TKey, valueSelector: (group: beetle.interfaces.Grouping<T, TKey>) => TResult): beetle.querying.ArrayQuery<TResult>;
 		groupBy<TKey>(keySelector: (entity: T) => TKey): beetle.querying.ArrayQuery<beetle.interfaces.Grouped<T, TKey>>;
 		groupBy<TResult>(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => TResult)): beetle.querying.ArrayQuery<TResult>;
 		groupBy(keySelector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<beetle.interfaces.Grouped<T, any>>;
 		groupBy(keySelector: string | ((entity: T) => any), valueSelector: string | ((group: beetle.interfaces.Grouping<T, any>) => any)): beetle.querying.ArrayQuery<any>;
+        /**
+         * Gets only distinct items, when selector is given it will be used as comparer (project and compares projected objects).
+         * @param {string|string[]} selector - A projection to extract the key for each element.
+         */
 		distinct(): beetle.querying.ArrayQuery<T>;
 		distinct<TResult>(selector: string | ((entity: T) => TResult)): beetle.querying.ArrayQuery<TResult>;
 		distinct(selector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;
+        /** Reverse the collection. */
 		reverse(): beetle.querying.ArrayQuery<T>;
+        /**
+         * Selects given collection property for each element and returns all in a new array.
+         * @param {string|string[]} properties - Properties or PropertyPaths to select (project).
+         */
 		selectMany<TResult>(selector: string | ((entity: T) => Array<TResult>)): beetle.querying.ArrayQuery<TResult>;
 		selectMany(selector: string | ((entity: T) => any)): beetle.querying.ArrayQuery<any>;
+        /**
+         * Gets all the items after first succesfull predicate.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		skipWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
 		skipWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
+        /**
+         * Gets all the items before first succesfull predicate.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		takeWhile(predicate: string, varContext?: any): beetle.querying.ArrayQuery<T>;
 		takeWhile(predicate: (entity: T) => boolean): beetle.querying.ArrayQuery<T>;
+        /**
+         * If all items suits given predication returns true, otherwise false.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		all(predicate?: string, varContext?: any): boolean;
 		all(predicate: (entity: T) => boolean): boolean;
+        /**
+         * If there is at least one item in query result (or any item suits given predication) returns true, otherwise false.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		any(predicate?: string, varContext?: any): boolean;
 		any(predicate: (entity: T) => boolean): boolean;
+        /**
+         * Calculates average of items of query (or from given projection result).
+         * @param {string=} selector - Property path to use on calculation.
+         */
 		avg(selector?: string | ((entity: T) => number)): number;
+        /**
+         * Finds maximum value from items of query (or from given projection result).
+         * @param {string=} selector - Property path to use on calculation.
+         */
 		max(selector?: string | ((entity: T) => number)): number;
+        /**
+         * Finds minimum value from items of query (or from given projection result).
+         * @param {string=} selector - Property path to use on calculation.
+         */
 		min(selector?: string | ((entity: T) => number)): number;
+        /**
+         * Finds summary value from items of query (or from given projection result).
+         * @param {string=} selector - Property path to use on calculation.
+         */
 		sum(selector?: string | ((entity: T) => number)): number;
+        /**
+         * Gets the count of items of query.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		count(predicate?: string, varContext?: any): number;
 		count(predicate: (entity: T) => boolean): number;
+        /**
+         * Gets the first value from items of query (or from given predication result). When there is no item, throws exception.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		first(predicate?: string, varContext?: any): T;
 		first(predicate: (entiyt: T) => boolean): T;
+        /**
+         * Gets the first value (or null when there is no items) from items of query (or from given predication result).
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		firstOrDefault(predicate?: string, varContext?: any): T;
 		firstOrDefault(predicate: (entity: T) => boolean): T;
+        /**
+         * Gets the single value from items (or from given predication result). Where zero or more than one item exists throws exception.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		single(predicate?: string, varContext?: any): T;
 		single(predicate: (entity: T) => boolean): T;
+        /**
+         * Gets the single value (or null when there is no items) from items (or from given predication result). Where more than one item exists throws exception.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		singleOrDefault(predicate?: string, varContext?: any): T;
 		singleOrDefault(predicate: (entity: T) => boolean): T;
+        /**
+         * Gets the last value from items of query (or from given predication result). When there is no item, throws exception.
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		last(predicate?: string, varContext?: any): T;
 		last(predicate: (entity: T) => boolean): T;
+        /**
+         * Gets the last value (or null when there is no items) from items of query (or from given predication result).
+         * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
+         * @param {Object|any[]} varContext - Variable context for the expression.
+         */
 		lastOrDefault(predicate?: string, varContext?: any): T;
 		lastOrDefault(predicate: (entity: T) => boolean): T;
 
