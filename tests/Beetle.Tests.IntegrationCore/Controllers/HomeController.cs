@@ -95,6 +95,7 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
         [HttpGet]
         public string Seed() {
             Clear();
+            DatabaseHelper.ClearDatabase(Context);
             DatabaseHelper.SeedDatabase(Context);
             return "seed";
         }
