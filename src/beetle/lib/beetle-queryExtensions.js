@@ -197,10 +197,6 @@
      * @param {any[]} other - An array whose elements that also occur in the first array will cause those elements to be removed from the returned array.
      */
     arrayQueryProto.except = function (other) {
-        /// <summary>
-        /// Produces the set difference of two arrays.
-        /// </summary>
-        /// <param name="other">The array whose elements that also occur in the query array will cause those elements to be removed from the returned array.</param>
         var q = this.clone();
         return q.addExpression(new exceptExp(other));
     };
@@ -601,9 +597,6 @@
 
     var toLookupExp = (function () {
         var ctor = function (keySelector, elementSelector) {
-            /// <summary>
-            /// Same as groupBy but elementSelector is function instead of string.
-            /// </summary>
             ArrayExpBase.call(this, 'toLookup', 3, true, true);
             this.keySelector = keySelector;
             this.elementSelector = elementSelector;

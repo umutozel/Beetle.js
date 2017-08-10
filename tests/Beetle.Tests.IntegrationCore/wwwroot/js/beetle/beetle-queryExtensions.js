@@ -1,4 +1,9 @@
-﻿(function (root, factory) {
+﻿/**
+ * Beetle query extensions. Array prototype extensions are here.
+ * Using UMD pattern.
+ * @module beetle
+ */
+(function (root, factory) {
     if (typeof exports === "object") {
         var beetle = require("./beetle.js");
         module.exports = factory(root, beetle);
@@ -15,12 +20,12 @@
 })(this, function (root, beetle) {
     "use strict";
 
-    /// <summary>
-    /// Adds javascript arrays c# extension methods like usage.
-    /// Query gets executed when someone access it's length property and we can access results on the query object with indexer.
-    /// Most of these expressions support only javascript functions 
-    ///   (string expressions are not supported, because these are local only so expressions are not necessary)
-    /// </summary>
+    /**
+     * Adds javascript arrays c# extension methods like usage.
+     * Query gets executed when someone access it's length property and we can access results on the query object with indexer.
+     * Most of these expressions support only javascript functions 
+     *   (string expressions are not supported, because these are local only so expressions are not necessary)
+     */
 
     if (!beetle) throw new Error("Beetle must be loaded first to register query extensions.");
 
@@ -28,6 +33,10 @@
         indexOutOfRange: "Specified argument was out of the range of valid values. Parameter name: %1"
     };
 
+    /**
+     * Base type for array-only expressions.
+     * Service related calls will throw exception.
+     */
     var ArrayExpBase = (function () {
         var ctor = function (name) {
             beetle.baseTypes.ExpressionBase.call(this, name, 3, true, true);
@@ -85,12 +94,12 @@
 
         return ctor;
     })();
+    /**
+     * Applies an accumulator function over an array. The specified seed value is used as the initial accumulator value.
+     * @param {Function|string} func - A function to test each element for a condition.
+     * @param {any} seed - The initial accumulator value.
+     */
     arrayQueryProto.aggregate = function (func, seed) {
-        /// <summary>
-        /// Applies an accumulator function over an array. The specified seed value is used as the initial accumulator value.
-        /// </summary>
-        /// <param name="predicate">A function to test each element for a condition. Could be an expression string, i.e: a, b => a + b.</param>
-        /// <param name="seed">The initial accumulator value.</param>
         var q = this.clone();
         return q.addExpression(new aggregateExp(func, seed));
     };
@@ -113,6 +122,10 @@
 
         return ctor;
     })();
+    /**
+     * Concatenates two arrays.
+     * @param {any[]} other - The array to concatenate to the query's array.
+     */
     arrayQueryProto.concat = function (other) {
         var q = this.clone();
         return q.addExpression(new concatExp(other));
@@ -140,6 +153,11 @@
 
         return ctor;
     })();
+    /**
+     * Determines whether a array contains a specified element.
+     * @param {any} item - The value to locate in the array.
+     * @returns {boolean} true if the source array contains an element that has the specified value; otherwise, false.
+     */
     arrayQueryProto.contains = function (item) {
         var q = this.clone();
         return q.addExpression(new containsExp(item));
@@ -174,11 +192,11 @@
 
         return ctor;
     })();
+    /**
+     * Produces the set difference of two arrays.
+     * @param {any[]} other - An array whose elements that also occur in the first array will cause those elements to be removed from the returned array.
+     */
     arrayQueryProto.except = function (other) {
-        /// <summary>
-        /// Produces the set difference of two arrays.
-        /// </summary>
-        /// <param name="other">The array whose elements that also occur in the query array will cause those elements to be removed from the returned array.</param>
         var q = this.clone();
         return q.addExpression(new exceptExp(other));
     };
@@ -220,14 +238,14 @@
 
         return ctor;
     })();
+    /**
+     * Correlates the elements of two arrays based on equality of keys and groups the results.
+     * @param {any[]} other - The array to join to the query array.
+     * @param {Function} thisKey - Key selector for query's array.
+     * @param {Function} otherKey - Key selector for other array.
+     * @param {Function} selector - A function to create a result element from an element from the first array and a collection of matching elements from the other array.
+     */
     arrayQueryProto.groupJoin = function (other, thisKey, otherKey, selector) {
-        /// <summary>
-        /// Correlates the elements of two arrays based on equality of keys and groups the results.
-        /// </summary>
-        /// <param name="other">The array to join to the query array.</param>
-        /// <param name="other">Query array key selector.</param>
-        /// <param name="other">Other array key selector.</param>
-        /// <param name="other">A function to create a result element from an element from the first array and a collection of matching elements from the other array.</param>
         var q = this.clone();
         return q.addExpression(new groupJoinExp(other, thisKey, otherKey, selector));
     };
@@ -265,11 +283,11 @@
 
         return ctor;
     })();
+    /**
+     * Produces the set intersection of two arrays.
+     * @param {any[]} other - The array whose distinct elements that also appear in the first array will be returned.
+     */
     arrayQueryProto.intersect = function (other) {
-        /// <summary>
-        /// Produces the set intersection of two arrays.
-        /// </summary>
-        /// <param name="other">The array whose distinct elements that also appear in the first array will be returned.</param>
         var q = this.clone();
         return q.addExpression(new intersectExp(other));
     };
@@ -315,14 +333,14 @@
 
         return ctor;
     })();
+    /**
+     * Correlates the elements of two arrays based on matching keys.
+     * @param {any[]} other - The array to join to the query array.
+     * @param {Function} thisKey - Key selector for query's array.
+     * @param {Function} otherKey - Key selector for other array.
+     * @param {Function} selector - A function to create a result element from two matching elements.
+     */
     arrayQueryProto.join = function (other, thisKey, otherKey, selector) {
-        /// <summary>
-        /// Correlates the elements of two arrays based on matching keys.
-        /// </summary>
-        /// <param name="other">The array to join to the query array.</param>
-        /// <param name="other">Query array key selector.</param>
-        /// <param name="other">Other array key selector.</param>
-        /// <param name="other">A function to create a result element from two matching elements.</param>
         var q = this.clone();
         return q.addExpression(new joinExp(other, thisKey, otherKey, selector));
     };
@@ -373,14 +391,14 @@
 
         return ctor;
     })();
+    /**
+     * Correlates the elements of two arrays based on matching keys (query array items are taken even they do not have matching item on other array).
+     * @param {any[]} other - The array to join to the query array.
+     * @param {Function} thisKey - Key selector for query's array.
+     * @param {Function} otherKey - Key selector for other array.
+     * @param {Function} selector - A function to create a result element from two matching elements.
+     */
     arrayQueryProto.leftJoin = function (other, thisKey, otherKey, selector) {
-        /// <summary>
-        /// Correlates the elements of two arrays based on matching keys (query array items are taken even they do not have matching item on other array).
-        /// </summary>
-        /// <param name="other">The array to join to the query array.</param>
-        /// <param name="other">Query array key selector.</param>
-        /// <param name="other">Other array key selector.</param>
-        /// <param name="other">A function to create a result element from two matching elements.</param>
         var q = this.clone();
         return q.addExpression(new leftJoinExp(other, thisKey, otherKey, selector));
     };
@@ -430,14 +448,14 @@
 
         return ctor;
     })();
+    /**
+     * Correlates the elements of two arrays based on matching keys (other array items are taken even they do not have matching item on query array).
+     * @param {any[]} other - The array to join to the query array.
+     * @param {Function} thisKey - Key selector for query's array.
+     * @param {Function} otherKey - Key selector for other array.
+     * @param {Function} selector - A function to create a result element from two matching elements.
+     */
     arrayQueryProto.rightJoin = function (other, thisKey, otherKey, selector) {
-        /// <summary>
-        /// Correlates the elements of two arrays based on matching keys (other array items are taken even they do not have matching item on query array).
-        /// </summary>
-        /// <param name="other">The array to join to the query array.</param>
-        /// <param name="other">Query array key selector.</param>
-        /// <param name="other">Other array key selector.</param>
-        /// <param name="other">A function to create a result element from two matching elements.</param>
         var q = this.clone();
         return q.addExpression(new rightJoinExp(other, thisKey, otherKey, selector));
     };
@@ -492,14 +510,14 @@
 
         return ctor;
     })();
+    /**
+     * Correlates the elements of two arrays based on matching keys (all items are taken cross-multiplied).
+     * @param {any[]} other - The array to join to the query array.
+     * @param {Function} thisKey - Key selector for query's array.
+     * @param {Function} otherKey - Key selector for other array.
+     * @param {Function} selector - A function to create a result element from two matching elements.
+     */
     arrayQueryProto.fullJoin = function (other, thisKey, otherKey, selector) {
-        /// <summary>
-        /// Correlates the elements of two arrays based on matching keys (all items are taken cross-multiplied).
-        /// </summary>
-        /// <param name="other">The array to join to the query array.</param>
-        /// <param name="other">Query array key selector.</param>
-        /// <param name="other">Other array key selector.</param>
-        /// <param name="other">A function to create a result element from two matching elements.</param>
         var q = this.clone();
         return q.addExpression(new fullJoinExp(other, thisKey, otherKey, selector));
     };
@@ -533,12 +551,14 @@
 
         return ctor;
     })();
+    /**
+     * Correlates the elements of two arrays based on matching keys (all items are taken cross-multiplied).
+     * @param {any[]} other - The array to join to the query array.
+     * @param {Function} thisKey - Key selector for query's array.
+     * @param {Function} otherKey - Key selector for other array.
+     * @param {Function} selector - A function to create a result element from two matching elements.
+     */
     arrayQueryProto.crossJoin = function (other, selector) {
-        /// <summary>
-        /// Correlates the elements of two arrays based on matching keys (all items are taken cross-multiplied).
-        /// </summary>
-        /// <param name="other">The array to join to the query array.</param>
-        /// <param name="other">A function to create a result element from two matching elements.</param>
         var q = this.clone();
         return q.addExpression(new crossJoinExp(other, selector));
     };
@@ -566,20 +586,17 @@
 
         return ctor;
     })();
+    /**
+     * Determines whether two arrays are equal by comparing the elements.
+     * @param {any[]} other - An array to compare to the query array.
+     */
     arrayQueryProto.sequenceEqual = function (other) {
-        /// <summary>
-        /// Determines whether two arrays are equal by comparing the elements.
-        /// </summary>
-        /// <param name="other">An array to compare to the query array.</param>
         var q = this.clone();
         return q.addExpression(new sequenceEqualExp(other));
     };
 
     var toLookupExp = (function () {
         var ctor = function (keySelector, elementSelector) {
-            /// <summary>
-            /// Same as groupBy but elementSelector is function instead of string.
-            /// </summary>
             ArrayExpBase.call(this, 'toLookup', 3, true, true);
             this.keySelector = keySelector;
             this.elementSelector = elementSelector;
@@ -632,12 +649,12 @@
 
         return ctor;
     })();
+    /**
+     * Creates a array from query array according to specified key selector and element selector functions.
+     * @param {Function} keySelector - A function to extract a key from each element.
+     * @param {Function} elementSelector - An array to compare to the query array.
+     */
     arrayQueryProto.toLookup = function (keySelector, elementSelector) {
-        /// <summary>
-        /// Creates a array from query array according to specified key selector and element selector functions.
-        /// </summary>
-        /// <param name="keySelector">A function to extract a key from each element.</param>
-        /// <param name="elementSelector">An array to compare to the query array.</param>
         var q = this.clone();
         return q.addExpression(new toLookupExp(keySelector, elementSelector));
     };
@@ -678,11 +695,11 @@
 
         return ctor;
     })();
+    /**
+     * Produces the set union of two arrays' distinct elements.
+     * @param {any[]} other - An array whose distinct elements form the second set for the union.
+     */
     arrayQueryProto.union = function (other) {
-        /// <summary>
-        /// Produces the set union of two arrays' distinct elements.
-        /// </summary>
-        /// <param name="other"> An array whose distinct elements form the second set for the union.</param>
         var q = this.clone();
         return q.addExpression(new unionExp(other));
     };
@@ -714,17 +731,17 @@
 
         return ctor;
     })();
+    /**
+     * Applies a specified function to the corresponding elements of two arrays, producing a array of the results.
+     * @param {any[]} other - The second array to merge.
+     * @param {Function} selector - A function that specifies how to merge the elements from the two arrays.
+     */
     arrayQueryProto.zip = function (other, selector) {
-        /// <summary>
-        /// Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
-        /// </summary>
-        /// <param name="other">The second array to merge.</param>
-        /// <param name="other">A function that specifies how to merge the elements from the two arrays.</param>
         var q = this.clone();
         return q.addExpression(new zipExp(other, selector));
     };
 
-    // Extend Array prototype with beetle query methods.
+    /** Extend Array prototype with beetle query methods. */
     function extend(methodName) {
         arrayProto[methodName] = function () {
             var query = this.asQueryable();
@@ -775,6 +792,7 @@
     extend("union");
     extend("zip");
 
+    /** Register static range method to Array */
     if (!Array.hasOwnProperty("range")) {
         Array.range = function (start, count) {
             if (arguments.length == 0) return [];
@@ -792,6 +810,7 @@
         };
     }
 
+    /** Register static repeat method to Array */
     if (!Array.hasOwnProperty("repeat")) {
         Array.repeat = function (item, count) {
             if (arguments.length == 0) return [];
@@ -809,12 +828,14 @@
         };
     }
 
+    /** Register forEach method to Array */
     if (!arrayProto.hasOwnProperty("forEach")) {
         arrayProto.forEach = function (callback) {
             beetle.helper.forEach(this, callback);
         };
     }
 
+    /** Register forEach method to ArrayQuery */
     if (!arrayQueryProto.hasOwnProperty("forEach")) {
         arrayQueryProto.forEach = function (callback) {
             beetle.helper.forEach(this, callback);
@@ -832,7 +853,7 @@
         };
     }
 
-    // Create a length property for query so it can be automatically executed before enumeration (like LINQ).
+    /** Create a length property for query so it can be automatically executed before enumeration (like LINQ). */
     if (Object.hasOwnProperty("defineProperty")) {
         arrayQueryProto.length = Object.defineProperty(arrayQueryProto, "length", {
             get: function () {

@@ -1,7 +1,8 @@
 ﻿/**
-* Beetle module.
-* @module beetle
-*/
+ * Beetle module.
+ * Using UMD pattern.
+ * @module beetle
+ */
 (function (root, factory) {
     var deps = {
         jQuery: root.$,
@@ -1806,7 +1807,7 @@
 
     /**
      * Base types, can be considered as abstract classes.
-     * This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviors of core classes.
+     * This classes can be overwritten outside of the project, and later can be injected through constructors to change behaviours of core classes.
      * @namespace
      */
     var baseTypes = {
@@ -2157,7 +2158,6 @@
             /**
              * Selects only given properties using projection.
              * @param {string|string[]} properties - Properties or PropertyPaths to select (project).
-             *
              */
             proto.select = function (properties) {
                 var q = this.clone();
@@ -2179,7 +2179,7 @@
             };
 
             /**
-             * Takes only given count records .
+             * Takes only given count records.
              * @param {number} count - The number of items to take.
              */
             proto.take = function (count) {
@@ -2236,7 +2236,7 @@
             };
 
             /**
-             * Gets all the items after first succesfull predicate.
+             * Gets all the items after first succesful predicate.
              * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
              * @param {Object|any[]} varContext - Variable context for the expression.
              */
@@ -2248,7 +2248,7 @@
             };
 
             /**
-             * Gets all the items before first succesfull predicate.
+             * Gets all the items before first succesful predicate.
              * @param {string|predicateFunction} predicate - A function to test each element for a condition (can be string expression).
              * @param {Object|any[]} varContext - Variable context for the expression.
              */
@@ -2384,7 +2384,7 @@
             };
 
             /**
-             * Sets options to be used at execution
+             * Sets options to be used at execution.
              * @param {queryOptions} options - Query options. Multiple call to this function will override previous settings.
              */
             proto.withOptions = function (options) {
@@ -2541,17 +2541,17 @@
 
             /**
              * Ajax operation function.
-             * @uri {string} - Uri to make request.
-             * @type {string} - Request type (POST, GET..)
-             * @dataType {string} - Request data type (xml, json..)
-             * @contentType {string} - Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)
-             * @data {any} - Request data.
-             * @async {boolean} - If set to false, request will be made synchronously.
-             * @timeout {number} - AJAX call timeout value. if call won't be completed after given time, exception will be thrown.
-             * @extra {Object} - Implementor specific arguments.
-             * @headers {Object} - custom HTTP headers.
-             * @successCallback {successCallback} - Function to call after operation succeeded.
-             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @param {string} uri - Uri to make request.
+             * @param {string} type - Request type (POST, GET..)
+             * @param {string} dataType - Request data type (xml, json..)
+             * @param {string} contentType - Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)
+             * @param {any} data - Request data.
+             * @param {boolean} async - If set to false, request will be made synchronously.
+             * @param {number} timeout - AJAX call timeout value. if call won't be completed after given time, exception will be thrown.
+             * @param {Object} extra - Implementor specific arguments.
+             * @param {Object} headers - Custom HTTP headers.
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
              */
             proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
@@ -2635,14 +2635,14 @@
             };
             /**
              * Gets promise for deferred object.
-             * @param {Object} deferred 
+             * @param {Object} deferred - Deferred object which can be resolved or rejected.
              * @returns {Promise} Returns a promise.
              */
             proto.getPromise = function (deferred) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'getPromise']);
             };
             /**
-             * Resolves given promise for succesfull operation.
+             * Resolves given promise for succesful operation.
              * @param {Object} deferred - Deferred object.
              * @param {any} data - Operation result.
              */
@@ -2652,7 +2652,7 @@
             /**
              * Rejects given promise for failed operation.
              * @param {Object} deferred - Deferred object.
-             * @param {Error} error - Error to pass failed callback.
+             * @param {Error} error - Error to pass to failed callback.
              */
             proto.reject = function (deferred, error) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'reject']);
@@ -2673,7 +2673,7 @@
              * @constructor
              * @param {any} uri - Service URI.
              * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
-             * @param {ServiceOptions} injections - Injection object to change behavior of the service,
+             * @param {ServiceOptions} injections - Injection object to change behaviour of the service,
              *      Can include these properties: ajaxProvider, serializationService, ajaxTimeout, dataType, contentType.
              *      When not given, defaults will be used.
              */
@@ -2870,12 +2870,7 @@
             /**
              * Executes given query.
              * @param {EntityQuery} query 
-             * @param {Object} options - QUery options.
-             *  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
-             *  usePost: Post verb will be used for queries, when query string is too large we need to use this option
-             *  dataType: We can set ajax call's dataType with this option
-             *  contentType: We can set ajax call's contentType with this option
-             *  async: When false, ajax call will be made synchronously (default: true)
+             * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
@@ -2884,14 +2879,9 @@
             };
             /**
              * Executes given query parameters.
-             * @param {string} query - Server resource to query.
+             * @param {string} resource - Server resource to query.
              * @param {EntityQuery} queryParams - The query parameters.
-             * @param {Object} options - QUery options.
-             *  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
-             *  usePost: Post verb will be used for queries, when query string is too large we need to use this option
-             *  dataType: We can set ajax call's dataType with this option
-             *  contentType: We can set ajax call's contentType with this option
-             *  async: When false, ajax call will be made synchronously (default: true)
+             * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
@@ -2901,11 +2891,7 @@
             /**
              * Send changes to server.
              * @param {SavePackage} savePackage - An object containing entities to send to server for persistence.
-             * @param {Object} options - Save options
-             *  async: When false, ajax call will be made synchronously (default: true)
-             *  uri: Overrides dataService's uri
-             *  saveAction: Custom save action on server side (default is SaveChanges)
-             *  headers: Extra http headers
+             * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
@@ -3735,7 +3721,7 @@
     };
 
     /** 
-     * Represents a primitive value member.
+     * Metadata types.
      * @namespace
      */
     var metadata = {
@@ -3751,10 +3737,10 @@
              * @param {string} displayName - Value to use for displaying purposes.
              * @param {DataType} dataType - One of the supported Beetle data types.
              * @param {boolean} isNullable - Can be assigned with null or undefined.
-             * @param {boolean} isKeyPart - Whether this property is one of the primary keys.
+             * @param {boolean} isKeyPart - Indicates if this property is one of the primary keys.
              * @param {generationPattern} genPattern - Auto generation strategy for the property (Identity, Computed, None).
              * @param {any} defaultValue - Default value for the property.
-             * @param {boolean} useForConcurrency - When true, this property will be used in updates.
+             * @param {boolean} useForConcurrency - When true, this property will be used together with keys for updates.
              */
             var ctor = function (owner, name, displayName, dataType, isNullable, isKeyPart, genPattern, defaultValue, useForConcurrency) {
                 this.owner = owner;
@@ -4169,7 +4155,7 @@
             return ctor;
         })(),
         /**
-         * .
+         * Metadata container.
          * @class
          */
         MetadataManager: (function () {
@@ -4451,6 +4437,10 @@
             }
         })();
 
+        /** 
+         * Supported query expressions.
+         * Each query call will be collected as expressions and will be evaluated later.
+         */
         return {
             /** 
              * Linq like expressions to filter, order etc. arrays and server resources. Used by queries.
@@ -6095,7 +6085,7 @@
     var core = {
         /**
          * This class wraps given value to allow skipping callbacks.
-         * @constructor
+         * @class
          * @param {any} value - Value to wrap.
          * @param {any} fromBeetle - Indicates if Beetle triggered the change.
          */
@@ -6104,14 +6094,16 @@
             this.fromBeetle = fromBeetle === true;
         },
         /**
-        */
+         * Beetle event class.
+         * @class
+         */
         Event: (function () {
+            /**
+             * @constructor
+             * @param {string} name - Name of the event.
+             * @param {any} publisher - Event's owner.
+             */
             var ctor = function (name, publisher) {
-                /// <summary>
-                /// Event, notification and callback object.
-                /// </summary>
-                /// <param name="name">Name of the event.</param>
-                /// <param name="publisher">Event's owner.</param>
                 this.name = name;
                 this.subscribers = [];
                 this.publisher = publisher;
@@ -6122,28 +6114,28 @@
                 return this.name;
             };
 
+            /**
+             * Adds given function to subscribe list. Will be notified when this event triggered.
+             * @param {Function} subscriber - Subscriber function.
+             */
             proto.subscribe = function (subscriber) {
-                /// <summary>
-                /// Adds given function to subscribe list. will be notified when this event triggered.
-                /// </summary>
-                /// <param name="subscriber">Subscriber function.</param>
                 if (!helper.findInArray(this.subscribers, subscriber))
                     this.subscribers.push(subscriber);
             };
 
+            /**
+             * Removes given function from subscriber list.
+             * @param {Function} subscriber - Subscriber function.
+             */
             proto.unsubscribe = function (subscriber) {
-                /// <summary>
-                /// Removes given function from subscriber list.
-                /// </summary>
-                /// <param name="subscriber">Subscribed function.</param>
                 helper.removeFromArray(this.subscribers, subscriber);
             };
 
+            /**
+             * Notifies all subscribers.
+             * @param {any} data - Data to pass to subscribe functions.
+             */
             proto.notify = function (data) {
-                /// <summary>
-                /// Notifies all subscribers.
-                /// </summary>
-                /// <param name="data">Data to pass to subscribe functions.</param>
                 var args = arguments;
                 helper.forEach(this.subscribers, function (subscriber) {
                     subscriber.apply(subscriber, args);
@@ -6152,38 +6144,34 @@
 
             return ctor;
         })(),
+        /**
+         * Beetle supported data types.
+         * @namespace
+         */
         dataTypes: (function () {
-            /// <summary>Defines javascript data types.</summary>
 
+            /**
+             * Date base type.
+             * @class
+             */
             var dateBase = (function () {
                 var ctor = function (name) {
-                    /// <summary>Date base type.</summary>
                     baseTypes.DataTypeBase.call(this, 'dateBase');
                     this.name = name;
                 };
                 helper.inherit(ctor, baseTypes.DataTypeBase);
                 var proto = ctor.prototype;
 
+                /** Default value: 01/01/1753 */
                 proto.defaultValue = function () {
-                    /// <summary>
-                    /// Gets default value for type.
-                    /// </summary>
-                    /// <returns type="string">Default value: 01/01/1753</returns>
                     return new Date(Date.UTC(1753, 1, 1));
                 };
 
                 proto.isValid = function (value) {
-                    /// <summary>
-                    /// Checks if given value is date.
-                    /// </summary>
                     return Object.prototype.toString.call(value) === '[object Date]';
                 };
 
                 proto.handle = function (value) {
-                    /// <summary>
-                    /// Tries to convert given value to date.
-                    /// </summary>
-                    /// <returns type="">When value is of this type returns the value, if not tries to convert the value to this type, throws an error if fails.</returns>
                     if (!this.isValid(value)) {
                         var v = value;
                         value = this.tryParse(v);
@@ -6193,40 +6181,24 @@
                 };
 
                 proto.autoValue = function () {
-                    /// <summary>
-                    /// Generates a new unique value for this type. Used for auto-incremented values.
-                    /// </summary>
-                    /// <returns type="">Unique value (Unique for this script instance).</returns>
                     return new Date();
                 };
 
                 proto.getRawValue = function (value) {
-                    /// <summary>
-                    /// Returns raw value represanting given value.
-                    /// </summary>
                     return value == null ? null : settings.getDateConverter().toISOString(value);
                 };
 
+                /** Tries to parse given value to date. Returns null when data cannot be parsed. */
                 proto.tryParse = function (value) {
-                    /// <summary>
-                    /// Tries to parse given value to date.
-                    /// </summary>
-                    /// <returns type="">When given value is proper Date object, otherwise null.</returns>
                     return settings.getDateConverter().parse(value);
                 };
 
                 proto.toODataValue = function (value) {
-                    /// <summary>
-                    /// Converts given value to OData format.
-                    /// </summary>
                     value = this.handle(value);
                     return "datetime'" + settings.getDateConverter().toISOString(value) + "'";
                 };
 
                 proto.toBeetleValue = function (value) {
-                    /// <summary>
-                    /// Converts given value to Beetle format.
-                    /// </summary>
                     value = this.handle(value);
                     return '"' + settings.getDateConverter().toISOString(value) + '"';
                 };
@@ -6236,7 +6208,7 @@
 
             var expose = {};
 
-            /// <field>Object type.</field>
+            /** Object type. */
             expose.object = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'object');
@@ -6254,7 +6226,7 @@
 
                 return new ctor();
             })();
-            /// <field>Object type.</field>
+            /** Array type. */
             expose.array = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'array');
@@ -6289,7 +6261,7 @@
 
                 return new ctor();
             })();
-            /// <field>Function type.</field>
+            /** Function type. */
             expose.func = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'function');
@@ -6298,7 +6270,7 @@
 
                 return new ctor();
             })();
-            /// <field>String type.</field>
+            /** String type. */
             expose.string = (function () {
                 var i = 0;
 
@@ -6331,7 +6303,7 @@
 
                 return new ctor();
             })();
-            /// <field>Guid type.</field>
+            /** Guid type. */
             expose.guid = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'guid');
@@ -6366,7 +6338,7 @@
 
                 return new ctor();
             })();
-            /// <field>Date type.</field>
+            /** Date type. */
             expose.date = (function () {
                 var ctor = function () {
                     dateBase.call(this, 'date');
@@ -6375,7 +6347,7 @@
 
                 return new ctor();
             })();
-            /// <field>DateTimeOffset type.</field>
+            /** DateTimeOffset type. */
             expose.dateTimeOffset = (function () {
                 var ctor = function () {
                     dateBase.call(this, 'dateTimeOffset');
@@ -6390,7 +6362,7 @@
 
                 return new ctor();
             })();
-            /// <field>Time type.</field>
+            /** Time type. */
             expose.time = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'time');
@@ -6426,7 +6398,7 @@
 
                 return new ctor();
             })();
-            /// <field>Boolean type.</field>
+            /** Boolean type. */
             expose.boolean = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'boolean');
@@ -6455,7 +6427,7 @@
 
                 return new ctor();
             })();
-            /// <field>Integer type. Int16, Int32, Int64 etc.</field>
+            /** Integer type. Int16, Int32, Int64 etc. */
             expose.int = (function () {
                 var i = 0;
 
@@ -6486,7 +6458,7 @@
 
                 return new ctor();
             })();
-            /// <field>Number type. Float, decimal etc.</field>
+            /** Number type. Float, decimal etc. */
             expose.number = (function () {
                 var i = 0;
 
@@ -6517,7 +6489,7 @@
 
                 return new ctor();
             })();
-            /// <field>Byte type. Value must be between 0 and 256.</field>
+            /** Byte type. Value must be between 0 and 256. */
             expose.byte = (function () {
                 var i = 0;
 
@@ -6548,7 +6520,7 @@
 
                 return new ctor();
             })();
-            /// <field>Binary type.</field>
+            /** Binary type. */
             expose.binary = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'binary');
@@ -6579,7 +6551,7 @@
 
                 return new ctor();
             })();
-            /// <field>Enum type.</field>
+            /** Enum type. */
             expose.enumeration = (function () {
                 var ctor = function (enumType, enumTypeName, displayName) {
                     baseTypes.DataTypeBase.call(this, 'enum');
@@ -6652,7 +6624,7 @@
 
                 return ctor;
             })();
-            /// <field>Geometry spatial type.</field>
+            /** Geometry spatial type. */
             expose.geometry = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'geometry');
@@ -6677,7 +6649,7 @@
 
                 return new ctor();
             })();
-            /// <field>Geography spatial type.</field>
+            /** Geography spatial type. */
             expose.geography = (function () {
                 var ctor = function () {
                     baseTypes.DataTypeBase.call(this, 'geography');
@@ -6703,18 +6675,14 @@
                 return new ctor();
             })();
 
+            /** Finds data type by its name. */
             expose.byName = function (name) {
-                /// <summary>
-                /// Finds and returns data type by its name.
-                /// </summary>
                 var type = expose[name];
                 if (!type) throw helper.createError(i18N.unknownDataType, [name]);
                 return type;
             };
+            /** Finds proper data type for given value. */
             expose.byValue = function (value) {
-                /// <summary>
-                /// Finds and returns data type for given value.
-                /// </summary>
                 if (expose.string.isValid(value)) {
                     if (expose.guid.isValid(value))
                         return expose.guid;
@@ -6736,50 +6704,48 @@
                     return expose.object;
                 return expose.binary;
             };
+            /** 
+             * Finds proper data type for given value and converts it to that type.
+             * @example
+             *  Json dates are strings, we use this method to auto-convert them to Javascript date.
+             */
             expose.handle = function (value) {
-                /// <summary>
-                /// Finds and returns data type for given value.
-                /// </summary>
                 var v = expose.date.tryParse(value);
                 if (v != null) return v;
                 return value;
             };
 
+            /** Converts given value to OData filter format value. */
             expose.toODataValue = function (value) {
-                /// <summary>
-                /// Converts given value to OData filter format value.
-                /// </summary>
-                /// <param name="value">The value.</param>
                 if (value == null) return 'null';
                 return expose.byValue(value).toODataValue(value);
             };
+            /** Converts given value to OData filter format value. */
             expose.toBeetleValue = function (value) {
-                /// <summary>
-                /// Converts given value to OData filter format value.
-                /// </summary>
-                /// <param name="value">The value.</param>
                 if (value == null) return 'null';
                 return expose.byValue(value).toBeetleValue(value);
             };
 
             function throwAssignError(dataType, value) {
-                /// <summary>
-                /// Throws invalid assignment exception.
-                /// </summary>
                 throw helper.createError(i18N.assignError, [dataType.name, value], { dataType: dataType, value: value });
             }
 
             return expose;
         })(),
+        /**
+         * Beetle data and navigation property validators.
+         * @namespace
+         */
         Validator: (function () {
+            /**
+             * Creates a new validator.
+             * @constructor
+             * @param {string} name - Validator name.
+             * @param {Function} func - Validator javascript implementation.
+             * @param {string} message - Error message.
+             * @param {any[]} args - Validator specific arguments.
+             */
             var ctor = function (name, func, message, args) {
-                /// <summary>
-                /// Data and navigation property validators.
-                /// </summary>
-                /// <param name="name">Validator name.</param>
-                /// <param name="func">Validator javascript implementation.</param>
-                /// <param name="message">Error message.</param>
-                /// <param name="args">Validator specific arguments.</param>
                 this.name = name;
                 this.func = func;
                 this.message = message;
@@ -6796,21 +6762,25 @@
                 return args.length > 0 ? this.name + ' (' + args.join(', ') + ')' : this.name;
             };
 
+            /**
+             * Validates given parameters against validation function.
+             * @param {any} value - Value to validate.
+             * @param {Entity} entity - Value's owner entity. Might be used for some validations (i.e. compare).
+             */
             proto.validate = function (value, entity) {
-                /// <summary>
-                /// Validates given parameters against validation function.
-                /// </summary>
-                /// <param name="value">Value to validate.</param>
                 return this.func(value, entity) == true ? null : this.message;
             };
 
+            /**
+             * Finds the validator by given code and initializes it with given arguments.
+             * @param {string} code - Validator short code.
+             * @param {any[]} args - Validator specific arguments.
+             * @param {string} message - Error message.
+             * @param {string=} messageResourceName - Error message's resource name for dynamic translation.
+             * @param {string=} displayName - Validator owner's display name.
+             * @param {string=} displayNameResourceName - Validator owner's display name's resource name for dynamic translation.
+             */
             ctor.byCode = function (code, args, message, messageResourceName, displayName, displayNameResourceName) {
-                /// <summary>
-                /// Finds the validator by given code and initializes it with given arguments.
-                /// </summary>
-                /// <param name="code">Validator code.</param>
-                /// <param name="args">Validator arguments.</param>
-                /// <param name="message">Validation message.</param>
                 var localizeFunc = settings.getLocalizeFunction();
                 if (localizeFunc) {
                     message = (messageResourceName && localizeFunc(messageResourceName)) || message;
@@ -6852,10 +6822,6 @@
             };
 
             ctor.required = function (allowEmptyStrings, message, displayName) {
-                /// <summary>
-                /// Required validator, value must be provided to pass its test.
-                /// </summary>
-                /// <param name="allowEmptyStrings">Should we treat empty strings as 'no value' or not.</param>
                 var func = function (value) {
                     if (value == null) return false;
                     if (Assert.isTypeOf(value, 'string') && !allowEmptyStrings && value == '') return false;
@@ -6865,11 +6831,6 @@
                 return new ctor('Required', func, message, { allowEmptyStrings: allowEmptyStrings });
             };
             ctor.stringLength = function (min, max, message, displayName) {
-                /// <summary>
-                /// String Length validator.
-                /// </summary>
-                /// <param name="min">Minimum required string length.</param>
-                /// <param name="max">Maximum allowed string length.</param>
                 var func = function (value) {
                     if (!min && !max) return true;
                     if (!Assert.isNotEmptyString(value)) return false;
@@ -6881,10 +6842,6 @@
                 return new ctor('StringLength', func, message, { min: min, max: max });
             };
             ctor.maxLength = function (length, message, displayName) {
-                /// <summary>
-                /// Maximum length validator, can be used with strings and arrays.
-                /// </summary>
-                /// <param name="length">Maximum length.</param>
                 var func = function (value) {
                     if (value == null) return true;
                     if (length && value.length > length) return false;
@@ -6894,10 +6851,6 @@
                 return new ctor('MaxLength', func, message, { length: length });
             };
             ctor.minLength = function (length, message, displayName) {
-                /// <summary>
-                /// Minimum length validator, can be used with strings and arrays.
-                /// </summary>
-                /// <param name="length">Minimum length.</param>
                 var func = function (value) {
                     if (value == null) return false;
                     if (length && value.length < length) return false;
@@ -6907,11 +6860,6 @@
                 return new ctor('MinLength', func, message, { length: length });
             };
             ctor.range = function (min, max, message, displayName) {
-                /// <summary>
-                /// Number range validator.
-                /// </summary>
-                /// <param name="min">Minimum value.</param>
-                /// <param name="max">Maximum value.</param>
                 var func = function (value) {
                     if (!min && !max) return true;
                     if (min && value < min) return false;
@@ -6922,55 +6870,29 @@
                 return new ctor('Range', func, message, { min: min, max: max });
             };
             ctor.regularExpression = function (pattern, message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid time.
-                /// </summary>
                 if (Assert.isTypeOf(pattern, 'string')) pattern = new RegExp(pattern);
                 return regex('RegularExpression', pattern, message, displayName);
             };
             ctor.emailAddress = function (message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid email address.
-                /// </summary>
                 return regex('EmailAddress', /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/, message, displayName);
             };
             ctor.creditCard = function (message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid email adress.
-                /// </summary>
                 return regex('CreditCard', /^((4\d{3})|(5[1-5]\d{2})|(6011)|(3[68]\d{2})|(30[012345]\d))[ -]?(\d{4})[ -]?(\d{4})[ -]?(\d{4}|3[4,7]\d{13})$/, message, displayName);
             };
             ctor.url = function (message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid url.
-                /// </summary>
                 return regex('Url', /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/, message, displayName);
             };
             ctor.phone = function (message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid phone number.
-                /// </summary>
                 return regex('Phone', /^(?!.*-.*-.*-)(?=(?:\d{8,10}$)|(?:(?=.{9,11}$)[^-]*-[^-]*$)|(?:(?=.{10,12}$)[^-]*-[^-]*-[^-]*$)  )[\d-]+$/, message, displayName);
             };
             ctor.postalCode = function (message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid postal code (U.S and Canada only).
-                /// </summary>
                 return regex('PostalCode', /^\d{5}([\-]?\d{4})?$/, message, displayName);
             };
             ctor.time = function (message, displayName) {
-                /// <summary>
-                /// Checks if given value is a valid time.
-                /// </summary>
                 return regex('Time', /^([01]?\d|2[0-3])(((:[0-5]?\d){2}(\.\d{1,3}){0,1})|(:[0-5]?\d){0,2})?$/, message, displayName);
             };
 
             function regex(name, pattern, message, displayName) {
-                /// <summary>
-                /// Helper method to create regex validators.
-                /// </summary>
-                /// <param name="name">Validator name.</param>
-                /// <param name="pattern">Regex pattern.</param>
                 var func = function (value) {
                     if (value == null) return false;
                     return pattern.test(value);
@@ -6979,10 +6901,8 @@
                 return new ctor(name, func, message, { pattern: pattern });
             }
 
+            /** Compares value with given property, both must be equal. */
             ctor.compare = function (property, message, displayName) {
-                /// <summary>
-                /// Compares value with given property, both must be equal.
-                /// </summary>
                 var func = function (value, entity) {
                     var other = helper.getValue(entity, property);
                     return value == other;
@@ -6995,19 +6915,28 @@
 
             return ctor;
         })(),
+        /**
+         * Entity container holds entity sets.
+         * @class
+         */
         EntityContainer: (function () {
+            /**
+             * Entity Set holds entity references
+             * @class
+             */
             var entitySet = (function () {
+                /**
+                 * We hold every entity type (which has key) in seperate list.
+                 * But for a derived type we create entries for each base type increase performance for inheritance scenarios.
+                 * @constructor
+                 * @example
+                 *  Lets say we have this hierarchy;
+                 *  Customer -> Company -> Entity -> EntityBase
+                 *  When we add a customer three more entries will ve created (for Company, Entity and EntityBase)
+                 *  So when we search a Company this Customer will be in the list.@param {any} type
+                 * @param {any} type - Entity type for the set.
+                 */
                 var c = function (type) {
-                    /// <summary>
-                    /// We hold every entity type (which has key) in seperate list.
-                    /// But for a derived type we create entries for each base type increase performance for inheritance scenarios.
-                    /// Example:
-                    ///     Lets say we have this hierarchy;
-                    ///     Customer -> Company -> Entity -> EntityBase
-                    ///     When we add a customer three more entries will ve created (for Company, Entity and EntityBase)
-                    ///     So when we search a Company this Customer will be in the list.
-                    /// </summary>
-                    /// <param name="type">Entity type for the set.</param>
                     this.typeName = type.name;
                     this.keyIndex = [];
                 };
@@ -7017,46 +6946,46 @@
                     return this.typeName + ': ' + this.keyIndex.length;
                 };
 
+                /**
+                 * Adds given entity to proper location in the index table using its key.
+                 * @param {string} key - The key.
+                 * @param {Entity} entity - The entity.
+                 */
                 p.push = function (key, entity) {
-                    /// <summary>
-                    /// Adds given entity to proper location in the index table using its key.
-                    /// </summary>
-                    /// <param name="key">The key.</param>
-                    /// <param name="entity">The entity.</param>
                     // find proper location
                     var location = findLocation(key, this.keyIndex);
                     // insert new index
                     this.keyIndex.splice(location, 0, { key: key, entity: entity });
                 };
 
+                /**
+                 * Removes item with given key from index table.
+                 * @param {string} key - The key.
+                 */
                 p.remove = function (key) {
-                    /// <summary>
-                    /// Removes item with given key from index table.
-                    /// </summary>
-                    /// <param name="key">The key.</param>
                     // find the index entry.
                     var index = getIndex(key, this.keyIndex);
                     this.keyIndex.splice(index, 1);
                 };
 
+                /**
+                 * Finds entity with given key.
+                 * @param {string} key - The key.
+                 * @returns {Entity} Entity if found, otherwise null.
+                 */
                 p.getEntity = function (key) {
-                    /// <summary>
-                    /// Finds entity with given key.
-                    /// </summary>
-                    /// <param name="key">The key.</param>
-                    /// <returns type="">Entity if found, otherwise null.</returns>
                     // find the index entry
                     var entry = getEntry(key, this.keyIndex);
                     if (entry) return entry.entity;
                     return null;
                 };
 
+                /**
+                 * Gets entities which has given foreign key for given navigation property.
+                 * @param {string} fk - The foreign key.
+                 * @param {NavigationProperty} navProperty - The navigation property.
+                 */
                 p.getRelations = function (fk, navProperty) {
-                    /// <summary>
-                    /// Gets entities which has given foreign key for given navigation property.
-                    /// </summary>
-                    /// <param name="fk">The foreign key.</param>
-                    /// <param name="navProperty">The navigation property.</param>
                     var retVal = [];
                     // copy all items has same foreign key for given navigation propery to a new array.
                     for (var i = 0; i < this.keyIndex.length; i++) {
@@ -7067,13 +6996,13 @@
                     return retVal;
                 };
 
+                /**
+                 * After an entity's key changed we need to rebuild the index table.
+                 * @param {Entity} entity - The entity.
+                 * @param {string} oldKey - The old key.
+                 * @param {string} newKey - The new key.
+                 */
                 p.relocateKey = function (entity, oldKey, newKey) {
-                    /// <summary>
-                    /// After an entity's key changed we need to rebuild the index table.
-                    /// </summary>
-                    /// <param name="entity">The entity.</param>
-                    /// <param name="oldKey">The old key.</param>
-                    /// <param name="newKey">The new key.</param>
                     // if there is an old index, remove it.
                     this.remove(oldKey);
                     // if new key has a value, add it to index tables.
@@ -7081,10 +7010,11 @@
                         this.push(newKey, entity);
                 };
 
+                /**
+                 * Returns entity collection of the set.
+                 * @returns {Entity[]} Entries of entity set.
+                 */
                 p.getEntities = function () {
-                    /// <summary>
-                    /// Returns entity collection of the set.
-                    /// </summary>
                     var retVal = [];
                     helper.forEach(this.keyIndex, function (ki) {
                         retVal.push(ki.entity);
@@ -7093,23 +7023,11 @@
                 };
 
                 function getEntry(key, keyIndex) {
-                    /// <summary>
-                    /// Finds given key in the index table.
-                    /// </summary>
-                    /// <param name="key">The index.</param>
-                    /// <param name="keyIndex">The key index table.</param>
-                    /// <returns type="">Key index entry if found, otherwise null.</returns>
                     var index = getIndex(key, keyIndex);
                     return index > -1 ? keyIndex[index] : null;
                 }
 
                 function getIndex(key, keyIndex) {
-                    /// <summary>
-                    /// Finds given key's index in the index table.
-                    /// </summary>
-                    /// <param name="key">The index.</param>
-                    /// <param name="keyIndex">The key index table.</param>
-                    /// <returns type="">Key index entry if found, otherwise null.</returns>
                     // find given key with binary search.
                     var len = keyIndex.length;
                     if (len > 0) {
@@ -7131,11 +7049,6 @@
                 }
 
                 function findLocation(key, keyIndex) {
-                    /// <summary>
-                    /// Finds proper location to insert the new key index entry.
-                    /// </summary>
-                    /// <param name="key">The key.</param>
-                    /// <param name="keyIndex">The key index table.</param>
                     var i = 0;
                     while (i < keyIndex.length && key > keyIndex[i].key) i++;
                     return i;
@@ -7144,11 +7057,11 @@
                 return c;
             })();
 
+            /**
+             * Holds entity list and key-entity mappings for types.
+             * Seperate key-entity lists are generated for every type and an entity stored in list of every type in its inheritance chain.
+             */
             var ctor = function () {
-                /// <summary>
-                /// Holds entity list and key-entity mappings for types.
-                /// Seperate key-entity lists are generated for every type and an entity stored in list of every type in its inheritance chain.
-                /// </summary>
                 // To hold keyed entities.
                 this.entitySets = [];
                 // To hold all entities.
@@ -7160,11 +7073,8 @@
                 return this.allEntities.length;
             };
 
+            /** Adds given entity to each entity set in the inheritance hierarchy. */
             proto.push = function (entity) {
-                /// <summary>
-                /// Adds given entity to each entity set in the inheritance hierarchy.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 // add entity to entities array.
                 this.allEntities.push(entity);
                 var tracker = entity.$tracker;
@@ -7181,11 +7091,8 @@
                 }
             };
 
+            /** Removes given entity from each entity set in the inheritance hierarchy. */
             proto.remove = function (entity) {
-                /// <summary>
-                /// Removes given entity from each entity set in the inheritance hierarchy.
-                /// </summary>
-                /// <param name="key">The key.</param>
                 // remove entity from entities array.
                 helper.removeFromArray(this.allEntities, entity);
                 var tracker = entity.$tracker;
@@ -7203,19 +7110,17 @@
                 }
             };
 
+            /** Gets cached entity list. */
             proto.getEntities = function () {
-                /// <summary>
-                /// Gets cached entity list.
-                /// </summary>
                 return this.allEntities;
             };
 
+            /** 
+             * Finds entity with given key by searching entity type's entity set.
+             * @param {string} key - The key.
+             * @param {EntityType} type - Entity type object.
+             */
             proto.getEntityByKey = function (key, type) {
-                /// <summary>
-                /// Finds entity with given key by searching entity type's entity set.
-                /// </summary>
-                /// <param name="key">The key.</param>
-                /// <param name="type">The entity type.</param>
                 if (!key) return null;
                 // get entity set for type
                 var es = this.findEntitySet(type);
@@ -7223,18 +7128,8 @@
                 return es.getEntity(key);
             };
 
+            /** Gets entities which has given foreign key for given navigation property by searching navigation's entity type's set. */
             proto.getRelations = function (entity, navProperty) {
-                /// <summary>
-                /// Gets entities which has given foreign key for given navigation property by searching navigation's entity type's set.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="navProperty">The navigation property.</param>
-                // Example: We may want OrderDetails for Order
-                //  So entity: Order, navProperty: npOrderDetails
-                //  key: OrderId
-                //  es: OrderDetailEntitySet
-                //  fk: OrderDetail's OrderId
-                //  result: entity set tries to find all OrderDetails with given OrderId
                 var type = navProperty.entityType;
                 var key = entity.$tracker.key;
                 if (!key) return null;
@@ -7245,13 +7140,8 @@
                 return null;
             };
 
+            /** After an entity's key changed we need to rebuild the index tables for each entity set in the inheritance hiearachy. */
             proto.relocateKey = function (entity, oldKey, newKey) {
-                /// <summary>
-                /// After an entity's key changed we need to rebuild the index tables for each entity set in the inheritance hiearachy.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="oldKey">The old key.</param>
-                /// <param name="newKey">The new key.</param>
                 // get entity type
                 var type = entity.$tracker.entityType;
                 // create index entry for each type in inheritance hierarachy
@@ -7266,48 +7156,39 @@
                 }
             };
 
+            /** Gets all changed entities from cache (Modified, Added, Deleted). */
             proto.getChanges = function () {
-                /// <summary>
-                /// Gets all changed entities from cache (Modified, Added, Deleted)
-                /// </summary>
                 return helper.filterArray(this.allEntities, function (item) {
                     return !(item.$tracker.entityType.isComplexType && item.$tracker.owners.length > 0) && item.$tracker.isChanged();
                 });
             };
 
+            /** Returns cached entity count. */
             proto.count = function () {
-                /// <summary>
-                /// Returns cached entity count.
-                /// </summary>
                 return this.allEntities.length;
             };
 
+            /** 
+             * Finds entity set for given type in the cache.
+             * @param {EntityType} type - Entity type object.
+             * @returns {EntitySet} Entity set if found, otherwise null.
+             */
             proto.findEntitySet = function (type) {
-                /// <summary>
-                /// Finds entity set for given type in the cache.
-                /// </summary>
-                /// <param name="type">The entity type.</param>
-                /// <returns type="">Entity set if found, otherwise null.</returns>
                 return helper.findInArray(this.entitySets, type.name, 'typeName');
             };
 
+            /** 
+             * Search entity set for given type in the cache, creates if there isn't any.
+             * @param {EntityType} type - Entity type object.
+             * @returns {EntitySet} Found or newly created entity set.
+             */
             proto.getEntitySet = function (type) {
-                /// <summary>
-                /// Finds entity set for given type in the cache, creates if there isn't any.
-                /// </summary>
-                /// <param name="type">The entity type.</param>
-                /// <returns type="">Entity set.</returns>
                 var es = this.findEntitySet(type);
                 if (!es) es = createEntitySet(type, this.entitySets);
                 return es;
             };
 
             function createEntitySet(type, entitySets) {
-                /// <summary>
-                /// Creates entity set for given type.
-                /// </summary>
-                /// <param name="type">The entity type.</param>
-                /// <param name="entitySets">Cached entity sets.</param>
                 var es = new entitySet(type);
                 entitySets.push(es);
                 return es;
@@ -7315,7 +7196,16 @@
 
             return ctor;
         })(),
+        /**
+         * Entity set works like a repository.
+         * @class
+         */
         EntitySet: (function () {
+            /**
+             * @constructor
+             * @param {EntityType} type - Entity type object.
+             * @param {EntityManager} manager - Owner entity manager instance.
+             */
             var ctor = function (type, manager) {
                 this.local = manager.entities.getEntitySet(type);
 
@@ -7328,49 +7218,37 @@
                 return 'EntitySet: ' + this.entityType.shortName;
             };
 
+            /** Creates a new entity with Added state. */
             proto.create = function (initialValues) {
-                /// <summary>
-                /// Creates a new entity with Added state.
-                /// </summary>
                 var entity = this.entityType.createEntity(initialValues);
                 this.manager.addEntity(entity);
                 return entity;
             };
 
+            /** Creates a new detached entity. */
             proto.createDetached = function (initialValues) {
-                /// <summary>
-                /// Creates a new detached entity.
-                /// </summary>
                 return this.entityType.createEntity(initialValues);
             };
 
+            /** Creates a new raw detached entity. */
             proto.createRaw = function (initialValues) {
-                /// <summary>
-                /// Creates a new detached entity.
-                /// </summary>
                 return this.entityType.createRawEntity(initialValues);
             };
 
+            /** Adds the given entity to the manager in the Added state. */
             proto.add = function (entity) {
-                /// <summary>
-                /// Adds the given entity to the manager in the Added state.
-                /// </summary>
                 checkType(entity, this);
                 this.manager.addEntity(entity);
             };
 
+            /** Attaches the given entity to the manager in the Unchanged state. */
             proto.attach = function (entity) {
-                /// <summary>
-                /// Attaches the given entity to the manager in the Unchanged state.
-                /// </summary>
                 checkType(entity, this);
                 this.manager.attachEntity(entity);
             };
 
+            /** Marks the given entity as Deleted. */
             proto.remove = function (entity) {
-                /// <summary>
-                /// Marks the given entity as Deleted.
-                /// </summary>
                 checkType(entity, this);
                 this.manager.deleteEntity(entity);
             };
@@ -7389,12 +7267,12 @@
 
             return ctor;
         })(),
+        /**
+         * Entity tracker class. Tracks changes made on entities.
+         * @class
+         */
         EntityTracker: (function () {
             var ctor = function (entity, type, op) {
-                /// <summary>
-                /// Entity tracker class. Tracks changes made on entities.
-                /// When it starts to track an entity first thing it converts entity to observable.
-                /// </summary>
                 delete entity.$type;
                 delete entity.$id;
                 initialize(entity, type, op || settings.getObservableProvider(), this);
@@ -7408,69 +7286,58 @@
                 return 'EntityTracker: ' + this.entityType.shortName + ', key: ' + this.key;
             };
 
+            /** Manager setter, it can only be set with entityManager derived object and because of this class is internal it cannot be set from outside. */
             proto.setManagerInfo = function (manager) {
-                /// <summary>
-                /// Manager setter, it can only be set with entityManager derived object and because of this class is internal, 
-                /// it cannot be set from outside. 
-                /// </summary>
-                /// <param name="manager">Entity manager.</param>
                 if (this.manager) throw helper.createError(i18N.entityAlreadyBeingTracked, { otherManager: this.manager });
                 // Check if argument is an instance of entityManager.
                 helper.assertPrm(manager, 'manager').isInstanceOf(core.EntityManager).check();
                 this.manager = manager;
             };
 
+            /** Gets if entity is changed. */
             proto.isChanged = function () {
-                /// <summary>
-                /// Gets if entity is changed.
-                /// </summary>
-                return this.entityState === enums.entityStates.Added || this.entityState === enums.entityStates.Deleted || this.entityState === enums.entityStates.Modified;
+                return this.entityState === enums.entityStates.Added || this.entityState === enums.entityStates.Deleted
+                    || this.entityState === enums.entityStates.Modified;
             };
 
+            /** Deletes entity from manager. */
             proto.delete = function () {
                 checkManager(this);
                 this.manager.deleteEntity(this.entity);
             };
 
+            /** Detaches entity from manager. */
             proto.detach = function () {
                 checkManager(this);
                 this.manager.detachEntity(this.entity);
             };
 
+            /** Change entity's state to Added. */
             proto.toAdded = function () {
-                /// <summary>
-                /// Change entity's state to 'Added'
-                /// </summary>
                 if (this.entityState == enums.entityStates.Added) return;
                 var obj = { entity: this.entity, oldState: this.entityState, newState: enums.entityStates.Added, newChanged: !this.isChanged() };
                 this.entityState = enums.entityStates.Added;
                 this.entityStateChanged.notify(obj);
             };
 
+            /** Change entity's state to Modified. */
             proto.toModified = function () {
-                /// <summary>
-                /// Change entity's state to 'Modified'
-                /// </summary>
                 if (this.entityState == enums.entityStates.Modified) return;
                 var obj = { entity: this.entity, oldState: this.entityState, newState: enums.entityStates.Modified, newChanged: !this.isChanged() };
                 this.entityState = enums.entityStates.Modified;
                 this.entityStateChanged.notify(obj);
             };
 
+            /** Change entity's state to Deleted. */
             proto.toDeleted = function () {
-                /// <summary>
-                /// Change entity's state to 'Deleted'
-                /// </summary>
                 if (this.entityState == enums.entityStates.Deleted) return;
                 var obj = { entity: this.entity, oldState: this.entityState, newState: enums.entityStates.Deleted, newChanged: !this.isChanged() };
                 this.entityState = enums.entityStates.Deleted;
                 this.entityStateChanged.notify(obj);
             };
 
+            /** Change entity's state to Unchanged. */
             proto.toUnchanged = function () {
-                /// <summary>
-                /// Change entity's state to 'Unchanged'
-                /// </summary>
                 if (this.entityState == enums.entityStates.Unchanged) return;
                 var obj = { entity: this.entity, oldState: this.entityState, newState: enums.entityStates.Unchanged, newUnchanged: this.isChanged() };
                 this.originalValues.length = 0;
@@ -7479,16 +7346,15 @@
                 this.entityStateChanged.notify(obj);
             };
 
+            /** Change entity's state to Detached. */
             proto.toDetached = function () {
-                /// <summary>
-                /// Change entity's state to 'Detached'
-                /// </summary>
                 if (this.entityState == enums.entityStates.Detached) return;
                 var obj = { entity: this.entity, oldState: this.entityState, newState: enums.entityStates.Detached, newUnchanged: this.isChanged() };
                 this.entityState = enums.entityStates.Detached;
                 this.entityStateChanged.notify(obj);
             };
 
+            /** Resets all changes to initial values. */
             proto.rejectChanges = function () {
                 var that = this;
                 helper.forEach(this.originalValues, function (ov) {
@@ -7497,10 +7363,8 @@
                 this.originalValues.length = 0;
             };
 
+            /** Resets all changes to last accepted values. */
             proto.undoChanges = function () {
-                /// <summary>
-                /// Returns entity's values to last accepted state.
-                /// </summary>
                 var that = this;
                 helper.forEach(this.changedValues, function (cv) {
                     that.setValue(cv.p, cv.v);
@@ -7508,45 +7372,40 @@
                 this.changedValues.length = 0;
             };
 
+            /** Accept all changes. */
             proto.acceptChanges = function () {
-                /// <summary>
-                /// Accept all changes made to this entity.
-                /// </summary>
                 this.changedValues.length = 0;
             };
 
+            /** 
+             * Gets internal value of the property from observable entity.
+             * @param {string} property - Name of the property.
+             */
             proto.getValue = function (property) {
-                /// <summary>
-                /// Gets internal value of the property from observable entity
-                /// </summary>
-                /// <param name="property">The property</param>
                 return this.observableProvider.getValue(this.entity, property);
             };
 
+            /** 
+             * Sets internal value of the property of observable entity.
+             * @param {string} property - Name of the property.
+             * @param {any} value - Value to set.
+             */
             proto.setValue = function (property, value) {
-                /// <summary>
-                /// Sets internal value of the property of observable entity
-                /// </summary>
-                /// <param name="property">The property</param>
-                /// <param name="value">The value</param>
                 this.observableProvider.setValue(this.entity, property, value);
             };
 
+            /** Gets original value for property. */
             proto.getOriginalValue = function (property) {
-                /// <summary>
-                /// Gets original value for property.
-                /// </summary>
-                /// <param name="property">The property</param>
                 var ov = helper.findInArray(this.originalValues, property, 'p');
                 return ov ? ov.v : this.getValue(property);
             };
 
+            /**
+             * Get foreign key value for this navigation property.
+             * @param {NavigationProperty} navProperty - The navigation property object.
+             * @returns {string} Comma separated foreign keys.
+             */
             proto.foreignKey = function (navProperty) {
-                /// <summary>
-                /// Get foreign key value for this navigation property.
-                /// </summary>
-                /// <param name="navProperty">The navigation property.</param>
-                /// <returns type="">Comma separated foreign keys.</returns>
                 var type = navProperty.entityType;
                 if (type.keys.length == 0) return null;
                 var retVal = [];
@@ -7562,26 +7421,27 @@
                 return retVal.join(',');
             };
 
+            /**
+             * Creates a query that can load this navigation property.
+             * @param {string} navPropName - The navigation property name.
+             * @param {string} resourceName - The resource (query name) for entity type.
+             * @returns {EntityQuery} Created entity query.
+             */
             proto.createLoadQuery = function (navPropName, resourceName) {
-                /// <summary>
-                /// Creates a query that can load this navigation property.
-                /// </summary>
-                /// <param name="navPropName">The navigation property name.</param>
-                /// <param name="resourceName">The resource (query name) for entity type.</param>
                 var navProp = helper.findInArray(this.entityType.navigationProperties, navPropName, 'name');
                 return createLoadQuery(navProp, navPropName, resourceName, this);
             };
 
+            /**
+             * Loads given navigation property of the entity.
+             * @param {string} navPropName - The navigation property name.
+             * @param {string[]} expands - Expand navigations to apply when loading navigation property.
+             * @param {string} resourceName - Resource name to query entities.
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.loadNavigationProperty = function (navPropName, expands, resourceName, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Loads given navigation property of the entity.
-                /// </summary>
-                /// <param name="navPropName">The navigation property name.</param>
-                /// <param name="expands">Expand navigations to apply when loading navigation property.</param>
-                /// <param name="resourceName">Resource name to query entities.</param>
-                /// <param name="options">Query options.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
                 if (this.manager == null) throw helper.createError(i18N.entityNotBeingTracked, { entity: this.entity });
                 var navProp = helper.findInArray(this.entityType.navigationProperties, navPropName, 'name');
                 var query = createLoadQuery(navProp, navPropName, resourceName, this);
@@ -7607,10 +7467,8 @@
                     errorCallback);
             };
 
+            /** Validates entity against metadata data annotation validations. */
             proto.validate = function () {
-                /// <summary>
-                /// Validates entity against metadata data annotation validations.
-                /// </summary>
                 if (this.entityState == enums.entityStates.Deleted)
                     this.validationErrors = [];
                 else
@@ -7618,10 +7476,8 @@
                 return this.validationErrors;
             };
 
+            /** Creates a raw javascript object representing this entity. */
             proto.toRaw = function (includeNavigations, handledList) {
-                /// <summary>
-                /// Creates a raw javascript object representing this entity.
-                /// </summary>
                 // get entity information.
                 handledList = handledList || [];
                 handledList.push(this.entity);
@@ -7686,21 +7542,18 @@
                 return data;
             };
 
+            /** 
+             * Starts tracking the entity, this is a static method.
+             * @param {Object} result - The raw result.
+             * @param {EntityType} result - The entity type.
+             * @param {ObservableProvider} result - Observable provider instance.
+             */
             ctor.toEntity = function (result, type, op) {
-                /// <summary>
-                /// Starts tracking the entity, this is a static method.
-                /// </summary>
-                /// <param name="result">The raw result.</param>
-                /// <param name="type">The entity type.</param>
-                /// <param name="op">Observable provider instance.</param>
                 // Crate entity tracker with this static method.
                 return new core.EntityTracker(result, type, op).entity;
             };
 
             function initialize(entity, type, op, instance) {
-                /// <summary>
-                /// Initializes given instance.
-                /// </summary>
                 instance.entity = entity;
                 entity.$tracker = instance;
                 instance.entityType = type;
@@ -7722,12 +7575,6 @@
             }
 
             function toObservable(entity, type, tracker) {
-                /// <summary>
-                /// Converts raw entity to observable with assigning callbacks.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="type">The entity type.</param>
-                /// <param name="tracker">Entity tracker instance.</param>
                 // if we have only one callback, we need to write lots of if, to avoid this we send all callbacks seperately.
                 var callbacks = {
                     propertyChange: propertyChange,
@@ -7741,24 +7588,12 @@
             }
 
             function callIzer(type, entity) {
-                /// <summary>
-                /// Called after entity started to being tracked.
-                /// </summary>
-                /// <param name="type">Type of the entity.</param>
-                /// <param name="entity">The entity.</param>
                 if (type.baseType) callIzer(type.baseType, entity);
                 if (type.initializer)
                     type.initializer.call(entity, entity);
             }
 
             function getKey(tracker, p, v) {
-                /// <summary>
-                /// Get the key for the tracked entity.
-                /// </summary>
-                /// <param name="tracker">The entity tracker.</param>
-                /// <param name="p">The property.</param>
-                /// <param name="v">The value.</param>
-                /// <returns type="">Comma separated keys.</returns>
                 var type = tracker.entityType;
                 if (type.keys.length == 0) return null;
                 var retVal = [];
@@ -7778,13 +7613,6 @@
             }
 
             function createLoadQuery(navProp, navPropName, resourceName, tracker) {
-                /// <summary>
-                /// Creates a query to load a navigation property.
-                /// </summary>
-                /// <param name="navProp">Navigation property.</param>
-                /// <param name="navPropName">Name of the navigation property (to use in error message).</param>
-                /// <param name="resourceName">Resource (query name) for the entity type of the navigation property.</param>
-                /// <param name="tracker">Tracker instance.</param>
                 if (!navProp)
                     throw helper.createError(i18N.propertyNotFound, [navPropName],
                         { propertyName: navPropName, entity: tracker.entity, manager: tracker.manager });
@@ -7807,13 +7635,6 @@
             }
 
             function propertyChange(entity, property, accessor, newValue) {
-                /// <summary>
-                /// Fires before property changed (for objects which do not have metadata).
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="property">The property.</param>
-                /// <param name="accessor">Property value accessor.</param>
-                /// <param name="newValue">New value.</param>
                 var noCallbackExternal = false;
                 if (Assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
                     noCallbackExternal = !newValue.fromBeetle;
@@ -7842,14 +7663,6 @@
             }
 
             function arrayChange(entity, property, items, removedItems, addedItems) {
-                /// <summary>
-                /// Fires after array changed (for objects which do not have metadata).
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="property">Data property.</param>
-                /// <param name="items">Current items.</param>
-                /// <param name="removedItems">Removed items.</param>
-                /// <param name="addedItems">Added items.</param>
                 var tracker = entity.$tracker;
                 if (tracker.manager)
                     setModified(entity, null, null, tracker);
@@ -7857,13 +7670,6 @@
             }
 
             function dataPropertyChange(entity, property, accessor, newValue) {
-                /// <summary>
-                /// Fires before data property changed.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="property">The property.</param>
-                /// <param name="accessor">Property value accessor.</param>
-                /// <param name="newValue">New value.</param>
                 var noCallbackBeetle = false;
                 var noCallbackExternal = false;
                 if (Assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
@@ -7966,13 +7772,6 @@
             }
 
             function scalarNavigationPropertyChange(entity, property, accessor, newValue) {
-                /// <summary>
-                /// Fires before scalar navigation property changed.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="property">The property.</param>
-                /// <param name="accessor">Property value accessor.</param>
-                /// <param name="newValue">New value.</param>
                 var noCallbackBeetle = false;
                 var noCallbackExternal = false;
                 if (Assert.isInstanceOf(newValue, core.ValueNotifyWrapper)) {
@@ -8045,14 +7844,6 @@
             }
 
             function pluralNavigationPropertyChange(entity, property, items, removedItems, addedItems) {
-                /// <summary>
-                /// Fires after plural navigation property changed.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="property">Data property.</param>
-                /// <param name="items">Current items.</param>
-                /// <param name="removedItems">Removed items.</param>
-                /// <param name="addedItems">Added items.</param>
                 var tracker = entity.$tracker;
                 // validate navigation property.
                 var liveValidate = tracker.liveValidate;
@@ -8096,13 +7887,6 @@
             }
 
             function arraySet(entity, property, items, newItems) {
-                /// <summary>
-                /// Fires after setting an array property with new array.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="items">Current items.</param>
-                /// <param name="newItems">New array parameter.</param>
-                /// <param name="property">Name of the array property.</param>
                 if (items === newItems) return;
 
                 var behaviour = settings.getArraySetBehaviour();
@@ -8133,9 +7917,6 @@
             }
 
             function updateForeignKeys(entity) {
-                /// <summary>
-                /// Update navigations' foreign keys to match with new key.
-                /// </summary>
                 var tracker = entity.$tracker;
                 // For each navigation property.
                 helper.forEach(tracker.entityType.navigationProperties, function (np) {
@@ -8161,11 +7942,6 @@
             }
 
             function processEntity(entity, manager) {
-                /// <summary>
-                /// Attaches the entity (which is just set to a scalar or added to a plural navigation property) to entity manager if it is in detached state.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="manager">Entity manager instance.</param>
                 if (!entity || !manager) return;
                 if (entity.$tracker.entityType.isComplexType || manager.isInManager(entity)) return;
                 if (entity.$tracker.manager == manager) return;
@@ -8176,13 +7952,6 @@
             }
 
             function setModified(entity, property, value, tracker) {
-                /// <summary>
-                /// Marks entity as Modified (when necessary) and sets original value (when necessary)
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="property">The modified property.</param>
-                /// <param name="value">New value.</param>
-                /// <param name="tracker">Entity tracker instance.</param>
                 var state = tracker.entityState;
                 // mark this entity as modified.
                 if (state == enums.entityStates.Unchanged) {
@@ -8207,13 +7976,6 @@
             }
 
             function setOriginalValue(property, value, originalValues, changedValues) {
-                /// <summary>
-                /// Reserve original value of the field after its changed.
-                /// </summary>
-                /// <param name="property">The property.</param>
-                /// <param name="value">The original value.</param>
-                /// <param name="originalValues">Original values array.</param>
-                /// <param name="changedValues">Changed values array.</param>
                 // Create new original value if property is changing for first time.
                 if (property == null) return;
                 if (value != null && value.$tracker != null)
@@ -8228,12 +7990,6 @@
             }
 
             function mergeErrors(newErrors, instance, property) {
-                /// <summary>
-                /// Merges old and new errors and make callback.
-                /// </summary>
-                /// <param name="newErrors">New validation errors</param>
-                /// <param name="instance">Tracker instance.</param>
-                /// <param name="property">Validated property.</param>
                 var removed = [];
                 // copy existing errors to a new array.
                 var oldErrors = property
@@ -8260,21 +8016,18 @@
 
             return ctor;
         })(),
+        /**
+         * Entity manager class. All operations must be made using manager to be properly tracked.
+         * @class
+         */
         EntityManager: (function () {
-            // static error message.
+            /**
+             * @constructor
+             * @param {string|DataService} service - Service url (default service from settings will be used) or service instance.
+             * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
+             * @param {Object} injections - Injection object to change behaviour of the manager.
+             */
             var ctor = function (service, metadataPrm, injections) {
-                /// <summary>
-                /// Entity manager class. All operations must be made using manager to be properly tracked.
-                /// </summary>
-                /// <param name="service">[Service Uri - settings default service will be used] or [Service Instance]</param>
-                /// <param name="metadataPrm">(optional) [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used, no auto relation fix]</param>
-                /// <param name="injections">
-                ///  (optional) Injection object to change behavior of the manager, can include these properties: 
-                ///    promiseProvider, autoFixScalar, autoFixPlural, validateOnMerge, validateOnSave, liveValidate, handleUnmappedProperties, forceUpdate, workAsync, minimizePackage.
-                ///    for service: ajaxTimeout, dataType, contentType
-                ///    registerMetadataTypes: when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope.
-                ///  When not provided, defaults will be used.
-                /// </param>
                 initialize(arguments, this);
             };
             var proto = ctor.prototype;
@@ -8285,17 +8038,13 @@
                     i18N.validationErrors + ': ' + this.validationErrors.length;
             };
 
+            /** Checks if manager is ready. */
             proto.isReady = function () {
-                /// <summary>
-                /// Checks if manager is ready.
-                /// </summary>
                 return this.dataService.isReady();
             };
 
+            /** Subscribe ready callback, returns promise when available. */
             proto.ready = function (callback) {
-                /// <summary>
-                /// Subscribe ready callback, returns promise when available.
-                /// </summary>
                 this._readyCallbacks.push(callback);
 
                 var pp = this.promiseProvider;
@@ -8313,110 +8062,113 @@
                 return p;
             };
 
+            /** 
+             * Gets entity type by its short name from data service.
+             * @param {string} shortName - Entity type short name.
+             * @returns {EntityType} Entity type object if found, otherwise null.
+             */
             proto.getEntityType = function (shortName) {
-                /// <summary>
-                /// Gets entity type by its short name from data service.
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
                 return this.dataService.getEntityType(shortName);
             };
 
+            /**
+             * Creates a query for a resource. Every data service can have their own query types.
+             * @param {string} resourceName - Server resource name to combine with base uri.
+             * @param {string=} shortName - Entity type's short name.
+             * @returns {EntityQuery} Entity query. Can be build with method-chaining.
+             */
             proto.createQuery = function (resourceName, shortName) {
-                /// <summary>
-                /// Create entity query.
-                /// </summary>
-                /// <param name="resourceName">The resource to query (service operation name, not entity type name).</param>
-                /// <param name="shortName">Entity type short name.</param>
                 return this.dataService.createQuery(resourceName, shortName, this);
             };
 
+            /**
+             * Creates a query for a resource. Every data service can have their own query types.
+             * @param {string} shortName - Entity type's short name.
+             * @param {string=} resourceName - Server resource name to combine with base uri.
+             * @returns {EntityQuery} Entity query. Can be build with method-chaining.
+             */
             proto.createEntityQuery = function (shortName, resourceName) {
-                /// <summary>
-                /// Create entity query.
-                /// </summary>
-                /// <param name="shortName">Entity type short name (mandatory).</param>
-                /// <param name="resourceName">The resource to query (service operation name, not entity type name).</param>
                 return this.dataService.createEntityQuery(shortName, resourceName, this);
             };
 
+            /**
+             * Register constructor and initializer (optional) for given type.
+             * @param {string} shortName - Short name of the type.
+             * @param {Function} constructor - Constructor function. Called right after the entity object is generated.
+             * @param {Function} initializer - Initializer function. Called after entity started to being tracked (properties converted to observable).
+             */
             proto.registerCtor = function (shortName, constructor, initializer) {
-                /// <summary>
-                /// Register constructor and initializer (optional) for given type.
-                ///  Constructor is called right after the entity object is generated.
-                ///  Initializer is called after entity started to being tracked (properties converted to observable).
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
-                /// <param name="constructor">Constructor function.</param>
-                /// <param name="initializer">Initializer function.</param>
                 this.dataService.registerCtor(shortName, constructor, initializer);
             };
 
+            /**
+             * Creates an entity based on metadata information.
+             * @param {string} shortName - Short name of the type.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity with observable properties. 
+             */
             proto.createEntity = function (shortName, initialValues) {
-                /// <summary>
-                /// Create the entity by its type's short name.
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
                 var result = this.dataService.createEntity(shortName, initialValues);
                 var results = [result];
                 mergeEntities(results, null, enums.mergeStrategy.ThrowError, enums.entityStates.Added, this);
                 return result;
             };
 
+            /**
+             * Creates an entity based on metadata information but doesn't attach to manager.
+             * @param {string} shortName - Short name of the type.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity with observable properties. 
+             */
             proto.createDetachedEntity = function (shortName, initialValues) {
-                /// <summary>
-                /// Create the entity by its type's short name but do not add to manager.
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
                 return this.dataService.createEntity(shortName, initialValues);
             };
 
+            /**
+             * Creates a raw entity based on metadata information.
+             * @param {string} shortName - Short name of the type.
+             * @param {Object} initialValues - Entity initial values.
+             * @returns {Entity} Entity without observable properties. 
+             */
             proto.createRawEntity = function (shortName, initialValues) {
-                /// <summary>
-                /// Create the entity by its type's short name but do not convert to observable and do not add to manager.
-                /// </summary>
-                /// <param name="shortName">Entity type short name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
                 return this.dataService.createRawEntity(shortName, initialValues);
             };
 
+            /**
+             * Request server to create entity.
+             * @param {string} shortName - Short name of the type.
+             * @param {Object} initialValues - Entity initial values.
+             * @param {successCallback=} successCallback - Success callback function.
+             * @param {errorCallback=} errorCallback - Error callback function.
+             * @returns {Promise} Returns promise if possible.
+             */
             proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Request server to create entity. Server should handle this.
-                /// </summary>
-                /// <param name="typeName">The entity typa name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
-                /// <param name="options">Query options (optional), for detail read summary.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 return createAsync(typeName, initialValues, options, successCallback, errorCallback, this);
             };
 
+            /**
+             * Request server to create entity. Entity won't be attached to manager.
+             * @param {string} shortName - Short name of the type.
+             * @param {Object} initialValues - Entity initial values.
+             * @param {successCallback=} successCallback - Success callback function.
+             * @param {errorCallback=} errorCallback - Error callback function.
+             * @returns {Promise} Returns promise if possible.
+             */
             proto.createDetachedEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Request server to create entity. Server should handle this.
-                /// </summary>
-                /// <param name="typeName">The entity typa name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 if (!options) options = { state: enums.entityStates.Detached };
                 else options.state = enums.entityStates.Detached;
                 return createAsync(typeName, initialValues, options, successCallback, errorCallback, this);
             };
 
+            /**
+             * Request server to create entity. Entity won't be attached to manager and won't be made observable.
+             * @param {string} shortName - Short name of the type.
+             * @param {Object} initialValues - Entity initial values.
+             * @param {successCallback=} successCallback - Success callback function.
+             * @param {errorCallback=} errorCallback - Error callback function.
+             * @returns {Promise} Returns promise if possible.
+             */
             proto.createRawEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Request server to create entity. Server should handle this.
-                /// </summary>
-                /// <param name="typeName">The entity typa name.</param>
-                /// <param name="initialValues">Entity initial values.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 if (!options) options = { makeObservable: false };
                 else options.makeObservable = false;
                 return createAsync(typeName, initialValues, options, successCallback, errorCallback, this);
@@ -8481,33 +8233,15 @@
                 return retVal;
             }
 
+            /**
+             * Executes given query.
+             * @param {EntityQuery} query 
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             * @returns {Promise} Returns promise if possible.
+             */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Execute the query.
-                /// 
-                ///  Query options;
-                ///  merge: Merge strategy
-                ///  execution: Execution strategy
-                ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
-                ///  varContext: Variables used in the query (e.g: manager.executeQuery(query.where(Age > @age), {varContext: {age: 20}}))
-                ///  handleUnmappedProperties: If a property is not found in metadata, try to convert this value (e.g: '2013-01-01 will be converted to Date')
-                ///  uri: Overrides dataService's uri
-                ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
-                ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
-                ///  
-                ///  -Options will be passed to services also, so we can pass service specific options too, these are available for OData and Beetle services;
-                ///  async: When false, Ajax call will be made synchronously (default: true)
-                ///  useBeetleQueryStrings: Beetle query strings will be used instead of OData query strings
-                ///  usePost: Post verb will be used for queries, when query string is too large we need to use this option
-                ///  dataType: We can set ajax call's dataType with this option
-                ///  contentType: We can set ajax call's contentType with this option
-                /// </summary>
-                /// <param name="query">The query.</param>
-                /// <param name="options">Query options (optional), for detail read summary.</param>
-                /// <param name="successCallback">Function to call after operation succeeded (optional).</param>
-                /// <param name="errorCallback">Function to call when operation fails (optional).</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 if (query.options)
                     options = helper.combine(query.options, options);
                 var modifiedArgs = notifyExecuting(this, query, options);
@@ -8621,13 +8355,13 @@
                 return retVal;
             };
 
+            /**
+             * Executes given query against local cache.
+             * @param {EntityQuery} query 
+             * @param {Object|any[]} varContext - Variable context for the query.
+             * @param {boolean} calculateInlineCountDiff - When true, effect of the local entities to server entities will be calculated.
+             */
             proto.executeQueryLocally = function (query, varContext, calculateInlineCountDiff) {
-                /// <summary>
-                /// Execute the query against local cache.
-                /// </summary>
-                /// <param name="query">The query.</param>
-                /// <param name="varContext">Variable context for the query.</param>
-                /// <param name="calculateInlineCountDiff">When true, effect of the local entities to server entities will be calculated.</param>
                 // get entity type of the query
                 var et = query.entityType;
                 var entities;
@@ -8672,21 +8406,18 @@
                 return array;
             };
 
+            /** 
+             * Finds entity with given key by searching entity type's entity set.
+             * @param {string} key - Entity key as a string. When entity has more than one key, the key is keys joined with a ','.
+             * @param {EntityType} type - Entity type or type short name.
+             */
             proto.getEntityByKey = function (key, type) {
-                /// <summary>
-                /// Gets entity by its key from entity container.
-                /// </summary>
-                /// <param name="key">Entity key as a string. When entity has more than one key, the key is keys joined with a ','.</param>
-                /// <param name="type">Entity type or type short name.</param>
                 var t = Assert.isInstanceOf(type, metadata.EntityType) ? type : this.getEntityType(type, true);
                 return this.entities.getEntityByKey(key, t);
             };
 
+            /** Marks entity as deleted and clear all navigations. */
             proto.deleteEntity = function (entity) {
-                /// <summary>
-                /// Marks entity as deleted.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 // check if given entity is being tracked by this manager.
                 checkEntity(entity, this);
                 // do cascade deletes.
@@ -8729,31 +8460,21 @@
                 }
             };
 
+            /**
+             * Adds given entity to manager's entity container. State will be 'Added'.
+             * @param {Entity} detachedEntity - The detached entity.
+             * @param {MergeOptions} options - Entity merge options.
+             */
             proto.addEntity = function (detachedEntity, options) {
-                /// <summary>
-                /// Adds given entity to manager's entity container.
-                /// </summary>
-                /// <param name="detachedEntity">The detached entity.</param>
-                /// <param name="options">Entity merge options (optional), possible values;
-                ///  merge: Merge strategy
-                ///  state: Entity will be merged with this state
-                ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
-                /// </param>
                 mergeEntity(detachedEntity, options, enums.entityStates.Added, this);
             };
 
+            /**
+             * Attaches given entity to manager's entity container. State will be 'Unchanged'.
+             * @param {Entity} detachedEntity - The detached entity.
+             * @param {MergeOptions} options - Entity merge options.
+             */
             proto.attachEntity = function (detachedEntity, options) {
-                /// <summary>
-                /// Attaches given entity to manager's entity container.
-                /// </summary>
-                /// <param name="detachedEntity">The detached entity.</param>
-                /// <param name="options">Entity merge options (optional), possible values;
-                ///  merge: Merge strategy
-                ///  state: Entity will be merged with this state
-                ///  autoFixScalar: Scalar navigations will be fixed for queried entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for queried entities (e.g: Order's OrderDetails will be searched in cache)
-                /// </param>
                 mergeEntity(detachedEntity, options, enums.entityStates.Unchanged, this);
             };
 
@@ -8770,11 +8491,8 @@
                 mergeEntities(detachedEntity, null, merge, state, instance, options.autoFixScalar, options.autoFixPlural);
             }
 
+            /** Detaches entity from manager and stops tracking. */
             proto.detachEntity = function (entity, includeRelations) {
-                /// <summary>
-                /// Detaches entity from manager and stops tracking.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 var manager = this;
                 if (!Assert.isArray(entity)) entity = [entity];
                 var detachList = includeRelations === true ? this.flatEntities(entity) : entity;
@@ -8797,12 +8515,12 @@
                 });
             };
 
+            /** 
+             * Reject all changes made to this entity to initial values and detach from context if its newly added.
+             * @param {Entity} entity - The entity.
+             * @param {boolean} includeRelations - If set to true, rejectChanges will be called for all navigation properties too.
+             */
             proto.rejectChanges = function (entity, includeRelations) {
-                /// <summary>
-                /// Undo all changes made to this entity and detach from context if its newly added.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="includeRelations">If set to true, rejectChanges will be called for all navigation properties too.</param>
                 var manager = this;
                 if (!Assert.isArray(entity)) entity = [entity];
                 var rejectList = includeRelations === true ? this.flatEntities(entity) : entity;
@@ -8818,12 +8536,12 @@
                 });
             };
 
+            /** 
+             * Resets all changes to last accepted values.
+             * @param {Entity} entity - The entity.
+             * @param {boolean} includeRelations - If set to true, undoChanges will be called for all navigation properties too.
+             */
             proto.undoChanges = function (entity, includeRelations) {
-                /// <summary>
-                /// Undo all changes made to this entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="includeRelations">If set to true, undoChanges will be called for all navigation properties too.</param>
                 if (!Assert.isArray(entity)) entity = [entity];
                 var undoList = includeRelations === true ? this.flatEntities(entity) : entity;
                 helper.forEach(undoList, function (toUndo) {
@@ -8831,12 +8549,12 @@
                 });
             };
 
+            /** 
+             * Accept all changes made to this entity (clear changed values).
+             * @param {Entity} entity - The entity.
+             * @param {boolean} includeRelations - If set to true, acceptChanges will be called for all navigation properties too.
+             */
             proto.acceptChanges = function (entity, includeRelations) {
-                /// <summary>
-                /// Accept all changes made to this entity (clear changed values).
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="includeRelations">If set to true, acceptChanges will be called for all navigation properties too.</param>
                 if (!Assert.isArray(entity)) entity = [entity];
                 var acceptList = includeRelations === true ? this.flatEntities(entity) : entity;
                 helper.forEach(acceptList, function (toAccept) {
@@ -8844,14 +8562,12 @@
                 });
             };
 
+            /**
+             * Creates save package with entity raw values and user data.
+             * @param {Entity[]=} entities - Save options.
+             * @param {SaveOptions=} options - Save options.
+             */
             proto.createSavePackage = function (entities, options) {
-                /// <summary>
-                /// Creates save package with entity raw values and user data.
-                ///  Options,
-                ///  userData: Custom user data to post
-                ///  forceUpdate: When true, each entity with modified state will be updated -even there is no modified property
-                ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
-                /// </summary>
                 entities = entities || this.getChanges();
                 options = options || {};
 
@@ -8882,13 +8598,12 @@
                 return data;
             };
 
+            /**
+             * Exports entities from manager to raw list.
+             * @param {Entity[]=} entities - Entities to export. 
+             * @param {ExportOptions=} options - Export options.
+             */
             proto.exportEntities = function (entities, options) {
-                /// <summary>
-                /// Exports entities from manager to raw list.
-                ///  Options,
-                ///  forceUpdate: When true, each entity will be updated -even there is no modified property
-                ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
-                /// </summary>
                 options = options || {};
                 var entityList = [];
                 entities = entities || this.entities.getEntities();
@@ -8976,12 +8691,12 @@
                 return entityList;
             };
 
+            /**
+             * Imports exported entities and starts tracking them.
+             * @param {Entity[]} exportedEntities - Previously exported entities to import.
+             * @param {MergeStrategy} merge - Merge strategy to apply when importing.
+             */
             proto.importEntities = function (exportedEntities, merge) {
-                /// <summary>
-                /// Imports exported entities and starts tracking them.
-                /// </summary>
-                /// <param name="exportedEntities">Exported entities.</param>
-                /// <param name="merge">Merge strategy to use while adding this entities to cache.</param>
                 var that = this;
                 if (!Assert.isArray(exportedEntities)) exportedEntities = [exportedEntities];
                 helper.forEach(exportedEntities, function (exportedEntity) {
@@ -9016,64 +8731,38 @@
                 });
             };
 
+            /** Check if there is any pending changes. */
             proto.hasChanges = function () {
-                /// <summary>
-                /// Check if there is any pending changes.
-                /// </summary>
                 return this.pendingChangeCount > 0;
             };
 
+            /** 
+             * Gets changes made in this manager's cache.
+             * @returns {Entity[]}
+             */
             proto.getChanges = function () {
-                /// <summary>
-                /// Gets changes made in this manager's cache
-                /// </summary>
                 return this.entities.getChanges();
             };
 
+            /**
+             * Saves all changes made in this manager to server via Data Service instance.
+             * @param {SaveOptions} options - Options to modify saving behaviour.
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
+             * @returns {Promise} Returns promise if supported.
+             */
             proto.saveChanges = function (options, successCallback, errorCallback) {
-                /// <summary>
-                /// Saves all changes made in this manager to server via Data Service instance.
-                ///  Save options,
-                ///  entities: Entities to save
-                ///  userData: Custom user data to post
-                ///  async: When false, Ajax call will be made synchronously (default: true)
-                ///  forceUpdate: When true, each entity will be updated -even there is no modified property.
-                ///  autoFixScalar: Scalar navigations will be fixed for returned entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for returned entities (e.g: Order's OrderDetails will be searched in cache)
-                ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
-                ///  uri: Overrides dataService's uri.
-                ///  saveAction: Custom save action on server side (default is SaveChanges).
-                ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
-                ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
-                /// </summary>
-                /// <param name="options">Save options, for details read summary.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 return this.savePackage(null, options, successCallback, errorCallback)
             }
 
+            /**
+             * Saves all changes made in this manager to server via Data Service instance.
+             * @param {SavePackage} savePackage - Save package. When provided, this package will be used (no package will be created).
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
+             * @returns {Promise} Returns promise if supported.
+             */
             proto.savePackage = function (savePackage, options, successCallback, errorCallback) {
-                /// <summary>
-                /// Saves all changes made in this manager to server via Data Service instance.
-                ///  Save options,
-                ///  entities: Entities to save
-                ///  userData: Custom user data to post
-                ///  async: When false, Ajax call will be made synchronously (default: true)
-                ///  forceUpdate: When true, each entity will be updated -even there is no modified property.
-                ///  autoFixScalar: Scalar navigations will be fixed for returned entities (e.g: if OrderDetail has OrderId, Order will be searched in cache)
-                ///  autoFixPlural: Plural navigations will be fixed for returned entities (e.g: Order's OrderDetails will be searched in cache)
-                ///  minimizePackage: For modified entities use only modified properties, for deleted entities use only keys.
-                ///  uri: Overrides dataService's uri.
-                ///  saveAction: Custom save action on server side (default is SaveChanges).
-                ///  includeHeaderGetter: If result is not null, a new "headerGetter" function will be added to $extra object
-                ///  includeXhr: If result is not null, a new "xhr" property will be added to $extra object
-                /// </summary>
-                /// <param name="savePackage">Save package, when null, options.entities or current changes will be saved.</param>
-                /// <param name="options">Save options, for details read summary.</param>
-                /// <param name="successCallback">Function to call after operation succeeded.</param>
-                /// <param name="errorCallback">Function to call when operation fails.</param>
-                /// <returns type="">Returns promise if supported.</returns>
                 options = options || {};
 
                 // Create promise if possible.
@@ -9180,43 +8869,39 @@
                 return retVal;
             };
 
+            /**
+             * Creates an entity based on metadata information.
+             * @param {Object} result - Entity initial object. This object instance will be made observable.
+             * @param {string} typeName - Entity type name (full).
+             * @returns {Entity} Entity with observable properties. 
+             */
             proto.toEntity = function (result, typeName) {
-                /// <summary>
-                /// Creates an entity based on metadata information.
-                /// </summary>
-                /// <param name="result">Raw result to make entity (observable).</param>
-                /// <param name="typeName">Entity type name.</param>
                 if (result.$type && !typeName)
                     typeName = result.$type;
                 return this.dataService.toEntity(result, typeName);
             };
 
+            /** Fix scalar and plural navigations for entity from cache. */
             proto.fixNavigations = function (entity) {
-                /// <summary>
-                /// Fix scalar and plural navigations for entity from cache.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 if (!this.isInManager(entity))
                     throw helper.createError(i18N.entityNotBeingTracked, null, { entity: entity });
                 entityAttached(entity, true, true, this);
             };
 
+            /** Checks if given entity is being tracked by this manager. */
             proto.isInManager = function (entity) {
-                /// <summary>
-                /// Checks if given entity is being tracked by this manager.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 return entity.$tracker.manager == this;
             };
 
+            /**
+             * Flat relation to a single array. With this we can merge entities with complex navigations.
+             * @example
+             *  Lets say we have an Order with 3 OrderDetails and that OrderDetails have Supplier assigned,
+             *  with flatting this entity, we can merge Order, OrderDetails and Suppliers with one call.
+             * @param {Entity[]} entities - Entities to flat.
+             * @returns {Entity[]} All entities from all relations.
+             */
             proto.flatEntities = function (entities) {
-                /// <summary>
-                /// Flat relation to a single array. With this we can merge entities with complex navigations.
-                /// Example:
-                ///     Lets say we have an Order with 3 OrderDetails and that OrderDetails have Supplier assigned,
-                ///     with flatting this entity, we can merge Order, OrderDetails and Suppliers with one call.
-                /// </summary>
-                /// <param name="entities">Entities to float.</param>
                 var that = this;
                 var flatList = arguments[1] || [];
                 if (!Assert.isArray(entities)) entities = [entities];
@@ -9293,14 +8978,20 @@
                 return flatList;
             };
 
+            /** 
+             * Returns tracking info for given entity.
+             * @param {Entity} entity - The entity.
+             * @returns {EntityTracker} Entity tracking object.
+             */
             proto.entry = function (entity) {
-                /// <summary>
-                /// Returns tracking info for given entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
                 return entity.$tracker;
             };
 
+            /**
+             * Creates entity set for given type.
+             * @param {EntityType|string|Function} - Entity type.
+             * @returns {EntitySet}
+             */
             proto.createSet = function (type) {
                 if (!Assert.isInstanceOf(type, metadata.EntityType)) {
                     if (Assert.isFunction(type)) type = helper.getFuncName(type);
@@ -9309,11 +9000,17 @@
                 return new core.EntitySet(type, this);
             }
 
+            /**
+             * Finds entity set for given type name.
+             * @param {string|Function} - Entity type.
+             * @returns {EntitySet}
+             */
             proto.set = function (shortName) {
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
                 return this.entitySets && this.entitySets[shortName];
             }
 
+            /** Clears local cache, validation errors and resets change counter to 0.*/
             proto.clear = function () {
                 helper.forEach(this.entities.allEntities, function (e) {
                     e.$tracker.manager = null;
@@ -9324,6 +9021,7 @@
                 this.validationErrors = [];
             }
 
+            /** Initialize instance with provided arguments. */
             function initialize(args, instance) {
                 instance._readyCallbacks = [];
                 instance._readyPromises = [];
@@ -9436,6 +9134,7 @@
                 }
             }
 
+            /** Checks if manager is ready, if so calls callbacks. */
             function checkReady(instance) {
                 if (instance.isReady()) {
                     var cs = instance._readyCallbacks.slice(0);
@@ -9456,19 +9155,17 @@
                 }
             }
 
+            /**
+             * Merges entities to local cache.
+             * @param {Entity[]} newEntities - Entities to merge.
+             * @param {Entity[]} flatList - If entities were flatten before we re-use it, otherwise they will be flattened.
+             * @param {MergeStrategy} merge - Merge strategy option.
+             * @param {EntityState} state - Entity state to use while merging.
+             * @param {EntityManager} instance - Entity manager instance.
+             * @param {any} autoFixScalar - Automatically fix scalar navigations using foreign keys (fast).
+             * @param {any} autoFixPlural - Automatically fix plural navigations looking for foreign references (slow).
+             */
             function mergeEntities(newEntities, flatList, merge, state, instance, autoFixScalar, autoFixPlural) {
-                /// <summary>
-                /// Merges entities to cache by given merge strategy.
-                /// </summary>
-                /// <param name="newEntities">Entities to merge.</param>
-                /// <param name="flatList">Flatten entity list, includes all related entities and their relations etc..
-                /// optional-for performance improvements: usually entities are already flattened before this call, with this parameter we re-use that list.
-                /// </param>
-                /// <param name="merge">Merge strategy.</param>
-                /// <param name="state">Change merged entities' state to this.</param>
-                /// <param name="instance">Manager instance.</param>
-                /// <param name="autoFixScalar">When true all scalar navigations will be fixed after merge (optional, default value will be read from settings).</param>
-                /// <param name="autoFixPlural">When true all plural navigations will be fixed after merge (optional, default value will be read from settings).</param>
                 if (!state) state = enums.entityStates.Added;
                 else if (state === enums.entityStates.Detached) return;
 
@@ -9551,20 +9248,14 @@
                 });
             }
 
+            /** If given entity is not being tracked by this manager, throws an error. */
             function checkEntity(entity, instance) {
-                /// <summary>
-                /// If given entity is not being tracked by this manager, throws an error.
-                /// </summary>
                 if (!instance.isInManager(entity))
                     throw helper.createError(i18N.entityNotBeingTracked, { entity: entity, manager: instance });
             }
 
+            /** Changes entity's state. */
             function setEntityState(entity, state) {
-                /// <summary>
-                /// Change the state of the entity for merging.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="state">New state.</param>
                 if (state === enums.entityStates.Unchanged)
                     entity.$tracker.toUnchanged();
                 else if (state === enums.entityStates.Modified)
@@ -9576,12 +9267,8 @@
                 else throw helper.createError(i18N.mergeStateError, [state], { entity: entity, state: state });
             }
 
+            /** Overwrites oldEntity's all properties with newEntity property values. */
             function overwriteEntity(oldEntity, newEntity) {
-                /// <summary>
-                /// Overwrite the properties of existing entity.
-                /// </summary>
-                /// <param name="oldEntity">Existing entity.</param>
-                /// <param name="newEntity">Entity to use values when overwrite.</param>
                 var tracker = newEntity.$tracker;
                 // Overwrite all properties.
                 helper.forEach(tracker.entityType.dataProperties, function (dp) {
@@ -9589,13 +9276,8 @@
                 });
             }
 
+            /** Finds navigation and fixes navigation properties for given attached entity. */
             function entityAttached(entity, autoFixScalar, autoFixPlural, instance) {
-                /// <summary>
-                /// Finds navigation and fixes navigation properties for given attached entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="autoFixScalar">When true all scalar navigations will be fixed.</param>
-                /// <param name="autoFixPlural">When true all plural navigations will be fixed.</param>
                 if (autoFixScalar != true && autoFixPlural != true) return;
                 var tracker = entity.$tracker;
                 var type = tracker.entityType;
@@ -9651,10 +9333,8 @@
                 });
             }
 
+            /** If scalar navigation value is replaced with existing entity, fixes it. */
             function handleScalar(tracker, value, np, npName, autoFix, instance) {
-                /// <summary>
-                /// If scalar navigation value is replaced with existing entity, fixes it
-                /// </summary>
                 if (value) {
                     if (value.$tracker && value.$tracker.manager != instance) {
                         value = instance.getEntityByKey(value.$tracker.key, value.$tracker.entityType);
@@ -9666,10 +9346,8 @@
                     fixScalar(tracker, np, instance);
             }
 
+            /** If plural navigation items is replaced with existing entities, fixes them. */
             function handlePlural(array, instance) {
-                /// <summary>
-                /// If plural navigation items is replaced with existing entities, fixes them
-                /// </summary>
                 for (var i = array.length - 1; i >= 0; i--) {
                     var item = array[i];
                     if (item && item.$tracker && item.$tracker.manager != instance) {
@@ -9680,15 +9358,8 @@
                 }
             }
 
+            /** When a query result entity already exists in cache existing entity will be returned as result. This method fixes missing navigations. */
             function resultReplaced(result, existing, autoFixScalar, autoFixPlural, instance) {
-                /// <summary>
-                /// When a query result entity already exists in cache existing entity will be returned as result.
-                /// This method fixes missing navigations.
-                /// </summary>
-                /// <param name="result">Query result.</param>
-                /// <param name="existing">Cached entity.</param>
-                /// <param name="autoFixScalar">When true all scalar navigations will be fixed.</param>
-                /// <param name="autoFixPlural">When true all plural navigations will be fixed.</param>
                 var te = existing.$tracker;
                 if (te.entityState == enums.entityStates.Deleted) return;
 
@@ -9737,20 +9408,16 @@
                 });
             }
 
+            /** Fixes scalar navigation property. */
             function fixScalar(tracker, np, instance) {
-                /// <summary>
-                /// Fixes scalar navigation property
-                /// </summary>
                 var fk = tracker.foreignKey(np);
                 var found = instance.entities.getEntityByKey(fk, np.entityType);
                 if (found && found.$tracker.entityState == enums.entityStates.Deleted) found = null;
                 tracker.setValue(np.name, found);
             }
 
+            /** Fixes plural navigation property. */
             function fixPlural(entity, np, array, instance) {
-                /// <summary>
-                /// Fixes plural navigation property
-                /// </summary>
                 // get related items from entity container.
                 var relations = instance.entities.getRelations(entity, np);
                 if (relations)
@@ -9760,12 +9427,11 @@
                     });
             }
 
+            /** 
+             * Clears navigation properties of given entity.
+             * @param {boolean} preserveFK - When true, we can keep beetle from emptying related foreign key properties.
+             */
             function clearNavigations(entity, preserveFK) {
-                /// <summary>
-                /// Clears navigation properties of given entity.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="preserveFK">When true, we can keep beetle from emptying related foreign key properties.</param>
                 var tracker = entity.$tracker;
                 var type = tracker.entityType;
                 var nullValue = preserveFK ? new core.ValueNotifyWrapper(null, true) : null;
@@ -9780,13 +9446,8 @@
                 }
             }
 
+            /** Accept all changes made via this entity manager, remove deleted from cache, change state of Added and Modified to Unchanged. */
             function acceptSaves(changes, entities, instance) {
-                /// <summary>
-                /// Accept all changes made via this entity manager, remove deleted from cache, change state of Added and Modified to Unchanged.
-                /// </summary>
-                /// <param name="changes">Changed entities.</param>
-                /// <param name="entities">Entity container.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 helper.forEach(changes, function (entity) {
                     if (entity.$tracker.entityState == enums.entityStates.Deleted) {
                         entity.$tracker.toDetached();
@@ -9799,12 +9460,13 @@
                 });
             }
 
+            /**
+             * Merges old and new errors and make callback.
+             * @param {Entity} entity - The entity.
+             * @param {Object} changes - Validation error changes.
+             * @param {EntityManager} instance - Entity manager instance.
+             */
             function mergeErrors(entity, changes, instance) {
-                /// <summary>
-                /// Merges old and new errors and make callback.
-                /// </summary>
-                /// <param name="changes">Validation error changes.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 if (changes.removed.length > 0)
                     for (var i = changes.removed.length - 1; i >= 0; i--)
                         instance.validationErrors.splice(helper.indexOf(instance.validationErrors, changes.removed[i]), 1);
@@ -9814,12 +9476,8 @@
                     instance.validationErrorsChanged.notify({ errors: instance.validationErrors, added: changes.added, removed: changes.removed });
             }
 
+            /** Subscribe to entity events. */
             function subscribeToEntity(entity, instance) {
-                /// <summary>
-                /// Subscribe to entity events.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 entity.$tracker.entityStateChanged.subscribe(function (change) {
                     var oldCount = instance.pendingChangeCount;
                     if (change.newChanged === true) instance.pendingChangeCount++;
@@ -9835,12 +9493,8 @@
                 });
             }
 
+            /** Unsubscribe from entity events. */
             function unsubscribeFromEntity(entity, instance) {
-                /// <summary>
-                /// Unsubscribe from entity events.
-                /// </summary>
-                /// <param name="entity">The entity.</param>
-                /// <param name="instance">Entity manager instance.</param>
                 // unsubscribe from entity events.
                 entity.$tracker.entityStateChanged.unsubscribe(instance.entityStateChanged.notify);
                 entity.$tracker.validationErrorsChanged.unsubscribe(instance.validationErrorsChanged.notify);
@@ -9850,57 +9504,45 @@
                 instance.validationErrorsChanged.notify({ errors: instance.validationErrors, removed: errors, added: [] });
             }
 
+            /** Notifies subscribers about executing query. */
             function notifyExecuting(manager, query, options) {
-                /// <summary>
-                /// Notifies subscribers about executing query.
-                /// </summary>
                 var obj = { manager: manager, query: query, options: options };
                 manager.queryExecuting.notify(obj);
                 events.queryExecuting.notify(obj);
                 return obj;
             }
 
+            /** Notifies subscribers about executed query. */
             function notifyExecuted(manager, query, options, result) {
-                /// <summary>
-                /// Notifies subscribers about executed query.
-                /// </summary>
                 var obj = { manager: manager, query: query, options: options, result: result };
                 manager.queryExecuted.notify(obj);
                 events.queryExecuted.notify(obj);
                 return obj.result;
             }
 
+            /** Notifies subscribers about save operation. */
             function notifySaving(manager, changes, pkg, options) {
-                /// <summary>
-                /// Notifies subscribers about save operation.
-                /// </summary>
                 var obj = { manager: manager, changes: changes, savePackage: pkg, options: options };
                 manager.saving.notify(obj);
                 events.saving.notify(obj);
                 return obj.options;
             }
 
+            /** Notifies subscribers about save completion. */
             function notifySaved(manager, changes, pkg, options) {
-                /// <summary>
-                /// Notifies subscribers about save completion.
-                /// </summary>
                 var obj = { manager: manager, changes: changes, savePackage: pkg, options: options };
                 manager.saved.notify(obj);
                 events.saved.notify(obj);
             }
 
+            /** Called when a operation is completed succesfully. */
             function onSuccess(successCallback, promiseProvider, deferred, data) {
-                /// <summary>
-                /// Called when a operation is completed succesfully.
-                /// </summary>
                 if (successCallback) successCallback(data);
                 if (promiseProvider) promiseProvider.resolve(deferred, data);
             }
 
+            /** Called when a operation is failed. */
             function onError(errorCallback, promiseProvider, deferred, error, manager) {
-                /// <summary>
-                /// Called when a operation is failed.
-                /// </summary>
                 error.manager = manager;
                 if (errorCallback) errorCallback(error);
                 if (promiseProvider) promiseProvider.reject(deferred, error);
@@ -9910,17 +9552,23 @@
 
             return ctor;
         })(),
-        EntityBase: (function () {
-            return function (type, manager, initialValues) {
-                if (initialValues)
-                    helper.extend(this, initialValues);
+        /**
+         * Base entity class.
+         * @constructor
+         * @param {EntityType} type - Entity type object.
+         * @param {EntityManager=} manager - Entity manager.
+         * @param {Object=} initialValues - Entity's initial values.
+         * @returns {Entity} 
+         */
+        EntityBase: function (type, manager, initialValues) {
+            if (initialValues)
+                helper.extend(this, initialValues);
 
-                type.createEntity(this);
+            type.createEntity(this);
 
-                if (manager != null)
-                    manager.addEntity(this);
-            };
-        })()
+            if (manager != null)
+                manager.addEntity(this);
+        }
     };
 
     /** 
@@ -9930,23 +9578,29 @@
     var services = (function () {
         var expose = {};
 
+        /**
+         * Beetle Service class.
+         * @class
+         */
         expose.BeetleService = (function () {
-            // Dependencies are injected through constructor.
+            /**
+             * @constructor
+             * @param {any} uri - Service URI.
+             * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
+             * @param {Object} injections - Injection object to change behaviour of the service.
+             */
             var ctor = function (uri, metadataPrm, injections) {
-                /// <summary>
-                /// Beetle Service class.
-                /// </summary>
-                /// <param name="uri">Service URI.</param>
-                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
-                /// <param name="injections">
-                /// Injection object to change behavior of the service, can include these properties: ajaxProvider, serializationService.
-                ///  When not given, defaults will be used.
-                /// </param>
                 baseTypes.DataServiceBase.call(this, uri, metadataPrm, injections);
             };
             helper.inherit(ctor, baseTypes.DataServiceBase);
             var proto = ctor.prototype;
 
+            /**
+             * Fetch metadata from server.
+             * @param {Object} options - Fetch metadata options (async: boolean).
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.fetchMetadata = function (options, successCallback, errorCallback) {
                 var retVal = null;
                 var that = this;
@@ -9969,6 +9623,14 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * When there is no metadata available services may be able to create entities asynchronously (server side must be able to support this).
+             * @param {string} typeName - Type name to create.
+             * @param {Object} initialValues - Entity initial values.
+             * @param {Object=} options - Options (makeObservable: boolean, async: boolean).
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.createEntityAsync = function (typeName, initialValues, options, successCallback, errorCallback) {
                 if (Assert.isFunction(typeName)) typeName = helper.getFuncName(typeName);
                 var that = this;
@@ -10003,11 +9665,26 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * Executes given query.
+             * @param {EntityQuery} query 
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp = this.toBeetleQueryParams(query, options && options.varContext);
                 return this.executeQueryParams(query.resource, qp, options, successCallback, errorCallback);
             };
 
+            /**
+             * Executes given query parameters.
+             * @param {string} resource - Server resource to query.
+             * @param {EntityQuery} queryParams - The query parameters.
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
                 options = options || {};
                 var makeObservable = options.makeObservable;
@@ -10079,6 +9756,13 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * Saves all changes using AjaxProvider.
+             * @param {SavePackage} savePackage - Save package. When provided, this package will be used (no package will be created).
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
+             * @returns {Promise} Returns promise if supported.
+             */
             proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
                 var that = this;
                 options = options || {};
@@ -10122,13 +9806,13 @@
                 return async ? call : retVal;
             };
 
+            /**
+             * Fix the relations (like $ref links for circular references) between loaded raw data.
+             * @param {Object[]} results - Raw entity objects.
+             * @param {boolean} makeObservable - When not false entities will be converted to observables.
+             * @param {boolean} handleUnmappedProperties - When true, all values will be handled by their value (i.e. some type changes, string->Date).
+             */
             proto.fixResults = function (results, makeObservable, handleUnmappedProperties) {
-                /// <summary>
-                /// Fix the relations between loaded raw data.
-                /// </summary>
-                /// <param name="results">Raw data.</param>
-                /// <param name="makeObservable">When not false entities will be converted to observables.</param>
-                /// <param name="handleUnmappedProperties">When null, value is read from settings. When true, all values will be handled (types changed) by their value.</param>
                 var that = this;
                 var flatList = arguments[3] || [];
                 if (!Assert.isArray(results)) results = [results];
@@ -10148,11 +9832,8 @@
                 });
                 return flatList;
 
+                /** Create navigation fixes for single raw result. */
                 function fixSingle(result) {
-                    /// <summary>
-                    /// Create navigation fixes for single raw result.
-                    /// </summary>
-                    /// <param name="result">Single raw result.</param>
                     var id = result.$id;
                     delete result.$id;
 
@@ -10184,10 +9865,12 @@
                 }
             };
 
+            /** 
+             * Creates hash integer for given string.
+             * This hash will be compared to server-side generated hash to detect manipulations.
+             * Just to avoid query string hackers.
+             */
             function createHash(str) {
-                /// <summary>
-                /// creates hash integer for given string
-                /// </summary>
                 var hash = 0, i, chr, len;
                 if (str.length == 0) return hash;
                 for (i = 0, len = str.length; i < len; i++) {
@@ -10201,24 +9884,35 @@
             return ctor;
         })();
 
+        /**
+         * OData Service class.
+         * Derives from Beetle Service, so supports beetle queries.
+         * OData service tries to use OData query structure but can fallback to beetle way.
+         * @class
+         */
         expose.ODataService = (function () {
-            // Dependencies are injected through constructor.
+
+            /**
+             * @constructor
+             * @param {any} uri - Service URI.
+             * @param {MetadataManager|string|boolean} metadataPrm - [Metadata Manager] or [Metadata string] or [loadMetadata: when false no metadata will be used]
+             * @param {Object} injections - Injection object to change behaviour of the service.
+             */
             var ctor = function (uri, metadataPrm, injections) {
-                /// <summary>
-                /// Web API Service class.
-                /// </summary>
-                /// <param name="uri">Service URI.</param>
-                /// <param name="metadataPrm">Metadata info, can be metadataManager instance, metadata string, true-false (false means do not use any metadata).</param>
-                /// <param name="injections">
-                /// Injection object to change behavior of the service, can include these properties: ajaxProvider and serializationService. 
-                ///  When not given, defaults will be used.
-                /// </param>
                 services.BeetleService.call(this, uri, metadataPrm, injections);
                 this.useBeetleQueryStrings = false;
             };
             helper.inherit(ctor, expose.BeetleService);
             var proto = ctor.prototype;
 
+            /**
+             * Executes given query.
+             * Try to use OData, but might fallback to beetle way.
+             * @param {EntityQuery} query 
+             * @param {QueryOptions} options - Query options.
+             * @param {Function} successCallback - Function to call after operation succeeded.
+             * @param {Function} errorCallback - Function to call when operation fails.
+             */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp;
                 options = options || {};
@@ -10378,7 +10072,7 @@
     };
 
     /** 
-     * Core settings.
+     * Beetle settings.
      * @namespace
      */
     var settings = (function () {
@@ -10457,13 +10151,13 @@
         /** default timeout for AJAX calls. this value is used when not given with options argument. */
         expose.ajaxTimeout = null;
         /** 
-         * when true, while creating raw objects for entities, for modified only changed properties, for deleted only key properties will be used.
+         * when true, while creating save package, for modified only changed and key properties, for deleted only key properties will be used.
          * entities will be created with only sent properties filled, other properties will have default values, please use carefully.
          */
         expose.minimizePackage = false;
 
         /** 
-         * Gets observable provider instance.
+         * Gets default observable provider instance.
          * @returns {baseTypes.ObservableProviderBase} Current observable provider instance.
          */
         expose.getObservableProvider = function () {
@@ -10471,7 +10165,7 @@
         };
 
         /** 
-         * Sets observable provider instance. All generated entities after this call will use given observable provider instance.
+         * Sets default observable provider instance. Will be used when another instance is not injected.
          * @param {ObservableProviderBase} provider - Observable provider instance.
          */
         expose.setObservableProvider = function (provider) {
@@ -10479,7 +10173,7 @@
         };
 
         /** 
-         * Gets static promise provider instance.
+         * Gets default promise provider instance.
          * @returns {baseTypes.PromiseProviderBase} Current promise provider instance.
          */
         expose.getPromiseProvider = function () {
@@ -10487,7 +10181,7 @@
         };
 
         /** 
-         * Sets static promise provider instance. All async operations after this call will use given promise provider instance.
+         * Sets default promise provider instance. Will be used when another instance is not injected.
          * @param {PromiseProviderBase} provider - Promise provider instance.
          */
         expose.setPromiseProvider = function (provider) {
@@ -10495,7 +10189,7 @@
         };
 
         /** 
-         * Gets static ajax provider instance.
+         * Gets default ajax provider instance.
          * @returns {baseTypes.AjaxProviderBase} Current ajax provider instance.
          */
         expose.getAjaxProvider = function () {
@@ -10503,7 +10197,7 @@
         };
 
         /** 
-         * Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
+         * Sets default ajax provider instance. Will be used when another instance is not injected.
          * @param {AjaxProviderBase} provider - Ajax provider instance.
          */
         expose.setAjaxProvider = function (provider) {
@@ -10511,7 +10205,7 @@
         };
 
         /** 
-         * Gets static serialization service instance.
+         * Gets default serialization service instance.
          * @returns {baseTypes.SerializationServiceBase} Current serialization service instance.
          */
         expose.getSerializationService = function () {
@@ -10519,7 +10213,7 @@
         };
 
         /**
-         * Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
+         * Sets default serialization service instance. Will be used when another instance is not injected.
          * @param {SerializationServiceBase} service - Serialization service instance.
          */
         expose.setSerializationService = function (service) {
@@ -10676,7 +10370,7 @@
         requiredError: '%0 property is required.',
         sameKeyExists: 'There is already an entity with same key in the manager.',
         sameKeyOnDifferentTypesError: 'Two different types of entities cannot have same keys when they are from same inheritance root (%0, %1).',
-        settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behavior).',
+        settingArrayNotAllowed: 'Setting array property is not allowed, you may change this via beetle.settings.setArraySetBehaviour(behaviour).',
         stringLengthError: '%0 property length must be between %1 and %2.',
         syncNotSupported: '%0 does not support sync ajax calls.',
         twoEndCascadeDeleteNotAllowed: 'Two-end cascade deletes are not supported.',

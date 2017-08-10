@@ -35,6 +35,9 @@
     <Content Include="Beetlejs.nuspec" />
     <Content Include="bower.json" />
     <Content Include="package.json" />
+    <Content Include="tsconfig.json">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
@@ -44,6 +47,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="lib\beetle-queryExtensions.d.ts" />
     <TypeScriptCompile Include="lib\beetle.d.ts" />
+    <TypeScriptCompile Include="test\basicTests.ts" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="lib\beetle-queryExtensions.js" />

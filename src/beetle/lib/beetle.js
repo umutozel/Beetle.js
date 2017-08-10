@@ -2384,7 +2384,7 @@
             };
 
             /**
-             * Sets options to be used at execution
+             * Sets options to be used at execution.
              * @param {queryOptions} options - Query options. Multiple call to this function will override previous settings.
              */
             proto.withOptions = function (options) {
@@ -2541,17 +2541,17 @@
 
             /**
              * Ajax operation function.
-             * @uri {string} - Uri to make request.
-             * @type {string} - Request type (POST, GET..)
-             * @dataType {string} - Request data type (xml, json..)
-             * @contentType {string} - Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)
-             * @data {any} - Request data.
-             * @async {boolean} - If set to false, request will be made synchronously.
-             * @timeout {number} - AJAX call timeout value. if call won't be completed after given time, exception will be thrown.
-             * @extra {Object} - Implementor specific arguments.
-             * @headers {Object} - custom HTTP headers.
-             * @successCallback {successCallback} - Function to call after operation succeeded.
-             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @param {string} uri - Uri to make request.
+             * @param {string} type - Request type (POST, GET..)
+             * @param {string} dataType - Request data type (xml, json..)
+             * @param {string} contentType - Request content type (application/x-www-form-urlencoded; charset=UTF-8, application/json..)
+             * @param {any} data - Request data.
+             * @param {boolean} async - If set to false, request will be made synchronously.
+             * @param {number} timeout - AJAX call timeout value. if call won't be completed after given time, exception will be thrown.
+             * @param {Object} extra - Implementor specific arguments.
+             * @param {Object} headers - Custom HTTP headers.
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
              */
             proto.doAjax = function (uri, method, dataType, contentType, data, async, timeout, extra, headers, successCallback, errorCallback) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
@@ -2635,7 +2635,7 @@
             };
             /**
              * Gets promise for deferred object.
-             * @param {Object} deferred 
+             * @param {Object} deferred - Deferred object which can be resolved or rejected.
              * @returns {Promise} Returns a promise.
              */
             proto.getPromise = function (deferred) {
@@ -2652,7 +2652,7 @@
             /**
              * Rejects given promise for failed operation.
              * @param {Object} deferred - Deferred object.
-             * @param {Error} error - Error to pass failed callback.
+             * @param {Error} error - Error to pass to failed callback.
              */
             proto.reject = function (deferred, error) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'reject']);
@@ -3721,7 +3721,7 @@
     };
 
     /** 
-     * Represents a primitive value member.
+     * Metadata types.
      * @namespace
      */
     var metadata = {
@@ -4155,7 +4155,7 @@
             return ctor;
         })(),
         /**
-         * .
+         * Metadata container.
          * @class
          */
         MetadataManager: (function () {
@@ -8416,7 +8416,7 @@
                 return this.entities.getEntityByKey(key, t);
             };
 
-            /** Marks entity as deleted. */
+            /** Marks entity as deleted and clear all navigations. */
             proto.deleteEntity = function (entity) {
                 // check if given entity is being tracked by this manager.
                 checkEntity(entity, this);
@@ -8737,7 +8737,7 @@
             };
 
             /** 
-             * Gets changes made in this manager's cache
+             * Gets changes made in this manager's cache.
              * @returns {Entity[]}
              */
             proto.getChanges = function () {
@@ -8747,8 +8747,8 @@
             /**
              * Saves all changes made in this manager to server via Data Service instance.
              * @param {SaveOptions} options - Options to modify saving behaviour.
-             * @successCallback {successCallback} - Function to call after operation succeeded.
-             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
              * @returns {Promise} Returns promise if supported.
              */
             proto.saveChanges = function (options, successCallback, errorCallback) {
@@ -8758,8 +8758,8 @@
             /**
              * Saves all changes made in this manager to server via Data Service instance.
              * @param {SavePackage} savePackage - Save package. When provided, this package will be used (no package will be created).
-             * @successCallback {successCallback} - Function to call after operation succeeded.
-             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
              * @returns {Promise} Returns promise if supported.
              */
             proto.savePackage = function (savePackage, options, successCallback, errorCallback) {
@@ -9759,8 +9759,8 @@
             /**
              * Saves all changes using AjaxProvider.
              * @param {SavePackage} savePackage - Save package. When provided, this package will be used (no package will be created).
-             * @successCallback {successCallback} - Function to call after operation succeeded.
-             * @errorCallback {errorCallback} - Function to call when operation fails.
+             * @param {successCallback} successCallback - Function to call after operation succeeded.
+             * @param {errorCallback} errorCallback - Function to call when operation fails.
              * @returns {Promise} Returns promise if supported.
              */
             proto.saveChanges = function (savePackage, options, successCallback, errorCallback) {
@@ -9807,7 +9807,7 @@
             };
 
             /**
-             * Fix the relations between loaded raw data.
+             * Fix the relations (like $ref links for circular references) between loaded raw data.
              * @param {Object[]} results - Raw entity objects.
              * @param {boolean} makeObservable - When not false entities will be converted to observables.
              * @param {boolean} handleUnmappedProperties - When true, all values will be handled by their value (i.e. some type changes, string->Date).
@@ -10072,7 +10072,7 @@
     };
 
     /** 
-     * Core settings.
+     * Beetle settings.
      * @namespace
      */
     var settings = (function () {
@@ -10157,7 +10157,7 @@
         expose.minimizePackage = false;
 
         /** 
-         * Gets observable provider instance.
+         * Gets default observable provider instance.
          * @returns {baseTypes.ObservableProviderBase} Current observable provider instance.
          */
         expose.getObservableProvider = function () {
@@ -10165,7 +10165,7 @@
         };
 
         /** 
-         * Sets observable provider instance. All generated entities after this call will use given observable provider instance.
+         * Sets default observable provider instance. Will be used when another instance is not injected.
          * @param {ObservableProviderBase} provider - Observable provider instance.
          */
         expose.setObservableProvider = function (provider) {
@@ -10173,7 +10173,7 @@
         };
 
         /** 
-         * Gets static promise provider instance.
+         * Gets default promise provider instance.
          * @returns {baseTypes.PromiseProviderBase} Current promise provider instance.
          */
         expose.getPromiseProvider = function () {
@@ -10181,7 +10181,7 @@
         };
 
         /** 
-         * Sets static promise provider instance. All async operations after this call will use given promise provider instance.
+         * Sets default promise provider instance. Will be used when another instance is not injected.
          * @param {PromiseProviderBase} provider - Promise provider instance.
          */
         expose.setPromiseProvider = function (provider) {
@@ -10189,7 +10189,7 @@
         };
 
         /** 
-         * Gets static ajax provider instance.
+         * Gets default ajax provider instance.
          * @returns {baseTypes.AjaxProviderBase} Current ajax provider instance.
          */
         expose.getAjaxProvider = function () {
@@ -10197,7 +10197,7 @@
         };
 
         /** 
-         * Sets static ajax provider instance. All ajax operations after this call will use given ajax provider instance.
+         * Sets default ajax provider instance. Will be used when another instance is not injected.
          * @param {AjaxProviderBase} provider - Ajax provider instance.
          */
         expose.setAjaxProvider = function (provider) {
@@ -10205,7 +10205,7 @@
         };
 
         /** 
-         * Gets static serialization service instance.
+         * Gets default serialization service instance.
          * @returns {baseTypes.SerializationServiceBase} Current serialization service instance.
          */
         expose.getSerializationService = function () {
@@ -10213,7 +10213,7 @@
         };
 
         /**
-         * Sets static serialization service instance. All serialization operations after this call will use given serialization service instance.
+         * Sets default serialization service instance. Will be used when another instance is not injected.
          * @param {SerializationServiceBase} service - Serialization service instance.
          */
         expose.setSerializationService = function (service) {

@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /.axoCover
 /src/beetle/lib/out
+/src/beetle/lib/doc
