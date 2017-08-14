@@ -37,7 +37,7 @@ namespace Beetle.Server {
 
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
-            if (typeInfo.BaseType != null) {
+            if (typeInfo.BaseType != null && typeInfo.BaseType != typeof(object)) {
                 if (typeInfo.BaseType.GetTypeInfo().GetCustomAttribute<NotMappedAttribute>() != null) {
                     properties = properties.Union(typeInfo.BaseType.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
                 }
