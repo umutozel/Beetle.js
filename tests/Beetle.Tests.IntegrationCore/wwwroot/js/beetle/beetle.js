@@ -9162,8 +9162,8 @@
              * @param {MergeStrategy} merge - Merge strategy option.
              * @param {EntityState} state - Entity state to use while merging.
              * @param {EntityManager} instance - Entity manager instance.
-             * @param {any} autoFixScalar - Automatically fix scalar navigations using foreign keys (fast).
-             * @param {any} autoFixPlural - Automatically fix plural navigations looking for foreign references (slow).
+             * @param {boolean} autoFixScalar - Automatically fix scalar navigations using foreign keys (fast).
+             * @param {boolean} autoFixPlural - Automatically fix plural navigations looking for foreign references (slow).
              */
             function mergeEntities(newEntities, flatList, merge, state, instance, autoFixScalar, autoFixPlural) {
                 if (!state) state = enums.entityStates.Added;
@@ -9338,9 +9338,8 @@
                 if (value) {
                     if (value.$tracker && value.$tracker.manager != instance) {
                         value = instance.getEntityByKey(value.$tracker.key, value.$tracker.entityType);
-                        tracker.setValue(npName, value);
                     }
-                    if (np) helper.setForeignKeys(tracker.entity, np, value);
+                    tracker.setValue(npName, value);
                 }
                 else if (np && autoFix)
                     fixScalar(tracker, np, instance);
@@ -9351,10 +9350,10 @@
                 for (var i = array.length - 1; i >= 0; i--) {
                     var item = array[i];
                     if (item && item.$tracker && item.$tracker.manager != instance) {
-                        var newItem = instance.getEntityByKey(item.$tracker.key, item.$tracker.entityType);
-                        if (!newItem) array.splice(i, 1);
-                        else array.splice(i, 1, newItem);
+                        item = instance.getEntityByKey(item.$tracker.key, item.$tracker.entityType);
                     }
+                    if (!item) array.splice(i, 1);
+                    else array.splice(i, 1, item);
                 }
             }
 
@@ -9374,34 +9373,28 @@
                         if (!ve) {
                             if (autoFixScalar == true)
                                 fixScalar(te, np, instance);
-                            else if (!((autoFixScalar === true && np.inverse && np.inverse.isScalar) || (autoFixPlural === true && np.inverse && !np.inverse.isScalar))) {
+                            else if (!((np.inverse && np.inverse.isScalar) || (autoFixPlural === true && np.inverse && !np.inverse.isScalar))) {
                                 // when auto fix is not enabled, try to get items from query result
                                 var fkr = tr.foreignKey(np);
                                 var fke = te.foreignKey(np);
-                                // copy scalar values from result to existing entity
-                                if (fkr == fke && vr != null && instance.isInManager(vr)) {
-                                    var inverse = np.inverse;
-                                    if (inverse) {
-                                        if (inverse.isScalar)
-                                            vr.$tracker.setValue(inverse.name, existing);
-                                        else {
-                                            var iv = vr.$tracker.getValue(inverse.name);
-                                            var index = helper.indexOf(iv, result);
-                                            if (index >= 0)
-                                                iv.splice(index, 1, existing);
-                                        }
-                                    } else te.setValue(np.name, vr);
+                                if (fkr == fke && vr != null) {
+                                    handleScalar(te, vr, np, np.name, false, instance);
                                 }
                             }
                         }
-                    } else {
+                    }
+                    else {
                         if (autoFixPlural)
                             fixPlural(existing, np, ve, instance);
                         else if (!(autoFixScalar === true && np.inverse)) {
                             // copy plural values from result to existing entity
                             helper.forEach(vr, function (vri) {
-                                if (instance.isInManager(vri) && !helper.findInArray(ve, vri))
+                                if (!instance.isInManager(vri)) {
+                                    vri = instance.getEntityByKey(vri.$tracker.key, vri.$tracker.entityType);
+                                }
+                                if (vri && !helper.findInArray(ve, vri)) {
                                     ve.push(vri);
+                                }
                             });
                         }
                     }
