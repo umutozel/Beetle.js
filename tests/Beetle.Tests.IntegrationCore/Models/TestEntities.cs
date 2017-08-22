@@ -5,7 +5,6 @@ namespace Beetle.Tests.IntegrationCore.Models {
     public class TestEntities : DbContext {
 
         public TestEntities(DbContextOptions options) : base(options) {
-            DatabaseHelper.SeedDatabase(this);
         }
 
         public DbSet<Entity> Entities { get; set; }

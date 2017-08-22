@@ -27,7 +27,7 @@ namespace Beetle.Tests.IntegrationCore {
             // Add framework services.
             services.AddMvc();
 
-            services.AddDbContext<TestEntities>(o => o.UseInMemoryDatabase(), ServiceLifetime.Transient);
+            services.AddDbContext<TestEntities>(o => o.UseSqlite("Data Source=test.db"), ServiceLifetime.Transient);
             services.AddTransient<EFContextHandler<TestEntities>>();
         }
 
@@ -47,6 +47,9 @@ namespace Beetle.Tests.IntegrationCore {
             app.UseStaticFiles();
 
             app.UseMvc(routes => routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}"));
+
+            var context = app.ApplicationServices.GetService<TestEntities>();
+            context.Database.EnsureCreated();
         }
     }
 }

@@ -204,6 +204,19 @@ function handleFail(error) {
     start();
 }
 
+function seed(serviceUri) {
+    var deferred = Q.defer();
+
+    $.get(serviceUri + '/Seed',
+        function (data, textStatus, xhr) {
+            deferred.resolve(
+                "Seed svc returned '" + xhr.status + "' with message: " + data);
+        })
+        .error(function (xhr, textStatus, errorThrown) { deferred.reject(errorThrown); });
+
+    return deferred.promise;
+}
+
 beetle.settings.registerMetadataTypes = true;
 beetle.events.saving.subscribe(function (args) {
     args.options.headers = args.options.headers || {};
@@ -214,6 +227,16 @@ var EntityManager = beetle.EntityManager;
 var entityStates = beetle.entityStates;
 
 module('basic tests');
+
+test('seed the test db', 1, function () {
+    stop();
+    seed(service.uri)
+        .then(function (msg) {
+            ok(0 < msg.indexOf('seed'), msg);
+        })
+        .fail(handleFail)
+        .fin(start);
+});
 
 test('get all NamedEntities', 1, function () {
     var manager = new EntityManager(service);

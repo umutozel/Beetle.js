@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.2" />
   </ItemGroup>
@@ -45,6 +46,7 @@
     <None Include="..\..\src\beetle\lib\*.*">
       <Link>wwwroot\js\beetle\%(FileName)%(Extension)</Link>
     </None>
+    <Content Remove="wwwroot/js\_Chutzpah.b66ac6a98d745d89b5a8c272819ed9b27c4a28d7.test.html" />
     <None Include="Views\Home\Index.cshtml" />
     <None Include="wwwroot\js\qunit\qunit.d.ts" />
   </ItemGroup>

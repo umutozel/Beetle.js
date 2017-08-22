@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Beetle.Tests.IntegrationCore.Controllers {
     using Server;
@@ -75,6 +76,7 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
             int shortId = Convert.ToInt32(prms.shortId.ToString());
             string personName = Convert.ToString(prms.person.Name).ToString();
             var ids = ((IEnumerable)prms.ids).OfType<object>().Select(x => Convert.ToInt32(x.ToString()));
+            Context.NamedEntities.Include("");
             return Context.Entities.OfType<NamedEntity>()
                 .Where(ne => ne.ShortId != shortId)
                 .Where(ne => ne.Name != personName)
