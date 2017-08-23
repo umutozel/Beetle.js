@@ -30,17 +30,17 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
 
         [HttpGet]
         public IQueryable<NamedEntity> NamedEntities() {
-            return Context.Entities.OfType<NamedEntity>();
+            return Context.NamedEntities;
         }
 
         [HttpGet]
         public IQueryable<Company> Companies() {
-            return Context.Entities.OfType<Company>();
+            return Context.Companies;
         }
 
         [HttpGet]
         public IQueryable<Address> Addresses() {
-            return Context.Entities.OfType<Address>();
+            return Context.Addresses;
         }
 
         [HttpGet]

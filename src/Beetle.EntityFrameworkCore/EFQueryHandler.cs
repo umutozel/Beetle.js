@@ -23,7 +23,7 @@ namespace Beetle.EntityFrameworkCore {
 
             var genMethod = _includeMethod.MakeGenericMethod(query.ElementType);
             expand.Split(',').ToList()
-                .ForEach(e => { query = (IQueryable)genMethod.Invoke(query, new object[] { e.Trim() }); });
+                .ForEach(e => { query = (IQueryable)genMethod.Invoke(null, new object[] { query, e.Trim() }); });
             return query;
         }
 

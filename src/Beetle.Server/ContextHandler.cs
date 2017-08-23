@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace Beetle.Server {
     using Interface;
     using Meta;
-    using Properties;
 
     public abstract class ContextHandler<TContext> : ContextHandler, IContextHandler<TContext> {
 
