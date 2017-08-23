@@ -13,6 +13,7 @@ namespace Beetle.EntityFramework {
     using Meta;
     using Server;
     using Properties;
+    using Beetle.Server.Interface;
 
     public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
         // ReSharper disable StaticMemberInGenericType
@@ -35,6 +36,8 @@ namespace Beetle.EntityFramework {
 
         public EFContextHandler(TContext context) : base(context) {
         }
+
+        public override IQueryHandler<IQueryable> QueryableHandler => EFQueryHandler.Instance;
 
         protected ItemCollection ItemCollection {
             get {

@@ -14,8 +14,8 @@ namespace Beetle.EntityFrameworkCore {
 
         static EFQueryHandler() {
             var queryExtensionsType = typeof(EntityFrameworkQueryableExtensions);
-            _includeMethod = queryExtensionsType.GetMethods()
-                .First(m => m.Name == "Include" && m.GetParameters().Last().GetType() == typeof(string));
+            _includeMethod = queryExtensionsType.GetRuntimeMethods()
+                .First(m => m.Name == "Include" && m.GetParameters().Last().ParameterType == typeof(string));
         }
 
         public override IQueryable Include(IQueryable query, string expand) {

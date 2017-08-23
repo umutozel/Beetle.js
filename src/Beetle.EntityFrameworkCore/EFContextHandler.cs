@@ -10,6 +10,7 @@ using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
 namespace Beetle.EntityFrameworkCore {
     using Meta;
     using Server;
+    using Server.Interface;
 
     public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
         // ReSharper disable StaticMemberInGenericType
@@ -25,6 +26,8 @@ namespace Beetle.EntityFrameworkCore {
 
         public EFContextHandler(TContext context) : base(context) {
         }
+
+        public override IQueryHandler<IQueryable> QueryableHandler => EFQueryHandler.Instance;
 
         public bool ValidateOnSave { get; set; } = true;
 
