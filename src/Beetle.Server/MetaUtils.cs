@@ -401,7 +401,7 @@ namespace Beetle.Server {
             var names = Enum.GetNames(enumType);
             foreach (var name in names) {
                 var member = enumType.GetField(name);
-                var value = (int)Enum.Parse(enumType, name);
+                var value = Convert.ToInt32(Enum.Parse(enumType, name));
 
                 GetDisplayInfo(member, out string resourceName, out Func<string> displayNameGetter);
 

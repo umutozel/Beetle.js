@@ -10,7 +10,7 @@ namespace Beetle.Tests.IntegrationCore.Models {
 
         public int Id { get; set; }
         public string OrderNo { get; set; }
-        public decimal Price { get; set; }
+        public double Price { get; set; }
 
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
     }

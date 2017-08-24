@@ -586,7 +586,7 @@ test('use lesser', 1, function () {
 
 test('use substringOf', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntityTypes').where('substringof("e_2", Name)');
+    var query = manager.createQuery('NamedEntityTypes').where('substringof("E_2", Name)');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)

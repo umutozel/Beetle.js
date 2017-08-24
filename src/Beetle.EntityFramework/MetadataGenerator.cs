@@ -222,8 +222,8 @@ namespace Beetle.EntityFramework {
                     if (er.ComplexProperties != null) {
                         foreach (var p in er.ComplexProperties) {
                             MetaUtils.GetDisplayInfo(er.ClrType, p.Key.Name, 
-                                                        out string resourceName, 
-                                                        out Func<string> displayNameGetter);
+                                                     out string resourceName, 
+                                                     out Func<string> displayNameGetter);
 
                             var cp = new ComplexProperty(p.Key.Name, displayNameGetter) {
                                 TypeName = p.Key.TypeUsage.EdmType.Name,
@@ -244,7 +244,7 @@ namespace Beetle.EntityFramework {
                     var p = sp.Value;
                     var clrType = UnderlyingClrType(p.TypeUsage.EdmType);
                     MetaUtils.GetDisplayInfo(er.ClrType, p.Name, 
-                                                out string resourceName, out Func<string> displayNameGetter);
+                                             out string resourceName, out Func<string> displayNameGetter);
 
                     var dp = new DataProperty(p.Name, displayNameGetter) {
                         ColumnName = sp.Key,

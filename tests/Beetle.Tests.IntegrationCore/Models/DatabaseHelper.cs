@@ -123,10 +123,10 @@ namespace Beetle.Tests.IntegrationCore.Models {
             return c;
         }
 
-        public static Order CreateOrder(decimal? price = null) {
+        public static Order CreateOrder(double? price = null) {
             var o = new Order();
             o.OrderNo = "OrderNo_" + _random.Next(1, 100);
-            o.Price = price ?? (decimal)(_random.Next(10000 - 42) + 42);
+            o.Price = price ?? (_random.Next(10000 - 42) + 42);
             o.OrderDetails.Add(CreateOrderDetailWithoutProductNo());
             o.OrderDetails.Add(CreateOrderDetail());
             return o;
