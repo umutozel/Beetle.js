@@ -1414,14 +1414,14 @@ test('delete an entity', 1, function () {
 
     function querySucceeded(neResult) {
         var ne = neResult[0];
-        var shortId = ne.$tracker.getValue('ShortId');
+        var id = ne.$tracker.getValue('Id');
         manager.deleteEntity(ne);
         manager.saveChanges()
             .then(saveSucceeded)
             .fail(handleFail);
 
         function saveSucceeded() {
-            manager.executeQuery(manager.createQuery('NamedEntities').where('ShortId == ' + shortId))
+            manager.executeQuery(manager.createQuery('NamedEntities').where('Id == @0', [id]))
                 .then(secondQuerySucceeded)
                 .fail(handleFail)
                 .fin(start);

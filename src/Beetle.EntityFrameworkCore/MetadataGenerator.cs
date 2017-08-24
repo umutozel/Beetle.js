@@ -39,14 +39,14 @@ namespace Beetle.EntityFrameworkCore {
                 et.ClrType = entityType.ClrType;
 
                 foreach (var navigation in entityType.GetDeclaredNavigations()) {
-                    if (navigation.TryGetMemberInfo(false, false, out MemberInfo memberInfo, out string errorMessage)) continue;
+                    if (!navigation.TryGetMemberInfo(false, false, out MemberInfo memberInfo, out string _)) continue;
 
                     MetaUtils.GetDisplayInfo(memberInfo, out string resourceName, out Func<string> displayNameGetter);
 
                     var targetType = navigation.GetTargetType();
                     var np = new NavigationProperty(navigation.Name, displayNameGetter) {
                         ResourceName = resourceName,
-                        EntityTypeName = targetType.Name,
+                        EntityTypeName = targetType.ClrType.Name,
                         IsScalar = !navigation.IsCollection()
                     };
 
@@ -65,7 +65,7 @@ namespace Beetle.EntityFrameworkCore {
                 }
 
                 foreach (var property in entityType.GetDeclaredProperties()) {
-                    if (property.TryGetMemberInfo(false, false, out MemberInfo memberInfo, out string errorMessage)) continue;
+                    if (!property.TryGetMemberInfo(false, false, out MemberInfo memberInfo, out string _)) continue;
 
                     MetaUtils.GetDisplayInfo(memberInfo, out string resourceName, out Func<string> displayNameGetter);
 

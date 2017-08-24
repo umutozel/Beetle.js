@@ -104,13 +104,21 @@ namespace Beetle.EntityFrameworkCore {
 
             foreach (var merge in mergeList) {
                 // and fix the entity state, and relations will also be fixed.
-                if (merge.Value.EntityState == EntityState.Modified) {
-                    if (merge.Key.State != EFEntityState.Modified && merge.Value.ForceUpdate) {
-                        merge.Key.State = EFEntityState.Modified;
-                    }
-                }
-                else {
-                    merge.Key.State = (EFEntityState) merge.Value.EntityState;
+                switch (merge.Value.EntityState) {
+                    case EntityState.Modified:
+                        if (merge.Key.State != EFEntityState.Modified && merge.Value.ForceUpdate) {
+                            merge.Key.State = EFEntityState.Modified;
+                        }
+                        break;
+                    case EntityState.Added:
+                        merge.Key.State = EFEntityState.Added;
+                        break;
+                    case EntityState.Deleted:
+                        merge.Key.State = EFEntityState.Deleted;
+                        break;
+                    case EntityState.Detached:
+                        merge.Key.State = EFEntityState.Detached;
+                        break;
                 }
             }
 
