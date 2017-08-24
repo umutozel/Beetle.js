@@ -12,7 +12,7 @@ var testMetadata = {
   "n": "TestEntities",
   "m": [
     {
-      "n": "Beetle.Client.Models.Address, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.Address, Beetle.Tests.IntegrationCore",
       "s": "Address",
       "q": "Entities",
       "t": "Entity",
@@ -163,7 +163,7 @@ var testMetadata = {
       "x": []
     },
     {
-      "n": "Beetle.Client.Models.Company, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.Company, Beetle.Tests.IntegrationCore",
       "s": "Company",
       "q": "Entities",
       "t": "Entity",
@@ -205,7 +205,7 @@ var testMetadata = {
       "x": []
     },
     {
-      "n": "Beetle.Client.Models.Entity, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.Entity, Beetle.Tests.IntegrationCore",
       "s": "Entity",
       "q": "Entities",
       "k": [
@@ -245,7 +245,7 @@ var testMetadata = {
       "x": []
     },
     {
-      "n": "Beetle.Client.Models.NamedEntity, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.NamedEntity, Beetle.Tests.IntegrationCore",
       "s": "NamedEntity",
       "q": "Entities",
       "t": "Entity",
@@ -312,7 +312,7 @@ var testMetadata = {
       "x": []
     },
     {
-      "n": "Beetle.Client.Models.NamedEntityType, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.NamedEntityType, Beetle.Tests.IntegrationCore",
       "s": "NamedEntityType",
       "q": "NamedEntityTypes",
       "k": [
@@ -344,7 +344,7 @@ var testMetadata = {
       "x": []
     },
     {
-      "n": "Beetle.Client.Models.Order, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.Order, Beetle.Tests.IntegrationCore",
       "s": "Order",
       "q": "Orders",
       "k": [
@@ -385,7 +385,7 @@ var testMetadata = {
       "x": []
     },
     {
-      "n": "Beetle.Client.Models.OrderDetail, Beetle.Client",
+      "n": "Beetle.Tests.IntegrationCore.Models.OrderDetail, Beetle.Tests.IntegrationCore",
       "s": "OrderDetail",
       "q": "OrderDetails",
       "k": [

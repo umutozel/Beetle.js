@@ -20,7 +20,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="DynamicQueryable" Version="0.1.18" />
+    <PackageReference Include="DynamicQueryable" Version="0.1.24" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 

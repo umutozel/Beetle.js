@@ -54,12 +54,12 @@ namespace Beetle.EntityFrameworkCore {
             if (_metadata != null) return _metadata;
             lock (_metadataLocker) {
                 return _metadata ?? 
-                    (_metadata = MetadataGenerator.Generate(_entityTypes));
+                    (_metadata = MetadataGenerator.Generate(EntityTypes));
             }
         }
 
         public override object CreateType(string typeName) {
-            var type = _entityTypes.FirstOrDefault(e => e.Name == typeName);
+            var type = EntityTypes.FirstOrDefault(e => e.Name == typeName);
             if (type == null) throw new ArgumentException($"Cannot create instance of type '{typeName}'.");
 
             return Activator.CreateInstance(type.ClrType);

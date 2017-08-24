@@ -46,6 +46,7 @@
     <None Include="..\..\src\beetle\lib\*.*">
       <Link>wwwroot\js\beetle\%(FileName)%(Extension)</Link>
     </None>
+    <Content Remove="wwwroot/js\tests\_Chutzpah.12cd687a03f79563393e930d199b204f877f458b.test.html" />
     <Content Remove="wwwroot/js\_Chutzpah.b66ac6a98d745d89b5a8c272819ed9b27c4a28d7.test.html" />
     <None Include="Views\Home\Index.cshtml" />
     <None Include="wwwroot\js\qunit\qunit.d.ts" />

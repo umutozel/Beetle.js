@@ -207,7 +207,7 @@ function handleFail(error) {
 function seed(serviceUri) {
     var deferred = Q.defer();
 
-    $.get(serviceUri + '/Seed',
+    $.get(serviceUri + 'Seed',
         function (data, textStatus, xhr) {
             deferred.resolve(
                 "Seed svc returned '" + xhr.status + "' with message: " + data);
@@ -479,7 +479,7 @@ test('use lesser', 1, function () {
 
 test('use contains', 1, function () {
     var manager = new EntityManager(service);
-    var query = manager.createQuery('NamedEntityTypes').where('substringof("e_2", Name)');
+    var query = manager.createQuery('NamedEntityTypes').where('substringof("E_2", Name)');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -828,7 +828,7 @@ test('use selectMany', 1, function () {
 test('use all', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('Orders')
-        .all('Price >= 42');
+        .all('round(Price) >= 42');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -843,7 +843,7 @@ test('use all', 1, function () {
 test('use any', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('Orders')
-        .any('Price == 42');
+        .any('round(Price) == 42');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -918,7 +918,7 @@ test('use sum', 1, function () {
 test('use count', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('Orders')
-        .count('Price > 42');
+        .count('round(Price) > 42');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -949,7 +949,7 @@ test('use first', 1, function () {
 test('use firstOrDefault', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('Orders')
-        .firstOrDefault('Price < 42');
+        .firstOrDefault('round(Price) < 42');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -965,7 +965,7 @@ test('use single', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('Orders')
         .orderBy('Price')
-        .single('Price == 42');
+        .single('round(Price) == 42');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
@@ -980,7 +980,7 @@ test('use single', 1, function () {
 test('use singleOrDefault', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('Orders')
-        .singleOrDefault('Price < 42');
+        .singleOrDefault('round(Price) < 42');
     stop();
     manager.executeQuery(query)
         .then(querySucceeded)
