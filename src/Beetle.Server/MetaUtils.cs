@@ -51,7 +51,7 @@ namespace Beetle.Server {
                 var propertyType = propertyInfo.PropertyType;
                 var propertyTypeInfo = propertyType.GetTypeInfo();
                 if (entityType.DataProperties.Any(dp => dp.Name == propertyInfo.Name)
-                    || propertyTypeInfo.GetCustomAttribute<NotMappedAttribute>() != null) continue;
+                    || propertyInfo.GetCustomAttribute<NotMappedAttribute>() != null) continue;
 
                 var isNullable = false;
                 if (propertyTypeInfo.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
