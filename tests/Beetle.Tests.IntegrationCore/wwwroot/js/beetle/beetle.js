@@ -9635,13 +9635,17 @@
                 var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
                 var extra = options.extra;
                 // if type could not be found in metadata request it from server.
-                var uri = that.uri + 'CreateType?typeName=' + typeName + "&initialValues=";
+                var uri = that.uri + "CreateType?";
+                var queryString = "typeName=" + typeName;
                 if (initialValues != null)
-                    uri += that.serializationService.serialize(initialValues);
+                    queryString += "&initialValues=" + that.serializationService.serialize(initialValues);
+                uri += queryString;
+                var hash = createHash(queryString);
+                var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
                 var retVal;
                 var call = this.ajaxProvider.doAjax(
                     uri,
-                    'GET', this.dataType, this.contentType, null, async, timeout, extra, null,
+                    'GET', this.dataType, this.contentType, null, async, timeout, extra, headers,
                     function (data, headerGetter, xhr) {
                         // deserialize return value to object.
                         data = that.serializationService.deserialize(data);

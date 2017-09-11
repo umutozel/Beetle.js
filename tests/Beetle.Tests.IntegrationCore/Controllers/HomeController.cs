@@ -19,6 +19,10 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
 
         public TestEntities Context => ContextHandler.Context;
 
+        public override object CreateType(string typeName, string initialValues) {
+            return base.CreateType($"Beetle.Tests.IntegrationCore.Models.{typeName}, Beetle.Tests.IntegrationCore", initialValues);
+        }
+
         public IActionResult Index() {
             return View();
         }

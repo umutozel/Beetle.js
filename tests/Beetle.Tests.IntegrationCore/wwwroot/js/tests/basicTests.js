@@ -2055,7 +2055,7 @@ if (metadata !== false) {
         var ne, net;
         function firstQuerySucceeded(result) {
             ne = result;
-            manager.createEntityAsync('NamedEntityType')
+            manager.createEntityAsync('NamedEntityType', {Name: ""})
                 .then(secondQuerySucceeded)
                 .fail(handleFail)
                 .fin(start);

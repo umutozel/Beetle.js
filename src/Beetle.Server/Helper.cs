@@ -82,8 +82,7 @@ namespace Beetle.Server {
             foreach (var p in obj.Properties()) {
                 var propType = GetMemberType(type, p.Name);
                 var value = obj[p.Name];
-                config.Serializer.ConvertFromDynamic(value, propType);
-                SetMemberValue(destination, p.Name, value);
+                SetMemberValue(destination, p.Name, config.Serializer.ConvertFromDynamic(value, propType));
             }
         }
 
