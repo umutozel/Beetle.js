@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Beetle.Tests.IntegrationCore.Controllers {
     using Server;
@@ -11,9 +10,9 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
     using MvcCore;
     using Models;
 
-    public sealed class HomeController : BeetleController<EFContextHandler<TestEntities>> {
+    public sealed class HomeController : BeetleController<TestContextHandler> {
 
-        public HomeController(EFContextHandler<TestEntities> contextHandler): base(contextHandler) {
+        public HomeController(TestContextHandler contextHandler): base(contextHandler) {
             CheckRequestHash = true;
         }
 
@@ -74,15 +73,12 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
         }
 
         [HttpPost]
-        public IQueryable<NamedEntity> TestPost(dynamic prms, string name) {
+        public IQueryable<NamedEntity> TestPost([FromBody]Person person, int shortId, string name, IEnumerable<int> ids) {
             if (name != "Knuth") throw new ArgumentException("name is missing");
 
-            int shortId = Convert.ToInt32(prms.shortId.ToString());
-            string personName = Convert.ToString(prms.person.Name).ToString();
-            var ids = ((IEnumerable)prms.ids).OfType<object>().Select(x => Convert.ToInt32(x.ToString()));
             return Context.Entities.OfType<NamedEntity>()
                 .Where(ne => ne.ShortId != shortId)
-                .Where(ne => ne.Name != personName)
+                .Where(ne => ne.Name != person.Name)
                 .Where(ne => !ids.Contains(ne.ShortId));
         }
 
@@ -103,6 +99,44 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
             DatabaseHelper.ClearDatabase(Context);
             DatabaseHelper.SeedDatabase(Context);
             return "seed";
+        }
+    }
+
+    public class TestContextHandler : EFContextHandler<TestEntities> {
+
+        public TestContextHandler(TestEntities context): base(context) {
+        }
+
+        public override Task<SaveResult> SaveChanges(SaveContext saveContext) {
+            var newOrders = saveContext.Entities
+                .Where(e => e.EntityState == EntityState.Added)
+                .Select(e => e.Entity)
+                .OfType<Order>()
+                .ToList();
+
+            if (newOrders.Any()) {
+                var allDetails = saveContext.Entities
+                    .Select(e => e.Entity)
+                    .OfType<OrderDetail>()
+                    .ToList();
+
+                var lastOrderId = Context.Orders.Max(o => o.Id);
+                var lastDetailId = Context.OrderDetails.Max(od => od.Id);
+
+                foreach (var order in newOrders) {
+                    var newOrderId = ++lastOrderId;
+                    var orderDetails = allDetails.Where(od => od.OrderId == order.Id);
+
+                    foreach (var orderDetail in orderDetails) {
+                        orderDetail.Id = ++lastDetailId;
+                        orderDetail.OrderId = newOrderId;
+                    }
+
+                    order.Id = newOrderId;
+                }
+            }
+
+            return base.SaveChanges(saveContext);
         }
     }
 }

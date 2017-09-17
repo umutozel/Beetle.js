@@ -39,9 +39,9 @@ namespace Beetle.Tests.IntegrationCore.Models {
                                CreateCompany(nets[0])
                            };
             var os = new List<Order> {
-                               CreateOrder(42),
-                               CreateOrder(),
-                               CreateOrder()
+                               CreateOrder(1, 42),
+                               CreateOrder(2),
+                               CreateOrder(3)
                            };
 
             // add created data to context
@@ -103,7 +103,7 @@ namespace Beetle.Tests.IntegrationCore.Models {
             ne.TimeCreate = DateTime.UtcNow;
             ne.IsCanceled = _random.Next(0, 1) != 0;
             ne.Description = "Description_" + _random.Next(3, 100);
-            ne.Name = "Name_" + (initial.HasValue ? initial : _random.Next(3, 100));
+            ne.Name = "Name_" + (initial ?? _random.Next(3, 100));
             ne.NamedEntityType = net;
             return ne;
         }
@@ -123,25 +123,23 @@ namespace Beetle.Tests.IntegrationCore.Models {
             return c;
         }
 
-        public static Order CreateOrder(double? price = null) {
-            var o = new Order();
-            o.OrderNo = "OrderNo_" + _random.Next(1, 100);
-            o.Price = price ?? (_random.Next(10000 - 42) + 42);
-            o.OrderDetails.Add(CreateOrderDetailWithoutProductNo());
-            o.OrderDetails.Add(CreateOrderDetail());
+        public static Order CreateOrder(int id, double? price = null) {
+            var o = new Order {
+                Id = id,
+                OrderNo = "OrderNo_" + _random.Next(1, 100),
+                Price = price ?? (_random.Next(10000 - 42) + 42)
+            };
+            o.OrderDetails.Add(CreateOrderDetailWithoutProductNo(id*2 + 1));
+            o.OrderDetails.Add(CreateOrderDetail(id*2 + 2));
             return o;
         }
 
-        public static OrderDetail CreateOrderDetailWithoutProductNo() {
-            var od = CreateOrderDetail();
-            od.ProductNo = null;
-            return od;
+        public static OrderDetail CreateOrderDetailWithoutProductNo(int id) {
+            return new OrderDetail {Id = id};
         }
 
-        public static OrderDetail CreateOrderDetail() {
-            var od = new OrderDetail();
-            od.ProductNo = "ProductNo_" + _random.Next(1, 100);
-            return od;
+        public static OrderDetail CreateOrderDetail(int id) {
+            return new OrderDetail {Id = id, ProductNo = "ProductNo_" + _random.Next(1, 100)};
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Beetle.Tests.IntegrationCore.Controllers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +29,7 @@ namespace Beetle.Tests.IntegrationCore {
             services.AddMvc();
 
             services.AddDbContext<TestEntities>(o => o.UseSqlite("Data Source=test.db"), ServiceLifetime.Transient);
-            services.AddTransient<EFContextHandler<TestEntities>>();
+            services.AddTransient<TestContextHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
