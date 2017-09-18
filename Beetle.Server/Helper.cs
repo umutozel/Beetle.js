@@ -872,7 +872,7 @@ from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
 			foreach (var propertyInfo in properties) {
 				var propertyType = propertyInfo.PropertyType;
 				if (entityType.DataProperties.Any(dp => dp.Name == propertyInfo.Name)
-					|| propertyType.GetCustomAttribute<NotMappedAttribute>() != null) continue;
+					|| propertyInfo.GetCustomAttribute<NotMappedAttribute>() != null) continue;
 
 				var isNullable = false;
 				if ((propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))) {
