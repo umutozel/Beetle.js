@@ -76,11 +76,11 @@ namespace Beetle.Mvc {
                     throw new NotSupportedException();
 
                 var result = contextHandler.HandleUnknownAction(action);
-                Helper.GetParameters(Config, out string queryString, out IList<BeetleParameter> parameters, out dynamic _);
+                Helper.GetParameters(Config, out IList<BeetleParameter> parameters, out dynamic _);
 
                 var actionContext = new ActionContext(
-                    action, result, queryString, parameters,
-                    MaxResultCount, CheckRequestHash, null, this
+                    action, result, parameters,
+                    MaxResultCount, null, this
                 );
                 var processResult = ProcessRequest(actionContext);
                 Helper.SetCustomHeaders(processResult);
@@ -120,8 +120,6 @@ namespace Beetle.Mvc {
         IContextHandler IBeetleService.ContextHandler => null;
 
         public int? MaxResultCount { get; set; }
-
-        public bool CheckRequestHash { get; set; }
 
         Metadata IBeetleService.Metadata() {
             return GetMetadata();

@@ -96,8 +96,6 @@ namespace Beetle.MvcCore {
 
         public int? MaxResultCount { get; set; }
 
-        public bool CheckRequestHash { get; set; }
-
         Metadata IBeetleService.Metadata() {
             return GetMetadata();
         }

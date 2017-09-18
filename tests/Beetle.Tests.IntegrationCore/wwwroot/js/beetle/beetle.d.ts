@@ -685,8 +685,8 @@ declare module beetle {
     interface ServiceQueryOptions {
         /** When true, all values will be handled by their value (i.e. some type changes, string->Date). */
         handleUnmappedProperties?: boolean;
-        /** Use POST method when making request. Useful for large queries (some web servers can't process very large query strings). */
-        usePost?: boolean;
+        /** Use request body for beetle parameters when making request. Useful for large queries (some web servers can't process very large query strings). */
+        useBody?: boolean;
         /** Web method to use (i.e. PUT, POST, GET etc..). */
         method?: string;
         /** The type of data that you're expecting back from the server. */
@@ -1783,6 +1783,8 @@ declare module beetle {
             expand(propertyPath: string): EntityQuery<T>;
             /** Sets given name-value pair as parameter. Parameters will be passed to server method. */
             setParameter(name: string, value: any): EntityQuery<T>;
+            /** Adds properties of given value to the body of the request. */
+            setBodyParameter(value: any): EntityQuery<T>;
             /** Sets options to be used at execution. */
             withOptions(options: ManagerQueryOptions): EntityQuery<T>;
         }
@@ -2092,13 +2094,15 @@ declare module beetle {
             /**
              * Executes given query parameters.
              * @param resource Server resource to query.
-             * @param queryParams The query parameters.
+             * @param parameters The query string parameters.
+             * @param bodyParameter The query body parameters.
+             * @param queryParams The query beetle parameters.
              * @param options Query options.
              * @param successCallback Function to call after operation succeeded.
              * @param errorCallback Function to call when operation fails.
              */
-            executeQueryParams(resource: string, queryParams: any, options: ServiceQueryOptions,
-                successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: AjaxError) => void);
+            executeQueryParams(resource: string, parameters: { name: string, value: string }[], bodyParameter: any, queryParams: any,
+                               options: ServiceQueryOptions, successCallback: (result: interfaces.SaveResult) => void, errorCallback: (e: AjaxError) => void);
             /* Fix the relations (like $ref links for circular references) between loaded raw data. */
             fixResults(results: any[], makeObservable?: boolean, handleUnmappedProperties?: boolean): interfaces.RawEntity[];
         }

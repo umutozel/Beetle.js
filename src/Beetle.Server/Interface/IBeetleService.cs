@@ -16,8 +16,6 @@ namespace Beetle.Server.Interface {
 
         int? MaxResultCount { get; set; }
 
-        bool CheckRequestHash { get; set; }
-
         Metadata Metadata();
 
         object CreateType(string typeName, string initialValues);

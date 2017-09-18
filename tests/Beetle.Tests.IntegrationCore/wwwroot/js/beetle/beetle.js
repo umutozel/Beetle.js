@@ -88,13 +88,15 @@
          */
         combine: function (obj1, obj2) {
             if (obj1 == obj2) return obj1;
-            var obj = {};
+            var obj;
             if (obj1 != null) {
+                obj = {};
                 for (var p1 in obj1) {
                     obj[p1] = obj1[p1];
                 }
             }
             if (obj2 != null) {
+                obj = obj || {};
                 for (var p2 in obj2) {
                     var v1 = obj[p2];
                     var v2 = obj2[p2];
@@ -2795,15 +2797,11 @@
                 if (query.isMultiTyped === true)
                     throw helper.createError(i18N.oDataNotSupportMultiTyped, { query: query });
 
-                var qc = { varContext: varContext };
                 var params = [];
-                helper.forEach(query.parameters, function (prm) {
-                    params.push({ name: prm.name, value: prm.value == null ? '' : prm.value });
-                });
-
                 if (query.inlineCountEnabled === true)
                     params.push({ name: '$inlinecount', value: 'allpages' });
 
+                var qc = { varContext: varContext };
                 helper.forEach(query.expressions, function (exp, i) {
                     qc.expVarContext = exp.varContext;
                     var name, value;
@@ -2829,15 +2827,11 @@
              * @returns {Object[]} Parameter object (name|value pair) list.
              */
             proto.toBeetleQueryParams = function (query, varContext) {
-                var qc = { varContext: varContext };
                 var params = [];
-                helper.forEach(query.parameters, function (prm) {
-                    params.push({ name: prm.name, value: prm.value == null ? '' : prm.value });
-                });
-
                 if (query.inlineCountEnabled === true)
                     params.push({ name: '!e0', value: 'inlinecount:allpages' });
 
+                var qc = { varContext: varContext };
                 helper.forEach(query.expressions, function (exp, i) {
                     qc.expVarContext = exp.varContext;
                     params.push({ name: '!e' + (i + 1), value: exp.name + ':' + exp.toBeetleQuery(qc) });
@@ -3393,9 +3387,7 @@
                     timeout: timeout
                 };
 
-                if (extra != null) {
-                    helper.extend(requestOptions, extra);
-                }
+                helper.extend(requestOptions, extra);
 
                 var request = new this.RequestConstructor(requestOptions);
 
@@ -4966,7 +4958,14 @@
                     };
 
                     proto.execute = function (array, queryContext) {
-                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        var selector;
+                        if (this.exp) {
+                            selector = Assert.isFunction(this.exp)
+                                ? this.exp
+                                : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                        } else {
+                            selector = function (v) { return v; };
+                        }
                         return querying.queryFuncs.avg.impl(array, function () { return array; }, selector);
                     };
 
@@ -4987,7 +4986,14 @@
                     };
 
                     proto.execute = function (array, queryContext) {
-                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        var selector;
+                        if (this.exp) {
+                            selector = Assert.isFunction(this.exp)
+                                ? this.exp
+                                : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                        } else {
+                            selector = function (v) { return v; };
+                        }
                         return querying.queryFuncs.max.impl(array, function () { return array; }, selector);
                     };
 
@@ -5008,7 +5014,14 @@
                     };
 
                     proto.execute = function (array, queryContext) {
-                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        var selector;
+                        if (this.exp) {
+                            selector = Assert.isFunction(this.exp)
+                                ? this.exp
+                                : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                        } else {
+                            selector = function (v) { return v; };
+                        }
                         return querying.queryFuncs.min.impl(array, function () { return array; }, selector);
                     };
 
@@ -5029,7 +5042,14 @@
                     };
 
                     proto.execute = function (array, queryContext) {
-                        var selector = this.exp ? (Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext)) : function (value) { return value; };
+                        var selector;
+                        if (this.exp) {
+                            selector = Assert.isFunction(this.exp)
+                                ? this.exp
+                                : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
+                        } else {
+                            selector = function (v) { return v; };
+                        }
                         return querying.queryFuncs.sum.impl(array, function () { return array; }, selector);
                     };
 
@@ -5055,7 +5075,7 @@
                             var predicate = Assert.isFunction(this.exp) ? this.exp : helper.jsepToFunction(libs.jsep(this.exp), queryContext);
                             return helper.filterArray(array, predicate).length
                         }
-                        return array.length
+                        return array.length;
                     };
 
                     return ctor;
@@ -5964,6 +5984,7 @@
                     this.manager = manager;
                     this.liveValidate = manager && manager.liveValidate;
                     this.parameters = [];
+                    this.bodyParameter = null;
 
                     baseTypes.QueryBase.call(this);
                 };
@@ -6009,6 +6030,13 @@
                     return q;
                 };
 
+                /** Adds properties of given value to the body of the request. */
+                proto.setBodyParameter = function (value) {
+                    var q = this.clone();
+                    q.bodyParameter = helper.combine(this.bodyParameter, value);
+                    return q;
+                };
+
                 /** Sets entity type for query (used when executing locally). */
                 proto.setEntityType = function (type) {
                     type = handleEntityType(type, this.manager);
@@ -6050,6 +6078,7 @@
                     helper.forEach(this.parameters, function (prm) {
                         query.parameters.push(prm);
                     });
+                    query.bodyParameter = this.bodyParameter;
                 };
 
                 /** When using promises, this shortcut can be used instead of "execute().then()" syntax. */
@@ -9640,12 +9669,10 @@
                 if (initialValues != null)
                     queryString += "&initialValues=" + that.serializationService.serialize(initialValues);
                 uri += queryString;
-                var hash = createHash(queryString);
-                var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
                 var retVal;
                 var call = this.ajaxProvider.doAjax(
                     uri,
-                    'GET', this.dataType, this.contentType, null, async, timeout, extra, headers,
+                    'GET', this.dataType, this.contentType, null, async, timeout, extra, options.headers,
                     function (data, headerGetter, xhr) {
                         // deserialize return value to object.
                         data = that.serializationService.deserialize(data);
@@ -9671,7 +9698,7 @@
              */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp = this.toBeetleQueryParams(query, options && options.varContext);
-                return this.executeQueryParams(query.resource, qp, options, successCallback, errorCallback);
+                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameter, qp, options, successCallback, errorCallback);
             };
 
             /**
@@ -9682,47 +9709,50 @@
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
-            proto.executeQueryParams = function (resource, queryParams, options, successCallback, errorCallback) {
+            proto.executeQueryParams = function (resource, parameters, bodyParameter, queryParams, options, successCallback, errorCallback) {
                 options = options || {};
                 var makeObservable = options.makeObservable;
                 var handleUnmappedProperties = options.handleUnmappedProperties;
-                var usePost = options.usePost || false;
+
+                var method = options.method || ((options.useBody || bodyParameter) && "POST") || "GET";
                 var dataType = options.dataType || this.dataType;
                 var contentType = options.contentType || this.contentType;
+
                 var async = options.async;
                 if (async == null) async = settings.workAsync;
                 var timeout = options.timeout || this.ajaxTimeout || settings.ajaxTimeout;
-                var extra = options.extra;
-                var type = options.method || 'GET', d = null;
-                var uri = options.uri || this.uri || '';
-                if (uri && uri[uri.length - 1] != '/') uri += '/';
+
+                var uri = options.uri || this.uri || "";
+                if (uri && uri[uri.length - 1] != "/") uri += "/";
                 uri = uri + resource;
-                var queryString;
-                if (usePost === true) type = 'POST';
-                if (type == 'GET' || type == 'DELETE') {
-                    var prmsArr = [];
+
+                var prmsArr = [];
+                helper.forEach(parameters, function (prm) {
+                    prmsArr.push(prm.name + "=" + encodeURIComponent(prm.value));
+                });
+
+                if (options.useBody) {
+                    bodyParameter = helper.extend({}, bodyParameter);
                     helper.forEach(queryParams, function (qp) {
-                        prmsArr.push(qp.name + '=' + encodeURIComponent(qp.value));
+                        bodyParameter[qp.name] = qp.value;
                     });
-                    queryString = prmsArr.join('&');
-                    uri += '?' + queryString;
-                } else {
-                    var prmsObj = {};
-                    helper.forEach(queryParams, function (qp) {
-                        prmsObj[qp.name] = qp.value;
-                    });
-                    d = this.serializationService.serialize(prmsObj);
-                    queryString = d;
                 }
-                var hash = createHash(queryString);
-                var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': queryString.length };
-                helper.extend(headers, options.headers);
+                else {
+                    helper.forEach(queryParams, function (qp) {
+                        prmsArr.push(qp.name + "=" + encodeURIComponent(qp.value));
+                    });
+                }
+                
+                var queryString = prmsArr.join("&");
+                uri += "?" + queryString;
+                var data = bodyParameter == null ? null : this.serializationService.serialize(bodyParameter);
+
                 var that = this;
                 // execute query using ajax provider
                 var retVal;
                 var call = this.ajaxProvider.doAjax(
                     uri,
-                    type, dataType, contentType, d, async, timeout, extra, headers,
+                    method, dataType, contentType, data, async, timeout, options.extra, options.headers,
                     function (data, headerGetter, xhr) {
                         // deserialize returned data (if deserializable).
                         try {
@@ -9772,14 +9802,11 @@
                 var saveAction = options.saveAction || 'SaveChanges';
                 uri = uri + saveAction;
                 var saveData = this.serializationService.serialize(savePackage);
-                var hash = createHash(saveData);
-                var headers = { 'x-beetle-request': hash, 'x-beetle-request-len': saveData.length };
                 var type = options.method || 'POST';
-                helper.extend(headers, options.headers);
                 var retVal;
                 var call = this.ajaxProvider.doAjax(
                     uri,
-                    type, this.dataType, this.contentType, saveData, async, timeout, extra, headers,
+                    type, this.dataType, this.contentType, saveData, async, timeout, extra, options.headers,
                     function (result, headerGetter, xhr) {
                         // deserialize returned data (if deserializable).
                         try {
@@ -9862,22 +9889,6 @@
                 }
             };
 
-            /** 
-             * Creates hash integer for given string.
-             * This hash will be compared to server-side generated hash to detect manipulations.
-             * Just to avoid query string hackers.
-             */
-            function createHash(str) {
-                var hash = 0, i, chr, len;
-                if (str.length == 0) return hash;
-                for (i = 0, len = str.length; i < len; i++) {
-                    chr = str.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + chr;
-                    hash |= 0;
-                }
-                return hash;
-            }
-
             return ctor;
         })();
 
@@ -9923,12 +9934,12 @@
                 else if (query.isMultiTyped === true) {
                     qp = this.toBeetleQueryParams(query, varContext);
                     events.warning.notify({ message: i18N.beetleQueryChosenMultiTyped, query: query, options: options });
-                } else if (options.usePost) {
+                } else if (options.useBody) {
                     qp = this.toBeetleQueryParams(query, varContext);
                     events.warning.notify({ message: i18N.beetleQueryChosenPost, query: query, options: options });
                 } else
                     qp = this.toODataQueryParams(query, varContext);
-                return this.executeQueryParams(query.resource, qp, options, successCallback, errorCallback);
+                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameter, qp, options, successCallback, errorCallback);
             };
 
             return ctor;

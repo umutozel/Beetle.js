@@ -383,12 +383,10 @@ test('test query with POST', 1, function () {
     var manager = new EntityManager(service);
     var query = manager.createQuery('TestPost').inlineCount().select('Id, Name').top(1);
     query = query.setParameter('shortId', 42);
-    query = query.setParameter('person', { Name: 'Alan', Surname: 'Turing', BirthDate: new Date(Date.parse('1912-06-23')) });
-    var ids = [1, 2, 3, 4, 5, 6, 7];
-    query = query.setParameter('ids', ids);
     query = query.setParameter('name', "Knuth");
+    query = query.setBodyParameter({ Name: 'Alan', Surname: 'Turing', BirthDate: new Date(Date.parse('1912-06-23')) });
     stop();
-    manager.executeQuery(query, { usePost: true })
+    manager.executeQuery(query, { method: "POST" })
         .then(firstQuerySucceeded)
         .fail(handleFail)
         .fin(start);
@@ -397,6 +395,21 @@ test('test query with POST', 1, function () {
         // and here is a sample how we can use queries like linq.
         var contains = data.q().where('Name == "Alan"').execute().length > 0;
         ok(!contains, 'POST query succeded.');
+    }
+});
+
+test('test query with body', 1, function () {
+    var manager = new EntityManager(service);
+    var query = manager.createQuery('TestBody').inlineCount().select('Id, Name').orderBy('Name').top(1);
+    stop();
+    manager.executeQuery(query, { useBody: true })
+        .then(firstQuerySucceeded)
+        .fail(handleFail)
+        .fin(start);
+
+    function firstQuerySucceeded(data) {
+        // and here is a sample how we can use queries like linq.
+        ok(data.$inlineCount > 2 && data.length == 1 && data[0].$tracker.getValue('Name') == "NE_1", 'Body query succeded.');
     }
 });
 

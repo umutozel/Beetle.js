@@ -5,16 +5,14 @@ namespace Beetle.Server {
 
     public class ActionContext {
 
-        public ActionContext(string name, object value, string queryString,
+        public ActionContext(string name, object value,
                              IEnumerable<BeetleParameter> parameters,
-                             int? maxResultCount, bool? checkRequestHash,
+                             int? maxResultCount,
                              IBeetleConfig config, IBeetleService service) {
             Name = name;
             Value = value;
-            QueryString = queryString;
             Parameters = parameters;
             MaxResultCount = maxResultCount;
-            CheckRequestHash = checkRequestHash;
             Config = config;
             Service = service;
         }
@@ -23,13 +21,9 @@ namespace Beetle.Server {
 
         public object Value { get; }
 
-        public string QueryString { get; }
-
         public IEnumerable<BeetleParameter> Parameters { get; }
 
         public int? MaxResultCount { get; }
-
-        public bool? CheckRequestHash { get; }
 
         public IBeetleConfig Config { get; }
 

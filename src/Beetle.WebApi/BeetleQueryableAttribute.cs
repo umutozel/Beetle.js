@@ -31,8 +31,6 @@ namespace Beetle.WebApi {
 
         public int? MaxResultCount { get; set; }
 
-        public bool? CheckRequestHash { get; set; }
-
         public bool ForbidBeetleParameters { get; set; }
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext) {
@@ -45,12 +43,12 @@ namespace Beetle.WebApi {
             if (!response.TryGetContentValue(out object contentValue)) return;
 
             // get query parameters
-            GetParameters(service, out string queryString, out IList<BeetleParameter> parameters);
+            GetParameters(service, out IList<BeetleParameter> parameters);
             if (parameters.Any() && ForbidBeetleParameters)
                 throw new BeetleException(Resources.BeetleQueryStringsAreNotAllowed);
 
-            var actionContext = new ActionContext(action, contentValue, queryString, parameters,
-                                                  MaxResultCount, CheckRequestHash, Config, service);
+            var actionContext = new ActionContext(action, contentValue, parameters,
+                                                  MaxResultCount, Config, service);
 
             request.Properties["BeetleActionContext"] = actionContext;
 
@@ -60,8 +58,8 @@ namespace Beetle.WebApi {
             // get modified content value
             if (!response.TryGetContentValue(out contentValue)) return;
 
-            actionContext = new ActionContext(action, contentValue, queryString, parameters,
-                                              MaxResultCount, CheckRequestHash, Config, service);
+            actionContext = new ActionContext(action, contentValue, parameters,
+                                              MaxResultCount, Config, service);
             var processResult = ProcessRequest(actionContext, actionExecutedContext.Request);
             Helper.SetCustomHeaders(processResult);
             response.Content = HandleResponse(processResult);
@@ -83,18 +81,13 @@ namespace Beetle.WebApi {
             return base.ApplyQuery(queryable, queryOptions);
         }
 
-        protected virtual void GetParameters(IBeetleService service, out string queryString, out IList<BeetleParameter> parameters) {
+        protected virtual void GetParameters(IBeetleService service, out IList<BeetleParameter> parameters) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(config, out queryString, out parameters);
+            Helper.GetParameters(config, out parameters);
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext, HttpRequestMessage request) {
             var service = actionContext.Service;
-
-            if (!string.IsNullOrEmpty(actionContext.QueryString)
-                && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
-                Helper.CheckRequestHash(actionContext.QueryString);
-            }
 
             var processResult = service != null
                 ? service.ProcessRequest(actionContext)

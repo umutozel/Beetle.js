@@ -99,8 +99,7 @@ namespace Beetle.Server {
 
         public static ProcessResult DefaultRequestProcessor(ActionContext actionContext) {
             var value = actionContext.Value;
-            var queryable = actionContext.Value as IQueryable;
-            if (queryable != null) {
+            if (actionContext.Value is IQueryable queryable) {
                 var queryableHandler = GetQueryHandler(actionContext.Config, actionContext.Service);
                 return queryableHandler.HandleContent(queryable, actionContext);
             }

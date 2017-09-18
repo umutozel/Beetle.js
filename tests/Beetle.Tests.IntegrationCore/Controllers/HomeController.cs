@@ -13,7 +13,6 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
     public sealed class HomeController : BeetleController<TestContextHandler> {
 
         public HomeController(TestContextHandler contextHandler): base(contextHandler) {
-            CheckRequestHash = true;
         }
 
         public TestEntities Context => ContextHandler.Context;
@@ -73,13 +72,17 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
         }
 
         [HttpPost]
-        public IQueryable<NamedEntity> TestPost([FromBody]Person person, int shortId, string name, IEnumerable<int> ids) {
+        public IQueryable<NamedEntity> TestPost([FromBody]Person person, int shortId, string name) {
             if (name != "Knuth") throw new ArgumentException("name is missing");
 
             return Context.Entities.OfType<NamedEntity>()
                 .Where(ne => ne.ShortId != shortId)
-                .Where(ne => ne.Name != person.Name)
-                .Where(ne => !ids.Contains(ne.ShortId));
+                .Where(ne => ne.Name != person.Name);
+        }
+
+        [HttpPost]
+        public IQueryable<NamedEntityType> TestBody() {
+            return Context.NamedEntityTypes;
         }
 
         [HttpPost]
@@ -87,12 +90,14 @@ namespace Beetle.Tests.IntegrationCore.Controllers {
             return SaveChanges(saveBundle);
         }
 
+        [NonBeetleAction]
         [HttpGet]
         public string Clear() {
             DatabaseHelper.ClearDatabase(Context);
             return "clear";
         }
 
+        [NonBeetleAction]
         [HttpGet]
         public string Seed() {
             Clear();

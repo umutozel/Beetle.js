@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -13,18 +11,18 @@ namespace Beetle.WebApi {
 
     public static class Helper {
 
-        public static void GetParameters(IBeetleConfig config, out string queryString,
-                                         out IList<BeetleParameter> parameters) {
+        public static void GetParameters(IBeetleConfig config, out IList<BeetleParameter> parameters) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
             var request = HttpContext.Current.Request;
 
             var queryParams = request.QueryString.ToDictionary();
-            if (request.HttpMethod == "POST") {
+
+            if (request.ContentLength > 0) {
                 request.InputStream.Position = 0;
-                queryString = new StreamReader(request.InputStream).ReadToEnd();
-                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                var body = new StreamReader(request.InputStream).ReadToEnd();
+                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(body);
                 if (d != null) {
                     foreach (var i in d) {
                         var v = i.Value;
@@ -32,12 +30,7 @@ namespace Beetle.WebApi {
                     }
                 }
             }
-            else {
-                queryString = request.Url.Query;
-                if (queryString.StartsWith("?")) {
-                    queryString = queryString.Substring(1);
-                }
-            }
+
             parameters = Server.Helper.GetBeetleParameters(queryParams);
         }
 
@@ -72,24 +65,6 @@ namespace Beetle.WebApi {
             var type = result?.GetType() ?? typeof(object);
             var formatter = config.CreateFormatter();
             return new ObjectContent(type, result, formatter);
-        }
-
-        public static void CheckRequestHash(string queryString) {
-            var request = HttpContext.Current.Request;
-
-            var clientHash = request.Headers["x-beetle-request"];
-            if (!string.IsNullOrEmpty(clientHash)) {
-                var hashLenStr = request.Headers["x-beetle-request-len"];
-                if (!string.IsNullOrEmpty(hashLenStr)) {
-                    var queryLen = Convert.ToInt32(hashLenStr);
-                    queryString = queryString.Substring(0, queryLen);
-                    var serverHash = Meta.Helper.CreateQueryHash(queryString).ToString(CultureInfo.InvariantCulture);
-
-                    if (serverHash == clientHash) return;
-                }
-            }
-
-            throw new BeetleException(Server.Properties.Resources.AlteredRequestException);
         }
 
         public static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection) {

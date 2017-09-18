@@ -33,8 +33,6 @@ namespace Beetle.MvcCore {
 
         public int MaxResultCount { get; set; }
 
-        public bool? CheckRequestHash { get; set; }
-
         public override void OnActionExecuted(ActionExecutedContext context) {
             base.OnActionExecuted(context);
 
@@ -49,10 +47,10 @@ namespace Beetle.MvcCore {
             var request = context.HttpContext.Request;
             var response = context.HttpContext.Response;
             // translate the request query
-            GetParameters(service, context, out string queryString, out IList<BeetleParameter> parameters);
+            GetParameters(service, context, out IList<BeetleParameter> parameters);
             var actionContext = new ActionContext(
-                actionName, contentValue, queryString, parameters,
-                MaxResultCount, CheckRequestHash, Config, service
+                actionName, contentValue, parameters,
+                MaxResultCount, Config, service
             );
             var processResult = ProcessRequest(actionContext, request);
             Helper.SetCustomHeaders(processResult, response);
@@ -61,19 +59,13 @@ namespace Beetle.MvcCore {
 
         protected virtual void GetParameters(IBeetleService service,
                                              ActionExecutedContext context,
-                                             out string queryString,
                                              out IList<BeetleParameter> parameters) {
             var config = Config ?? service?.Config;
-            Helper.GetParameters(config, context.HttpContext.Request, out queryString, out parameters);
+            Helper.GetParameters(config, context.HttpContext.Request, out parameters);
         }
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext, HttpRequest request) {
             var service = actionContext.Service;
-
-            if (!string.IsNullOrEmpty(actionContext.QueryString)
-                    && (actionContext.CheckRequestHash ?? service?.CheckRequestHash) == true) {
-                Helper.CheckRequestHash(actionContext.QueryString, request);
-            }
 
             return service != null
                 ? service.ProcessRequest(actionContext)

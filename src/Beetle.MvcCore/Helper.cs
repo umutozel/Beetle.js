@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -17,20 +15,19 @@ namespace Beetle.MvcCore {
 
     public static class Helper {
 
-        public static void GetParameters(IBeetleConfig config, HttpRequest request,
-                                         out string queryString, out IList<BeetleParameter> parameters) {
+        public static void GetParameters(IBeetleConfig config, HttpRequest request, out IList<BeetleParameter> parameters) {
             if (config == null) {
                 config = BeetleConfig.Instance;
             }
 
             var queryParams = request.Query.ToDictionary(k => k.Key, k => k.Value.ToString());
-            if (request.Method == "POST") {
+            if (request.ContentLength > 0) {
                 if (request.Body.CanSeek) {
                     request.Body.Position = 0;
                 }
 
-                queryString = new StreamReader(request.Body).ReadToEnd();
-                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(queryString);
+                var body = new StreamReader(request.Body).ReadToEnd();
+                var d = config.Serializer.Deserialize<Dictionary<string, dynamic>>(body);
                 if (d != null) {
                     foreach (var i in d) {
                         var v = i.Value;
@@ -38,12 +35,7 @@ namespace Beetle.MvcCore {
                     }
                 }
             }
-            else {
-                queryString = request.QueryString.Value;
-                if (queryString.StartsWith("?")) {
-                    queryString = queryString.Substring(1);
-                }
-            }
+
             parameters = Server.Helper.GetBeetleParameters(queryParams);
         }
 
@@ -77,22 +69,6 @@ namespace Beetle.MvcCore {
                 Formatters = formatterCollection,
                 ContentTypes = new MediaTypeCollection { config.Serializer.ContentType }
             };
-        }
-
-        public static void CheckRequestHash(string queryString, HttpRequest request) {
-            var clientHash = request.Headers["x-beetle-request"];
-            if (!string.IsNullOrEmpty(clientHash)) {
-                var hashLenStr = request.Headers["x-beetle-request-len"];
-                if (!string.IsNullOrEmpty(hashLenStr)) {
-                    var queryLen = Convert.ToInt32(hashLenStr);
-                    queryString = queryString.Substring(0, queryLen);
-                    var serverHash = Meta.Helper.CreateQueryHash(queryString).ToString(CultureInfo.InvariantCulture);
-
-                    if (serverHash == clientHash) return;
-                }
-            }
-
-            throw new BeetleException(Server.Properties.Resources.AlteredRequestException);
         }
     }
 }
