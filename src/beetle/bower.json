@@ -1,0 +1,30 @@
+{
+  "name": "beetle.js",
+  "description": "Beetle is a data manager for Javascript. The goal is to be able to work with data as easy as Entity Framework and LINQ.",
+  "main": "beetle.js",
+  "authors": [
+    "Umut Özel"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "ORM",
+    "OData",
+    "Unit",
+    "of",
+    "Work",
+    "Client",
+    "Side",
+    "Change",
+    "Tracker",
+    "JavaScript",
+    "TypeScript"
+  ],
+  "homepage": "https://github.com/umutozel/Beetle.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

@@ -1,0 +1,57 @@
+﻿@{Layout = null;}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Beetle Test</title>
+    <link rel="stylesheet" href="~/css/qunit.css" type="text/css" media="screen" />
+    <link href="~/css/toastr.css" rel="stylesheet" />
+    <!-- load 3rd party libs -->
+    <script src="~/js/jquery-1.8.3.min.js"></script>
+    <script src="~/js/knockout-2.1.0.js"></script>
+    <script src="~/js/json2.js"></script>
+    <script src="~/js/q.min.js"></script>
+    <script src="~/js/qunit.js"></script>
+    <script src="~/js/toastr.js"></script>
+    <!-- Application scripts -->
+    <script src="~/js/beetle/beetle.js"></script>
+    <script src="~/js/beetle/beetle-queryExtensions.js"></script>
+    <script src="~/js/tests/testMetadata.js"></script>
+    <script src="~/js/tests/basicTests.js"></script>
+</head>
+<body>
+@Html.AntiForgeryToken()
+<div class="beetle-toolbar">
+    <span>
+        <input type="radio" name="metadataGroup" value="MM" data-bind="checked: metadataType" checked="checked" />
+        Use Metadata Manager
+        <input type="radio" name="metadataGroup" value="MS" data-bind="checked: metadataType" />
+        Use Metadata string
+        <input type="radio" name="metadataGroup" value="SM" data-bind="checked: metadataType" />
+        Use Server Metadata
+        <input type="radio" name="metadataGroup" value="NM" data-bind="checked: metadataType" />
+        Do not use Metadata
+    </span>
+    <span style="margin-left: 50px">
+        <input type="radio" name="observableProviderGroup" value="KO" data-bind="checked: observableProviderType" checked="checked" />
+        Knockout
+        <input type="radio" name="observableProviderGroup" value="PR" data-bind="checked: observableProviderType" />
+        Properties (Angular)
+    </span>
+    <span style="margin-left: 50px">
+        <input type="radio" name="serviceGroup" value="MV" data-bind="checked: serviceType" checked="checked" />
+        Beetle Service
+        <input type="radio" name="serviceGroup" value="WA" data-bind="checked: serviceType" />
+        OData Service
+    </span>
+    <input type="button" class="btnRunTest" value="Run Tests" data-bind="click: reRun" />
+</div>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<div id="test-dev"></div>
+
+<script type="text/javascript">
+    ko.applyBindings(basicTestViewModel);
+</script>
+
+</body>
+</html>

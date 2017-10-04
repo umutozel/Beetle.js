@@ -1,104 +1,43 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Shared", "_Shared", "{C70CF31F-C02A-4A6B-A0ED-14B600674D45}"
-	ProjectSection(SolutionItems) = preProject
-		_Shared\Beetle.snk = _Shared\Beetle.snk
-		_Shared\favicon.ico = _Shared\favicon.ico
-		_Shared\GlobalAssemblyInfo.cs = _Shared\GlobalAssemblyInfo.cs
-		_Shared\icon.zip = _Shared\icon.zip
-		_Shared\logo.zip = _Shared\logo.zip
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3720FAF1-AC43-443C-A787-E4D955EB1D90}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_NuGet Packages", "_NuGet Packages", "{FC020D39-AB65-4394-B3F8-BF1602C68A65}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\Beetlejs.Client.nuspec = _NuGet Packages\Beetlejs.Client.nuspec
-		_NuGet Packages\Beetlejs.Client.TypeScript.nuspec = _NuGet Packages\Beetlejs.Client.TypeScript.nuspec
-		_NuGet Packages\Beetlejs.EF6.nuspec = _NuGet Packages\Beetlejs.EF6.nuspec
-		_NuGet Packages\Beetlejs.Mvc5.EF6.Sample.nuspec = _NuGet Packages\Beetlejs.Mvc5.EF6.Sample.nuspec
-		_NuGet Packages\Beetlejs.Mvc5.nuspec = _NuGet Packages\Beetlejs.Mvc5.nuspec
-		_NuGet Packages\Beetlejs.Server.nuspec = _NuGet Packages\Beetlejs.Server.nuspec
-		_NuGet Packages\Beetlejs.WebApi2.EF6.Sample.nuspec = _NuGet Packages\Beetlejs.WebApi2.EF6.Sample.nuspec
-		_NuGet Packages\Beetlejs.WebApi2.nuspec = _NuGet Packages\Beetlejs.WebApi2.nuspec
-		_NuGet Packages\Pack.ps1 = _NuGet Packages\Pack.ps1
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7AF18D12-8CE5-4E40-AAE6-8D57C6058577}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{EECD6D87-AB15-4624-B0C5-CB43288023D2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{97EB5D81-F11B-4F8E-8301-6954950AEFFF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{F57E712A-343A-4ED8-A199-8159E995FC42}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{54244F42-E28E-41BA-8558-2CD952E0DCB7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App_Start", "App_Start", "{58BFE415-66D6-4A47-99D4-C9ED1012C379}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\App_Start\BeetleWebApiConfig.cs.pp = _NuGet Packages\content\App_Start\BeetleWebApiConfig.cs.pp
-		_NuGet Packages\content\App_Start\TodoRouteConfig.cs.pp = _NuGet Packages\content\App_Start\TodoRouteConfig.cs.pp
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Server", "src\Beetle.Server\Beetle.Server.csproj", "{CEE6067A-D3C5-4869-897A-13EB6090051A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Content", "Content", "{17007987-9C20-43BD-B10B-A6F03B8630BA}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Content\base.css = _NuGet Packages\content\Content\base.css
-		_NuGet Packages\content\Content\bg.png = _NuGet Packages\content\Content\bg.png
-		_NuGet Packages\content\Content\toastr.css = _NuGet Packages\content\Content\toastr.css
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Meta", "src\Beetle.Meta\Beetle.Meta.csproj", "{28D5CBD9-D5CD-4100-8B06-45040868DDDB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers", "Controllers", "{BFF07E2C-9755-4BB5-80FB-817D02D64E92}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Controllers\TodoApiController.cs.pp = _NuGet Packages\content\Controllers\TodoApiController.cs.pp
-		_NuGet Packages\content\Controllers\TodoController.cs.pp = _NuGet Packages\content\Controllers\TodoController.cs.pp
-		_NuGet Packages\content\Controllers\TodoMvcController.cs.pp = _NuGet Packages\content\Controllers\TodoMvcController.cs.pp
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Mvc", "src\Beetle.Mvc\Beetle.Mvc.csproj", "{F1BB57BE-8859-49BF-A9C6-95446C132D69}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{470308A2-913F-4082-8B1D-EBCB8143DEFC}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Models\Todo.cs.pp = _NuGet Packages\content\Models\Todo.cs.pp
-		_NuGet Packages\content\Models\TodoContext.cs.pp = _NuGet Packages\content\Models\TodoContext.cs.pp
-		_NuGet Packages\content\Models\TodoDbInitializer.cs.pp = _NuGet Packages\content\Models\TodoDbInitializer.cs.pp
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.WebApi", "src\Beetle.WebApi\Beetle.WebApi.csproj", "{4324C4BB-2B27-4656-8B23-C93023B5FDC6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{35E531B4-7915-49A6-A488-C4ECFB0F6E05}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Scripts\jquery-1.8.3.min.js = _NuGet Packages\content\Scripts\jquery-1.8.3.min.js
-		_NuGet Packages\content\Scripts\knockout.js = _NuGet Packages\content\Scripts\knockout.js
-		_NuGet Packages\content\Scripts\toastr.js = _NuGet Packages\content\Scripts\toastr.js
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.EntityFramework", "src\Beetle.EntityFramework\Beetle.EntityFramework.csproj", "{C7052C0A-05B3-486A-B518-BFB45E23DF16}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{83816CDD-2340-46EC-A2E5-015DCC329FB7}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Scripts\App\director.js = _NuGet Packages\content\Scripts\App\director.js
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.MvcCore", "src\Beetle.MvcCore\Beetle.MvcCore.csproj", "{72C8147D-ABD2-44E3-84A3-47C4E4826312}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Views", "Views", "{5EA2401F-7FEA-45D3-9323-B3FA5F3FB4AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.EntityFrameworkCore", "src\Beetle.EntityFrameworkCore\Beetle.EntityFrameworkCore.csproj", "{F54E6978-7527-4341-BFD9-759A05888B6D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Todo", "Todo", "{A176F157-D4E6-470A-BA94-500675F3D9F7}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Views\Todo\Index.cshtml = _NuGet Packages\content\Views\Todo\Index.cshtml
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.MvcCoreApi", "src\Beetle.MvcCoreApi\Beetle.MvcCoreApi.csproj", "{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApi", "WebApi", "{162422A2-D83E-420F-AD86-8D8F96A9B349}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Scripts\App\WebApi\app.js = _NuGet Packages\content\Scripts\App\WebApi\app.js
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Tests.Integration", "tests\Beetle.Tests.Integration\Beetle.Tests.Integration.csproj", "{4B56325D-C6F2-40D1-885B-78792720D92B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc", "Mvc", "{440D7CDA-3790-4C31-A431-1E86461A1708}"
-	ProjectSection(SolutionItems) = preProject
-		_NuGet Packages\content\Scripts\App\Mvc\app.js = _NuGet Packages\content\Scripts\App\Mvc\app.js
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.IntegrationCore", "tests\Beetle.Tests.IntegrationCore\Beetle.Tests.IntegrationCore.csproj", "{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B0B37508-2AF4-4483-9741-B58819857267}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.Server", "tests\Beetle.Tests.Server\Beetle.Tests.Server.csproj", "{65B3F6D8-5CCA-4269-BA10-8605BB100197}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server", "Beetle.Server\Beetle.Server.csproj", "{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.ServerCore", "tests\Beetle.Tests.ServerCore\Beetle.Tests.ServerCore.csproj", "{8C18F4D2-38D9-4274-8E06-6891354A311F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Client", "Beetle.Client\Beetle.Client.csproj", "{354785D1-97DA-4A51-BCA0-E69D037A4FF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.CSharpClient", "tests\Beetle.Tests.CSharpClient\Beetle.Tests.CSharpClient.csproj", "{2F314137-0092-43A5-BE39-5DCC8007DBD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server.EntityFramework6", "Beetle.Server.EntityFramework6\Beetle.Server.EntityFramework6.csproj", "{1F3AAED6-3477-4729-9E6A-E763FB327FC1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server.WebApi2", "Beetle.Server.WebApi2\Beetle.Server.WebApi2.csproj", "{C7F93A33-D3EC-4A14-B57A-54C2EE2D66E3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetle.Server.Mvc5", "Beetle.Server.Mvc5\Beetle.Server.Mvc5.csproj", "{CD35330D-DEFE-4BD3-BC75-16D09AD21B41}"
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "beetle", "src\beetle\beetle.njsproj", "{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,42 +45,80 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4CD3AB61-3219-42F4-A93C-1F09FAF9B6CE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{354785D1-97DA-4A51-BCA0-E69D037A4FF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F3AAED6-3477-4729-9E6A-E763FB327FC1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7F93A33-D3EC-4A14-B57A-54C2EE2D66E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7F93A33-D3EC-4A14-B57A-54C2EE2D66E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7F93A33-D3EC-4A14-B57A-54C2EE2D66E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7F93A33-D3EC-4A14-B57A-54C2EE2D66E3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD35330D-DEFE-4BD3-BC75-16D09AD21B41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD35330D-DEFE-4BD3-BC75-16D09AD21B41}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD35330D-DEFE-4BD3-BC75-16D09AD21B41}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD35330D-DEFE-4BD3-BC75-16D09AD21B41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEE6067A-D3C5-4869-897A-13EB6090051A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4324C4BB-2B27-4656-8B23-C93023B5FDC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72C8147D-ABD2-44E3-84A3-47C4E4826312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72C8147D-ABD2-44E3-84A3-47C4E4826312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72C8147D-ABD2-44E3-84A3-47C4E4826312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72C8147D-ABD2-44E3-84A3-47C4E4826312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F54E6978-7527-4341-BFD9-759A05888B6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F54E6978-7527-4341-BFD9-759A05888B6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F54E6978-7527-4341-BFD9-759A05888B6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F54E6978-7527-4341-BFD9-759A05888B6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B56325D-C6F2-40D1-885B-78792720D92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B56325D-C6F2-40D1-885B-78792720D92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B56325D-C6F2-40D1-885B-78792720D92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B56325D-C6F2-40D1-885B-78792720D92B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65B3F6D8-5CCA-4269-BA10-8605BB100197}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65B3F6D8-5CCA-4269-BA10-8605BB100197}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65B3F6D8-5CCA-4269-BA10-8605BB100197}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65B3F6D8-5CCA-4269-BA10-8605BB100197}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{EECD6D87-AB15-4624-B0C5-CB43288023D2} = {FC020D39-AB65-4394-B3F8-BF1602C68A65}
-		{F57E712A-343A-4ED8-A199-8159E995FC42} = {FC020D39-AB65-4394-B3F8-BF1602C68A65}
-		{58BFE415-66D6-4A47-99D4-C9ED1012C379} = {F57E712A-343A-4ED8-A199-8159E995FC42}
-		{17007987-9C20-43BD-B10B-A6F03B8630BA} = {F57E712A-343A-4ED8-A199-8159E995FC42}
-		{BFF07E2C-9755-4BB5-80FB-817D02D64E92} = {F57E712A-343A-4ED8-A199-8159E995FC42}
-		{470308A2-913F-4082-8B1D-EBCB8143DEFC} = {F57E712A-343A-4ED8-A199-8159E995FC42}
-		{35E531B4-7915-49A6-A488-C4ECFB0F6E05} = {F57E712A-343A-4ED8-A199-8159E995FC42}
-		{83816CDD-2340-46EC-A2E5-015DCC329FB7} = {35E531B4-7915-49A6-A488-C4ECFB0F6E05}
-		{5EA2401F-7FEA-45D3-9323-B3FA5F3FB4AF} = {F57E712A-343A-4ED8-A199-8159E995FC42}
-		{A176F157-D4E6-470A-BA94-500675F3D9F7} = {5EA2401F-7FEA-45D3-9323-B3FA5F3FB4AF}
-		{162422A2-D83E-420F-AD86-8D8F96A9B349} = {83816CDD-2340-46EC-A2E5-015DCC329FB7}
-		{440D7CDA-3790-4C31-A431-1E86461A1708} = {83816CDD-2340-46EC-A2E5-015DCC329FB7}
+		{CEE6067A-D3C5-4869-897A-13EB6090051A} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{28D5CBD9-D5CD-4100-8B06-45040868DDDB} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{F1BB57BE-8859-49BF-A9C6-95446C132D69} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{4324C4BB-2B27-4656-8B23-C93023B5FDC6} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{C7052C0A-05B3-486A-B518-BFB45E23DF16} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{72C8147D-ABD2-44E3-84A3-47C4E4826312} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{F54E6978-7527-4341-BFD9-759A05888B6D} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{9B4EEC1C-49EB-4E83-A9C2-2091A0A24C36} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+		{4B56325D-C6F2-40D1-885B-78792720D92B} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
+		{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
+		{65B3F6D8-5CCA-4269-BA10-8605BB100197} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
+		{8C18F4D2-38D9-4274-8E06-6891354A311F} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
+		{2F314137-0092-43A5-BE39-5DCC8007DBD1} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
+		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
 	EndGlobalSection
 EndGlobal

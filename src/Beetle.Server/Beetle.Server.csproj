@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <PackageVersion>3.0.0-alpha-02</PackageVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Authors>Umut Özel</Authors>
+    <Description>Beetle Server interface.</Description>
+    <Copyright>Copyright (c) 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/umutozel/Beetle/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/umutozel/Beetle</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <PackageTags>Asp.Net Mvc Core Unit of Work Client Side Change Tracker Beetle</PackageTags>
+    <RepositoryUrl>https://github.com/umutozel/Beetle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <DefineConstants>NET_STANDARD</DefineConstants>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="DynamicQueryable" Version="0.1.24" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Beetle.Meta\Beetle.Meta.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\Resources.tr-tr.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

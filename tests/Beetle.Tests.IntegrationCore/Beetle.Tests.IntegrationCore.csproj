@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\js\beetle\*.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Giver" Version="1.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\src\beetle\lib\*.*">
+      <Link>wwwroot\js\beetle\%(FileName)%(Extension)</Link>
+    </None>
+    <Content Remove="wwwroot/js\tests\_Chutzpah.12cd687a03f79563393e930d199b204f877f458b.test.html" />
+    <Content Remove="wwwroot/js\_Chutzpah.b66ac6a98d745d89b5a8c272819ed9b27c4a28d7.test.html" />
+    <None Include="Views\Home\Index.cshtml" />
+    <None Include="wwwroot\js\qunit\qunit.d.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Beetle.EntityFrameworkCore\Beetle.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Beetle.MvcCoreApi\Beetle.MvcCoreApi.csproj" />
+    <ProjectReference Include="..\..\src\Beetle.MvcCore\Beetle.MvcCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\js\beetle\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+  <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
+    <Copy SourceFiles="%(None.Identity)" DestinationFiles="%(None.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" ContinueOnError="true" Condition="'%(None.Link)' != ''" />
+  </Target>
+
+</Project>

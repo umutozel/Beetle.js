@@ -1,0 +1,28 @@
+﻿// Configure bundling and minification for the project.
+// More info at https://go.microsoft.com/fwlink/?LinkId=808241
+[
+  {
+    "outputFileName": "wwwroot/css/site.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/css/qunit.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/site.min.js",
+    "inputFiles": [
+      "wwwroot/js/beetle/beetle.js",
+      "wwwroot/js/beetle/beetle.lang-tr-TR.js",
+      "wwwroot/js/beetle/beetle.queryExtensions.js",
+      "wwwroot/js/qunit/qunit.js",
+      "wwwroot/js/tests/basicTests.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  }
+]

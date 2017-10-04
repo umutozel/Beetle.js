@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Beetlejs.Client</id>
+        <version>3.0.0</version>
+        <title>Beetlejs Client Javascript Files</title>
+        <authors>Umut Özel</authors>
+        <owners>Umut Özel</owners>
+        <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
+        <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Beetle.js javascript files.</description>
+        <summary>Manage your data with Javascript easily.</summary>
+        <copyright>Copyright (c) 2017 Umut Özel</copyright>
+        <language>en-US</language>
+        <tags>Unit of Work Client Side Change Tracker Beetle Javascript</tags>
+    </metadata>
+    <files>
+      <file src="lib\beetle.js" target="content\Scripts\beetle\beetle.js" />
+      <file src="lib\beetle.d.ts" target="content\Scripts\beetle\beetle.d.ts" />
+      <file src="lib\beetle-queryExtensions.js" target="content\Scripts\beetle\beetle-queryExtensions.js" />
+      <file src="lib\beetle-queryExtensions.d.ts" target="content\Scripts\beetle\beetle.d.ts" />
+    </files>
+</package>
