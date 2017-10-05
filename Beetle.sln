@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3720FAF1-AC43-443C-A787-E4D955EB1D90}"
 EndProject
@@ -34,8 +34,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.Server", "tests\Beetle.Tests.Server\Beetle.Tests.Server.csproj", "{65B3F6D8-5CCA-4269-BA10-8605BB100197}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.ServerCore", "tests\Beetle.Tests.ServerCore\Beetle.Tests.ServerCore.csproj", "{8C18F4D2-38D9-4274-8E06-6891354A311F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beetle.Tests.CSharpClient", "tests\Beetle.Tests.CSharpClient\Beetle.Tests.CSharpClient.csproj", "{2F314137-0092-43A5-BE39-5DCC8007DBD1}"
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "beetle", "src\beetle\beetle.njsproj", "{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}"
 EndProject
@@ -93,10 +91,6 @@ Global
 		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C18F4D2-38D9-4274-8E06-6891354A311F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F314137-0092-43A5-BE39-5DCC8007DBD1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -118,7 +112,9 @@ Global
 		{03D8F318-5AD7-4EB7-976C-513AB7DD1A7E} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
 		{65B3F6D8-5CCA-4269-BA10-8605BB100197} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
 		{8C18F4D2-38D9-4274-8E06-6891354A311F} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
-		{2F314137-0092-43A5-BE39-5DCC8007DBD1} = {7AF18D12-8CE5-4E40-AAE6-8D57C6058577}
 		{A2A0AA0D-D420-4D32-B5EB-7CD7B269DC05} = {3720FAF1-AC43-443C-A787-E4D955EB1D90}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EE446E70-7038-471B-A054-69B87EFDE78B}
 	EndGlobalSection
 EndGlobal
