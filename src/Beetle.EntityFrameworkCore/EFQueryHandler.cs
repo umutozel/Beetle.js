@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-#if NET_STANDARD
 using System.Reflection;
-#endif
 
 namespace Beetle.EntityFrameworkCore {
     using Server;
