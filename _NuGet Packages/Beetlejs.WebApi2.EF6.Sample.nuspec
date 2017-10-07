@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Beetlejs.WebApi2.EF6.Sample</id>
-        <version>2.3.1</version>
+        <version>2.3.2</version>
         <title>Beetlejs WebApi 2 Entity Framework 6 Todo Sample</title>
         <authors>Umut Özel</authors>
         <owners>Umut Özel</owners>
@@ -19,7 +19,7 @@
             <dependency id="Beetlejs.Client" version="2.0" />
             <dependency id="Beetlejs.EF6" version="2.0" />
             <dependency id="Beetlejs.WebApi2" version="2.0" />
-            <dependency id="WebActivatorEx" />
+            <dependency id="WebActivatorEx" version="2.0" />
         </dependencies>
     </metadata>
     <files>

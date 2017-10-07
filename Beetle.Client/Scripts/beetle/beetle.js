@@ -7,10 +7,6 @@
 	};
 
 	if (typeof exports === "object") {
-		try { deps.jQuery = require("jQuery"); } catch (e) { }
-		try { deps.angularjs = require("angular"); } catch (e) { }
-		try { deps.ko = require("ko"); } catch (e) { }
-		try { deps.Q = require("Q"); } catch (e) { }
 		var node;
 		try {
 			var http = require("http");
@@ -30,9 +26,7 @@
 				{ provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
 			]).get(aHttp.Http);
 			angular = { http, Request: aHttp.Request, Headers: aHttp.Headers };
-		} catch (e) { 
-			console.log(e);
-		}
+		} catch (e) { }
 
 		module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, node, angular);
 		return module.exports;
@@ -10609,7 +10603,7 @@
 
 	return {
 		// Export types
-		version: '2.3.1',
+		version: '2.3.2',
 		registerI18N: function (code, i18n, active) {
 			i18Ns[code] = i18n;
 			if (active) i18N = i18n;

@@ -62,11 +62,6 @@
     <Compile Include="..\_Shared\GlobalAssemblyInfo.cs">
       <Link>GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AssemblyFileVersion.cs">
-      <DependentUpon>AssemblyFileVersion.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="EF6QueryHandler.cs" />
     <Compile Include="EFContextHandler.cs" />
     <Compile Include="MetadataGenerator.cs" />
@@ -98,20 +93,13 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.tr-tr.resx" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="AssemblyFileVersion.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>AssemblyFileVersion.cs</LastGenOutput>
-    </Content>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(ProjectDir)bin\$(ConfigurationName)\Beetle.Server.EntityFramework6.dll" 	"$(SolutionDir)_NuGet Packages\lib\Beetle.Server.EntityFramework6.dll"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>set textTemplatingPath="%25CommonProgramFiles(x86)%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
-if %25textTemplatingPath%25=="\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe" set textTemplatingPath="%25CommonProgramFiles%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
-%25textTemplatingPath%25 "$(ProjectDir)AssemblyFileVersion.tt"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
