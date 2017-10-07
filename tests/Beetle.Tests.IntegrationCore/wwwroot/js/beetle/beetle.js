@@ -12,10 +12,6 @@
     };
 
     if (typeof exports === "object") {
-        try { deps.jQuery = require("jQuery"); } catch (e) { }
-        try { deps.angularjs = require("angular"); } catch (e) { }
-        try { deps.ko = require("ko"); } catch (e) { }
-        try { deps.Q = require("Q"); } catch (e) { }
         var node;
         try {
             var http = require("http");

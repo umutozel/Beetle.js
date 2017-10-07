@@ -1298,12 +1298,12 @@ declare module beetle {
         }
 
         /** Pure javascript ajax provider class. */
-        class VanillajsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
+        class VanillajsAjaxProvider extends baseTypes.AjaxProviderBase {
             constructor();
         }
 
         /** Node.js ajax provider class. */
-        class NodejsAjaxProviderInstance extends baseTypes.AjaxProviderBase {
+        class NodejsAjaxProvider extends baseTypes.AjaxProviderBase {
             constructor(http, https);
         }
 
@@ -1328,7 +1328,7 @@ declare module beetle {
         }
 
         /** ES6 promise provider. */
-        class Es6PromiseProviderInstance extends baseTypes.PromiseProviderBase {
+        class Es6PromiseProvider extends baseTypes.PromiseProviderBase {
             constructor();
         }
     }
