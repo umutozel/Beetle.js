@@ -5,7 +5,7 @@
  */
 (function (root, factory) {
     if (typeof exports === "object") {
-        var beetle = require("./beetle.js");
+        var beetle = require("beetle.js");
         module.exports = factory(root, beetle);
         return beetle;
     }

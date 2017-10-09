@@ -262,3 +262,5 @@ __pycache__/
 /.axoCover
 /src/beetle/lib/out
 /src/beetle/lib/doc
+
+.DS_Store

@@ -1,4 +1,4 @@
-﻿import * as beetle from "./beetle";
+﻿import * as beetle from "beetle.js";
 
 declare module "beetle" {
 
