@@ -2062,9 +2062,6 @@
 
             proto.toString = function () {
                 var params = [];
-                helper.forEach(this.parameters, function (prm) {
-                    params.push(prm.name + ': ' + (prm.value == null ? '' : prm.value));
-                });
 
                 if (this.inlineCountEnabled === true)
                     params.push('inlinecount: allpages');
@@ -5989,6 +5986,13 @@
 
                 proto.toString = function () {
                     var retVal = [];
+
+                    var params = [];
+                    helper.forEach(this.parameters, function (prm) {
+                        params.push(prm.name + ': ' + (prm.value == null ? '' : prm.value));
+                    });
+                    retVal.push('parameters: (' + params.join(', ') + ')');
+    
                     retVal.push('resource: (' + this.resource + ')');
                     if (this.entityType)
                         retVal.push('entityType: (' + this.entityType.shortName + ')');
