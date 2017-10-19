@@ -8854,13 +8854,14 @@
                                             } else lastProperty = g.Property;
 
                                             var tracker = entity.$tracker;
-                                            if (g.Value != null && g.Value.$type) {
-                                                var value = [g.Value];
-                                                mergeEntities(value, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, options.autoFixScalar, options.autoFixPlural);
-                                                // with this hack, when value is entity and another entity with same key is already in cache, we get cache item
-                                                g.Value = value[0];
+                                            var value = g.Value;
+                                            if (value != null) {
+                                                // do not set objects
+                                                if (value.$type) return;
+                                                // skip if array contains object or array value
+                                                if (helper.isArray(value) && value.q().any(v => v.$type || helper.isArray(v))) return;
                                             }
-                                            tracker.setValue(lastProperty, g.Value);
+                                            tracker.setValue(lastProperty, value);
                                         });
                                     }
 
