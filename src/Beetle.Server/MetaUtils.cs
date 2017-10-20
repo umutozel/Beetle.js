@@ -88,7 +88,7 @@ namespace Beetle.Server {
                     var foreignKeys = properties
                         .Where(p => p.GetCustomAttribute<ForeignKeyAttribute>()?.Name == propertyInfo.Name)
                         .ToList();
-                    var required = foreignKeys
+                    var required = foreignKeys.Any() && foreignKeys
                         .All(p => !p.PropertyType.GetTypeInfo().IsGenericType
                                   || p.PropertyType.GetTypeInfo().GetGenericTypeDefinition() != typeof(Nullable<>));
 
