@@ -21,7 +21,7 @@ namespace Beetle.MvcCore {
             }
 
             var queryParams = request.Query.ToDictionary(k => k.Key, k => k.Value.ToString());
-            if (request.ContentLength > 0) {
+            if (queryParams.ContainsKey("!beetle-use-body") && request.ContentLength > 0) {
                 if (request.Body.CanSeek) {
                     request.Body.Position = 0;
                 }

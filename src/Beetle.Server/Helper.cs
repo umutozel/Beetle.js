@@ -92,8 +92,10 @@ namespace Beetle.Server {
                 .Select(k => {
                     var v = queryParams[k];
                     var i = v.IndexOf(':');
+                    if (i < 0) return null;
                     return new BeetleParameter(v.Substring(0, i), v.Substring(i + 1));
                 })
+                .Where(b => b != null)
                 .ToList();
         }
 

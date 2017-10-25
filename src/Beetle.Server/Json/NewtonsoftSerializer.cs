@@ -12,6 +12,9 @@ namespace Beetle.Server.Json {
         public NewtonsoftSerializer(JsonSerializerSettings settings) {
             Settings = settings;
             Settings.Converters.Add(new ExpandoObjectConverter());
+            Settings.Converters.Add(new BeetleDateTimeConverter());
+            Settings.Converters.Add(new ByteArrayConverter());
+            Settings.Converters.Add(new TimeSpanConverter());
         }
 
         public string ContentType { get; } = "application/json";
@@ -20,25 +23,14 @@ namespace Beetle.Server.Json {
 
         public JsonSerializerSettings Settings { get; }
 
-        public string Serialize(object obj) {
-            return JsonConvert.SerializeObject(obj, Settings);
-        }
+        public string Serialize(object obj) => JsonConvert.SerializeObject(obj, Settings);
 
-        public T Deserialize<T>(string str) {
-            return JsonConvert.DeserializeObject<T>(str, Settings);
-        }
+        public T Deserialize<T>(string str) => JsonConvert.DeserializeObject<T>(str, Settings);
 
-        public object Deserialize(string str, Type type) {
-            return JsonConvert.DeserializeObject(str, type, Settings);
-        }
+        public object Deserialize(string str, Type type) => JsonConvert.DeserializeObject(str, type, Settings);
 
-        public dynamic DeserializeToDynamic(string str) {
-            return JsonConvert.DeserializeObject<dynamic>(str, Settings);
-        }
+        public dynamic DeserializeToDynamic(string str) => JsonConvert.DeserializeObject<dynamic>(str, Settings);
 
-        public object ConvertFromDynamic(dynamic value, Type type) {
-            var reader = new JTokenReader(value);
-            return JsonSerializer.Create(Settings).Deserialize(reader, type);
-        }
+        public object ConvertFromDynamic(dynamic value, Type type) => JsonSerializer.Create(Settings).Deserialize(new JTokenReader(value), type);
     }
 }

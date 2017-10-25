@@ -25,9 +25,7 @@ namespace Beetle.MvcCore {
             if (Config == null) throw new ArgumentException(Resources.CannotCreateConfigInstance);
         }
 
-        public BeetleActionFilterAttribute(IBeetleConfig config) {
-            Config = config;
-        }
+        public BeetleActionFilterAttribute(IBeetleConfig config) => Config = config;
 
         public IBeetleConfig Config { get; }
 
@@ -72,8 +70,6 @@ namespace Beetle.MvcCore {
                 : Server.Helper.DefaultRequestProcessor(actionContext);
         }
 
-        protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response) {
-            return Helper.HandleResponse(result, response);
-        }
+        protected virtual ActionResult HandleResponse(ProcessResult result, HttpResponse response) => Helper.HandleResponse(result, response);
     }
 }

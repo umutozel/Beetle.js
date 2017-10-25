@@ -64,29 +64,20 @@ namespace Beetle.MvcCore {
             Config = config ?? new BeetleConfig();
         }
 
-        protected virtual Metadata GetMetadata() {
-            var svc = (IBeetleService)this;
-            return svc.ContextHandler?.Metadata();
-        }
+        protected virtual Metadata GetMetadata() => ((IBeetleService)this).ContextHandler?.Metadata();
 
         [BeetleActionFilter(typeof(SimpleResultConfig))]
-        public virtual object Metadata() {
-            return GetMetadata()?.ToMinified();
-        }
+        [HttpGet]
+        public virtual object Metadata() => GetMetadata()?.ToMinified();
 
-        protected virtual IList<EntityBag> ResolveEntities(object saveBundle, out IList<EntityBag> unknownEntities) {
-            return ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
-        }
+        protected virtual IList<EntityBag> ResolveEntities(object saveBundle, out IList<EntityBag> unknownEntities)
+            => ServerHelper.ResolveEntities(saveBundle, Config, GetMetadata(), out unknownEntities);
 
-        protected virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) {
-            return Enumerable.Empty<EntityBag>();
-        }
+        protected virtual IEnumerable<EntityBag> HandleUnknowns(IEnumerable<EntityBag> unknowns) => Enumerable.Empty<EntityBag>();
 
-        protected virtual Task<SaveResult> SaveChanges(SaveContext saveContext) {
-            var svc = (IBeetleService)this;
-            return svc.ContextHandler?.SaveChanges(saveContext)
-                   ?? throw new NotSupportedException();
-        }
+        protected virtual Task<SaveResult> SaveChanges(SaveContext saveContext) 
+            => ((IBeetleService)this).ContextHandler?.SaveChanges(saveContext)
+                ?? throw new NotSupportedException();
 
         #region Implementation of IBeetleService
 
@@ -96,17 +87,12 @@ namespace Beetle.MvcCore {
 
         public int? MaxResultCount { get; set; }
 
-        Metadata IBeetleService.Metadata() {
-            return GetMetadata();
-        }
+        Metadata IBeetleService.Metadata() => GetMetadata();
 
-        public virtual object CreateType(string typeName, string initialValues) {
-            return ServerHelper.CreateType(typeName, initialValues, Config);
-        }
+        [HttpGet]
+        public virtual object CreateType(string typeName, string initialValues) => ServerHelper.CreateType(typeName, initialValues, Config);
 
-        ProcessResult IBeetleService.ProcessRequest(ActionContext actionContext) {
-            return ProcessRequest(actionContext);
-        }
+        ProcessResult IBeetleService.ProcessRequest(ActionContext actionContext) => ProcessRequest(actionContext);
 
         protected virtual ProcessResult ProcessRequest(ActionContext actionContext) {
             var svc = (IBeetleService)this;
@@ -115,7 +101,8 @@ namespace Beetle.MvcCore {
                 : ServerHelper.DefaultRequestProcessor(actionContext);
         }
 
-        public async Task<SaveResult> SaveChanges([FromBody]object saveBundle) {
+        [HttpPost]
+        public virtual async Task<SaveResult> SaveChanges([FromBody]object saveBundle) {
             var entityBags = ResolveEntities(saveBundle, out IList<EntityBag> unknowns);
             var entityBagList = entityBags == null
                 ? new List<EntityBag>()
@@ -139,45 +126,29 @@ namespace Beetle.MvcCore {
 
         public event BeforeQueryExecuteDelegate BeforeHandleQuery;
 
-        void IBeetleService.OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) {
-            OnBeforeHandleQuery(args);
-        }
+        void IBeetleService.OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) => OnBeforeHandleQuery(args);
 
-        protected virtual void OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) {
-            BeforeHandleQuery?.Invoke(this, args);
-        }
+        protected virtual void OnBeforeHandleQuery(BeforeQueryExecuteEventArgs args) => BeforeHandleQuery?.Invoke(this, args);
 
         public event BeforeQueryExecuteDelegate BeforeQueryExecute;
 
-        void IBeetleService.OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) {
-            OnBeforeQueryExecute(args);
-        }
+        void IBeetleService.OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) => OnBeforeQueryExecute(args);
 
-        protected virtual void OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) {
-            BeforeQueryExecute?.Invoke(this, args);
-        }
+        protected virtual void OnBeforeQueryExecute(BeforeQueryExecuteEventArgs args) => BeforeQueryExecute?.Invoke(this, args);
 
         public event AfterQueryExecuteDelegate AfterQueryExecute;
 
-        void IBeetleService.OnAfterQueryExecute(AfterQueryExecuteEventArgs args) {
-            OnAfterQueryExecute(args);
-        }
+        void IBeetleService.OnAfterQueryExecute(AfterQueryExecuteEventArgs args) => OnAfterQueryExecute(args);
 
-        protected virtual void OnAfterQueryExecute(AfterQueryExecuteEventArgs args) {
-            AfterQueryExecute?.Invoke(this, args);
-        }
+        protected virtual void OnAfterQueryExecute(AfterQueryExecuteEventArgs args) => AfterQueryExecute?.Invoke(this, args);
 
         public event BeforeSaveDelegate BeforeSaveChanges;
 
-        protected virtual void OnBeforeSaveChanges(BeforeSaveEventArgs args) {
-            BeforeSaveChanges?.Invoke(this, args);
-        }
+        protected virtual void OnBeforeSaveChanges(BeforeSaveEventArgs args) => BeforeSaveChanges?.Invoke(this, args);
 
         public event AfterSaveDelegate AfterSaveChanges;
 
-        protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) {
-            AfterSaveChanges?.Invoke(this, args);
-        }
+        protected virtual void OnAfterSaveChanges(AfterSaveEventArgs args) => AfterSaveChanges?.Invoke(this, args);
 
         #endregion
 

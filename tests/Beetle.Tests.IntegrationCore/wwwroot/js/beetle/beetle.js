@@ -8859,7 +8859,7 @@
                                                 // do not set objects
                                                 if (value.$type) return;
                                                 // skip if array contains object or array value
-                                                if (helper.isArray(value) && value.q().any(v => v.$type || helper.isArray(v))) return;
+                                                if (Assert.isArray(value) && value.q().any(v => v.$type || Assert.isArray(v))) return;
                                             }
                                             tracker.setValue(lastProperty, value);
                                         });
@@ -9733,6 +9733,7 @@
                 });
 
                 if (options.useBody) {
+                    prmsArr.push("!beetle-use-body", queryParams.length);
                     bodyParameter = helper.extend({}, bodyParameter);
                     helper.forEach(queryParams, function (qp) {
                         bodyParameter[qp.name] = qp.value;
