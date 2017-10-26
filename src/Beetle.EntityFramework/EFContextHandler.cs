@@ -12,8 +12,8 @@ using EFEntityType = System.Data.Entity.Core.Metadata.Edm.EntityType;
 namespace Beetle.EntityFramework {
     using Meta;
     using Server;
+    using Server.Interface;
     using Properties;
-    using Beetle.Server.Interface;
 
     public class EFContextHandler<TContext> : ContextHandler<TContext> where TContext : DbContext {
         // ReSharper disable StaticMemberInGenericType
