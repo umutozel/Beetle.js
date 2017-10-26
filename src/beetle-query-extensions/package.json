@@ -1,6 +1,6 @@
 {
   "name": "beetle-query-extensions",
-  "version": "3.0.0-alpha.05",
+  "version": "3.0.0-alpha.06",
   "main": "./lib/beetle-query-extensions.js",
   "typings": "./lib/beetle-query-extensions.d.ts",
   "description": "Adds query extension methods to JavaScript arrays.",
@@ -35,6 +35,6 @@
   "homepage": "https://github.com/umutozel/Beetle.js#readme",
   "license": "MIT",
   "dependencies": {
-    "beetle.js": "3.0.0-alpha.03"
+    "beetle.js": "^3.0.0-alpha.01"
   }
 }
