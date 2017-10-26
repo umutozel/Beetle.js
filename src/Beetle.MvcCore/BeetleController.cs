@@ -66,7 +66,7 @@ namespace Beetle.MvcCore {
 
         protected virtual Metadata GetMetadata() => ((IBeetleService)this).ContextHandler?.Metadata();
 
-        [BeetleActionFilter(typeof(SimpleResultConfig))]
+        [BeetleActionFilter(typeof(SimpleResultConfig), Order = -1)]
         [HttpGet]
         public virtual object Metadata() => GetMetadata()?.ToMinified();
 

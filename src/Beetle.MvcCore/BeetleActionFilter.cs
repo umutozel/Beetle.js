@@ -19,6 +19,8 @@ namespace Beetle.MvcCore {
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
 
         public BeetleActionFilterAttribute(Type configType = null): base() {
+            Order = 0;
+            
             if (configType == null) return;
 
             Config = Activator.CreateInstance(configType) as IBeetleConfig;
