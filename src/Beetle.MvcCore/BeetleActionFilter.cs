@@ -31,13 +31,14 @@ namespace Beetle.MvcCore {
 
         public int MaxResultCount { get; set; }
 
-        public override void OnActionExecuted(ActionExecutedContext context) {
-            base.OnActionExecuted(context);
+        public override void OnResultExecuting(ResultExecutingContext context) {
+            base.OnResultExecuting(context);
 
             if (!(context.Result is ObjectResult objectResult)) return;
+            if (objectResult is BeetleObjectResult) return;
 
             if (context.ActionDescriptor is ControllerActionDescriptor cad 
-                    && cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonBeetleActionAttribute))) return;
+                && cad.MethodInfo.CustomAttributes.Any(a => a.AttributeType == typeof(NonBeetleActionAttribute))) return;
 
             var actionName = context.ActionDescriptor.DisplayName;
             var contentValue = objectResult.Value;
@@ -56,7 +57,7 @@ namespace Beetle.MvcCore {
         }
 
         protected virtual void GetParameters(IBeetleService service,
-                                             ActionExecutedContext context,
+                                             ResultExecutingContext context,
                                              out IList<BeetleParameter> parameters) {
             var config = Config ?? service?.Config;
             Helper.GetParameters(config, context.HttpContext.Request, out parameters);

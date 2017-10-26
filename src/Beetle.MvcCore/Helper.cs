@@ -56,7 +56,7 @@ namespace Beetle.MvcCore {
             }
         }
 
-        public static ActionResult HandleResponse(ProcessResult processResult, HttpResponse response) {
+        public static BeetleObjectResult HandleResponse(ProcessResult processResult, HttpResponse response) {
             var result = processResult.Result;
             var actionContext = processResult.ActionContext;
             var service = actionContext.Service;
@@ -65,7 +65,7 @@ namespace Beetle.MvcCore {
             var formatters = new List<IOutputFormatter> { formatter };
             var formatterCollection = new FormatterCollection<IOutputFormatter>(formatters);
 
-            return new ObjectResult(result) {
+            return new BeetleObjectResult(result) {
                 Formatters = formatterCollection,
                 ContentTypes = new MediaTypeCollection { config.Serializer.ContentType }
             };

@@ -35,6 +35,7 @@
     <Compile Include="..\Beetle.MvcCore\BeetleActionFilter.cs" Link="BeetleActionFilter.cs" />
     <Compile Include="..\Beetle.MvcCore\BeetleController.cs" Link="BeetleController.cs" />
     <Compile Include="..\Beetle.MvcCore\BeetleMediaTypeFormatter.cs" Link="BeetleMediaTypeFormatter.cs" />
+    <Compile Include="..\Beetle.MvcCore\BeetleObjectResult.cs" Link="BeetleObjectResult.cs" />
     <Compile Include="..\Beetle.MvcCore\Helper.cs" Link="Helper.cs" />
   </ItemGroup>
 
