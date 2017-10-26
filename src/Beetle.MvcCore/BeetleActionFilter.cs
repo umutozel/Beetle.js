@@ -15,10 +15,10 @@ namespace Beetle.MvcCore {
     using Server.Interface;
     using Properties;
 
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class BeetleActionFilterAttribute : ActionFilterAttribute {
 
-        public BeetleActionFilterAttribute(Type configType = null) {
+        public BeetleActionFilterAttribute(Type configType = null): base() {
             if (configType == null) return;
 
             Config = Activator.CreateInstance(configType) as IBeetleConfig;
