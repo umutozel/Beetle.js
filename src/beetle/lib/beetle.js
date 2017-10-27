@@ -13,11 +13,13 @@
 
     if (typeof exports === "object") {
         var node;
-        try {
-            var http = require("http");
-            var https = require("https");
-            node = { http, https };
-        } catch (e) { }
+        if (typeof window == 'undefined') {
+            try {
+                var http = require("http");
+                var https = require("https");
+                node = { http, https };
+            } catch (e) { }
+        }
         var angular;
         try {
             var aCore = require("@angular/core");
