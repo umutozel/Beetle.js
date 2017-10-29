@@ -4,7 +4,7 @@
 /// <reference path="../q.min.js" />
 /// <reference path="../knockout-2.1.0.js" />
 /// <reference path="../beetle/beetle.js" />
-/// <reference path="../beetle/beetle.queryExtensions.js" />
+/// <reference path="../beetle/beetle-queryExtensions.js" />
 /// <reference path="../toastr.js" />
 /// <reference path="testMetadata.js" />
 

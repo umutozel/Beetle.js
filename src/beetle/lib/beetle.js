@@ -5960,6 +5960,29 @@
                     baseTypes.QueryBase.prototype.copy.call(this, query);
                 };
 
+                /**
+                 * Simulate promise call with local queries.
+                 */
+                proto.then = function (callback, failCallback) {
+                    var pp = settings.getPromiseProvider();
+                    if (pp == null) throw new Error('Cannot create promise when there is no promise provider.');
+
+                    var d = pp.deferred();
+                    var p = pp.getPromise(d);
+                    
+                    try {
+                        var result = this.execute();
+                        setTimeout(() => pp.resolve(d, result));
+                    }
+                    catch (e) {
+                        setTimeout(() => pp.reject(d, e));
+                    }
+                    
+                    if (failCallback && p["fail"])
+                        return p.then(callback).fail(failCallback);
+                    return p.then(callback, failCallback);
+                }
+
                 return ctor;
             })(),
             /** 
@@ -6086,12 +6109,9 @@
                 /** When using promises, this shortcut can be used instead of "execute().then()" syntax. */
                 proto.then = function (callback, failCallback, options) {
                     var p = this.execute(options);
-                    if (failCallback) {
-                        if (p["fail"])
-                            return p.then(callback).fail(failCallback);
-                        return p.then(callback, failCallback);
-                    }
-                    return p.then(callback);
+                    if (failCallback && p["fail"])
+                        return p.then(callback).fail(failCallback);
+                    return p.then(callback, failCallback);
                 }
 
                 function handleEntityType(type, manager) {
