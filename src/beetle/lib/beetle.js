@@ -8862,7 +8862,7 @@
                                         mergeEntities(result.GeneratedEntities, null, enums.mergeStrategy.Preserve, enums.entityStates.Unchanged, that, options.autoFixScalar, options.autoFixPlural);
 
                                     // set returned generated value to existing entity.
-                                    if (result.GeneratedValues) {
+                                    if (result.GeneratedValues && changes) {
                                         helper.forEach(result.GeneratedValues, function (g) {
                                             if (g.Index < 0) return;
 
@@ -8888,7 +8888,9 @@
                                     }
 
                                     // Accept all changes, means Added -> Unchanged; Modified -> Unchanged, Clear Original Values; Deleted -> Remove from cache.
-                                    acceptSaves(changes, that.entities, that);
+                                    if (changes) {
+                                        acceptSaves(changes, that.entities, that);
+                                    }
 
                                     result.userData = headerGetter("X-UserData");
                                     if (options.includeHeaderGetter === true)

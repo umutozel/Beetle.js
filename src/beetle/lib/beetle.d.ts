@@ -392,6 +392,8 @@ declare module beetle {
                 takeWhile(predicate: string | ((entity: T) => boolean), varContext?: any): Query<T>;
                 /** Executes this query. */
                 then(successCallback: (result: beetle.interfaces.QueryResultArray<T>) => void, errorCallback?: (e: AjaxError) => void, options?: any): AjaxCall<beetle.interfaces.QueryResultArray<T>>;
+                /** Sets options to be used at execution. */
+                withOptions(options: any): Query<T>;
             }
     
             /** After an executer function called on a server query, this interface is returned. */
@@ -417,17 +419,17 @@ declare module beetle {
             /** When enabled these extra information will be attached to server results. */
             interface QueryResultExtra {
                 /** Server can send custom data using this property (carried using a http header). */
-                userData: string;
+                userData?: string;
                 /** Http header getter function. */
                 headerGetter: (name: string) => string;
                 /** When ajax provider exposes xhr, this property will be available. */
-                xhr: any;
+                xhr?: any;
             }
     
             /** Server array results have these extra properties (when enabled). */
             interface QueryResultArray<T> extends Array<T> {
                 /** Extra information about query (when enabled). */
-                $extra: QueryResultExtra;
+                $extra?: QueryResultExtra;
                 /** Inline count (calculated excluding skip-take from query).  */
                 $inlineCount?: number;
             }
@@ -546,7 +548,7 @@ declare module beetle {
                 /** when true, each entity will be updated -even there is no modified property. */
                 forceUpdate?: boolean;
                 /** We can send custom data to server using this property (carried using a http header). */
-                userData: string;
+                userData?: string;
             }
     
             /** 
@@ -1590,6 +1592,8 @@ declare module beetle {
                 x<TResult>(options?: any): TResult;
                 /** Executes this query. */
                 then(successCallback: (result: beetle.interfaces.QueryResultArray<T>) => void, errorCallback?: (e: AjaxError) => void, options?: any): AjaxCall<beetle.interfaces.QueryResultArray<T>>;
+                /** Sets options to be used at execution. */
+                withOptions(options: any): ArrayQuery<T>;
             }
             class EntityQuery<T> implements interfaces.Query<T> {
                 constructor(resource: string, type: interfaces.EntityType, manager: core.EntityManager);
