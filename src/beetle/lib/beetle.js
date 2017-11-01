@@ -9753,7 +9753,7 @@
 
                 var prmsArr = [];
                 helper.forEach(parameters, function (prm) {
-                    prmsArr.push(prm.name + "=" + encodeURIComponent(prm.value));
+                    prmsArr.push(prm.name + "=" + (prm.value != null ? encodeURIComponent(prm.value) : ""));
                 });
 
                 if (options.useBody) {
