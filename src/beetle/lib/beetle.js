@@ -17,7 +17,7 @@
             try {
                 var http = require("http");
                 var https = require("https");
-                node = { http, https };
+                node = { http: http, https: https };
             } catch (e) { }
         }
         var angular;
@@ -32,7 +32,7 @@
                 { provide: aHttp.ResponseOptions, useClass: aHttp.BaseResponseOptions },
                 { provide: aHttp.XSRFStrategy, useValue: new aHttp.CookieXSRFStrategy() }
             ]).get(aHttp.Http);
-            angular = { http, Request: aHttp.Request, Headers: aHttp.Headers };
+            angular = { http: http, Request: aHttp.Request, Headers: aHttp.Headers };
         } catch (e) { }
 
         module.exports = factory(root, deps.jQuery, deps.angularjs, deps.ko, deps.Q, node, angular);
@@ -3387,12 +3387,12 @@
                 var request = new this.RequestConstructor(requestOptions);
 
                 return this.http.request(request)
-                    .subscribe(resp => {
-                        return successCallback(resp.text(), name => {
+                    .subscribe(function(resp) {
+                        return successCallback(resp.text(), function(name) {
                             return resp.headers[name];
                         });
                     },
-                    error => {
+                    function(error) {
                         var obj = { status: error.status, detail: error._body, error: error };
                         var e = helper.createError(error.statusText, obj);
                         errorCallback(e);
@@ -5972,10 +5972,10 @@
                     
                     try {
                         var result = this.execute();
-                        setTimeout(() => pp.resolve(d, result));
+                        setTimeout(function() { pp.resolve(d, result); });
                     }
                     catch (e) {
-                        setTimeout(() => pp.reject(d, e));
+                        setTimeout(function(){ pp.reject(d, e); });
                     }
                     
                     if (failCallback && p["fail"])
@@ -8881,7 +8881,7 @@
                                                 // do not set objects
                                                 if (value.$type) return;
                                                 // skip if array contains object or array value
-                                                if (Assert.isArray(value) && value.q().any(v => v.$type || Assert.isArray(v))) return;
+                                                if (Assert.isArray(value) && value.q().any(function (v) { v.$type || Assert.isArray(v); })) return;
                                             }
                                             tracker.setValue(lastProperty, value);
                                         });
