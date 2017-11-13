@@ -10122,7 +10122,7 @@
             _promiseProvider = new impls.QPromiseProvider(Q);
         else if (angularjs)
             _promiseProvider = new impls.AngularjsPromiseProvider(angularjs);
-        else if (Promise)
+        else if (typeof Promise != 'undefined')
             _promiseProvider = new impls.Es6PromiseProvider();
         else if ($)
             _promiseProvider = new impls.JQueryPromiseProvider($);
