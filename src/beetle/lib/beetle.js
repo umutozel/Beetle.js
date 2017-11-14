@@ -9760,13 +9760,19 @@
                 var prmsArr = [];
                 helper.forEach(parameters, function (prm) {
                     var value = Assert.isFunction(prm.value) ? prm.value() : prm.value;
+
+                    if (value instanceof Date) {
+                        var converter = beetle.settings.getDateConverter();
+                        value = converter.toISOString(date);
+                    }
+                    
                     prmsArr.push(prm.name + "=" + (value != null ? encodeURIComponent(value) : ""));
                 });
 
                 var bodyParameter = {};
                 for (var i = 0; i < bodyParameters.length; i++) {
                     var obj = bodyParameters[i];
-                    if (obj != null) continue;
+                    if (obj == null) continue;
 
                     if (Assert.isFunction(obj)) {
                         obj = obj();
