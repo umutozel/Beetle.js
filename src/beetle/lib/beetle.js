@@ -10457,7 +10457,7 @@
 
     /** Export types */
     return {
-        version: '2.3.1',
+        version: '3.0.0-alpha.13',
         /** 
          * Register localization
          * @param {string} code - Language code.
