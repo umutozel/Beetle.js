@@ -3936,8 +3936,8 @@
                 this.baseType = null;
                 this.validators = [];
                 this.isComplexType = isComplexType == true;
-                this.constructor = null;
-                this.initializer = null;
+                this.constructors = [];
+                this.initializers = [];
             };
             var proto = ctor.prototype;
 
@@ -3975,12 +3975,14 @@
              * @param {Function} initializer - Initializer function. Called after entity started to being tracked (properties converted to observable).
              */
             proto.registerCtor = function (constructor, initializer) {
-                if (constructor != null)
+                if (constructor != null) {
                     helper.assertPrm(constructor, 'constructor').isFunction().check();
-                if (initializer != null)
+                    this.constructors.push(constructor);
+                }
+                if (initializer != null) {
                     helper.assertPrm(initializer, 'initializer').isFunction().check();
-                this.constructor = constructor;
-                this.initializer = initializer;
+                    this.initializers.push(initializer);
+                }
             };
 
             /**
@@ -4022,8 +4024,9 @@
 
             function callCtor(type, entity) {
                 if (type.baseType) callCtor(type.baseType, entity);
-                if (type.constructor)
-                    type.constructor.call(entity, entity);
+                for (var i = 0; i < type.constructors.length; i++) {
+                    type.constructors[i].call(entity, entity);
+                }
             }
 
             /** Checks if this type can be set with given type. */
@@ -7644,8 +7647,9 @@
 
             function callIzer(type, entity) {
                 if (type.baseType) callIzer(type.baseType, entity);
-                if (type.initializer)
-                    type.initializer.call(entity, entity);
+                for (var i = 0; i < type.initializers.length; i++) {
+                    type.initializers[i].call(entity, entity);
+                }
             }
 
             function getKey(tracker, p, v) {
@@ -9760,13 +9764,19 @@
                 var prmsArr = [];
                 helper.forEach(parameters, function (prm) {
                     var value = Assert.isFunction(prm.value) ? prm.value() : prm.value;
+
+                    if (value instanceof Date) {
+                        var converter = beetle.settings.getDateConverter();
+                        value = converter.toISOString(date);
+                    }
+                    
                     prmsArr.push(prm.name + "=" + (value != null ? encodeURIComponent(value) : ""));
                 });
 
                 var bodyParameter = {};
                 for (var i = 0; i < bodyParameters.length; i++) {
                     var obj = bodyParameters[i];
-                    if (obj != null) continue;
+                    if (obj == null) continue;
 
                     if (Assert.isFunction(obj)) {
                         obj = obj();
@@ -10451,7 +10461,7 @@
 
     /** Export types */
     return {
-        version: '2.3.1',
+        version: '3.0.0-alpha.13',
         /** 
          * Register localization
          * @param {string} code - Language code.

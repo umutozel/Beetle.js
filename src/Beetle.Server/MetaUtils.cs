@@ -258,13 +258,13 @@ namespace Beetle.Server {
             var displayName = navigationProperty.GetDisplayName() ?? navigationProperty.Name;
             var dataAnnotations = member.GetCustomAttributes<ValidationAttribute>();
             foreach (var att in dataAnnotations) {
-                string msg;
+                string msg = null;
                 var rmsg = att.ErrorMessageResourceName;
-                try {
-                    msg = att.FormatErrorMessage(displayName);
-                }
-                catch {
-                    msg = null;
+                if (!string.IsNullOrEmpty(att.ErrorMessageResourceName) || !string.IsNullOrEmpty(att.ErrorMessage)) {
+                    try {
+                        msg = att.FormatErrorMessage(displayName);
+                    }
+                    catch { }
                 }
 
                 if (att is MaxLengthAttribute mal && mal.Length > 0) {
@@ -286,13 +286,13 @@ namespace Beetle.Server {
             var displayName = dataProperty.GetDisplayName() ?? dataProperty.Name;
             var dataAnnotations = member.GetCustomAttributes<ValidationAttribute>();
             foreach (var att in dataAnnotations) {
-                string msg;
+                string msg = null;
                 var rmsg = att.ErrorMessageResourceName;
-                try {
-                    msg = att.FormatErrorMessage(displayName);
-                }
-                catch {
-                    msg = null;
+                if (!string.IsNullOrEmpty(att.ErrorMessageResourceName) || !string.IsNullOrEmpty(att.ErrorMessage)) {
+                    try {
+                        msg = att.FormatErrorMessage(displayName);
+                    }
+                    catch { }
                 }
 
                 if (memberType == typeof(string)) {
