@@ -10,6 +10,7 @@
 
 'use strict';
 
+beetle.settings.trackUnknownTypes = true;
 var metadata, observableProvider, service;
 var basicTestViewModel = {
     metadataType: 'MM',

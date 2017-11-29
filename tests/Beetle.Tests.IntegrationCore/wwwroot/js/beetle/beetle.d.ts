@@ -2233,6 +2233,9 @@ declare module beetle {
              * entities will be created with only sent properties filled, other properties will have default values, please use carefully.
              */
             var minimizePackage: boolean;
+            /** when true, objects will be tracked even when there is no metadata for their types. */
+            var trackUnknownTypes: boolean;
+        
     
             /* Gets default observable provider instance. */
             function getObservableProvider(): baseTypes.ObservableProviderBase;

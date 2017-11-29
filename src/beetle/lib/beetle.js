@@ -8938,9 +8938,7 @@
              * @returns {Entity} Entity with observable properties. 
              */
             proto.toEntity = function (result, typeName) {
-                if (result.$type && !typeName)
-                    typeName = result.$type;
-                return this.dataService.toEntity(result, typeName);
+                return this.dataService.toEntity(result, typeName || result.$type);
             };
 
             /** Fix scalar and plural navigations for entity from cache. */
@@ -9248,8 +9246,10 @@
 
                     var tracker = e.$tracker;
                     // if entity is not made observable yet, convert it
-                    if (!tracker && e.$type)
+                    if (!tracker) {
+                        if (!e.$type || !settings.trackUnknownTypes) return;
                         tracker = that.toEntity(e, e.$type).$tracker;
+                    }
                     else if (tracker.entityType.isComplexType || instance.isInManager(e)) return;
                     var type = tracker.entityType;
 
@@ -9941,7 +9941,10 @@
                     if (makeObservable !== false) {
                         // make observable
                         var typeName = result.$type;
-                        that.toEntity(result, typeName);
+                        var type = that.metadataManager && that.metadataManager.getEntityTypeByFullName(typeName);
+                        if (type || (settings.trackUnknownTypes && (type = new metadata.EntityType(typeName)))) {
+                            core.EntityTracker.toEntity(result, type);
+                        }
                     }
                 }
             };
@@ -10220,6 +10223,8 @@
          * entities will be created with only sent properties filled, other properties will have default values, please use carefully.
          */
         expose.minimizePackage = false;
+        /** when true, objects will be tracked even when there is no metadata for their types. */
+        expose.trackUnknownTypes = false;
 
         /** 
          * Gets default observable provider instance.
