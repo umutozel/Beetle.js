@@ -2235,7 +2235,8 @@ declare module beetle {
             var minimizePackage: boolean;
             /** when true, objects will be tracked even when there is no metadata for their types. */
             var trackUnknownTypes: boolean;
-        
+            /** when true, throws error when a not nullable property set with null. */
+            var checkNulls: boolean;
     
             /* Gets default observable provider instance. */
             function getObservableProvider(): baseTypes.ObservableProviderBase;

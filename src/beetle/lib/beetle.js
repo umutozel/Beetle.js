@@ -3745,6 +3745,10 @@
                 this.validators = [];
                 this.isEnum = dataType instanceof core.dataTypes.enumeration;
                 this.isComplex = dataType.isComplex;
+
+                if (!this.isNullable) {
+                    this.validators.push(new core.Validator.notNull(null, this.displayName))
+                }
             };
             var proto = ctor.prototype;
 
@@ -3754,7 +3758,7 @@
 
             /** Checks if given value is valid for this property. */
             proto.isValid = function (value) {
-                if (value == null) return !this.isNullable;
+                if (value == null && settings.checkNulls) return !this.isNullable;
                 else return this.dataType.isValid(value, this);
             };
 
@@ -3767,7 +3771,7 @@
                     value = null;
 
                 if (value == null) {
-                    if (!this.isNullable)
+                    if (!this.isNullable && settings.checkNulls)
                         throw helper.createError(i18N.notNullable, [this.displayName], { property: this });
                     return null;
                 }
@@ -3784,8 +3788,8 @@
             /** Gets default value for this property. */
             proto.getDefaultValue = function () {
                 if (this.defaultValue != null) return this.defaultValue;
-                if (this.isNullable) return null;
                 if (this.generationPattern == enums.generationPattern.Identity && this.isKeyPart === true) return this.dataType.autoValue();
+                if (this.isNullable || (!settings.checkNulls)) return null;
                 return this.dataType.defaultValue();
             };
 
@@ -6874,11 +6878,20 @@
                         return ctor.time.apply(null, args);
                     case 'co':
                         return ctor.compare.apply(null, args);
+                    case 'nn':
+                        return ctor.notNull.apply(null, args);
                     default:
                         throw helper.createError(i18N.unknownValidator, [code]);
                 }
             };
 
+            ctor.notNull = function (message, displayName) {
+                var func = function (value) {
+                    return value != null;
+                };
+                message = helper.formatString(message || i18N.notNullable, displayName);
+                return new ctor('NotNull', func, message);
+            };
             ctor.required = function (allowEmptyStrings, message, displayName) {
                 var func = function (value) {
                     if (value == null) return false;
@@ -7664,7 +7677,7 @@
                     if (key === p) value = v;
                     else
                         value = tracker.getValue(key.name);
-                    if (key.dataType.name == 'guid')
+                    if (key.dataType.name == 'guid' && value)
                         value = value.toLowerCase();
                     retVal.push(value);
                 }
@@ -10225,6 +10238,8 @@
         expose.minimizePackage = false;
         /** when true, objects will be tracked even when there is no metadata for their types. */
         expose.trackUnknownTypes = false;
+        /** when true, throws error when a not nullable property set with null. */
+        expose.checkNulls = false;
 
         /** 
          * Gets default observable provider instance.

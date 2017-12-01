@@ -1674,6 +1674,7 @@ if (metadata !== false) {
         ne.$tracker.setValue('UserNameCreate', 'Test User Name');
         ne.$tracker.setValue('TimeCreate', new Date());
         ne.$tracker.setValue('IsCanceled', false);
+        ne.$tracker.setValue('ShortId', 0);
 
         var net = manager.createEntity('NamedEntityType');
         net.$tracker.setValue('Id', beetle.helper.createGuid());
@@ -1706,7 +1707,8 @@ if (metadata !== false) {
         ne.$tracker.setValue('UserNameCreate', 'Test User Name');
         ne.$tracker.setValue('TimeCreate', new Date());
         ne.$tracker.setValue('IsCanceled', false);
-
+        ne.$tracker.setValue('ShortId', 0);
+        
         stop();
         manager.saveChanges()
             .then(saveSucceeded)
@@ -1733,6 +1735,7 @@ if (metadata !== false) {
         e.$tracker.setValue('UserNameCreate', 'Test User Name');
         e.$tracker.setValue('TimeCreate', new Date());
         e.$tracker.setValue('IsCanceled', false);
+        e.$tracker.setValue('ShortId', 0);
         ok(e.$tracker.getValue('ShortId') <= 0, 'ShortId should not have a value greater than zero');
 
         stop();

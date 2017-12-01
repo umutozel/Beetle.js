@@ -12,6 +12,7 @@ namespace Beetle.Tests.IntegrationCore
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
+                .UseUrls("http://localhost:5050")
                 .Build();
 
             host.Run();
