@@ -34,19 +34,20 @@ namespace Beetle.Meta {
 
             var g = GenerationPattern == null || GenerationPattern == Meta.GenerationPattern.None ? null : GenerationPattern.ToString().Substring(0, 1);
 
+            var vs = Validators.Select(x => x.ToMinified()).ToList();
             return new {
                 n = Name,
                 r = ResourceName,
                 l = GetDisplayName(),
                 t = dt,
-                i = IsNullable,
+                i = IsNullable == true ? true : (bool?)null,
                 p = Precision,
                 s = Scale,
-                e = IsEnum,
+                e = IsEnum == true ? true : (bool?)null,
                 g,
                 d = DefaultValue,
-                c = UseForConcurrency,
-                v = Validators.Select(x => x.ToMinified()).ToList()
+                c = UseForConcurrency == true ? true : (bool?)null,
+                v = vs.Any() ? vs : null
             };
         }
     }

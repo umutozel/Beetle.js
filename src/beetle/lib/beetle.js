@@ -9872,11 +9872,13 @@
                 var saveAction = options.saveAction || 'SaveChanges';
                 uri = uri + saveAction;
                 var saveData = this.serializationService.serialize(savePackage);
-                var type = options.method || 'POST';
+                var method = options.method || 'POST';
+                var dataType = options.dataType || this.dataType;
+                var contentType = options.contentType || this.contentType;
                 var retVal;
                 var call = this.ajaxProvider.doAjax(
                     uri,
-                    type, this.dataType, this.contentType, saveData, async, timeout, extra, options.headers,
+                    method, dataType, contentType, saveData, async, timeout, extra, options.headers,
                     function (result, headerGetter, xhr) {
                         // deserialize returned data (if deserializable).
                         try {

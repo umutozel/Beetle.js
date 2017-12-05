@@ -38,6 +38,8 @@ namespace Beetle.Meta {
         public Type ClrType { get; set; }
 
         public override object ToMinified() {
+            var rs = NavigationProperties.Select(np => np.ToMinified()).ToList();
+            var xs = ComplexProperties.Select(cp => cp.ToMinified()).ToList();
             return new {
                 n = Name,
                 rn = ResourceName,
@@ -49,8 +51,8 @@ namespace Beetle.Meta {
                 c = IsComplexType,
                 k = Keys,
                 d = DataProperties.Select(dp => dp.ToMinified()).ToList(),
-                r = NavigationProperties.Select(np => np.ToMinified()).ToList(),
-                x = ComplexProperties.Select(cp => cp.ToMinified()).ToList()
+                r = rs.Any() ? rs : null,
+                x = xs.Any() ? xs : null
             };
         }
     }

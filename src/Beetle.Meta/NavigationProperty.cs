@@ -21,16 +21,17 @@ namespace Beetle.Meta {
         public NavigationProperty Inverse { get; set; }
 
         public override object ToMinified() {
+            var vs = Validators.Select(v => v.ToMinified()).ToList();
             return new {
                            n = Name,
                            r = ResourceName,
                            l = GetDisplayName(),
                            t = EntityTypeName,
-                           s = IsScalar,
+                           s = IsScalar == true ? true : (bool?)null,
                            a = AssociationName,
-                           c = DoCascadeDelete,
-                           f = ForeignKeys,
-                           v = Validators.Select(v => v.ToMinified()).ToList()
+                           c = DoCascadeDelete == true ? true : (bool?)null,
+                           f = ForeignKeys.Any() ? ForeignKeys : null,
+                           v = vs.Any() ? vs : null
                        };
         }
     }
