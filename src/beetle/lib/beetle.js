@@ -9803,8 +9803,9 @@
                     }
                 }
             
-                if (options.useBody) {
+                if (options.useBody && queryParams.length > 0) {
                     prmsArr.push("!beetle-use-body", queryParams.length);
+                    bodyParameter = bodyParameter || {};
                     helper.forEach(queryParams, function (qp) {
                         bodyParameter[qp.name] = qp.value;
                     });
