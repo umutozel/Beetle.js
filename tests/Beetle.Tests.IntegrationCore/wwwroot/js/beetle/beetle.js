@@ -2870,13 +2870,13 @@
              * Executes given query parameters.
              * @param {string} resource - Server resource to query.
              * @param {Object[]} parameters - The query parameters.
-             * @param {Object[]} bodyParameters - The body parameter objects (will be merged into one object).
+             * @param {Object} bodyParameter- The body parameter object.
              * @param {Object[]} queryParams - The query beetle parameters.
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
-            proto.executeQueryParams = function (resource, parameters, bodyParameters, queryParams, options, successCallback, errorCallback) {
+            proto.executeQueryParams = function (resource, parameters, bodyParameter, queryParams, options, successCallback, errorCallback) {
                 throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQueryParams']);
             };
             /**
@@ -6011,7 +6011,7 @@
                     this.manager = manager;
                     this.liveValidate = manager && manager.liveValidate;
                     this.parameters = [];
-                    this.bodyParameters = [];
+                    this.bodyParameter = null;
 
                     baseTypes.QueryBase.call(this);
                 };
@@ -6066,13 +6066,21 @@
 
                 /** Adds properties of given value to the body of the request. */
                 proto.setBodyParameter = function (value) {
-                    if (this.bodyParameters.indexOf(value) >= 0) return this;
-                    
                     var q = this.clone();
-                    q.bodyParameters.push(value);
+                    q.bodyParameter = value;
                     return q;
                 };
 
+                /** Set merge option to NoTracking */
+                proto.asNoTracking = function () {
+                    return this.withOptions({ merge: enums.mergeStrategy.NoTracking });
+                }
+
+                /** Set merge option to NoTrackingRaw */
+                proto.asNoTrackingRaw = function () {
+                    return this.withOptions({ merge: enums.mergeStrategy.NoTrackingRaw });
+                }
+                
                 /** Sets entity type for query (used when executing locally). */
                 proto.setEntityType = function (type) {
                     type = handleEntityType(type, this.manager);
@@ -6114,7 +6122,7 @@
                     helper.forEach(this.parameters, function (prm) {
                         query.parameters.push(prm);
                     });
-                    query.bodyParameters = this.bodyParameters;
+                    query.bodyParameter = this.bodyParameter;
                 };
 
                 /** When using promises, this shortcut can be used instead of "execute().then()" syntax. */
@@ -9744,25 +9752,25 @@
              */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp = this.toBeetleQueryParams(query, options && options.varContext);
-                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameters, qp, options, successCallback, errorCallback);
+                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameter, qp, options, successCallback, errorCallback);
             };
 
             /**
              * Executes given query parameters.
              * @param {string} resource - Server resource to query.
              * @param {Object[]} parameters - The query parameters.
-             * @param {Object[]} bodyParameters - The body parameter objects (will be merged into one object).
+             * @param {Object} bodyParameter - The body parameter object.
              * @param {Object[]} queryParams - The query beetle parameters.
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
-            proto.executeQueryParams = function (resource, parameters, bodyParameters, queryParams, options, successCallback, errorCallback) {
+            proto.executeQueryParams = function (resource, parameters, bodyParameter, queryParams, options, successCallback, errorCallback) {
                 options = options || {};
                 var makeObservable = options.makeObservable;
                 var handleUnmappedProperties = options.handleUnmappedProperties;
 
-                var method = options.method || ((options.useBody || bodyParameters.length > 0) && "POST") || "GET";
+                var method = options.method || ((options.useBody || bodyParameter != null) && "POST") || "GET";
                 var dataType = options.dataType || this.dataType;
                 var contentType = options.contentType || this.contentType;
 
@@ -9786,21 +9794,15 @@
                     prmsArr.push(prm.name + "=" + (value != null ? encodeURIComponent(value) : ""));
                 });
 
-                var bodyParameter = {};
-                for (var i = 0; i < bodyParameters.length; i++) {
-                    var obj = bodyParameters[i];
-                    if (obj == null) continue;
-
-                    if (Assert.isFunction(obj)) {
-                        obj = obj();
+                if (bodyParameter != null) {
+                    if (Assert.isFunction(bodyParameter)) {
+                        bodyParameter = bodyParameter();
                     }
-                    if (obj.$tracker) {
+                    if (bodyParameter.$tracker) {
                         obj = obj.$tracker.toRaw(true);
                     }
-                    
-                    bodyParameter = helper.extend(bodyParameter, obj);
                 }
-
+            
                 if (options.useBody) {
                     prmsArr.push("!beetle-use-body", queryParams.length);
                     helper.forEach(queryParams, function (qp) {

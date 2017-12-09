@@ -1801,6 +1801,10 @@ declare module beetle {
             setBodyParameter(value: any): EntityQuery<T>;
             /** Sets options to be used at execution. */
             withOptions(options: ManagerQueryOptions): EntityQuery<T>;
+            /** Set merge option to NoTracking */
+            asNoTracking(): EntityQuery<T>;
+            /** Set merge option to NoTrackingRaw */
+            asNoTrackingRaw(): EntityQuery<T>;
         }
     }
 
@@ -2109,7 +2113,7 @@ declare module beetle {
              * Executes given query parameters.
              * @param resource Server resource to query.
              * @param parameters The query string parameters.
-             * @param bodyParameter The query body parameters.
+             * @param bodyParameter The query body parameter.
              * @param queryParams The query beetle parameters.
              * @param options Query options.
              * @param successCallback Function to call after operation succeeded.
