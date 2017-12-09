@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.3</TargetFramework>
-    <PackageVersion>3.0.0-alpha-09</PackageVersion>
+    <PackageVersion>3.0.0-alpha-10</PackageVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Authors>Umut Özel</Authors>
     <Description>Beetle Server interface.</Description>
