@@ -1,6 +1,6 @@
 {
   "name": "beetle.js",
-  "version": "3.0.0-alpha.16",
+  "version": "3.0.0-alpha.17",
   "main": "./lib/beetle.js",
   "typings": "./lib/beetle.d.ts",
   "description": "Beetle is a data manager for Javascript. The goal is to be able to work with data as easy as Entity Framework and LINQ.",
