@@ -9799,7 +9799,7 @@
                         bodyParameter = bodyParameter();
                     }
                     if (bodyParameter.$tracker) {
-                        obj = obj.$tracker.toRaw(true);
+                        bodyParameter = bodyParameter.$tracker.toRaw(true);
                     }
                 }
             
