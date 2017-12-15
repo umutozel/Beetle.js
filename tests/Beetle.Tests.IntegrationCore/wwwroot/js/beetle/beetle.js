@@ -985,20 +985,21 @@
          * @returns {Function} Javascript projector function.
          */
         jsepToProjector: function (exps, queryContext) {
+            function getPropertyPath(e) {
+                switch (e.type) {
+                    case 'Identifier':
+                        return e.name;
+                    case 'MemberExpression':
+                        return getPropertyPath(e.object) + '-' + e.property.name;
+                }
+            }
+
             var projectExps = [];
             if (!Assert.isArray(exps)) exps = [exps];
             for (var i = 0; i < exps.length; i++) {
-                var propertyName = null;
                 var e = exps[i];
                 // list expression property names and value evaluators
-                switch (e.type) {
-                    case 'Identifier':
-                        propertyName = e.name;
-                        break;
-                    case 'MemberExpression':
-                        propertyName = e.property.name;
-                        break;
-                }
+                var propertyName = getPropertyPath(e);
                 if (exps.length > i + 2 && exps[i + 1].name && exps[i + 1].name.toLowerCase() == 'as') {
                     i = i + 2;
                     var pExp = exps[i];
@@ -2870,13 +2871,13 @@
              * Executes given query parameters.
              * @param {string} resource - Server resource to query.
              * @param {Object[]} parameters - The query parameters.
-             * @param {Object} bodyParameter- The body parameter object.
+             * @param {Object} bodyParameters - The body parameter objects.
              * @param {Object[]} queryParams - The query beetle parameters.
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
-            proto.executeQueryParams = function (resource, parameters, bodyParameter, queryParams, options, successCallback, errorCallback) {
+            proto.executeQueryParams = function (resource, parameters, bodyParameters, queryParams, options, successCallback, errorCallback) {
                 throw helper.createError(i18N.notImplemented, ['DataServiceBase', 'executeQueryParams']);
             };
             /**
@@ -6011,7 +6012,7 @@
                     this.manager = manager;
                     this.liveValidate = manager && manager.liveValidate;
                     this.parameters = [];
-                    this.bodyParameter = null;
+                    this.bodyParameters = [];
 
                     baseTypes.QueryBase.call(this);
                 };
@@ -6067,7 +6068,7 @@
                 /** Adds properties of given value to the body of the request. */
                 proto.setBodyParameter = function (value) {
                     var q = this.clone();
-                    q.bodyParameter = value;
+                    q.bodyParameters.push(value);
                     return q;
                 };
 
@@ -6122,7 +6123,7 @@
                     helper.forEach(this.parameters, function (prm) {
                         query.parameters.push(prm);
                     });
-                    query.bodyParameter = this.bodyParameter;
+                    query.bodyParameters = this.bodyParameters.slice(0);
                 };
 
                 /** When using promises, this shortcut can be used instead of "execute().then()" syntax. */
@@ -9752,25 +9753,25 @@
              */
             proto.executeQuery = function (query, options, successCallback, errorCallback) {
                 var qp = this.toBeetleQueryParams(query, options && options.varContext);
-                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameter, qp, options, successCallback, errorCallback);
+                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameters, qp, options, successCallback, errorCallback);
             };
 
             /**
              * Executes given query parameters.
              * @param {string} resource - Server resource to query.
              * @param {Object[]} parameters - The query parameters.
-             * @param {Object} bodyParameter - The body parameter object.
+             * @param {Object} bodyParameters - The body parameter objects.
              * @param {Object[]} queryParams - The query beetle parameters.
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
              */
-            proto.executeQueryParams = function (resource, parameters, bodyParameter, queryParams, options, successCallback, errorCallback) {
+            proto.executeQueryParams = function (resource, parameters, bodyParameters, queryParams, options, successCallback, errorCallback) {
                 options = options || {};
                 var makeObservable = options.makeObservable;
                 var handleUnmappedProperties = options.handleUnmappedProperties;
 
-                var method = options.method || ((options.useBody || bodyParameter != null) && "POST") || "GET";
+                var method = options.method || ((options.useBody || bodyParameters.length > 0) && "POST") || "GET";
                 var dataType = options.dataType || this.dataType;
                 var contentType = options.contentType || this.contentType;
 
@@ -9794,12 +9795,23 @@
                     prmsArr.push(prm.name + "=" + (value != null ? encodeURIComponent(value) : ""));
                 });
 
-                if (bodyParameter != null) {
-                    if (Assert.isFunction(bodyParameter)) {
-                        bodyParameter = bodyParameter();
-                    }
-                    if (bodyParameter.$tracker) {
-                        obj = obj.$tracker.toRaw(true);
+                var bodyParameter;
+                if (bodyParameters.length > 0) {
+                    bodyParameter = {};
+                    for (var i = 0; i < bodyParameters.length; i++) {
+                        var bp = bodyParameters[i];
+                        if (Assert.isFunction(bp)) {
+                            bp = bp();
+                        }
+                        // break the merge for arrays. use only this array as body parameter.
+                        if (bp instanceof Array) {
+                            bodyParameter = bp;
+                            return;
+                        }
+                        if (bp.$tracker) {
+                            bp = bp.$tracker.toRaw(true);
+                        }
+                        bodyParameter = helper.extend(bodyParameter, bp);
                     }
                 }
             
@@ -10017,7 +10029,7 @@
                     events.warning.notify({ message: i18N.beetleQueryChosenPost, query: query, options: options });
                 } else
                     qp = this.toODataQueryParams(query, varContext);
-                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameter, qp, options, successCallback, errorCallback);
+                return this.executeQueryParams(query.resource, query.parameters, query.bodyParameters, qp, options, successCallback, errorCallback);
             };
 
             return ctor;

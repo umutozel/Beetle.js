@@ -700,7 +700,7 @@ declare module beetle {
         /** Use async for ajax operation. Default is true. Be careful, some AjaxProviders does not support sync. */
         async?: boolean;
         /** Ajax request timeout. */
-        timeout?: boolean;
+        timeout?: number;
         /** AjaxProvider extra settings. These will be mixed to ajax options. */
         extra?: any;
         /** Server uri to join with base address. To override existing resource address. */
