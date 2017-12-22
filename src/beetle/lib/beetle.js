@@ -6136,6 +6136,9 @@
 
                 function handleEntityType(type, manager) {
                     if (type == null) return null;
+                    if (Assert.isFunction(type)) {
+                        type = helper.getFuncName(type);
+                    }
                     if (Assert.isTypeOf(type, 'string')) {
                         if (manager == null) throw helper.createError(i18N.onlyManagerCreatedCanAcceptEntityShortName);
                         return manager.getEntityType(type, true);
