@@ -2,6 +2,18 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;netstandard2.0</TargetFrameworks>
+    <PackageVersion>3.0.0</PackageVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Authors>Umut Özel</Authors>
+    <Description>Beetlejs Entity Framework Core Handler.</Description>
+    <Copyright>Copyright (c) 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/umutozel/Beetle/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/umutozel/Beetle</PackageProjectUrl>
+    <PackageIconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</PackageIconUrl>
+    <PackageTags>Beetle js Unit of Work Client Side Change Tracker Entity Framework Core</PackageTags>
+    <RepositoryUrl>https://github.com/umutozel/Beetle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <VersionSuffix>$(VersionSuffix)</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">

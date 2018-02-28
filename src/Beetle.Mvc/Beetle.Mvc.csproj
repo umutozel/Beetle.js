@@ -76,6 +76,7 @@
     <Compile Include="ValidateJsonAntiForgeryTokenAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Beetle.Mvc.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

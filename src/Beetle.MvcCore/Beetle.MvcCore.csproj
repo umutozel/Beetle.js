@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;netstandard2.0</TargetFrameworks>
-    <PackageVersion>3.0.0-alpha-10</PackageVersion>
+    <PackageVersion>3.0.0</PackageVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Authors>Umut Özel</Authors>
     <Description>Beetle Asp.Net Mvc Core implementation.</Description>
     <Copyright>Copyright (c) 2017</Copyright>
     <PackageLicenseUrl>https://github.com/umutozel/Beetle/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/umutozel/Beetle</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
-    <PackageTags>Asp.Net Mvc Core Unit of Work Client Side Change Tracker Beetle</PackageTags>
+    <PackageIconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</PackageIconUrl>
+    <PackageTags>Beetle js Unit of Work Client Side Change Tracker Asp.Net Mvc Core</PackageTags>
     <RepositoryUrl>https://github.com/umutozel/Beetle</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>

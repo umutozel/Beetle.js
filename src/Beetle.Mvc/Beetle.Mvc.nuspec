@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Beetle.Mvc</id>
+    <version>3.0.0</version>
+    <title>Beetlejs Mvc Controller Api</title>
+    <authors>Umut Özel</authors>
+    <owners>Umut Özel</owners>
+    <licenseUrl>https://github.com/umutozel/Beetle.js/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/umutozel/Beetle.js</projectUrl>
+    <iconUrl>http://s2.postimg.org/u1hodqryt/pkg.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Beetle Mvc Controller Api.</description>
+    <summary>Manage your data with Javascript easily.</summary>
+    <copyright>Copyright © 2018 Umut Özel</copyright>
+    <language>en-US</language>
+    <tags>Beetle js Unit of Work Client Side Change Tracker Asp.Net Mvc</tags>
+    <dependencies>
+      <dependency id="Beetle.Server" version="3.0" />
+      <dependency id="Microsoft.AspNet.Mvc" version="5.0.0" />
+      <dependency id="Newtonsoft.Json" version="4.5.6" />
+    </dependencies>
+  </metadata>
+</package>

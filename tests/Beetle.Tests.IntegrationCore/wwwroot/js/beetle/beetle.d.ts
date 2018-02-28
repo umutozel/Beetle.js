@@ -1605,20 +1605,22 @@ declare module beetle {
             constructor(resource: string, type: interfaces.EntityType, manager: core.EntityManager);
 
             /** Server resource to query against. */
-            resource: string;
+            private resource: string;
             /** Entity type of the query. Will be needed if query will be executed locally. */
-            entityType: interfaces.EntityType;
+            private entityType: interfaces.EntityType;
             /** Entity manager the query related. */
-            manager: core.EntityManager;
+            private manager: core.EntityManager;
             /** Parameters will be passed to server method. */
-            parameters: interfaces.EntityQueryParameter[];
+            private parameters: interfaces.EntityQueryParameter[];
             /** Query options. */
-            options: ManagerQueryOptions;
+            private options: ManagerQueryOptions;
             /** Indicates if this query has any beetle specific expression. */
-            hasBeetlePrm: boolean;
+            private hasBeetlePrm: boolean;
             /** Indicates wheter or not include total count in result. */
-            inlineCountEnabled: boolean;
+            private inlineCountEnabled: boolean;
 
+            /** Sets entity type for query (used when executing locally). */
+            setEntityType(type: new() => T | string): EntityQuery<T>;
             /**
              * Indicates wheter or not include total count in result.
              * @param isEnabled When true, total count will be included in result. Default value: true.
