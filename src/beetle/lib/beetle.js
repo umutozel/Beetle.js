@@ -2993,7 +2993,6 @@
             proto.parse = function (value) {
                 if (typeof value != "string") return null;
                 if (value.length < 10) return null;
-                if (!/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(value.substr(0, 10))) return null;
                 if (/.\d{3}$/.test(value)) value += 'Z';
                 try {
                     var d = Date.parse(value);
@@ -10501,7 +10500,7 @@
 
     /** Export types */
     return {
-        version: '3.0.0',
+        version: '3.0.1',
         /** 
          * Register localization
          * @param {string} code - Language code.
