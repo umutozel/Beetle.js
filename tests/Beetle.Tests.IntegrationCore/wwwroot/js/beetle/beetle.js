@@ -2993,7 +2993,8 @@
             proto.parse = function (value) {
                 if (typeof value != "string") return null;
                 if (value.length < 10) return null;
-                if (!/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(value.substr(0, 10))) return null;
+                if (!/^(?:(?:\d{2}[.\/-]\d{2}[.\/-]\d{4}|\d{4}[.\/-]\d{2}[.\/-]\d{2})T?[\.\:\s\d]*Z?$)|\w{3} \w{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT[\+\-]\d{4}/.test(value))
+                    return null;
                 if (/.\d{3}$/.test(value)) value += 'Z';
                 try {
                     var d = Date.parse(value);
@@ -10501,7 +10502,7 @@
 
     /** Export types */
     return {
-        version: '3.0.1',
+        version: '3.0.2',
         /** 
          * Register localization
          * @param {string} code - Language code.
