@@ -10502,7 +10502,7 @@
 
     /** Export types */
     return {
-        version: '3.0.2',
+        version: '3.0.3',
         /** 
          * Register localization
          * @param {string} code - Language code.
