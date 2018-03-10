@@ -2993,7 +2993,7 @@
             proto.parse = function (value) {
                 if (typeof value != "string") return null;
                 if (value.length < 10) return null;
-                if (!/^(?:(?:\d{2}[.\/-]\d{2}[.\/-]\d{4}|\d{4}[.\/-]\d{2}[.\/-]\d{2})T?[\.\:\s\d]*Z?$)|\w{3} \w{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT[\+\-]\d{4}/.test(value))
+                if (!/^(?:(?:\d{2}[.\/-]\d{2}[.\/-]\d{4}|\d{4}[.\/-]\d{2}[.\/-]\d{2})T?[\:\.\+\s\d]*Z?$)|\w{3} \w{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT[\+\-]\d{4}/.test(value))
                     return null;
                 if (/.\d{3}$/.test(value)) value += 'Z';
                 try {
