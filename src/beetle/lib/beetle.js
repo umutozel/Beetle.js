@@ -5258,7 +5258,8 @@
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source) {
-                        return (source ? source(value) : value).toUpperCase();
+                        var v = source ? source(value) : value;
+                        return v ? v.toUpperCase() : v;
                     };
 
                     return new ctor();
@@ -5273,7 +5274,8 @@
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source) {
-                        return (source ? source(value) : value).toLowerCase();
+                        var v = source ? source(value) : value;
+                        return v ? v.toLowerCase() : v;
                     };
 
                     return new ctor();
@@ -5337,7 +5339,8 @@
                     };
 
                     proto.impl = function (value, source) {
-                        return (source ? source(value) : value).length;
+                        var v = source ? source(value) : value;
+                        return v ? v.length : 0;
                     };
 
                     return new ctor();
@@ -5351,7 +5354,8 @@
                     var proto = ctor.prototype;
 
                     proto.impl = function (value, source) {
-                        return (source ? source(value) : value).trim();
+                        var v = source ? source(value) : value;
+                        return v ? v.trim() : v;
                     };
 
                     return new ctor();
@@ -5370,6 +5374,8 @@
 
                     proto.impl = function (value) {
                         var s1 = arguments[1](value).toString();
+                        if (!s1) return s1;
+
                         var argList = Array.prototype.slice.call(arguments, 2);
                         var args = [];
                         for (var i = 0; i < argList.length; i++) {
@@ -5394,6 +5400,8 @@
                             find = source;
                             source = value;
                         } else source = source(value);
+                        if (!source) return source;
+
                         find = find(value);
 
                         if (helper.ignoreWhiteSpaces(this.varContext))
@@ -5440,8 +5448,7 @@
                         } else source = source(value);
                         source = helper.handleStrOptions(source, this.varContext);
                         find = helper.handleStrOptions(find(value), this.varContext);
-                        var index = source.length - find.length;
-                        return source ? source.indexOf(find, index) !== -1 : false;
+                        return source ? source.indexOf(find, source.length - find.length) !== -1 : false;
                     };
 
                     return new ctor();
@@ -5589,7 +5596,7 @@
 
                     proto.impl = function (value, source) {
                         source = core.dataTypes.date.handle(source ? source(value) : value);
-                        return source.getSeconds();
+                        return source ? source.getSeconds() : source;
                     };
 
                     return new ctor();
@@ -5610,7 +5617,7 @@
 
                     proto.impl = function (value, source) {
                         source = core.dataTypes.date.handle(source ? source(value) : value);
-                        return source.getMinutes();
+                        return source ? source.getMinutes() : source;
                     };
 
                     return new ctor();
@@ -5631,7 +5638,7 @@
 
                     proto.impl = function (value, source) {
                         source = core.dataTypes.date.handle(source ? source(value) : value);
-                        return source.getHours();
+                        return source ? source.getHours() : source;
                     };
 
                     return new ctor();
@@ -5652,7 +5659,7 @@
 
                     proto.impl = function (value, source) {
                         source = core.dataTypes.date.handle(source ? source(value) : value);
-                        return source.getDate();
+                        return source ? source.getDate() : source;
                     };
 
                     return new ctor();
@@ -5673,7 +5680,7 @@
 
                     proto.impl = function (value, source) {
                         source = core.dataTypes.date.handle(source ? source(value) : value);
-                        return source.getMonth() + 1;
+                        return source ? source.getMonth() + 1 : source;
                     };
 
                     return new ctor();
@@ -5694,7 +5701,7 @@
 
                     proto.impl = function (value, source) {
                         source = core.dataTypes.date.handle(source ? source(value) : value);
-                        return source.getFullYear();
+                        return source ? source.getFullYear() : source;
                     };
 
                     return new ctor();
@@ -10504,7 +10511,7 @@
 
     /** Export types */
     return {
-        version: '3.0.3',
+        version: '3.0.5',
         /**
          * Register localization
          * @param {string} code - Language code.

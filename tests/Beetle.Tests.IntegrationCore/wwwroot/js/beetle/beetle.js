@@ -320,7 +320,7 @@
          * @returns {string} Newly generated GUID.
          */
         createGuid: function () {
-            
+
             function s4() {
                 return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
             }
@@ -1065,7 +1065,7 @@
             ctor.isNotEmptyString(this.value, this.errors, this.name);
             return this;
         };
-        /** 
+        /**
          * Checks if value is an object of given type.
          * @param {string} typeName - Name of the javascript type.
          */
@@ -1078,7 +1078,7 @@
             ctor.isArray(this.value, this.errors, this.name);
             return this;
         };
-        /** 
+        /**
          * Checks if value is an symbol of given enum.
          * @param {Enum} enumType - Type of the enum.
          */
@@ -1086,7 +1086,7 @@
             ctor.isEnum(this.value, enumType, this.errors, this.name);
             return this;
         };
-        /** 
+        /**
          * Checks if value is an instance of given type.
          * @param {any} type - Javascript function or class to check.
          */
@@ -1101,7 +1101,7 @@
                 throw helper.createError(this.errors.join('\n'), { name: this.name, value: this.value });
         };
 
-        /** 
+        /**
          * Checks if value is not null.
          * @param {any} value - Value to check.
          * @param {string[]=} errors - Previously generated error messages for the value.
@@ -1114,7 +1114,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is object.
          * @param {any} value - Value to check.
          * @param {string[]=} errors - Previously generated error messages for the value.
@@ -1127,7 +1127,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is function.
          * @param {any} value - Value to check.
          * @param {string[]=} errors - Previously generated error messages for the value.
@@ -1140,7 +1140,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is a non-empty string.
          * @param {any} value - Value to check.
          * @param {string[]=} errors - Previously generated error messages for the value.
@@ -1153,7 +1153,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is an object of given type.
          * @param {any} value - Value to check.
          * @param {string} typeName - Name of the javascript type.
@@ -1169,7 +1169,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is array.
          * @param {any} value - Value to check.
          * @param {string[]=} errors - Previously generated error messages for the value.
@@ -1182,7 +1182,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is an symbol of given enum.
          * @param {any} value - Value to check.
          * @param {Enum} enumType - Type of the enum.
@@ -1196,7 +1196,7 @@
             }
             return true;
         };
-        /** 
+        /**
          * Checks if value is instance of given type.
          * @param {any} value - Value to check.
          * @param {any} type - Javascript function or class to check.
@@ -1218,7 +1218,7 @@
         return ctor;
     })();
 
-    /**  
+    /**
      * 3rd party libraries and snippets.
      * @namespace
      */
@@ -1285,7 +1285,7 @@
         // JavaScript Expression Parser (JSEP) 0.2.8
         // JSEP may be freely distributed under the MIT License
         // http://jsep.from.so/
-        // custom changes: 
+        // custom changes:
         //      binary_ops: add "'=>': 0" for alias usage like c# lambdas
         //      isIdentifierStart: add "|| (ch === 64)" for variable usage (`@`)
         expose.jsep = (function () {
@@ -1812,7 +1812,7 @@
      * @namespace
      */
     var baseTypes = {
-        /** 
+        /**
          * Data conversion base type (interface). With this we can abstract date conversion and users can choose (or write) their implementation.
          * @class
          */
@@ -1841,7 +1841,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Base of all data types.
          * @class
          */
@@ -1862,7 +1862,7 @@
                 return this.name;
             };
 
-            /** 
+            /**
              * Returns raw value representing given value.
              * @param {any} value - The value to use. It must be a valid value for the type.
              * @returns {any} Portable value. i.e: Enum->number and Date->string
@@ -1871,7 +1871,7 @@
                 return value;
             };
 
-            /** 
+            /**
              * Checks if given value is valid for this type.
              * @param {any} value - The value to check.
              */
@@ -1879,7 +1879,7 @@
                 return typeof value === this.name;
             };
 
-            /** 
+            /**
              * Converts given value to OData format.
              * @param {any} value - The value to use.
              * @returns {string} OData query string compatible value.
@@ -1888,7 +1888,7 @@
                 return value.toString();
             };
 
-            /** 
+            /**
              * Converts given value to Beetle format.
              * @param {any} value - The value to use.
              * @returns {string} Beetle query string compatible value.
@@ -1912,7 +1912,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Base of all Expressions.
          * @class
          */
@@ -1940,7 +1940,7 @@
                 return this.toBeetleQuery({});
             };
 
-            /** 
+            /**
              * Converts expression to OData representation.
              * @param {QueryContext} queryContext - Query execution context.
              * @returns {string} OData query string compatible expression.
@@ -1952,7 +1952,7 @@
                 return helper.jsepToODataQuery(libs.jsep(exp), queryContext);
             };
 
-            /** 
+            /**
              * Converts expression to Beetle representation.
              * @param {QueryContext} queryContext - Query execution context.
              * @returns {string} OData query string compatible expression.
@@ -1983,7 +1983,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Base of all query functions.
          * @class
          */
@@ -2002,7 +2002,7 @@
             };
             var proto = ctor.prototype;
 
-            /** 
+            /**
              * Converts function to OData representation.
              * @returns {string} OData query string compatible expression.
              */
@@ -2014,7 +2014,7 @@
                 return this.name + '(' + args.join(', ') + ')';
             };
 
-            /** 
+            /**
              * Converts function to Beetle representation.
              * @returns {string} Beetle query string compatible expression.
              */
@@ -2030,7 +2030,7 @@
                 return source + this.beetleName + '(' + args.join(', ') + ')';
             };
 
-            /** 
+            /**
              * Function's javascript implementation.
              * @returns {string} Beetle query string compatible expression.
              */
@@ -2040,12 +2040,12 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Base of all queries.
          * @class
          */
         QueryBase: (function () {
-            /** 
+            /**
              * Query base class. Contains common query methods.
              * @constructor
              */
@@ -2430,7 +2430,7 @@
                 throw helper.createError(i18N.notImplemented, ['Query', 'clone']);
             };
 
-            /** 
+            /**
              * Copies properties to given query.
              * @param {QueryBase} query - The query to populate. Must be a subclass of QueryBase.
              */
@@ -2502,7 +2502,7 @@
             proto.toObservable = function (object, type, callbacks) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'toObservable']);
             };
-            /** 
+            /**
              * Reads an observable property value from object.
              * @param {Object} object - The object.
              * @param {string} property - The property name.
@@ -2510,7 +2510,7 @@
             proto.getValue = function (object, property) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'getValue']);
             };
-            /** 
+            /**
              * Sets the value of observable property of given object.
              * @param {Object} object - The object.
              * @param {string} property - The property name.
@@ -2555,7 +2555,7 @@
                 throw helper.createError(i18N.notImplemented, [this.name, 'doAjax']);
             };
 
-            /** 
+            /**
              * Creates an error object by parsing XHR result.
              * @param {XMLHttpRequest} xhr - XML Http Request object. Can be used from implementors using Xhr.
              */
@@ -2594,7 +2594,7 @@
             /**
              * Serializes given data to string.
              * @param {Object} data - Object to serialize.
-             * @returns {string} Serialized string. 
+             * @returns {string} Serialized string.
              */
             proto.serialize = function (data) {
                 throw helper.createError(i18N.notImplemented, [this.name, 'serialize']);
@@ -2626,7 +2626,7 @@
 
             /**
              * Creates deferred object.
-             * @returns {Object} Deferred object which can be resolved or rejected. 
+             * @returns {Object} Deferred object which can be resolved or rejected.
              */
             proto.deferred = function () {
                 throw helper.createError(i18N.notImplemented, [this.name, 'deferred']);
@@ -2751,7 +2751,7 @@
              * Creates an entity based on metadata information.
              * @param {string} shortName - Short name of the type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.createEntity = function (shortName, initialValues) {
                 if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
@@ -2762,7 +2762,7 @@
              * Creates a raw entity based on metadata information.
              * @param {string} shortName - Short name of the type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity without observable properties. 
+             * @returns {Entity} Entity without observable properties.
              */
             proto.createRawEntity = function (shortName, initialValues) {
                 if (!this.metadataManager) throw helper.createError(i18N.noMetadataEntityQuery, { dataService: this });
@@ -2773,7 +2773,7 @@
              * Creates an entity based on metadata information.
              * @param {Object} result - Entity initial object. This object instance will be made observable.
              * @param {string} typeName - Entity type name (full).
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.toEntity = function (result, typeName) {
                 var type = null;
@@ -2836,7 +2836,7 @@
 
                 return params;
             };
-            
+
             /**
              * Fetch metadata from server.
              * @param {Object} options - Fetch metadata options (async: boolean).
@@ -2859,7 +2859,7 @@
             };
             /**
              * Executes given query.
-             * @param {EntityQuery} query 
+             * @param {EntityQuery} query
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
@@ -2979,7 +2979,7 @@
      * @namespace
      */
     var impls = {
-        /** 
+        /**
          * Default date converter class. Uses browser's default Date object.
          * @class
          */
@@ -3010,7 +3010,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Knockout observable provider class. Makes given object's properties observable.
          * @class
          */
@@ -3021,7 +3021,7 @@
                 this.ko = ko;
 
                 /**
-                 * Observable value read-write interceptor. 
+                 * Observable value read-write interceptor.
                  * Because ko does not give old and new values together when notifying subscribers, I had to write this extender.
                  */
                 if (ko.extenders.intercept == null) {
@@ -3132,7 +3132,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Property observable provider class. Makes given object's fields properties with getter setter and tracks values.
          * @class
          */
@@ -3251,7 +3251,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * jQuery ajax provider class. Operates ajax operations via jQuery.
          * @class
          */
@@ -3304,7 +3304,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Angularjs ajax provider class. Operates ajax operations via angularjs.
          * @class
          */
@@ -3353,7 +3353,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Angular ajax provider class. Operates ajax operations via angular.
          * @class
          */
@@ -3553,7 +3553,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * JSON serialization class. Deserializes incoming data and serializes outgoing data.
          * @class
          */
@@ -3576,7 +3576,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Q promise provider class.
          * @class
          */
@@ -3606,7 +3606,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * Angular.js promise provider.
          * @class
          */
@@ -3640,7 +3640,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * jQuery promise provider.
          * @class
          */
@@ -3670,7 +3670,7 @@
 
             return ctor;
         })(),
-        /** 
+        /**
          * ES6 promise provider.
          * @class
          */
@@ -3711,7 +3711,7 @@
         })()
     };
 
-    /** 
+    /**
      * Metadata types.
      * @namespace
      */
@@ -3808,7 +3808,7 @@
                 this.validators.push(new core.Validator(name, func, message, args));
             };
 
-            /** 
+            /**
              * Validates property for provided entity.
              * @param {Entity} entity - Beetle entity. Will be used in validation messages (otherwise we could have used only value).
              * @returns {ValidationError[]} Validation result array. Empty when property is valid.
@@ -3887,7 +3887,7 @@
                 this.validators.push(new core.Validator(name, func, message, args));
             };
 
-            /** 
+            /**
              * Validates property for provided entity.
              * @param {Entity} entity - Beetle entity. Will be used in validation messages (otherwise we could have used only value).
              * @returns {ValidationError[]} Validation result array. Empty when property is valid.
@@ -3994,7 +3994,7 @@
             /**
              * Creates an entity for this type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.createEntity = function (initialValues) {
                 var result = this.createRawEntity(initialValues);
@@ -4005,7 +4005,7 @@
             /**
              * Creates a raw entity for this type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity without observable properties. 
+             * @returns {Entity} Entity without observable properties.
              */
             proto.createRawEntity = function (initialValues) {
                 var result = initialValues || {};
@@ -4045,7 +4045,7 @@
                 return isAssignableTo(this, otherType);
             };
 
-            /** 
+            /**
              * Checks if this type and given type has common ancestor.
              * This method is used to check key violation between different types.
              */
@@ -4089,7 +4089,7 @@
                 this.validators.push(new core.Validator(name, func, message, args));
             };
 
-            /** 
+            /**
              * Validates type for provided entity.
              * @param {Entity} entity - Beetle entity. Will be used in validation messages (otherwise we could have used only value).
              * @returns {ValidationError[]} Validation result array. Empty when property is valid.
@@ -4235,7 +4235,7 @@
              * Creates an entity for this type.
              * @param {string} shortName - Short type name.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.createEntity = function (shortName, initialValues) {
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
@@ -4249,7 +4249,7 @@
              * Creates a raw entity for this type.
              * @param {string} shortName - Short type name.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity without observable properties. 
+             * @returns {Entity} Entity without observable properties.
              */
             proto.createRawEntity = function (shortName, initialValues) {
                 if (Assert.isFunction(shortName)) shortName = helper.getFuncName(shortName);
@@ -4395,7 +4395,7 @@
         })()
     };
 
-    /** 
+    /**
      * Querying related types.
      * @namespace
      */
@@ -4435,12 +4435,12 @@
             }
         })();
 
-        /** 
+        /**
          * Supported query expressions.
          * Each query call will be collected as expressions and will be evaluated later.
          */
         return {
-            /** 
+            /**
              * Linq like expressions to filter, order etc. arrays and server resources. Used by queries.
              * @namespace
              */
@@ -5241,7 +5241,7 @@
                     return ctor;
                 })()
             },
-            /** 
+            /**
              * Supported query functions. When a query has one of these in an expression, functions will be executed dynamically for local queries.
              * @namespace
              */
@@ -5919,7 +5919,7 @@
 
                 return expose;
             })(),
-            /** 
+            /**
              * Array query, executes against an array. Similar to Linq to Objects.
              * @example
              *  var array = [{name: 'Test', age: 15}, {name: 'Test2', age: 25}];
@@ -5980,7 +5980,7 @@
 
                     var d = pp.deferred();
                     var p = pp.getPromise(d);
-                    
+
                     try {
                         var result = this.execute();
                         setTimeout(function() { pp.resolve(d, result); });
@@ -5988,7 +5988,7 @@
                     catch (e) {
                         setTimeout(function(){ pp.reject(d, e); });
                     }
-                    
+
                     if (failCallback && p["fail"])
                         return p.then(callback).fail(failCallback);
                     return p.then(callback, failCallback);
@@ -5996,7 +5996,7 @@
 
                 return ctor;
             })(),
-            /** 
+            /**
              * Entity query, executes against a service. Similar to Linq to Entities.
              * @class
              */
@@ -6028,7 +6028,7 @@
                         params.push(prm.name + ': ' + (prm.value == null ? '' : prm.value));
                     });
                     retVal.push('parameters: (' + params.join(', ') + ')');
-    
+
                     retVal.push('resource: (' + this.resource + ')');
                     if (this.entityType)
                         retVal.push('entityType: (' + this.entityType.shortName + ')');
@@ -6082,7 +6082,7 @@
                 proto.asNoTrackingRaw = function () {
                     return this.withOptions({ merge: enums.mergeStrategy.NoTrackingRaw });
                 }
-                
+
                 /** Sets entity type for query (used when executing locally). */
                 proto.setEntityType = function (type) {
                     type = handleEntityType(type, this.manager);
@@ -6103,7 +6103,7 @@
                     return this.manager.executeQuery(this, options, successCallback, errorCallback);
                 };
 
-                /** 
+                /**
                  * Executes this query against related manager's local cache.
                  * @param {Object} varContext - Variable context for query.
                  * @returns {any[]}
@@ -6153,7 +6153,7 @@
         };
     })();
 
-    /** 
+    /**
      * Core types.
      * @namespace
      */
@@ -6779,7 +6779,7 @@
                     return expose.object;
                 return expose.binary;
             };
-            /** 
+            /**
              * Finds proper data type for given value and converts it to that type.
              * @example
              *  Json dates are strings, we use this method to auto-convert them to Javascript date.
@@ -7199,7 +7199,7 @@
                 return this.allEntities;
             };
 
-            /** 
+            /**
              * Finds entity with given key by searching entity type's entity set.
              * @param {string} key - The key.
              * @param {EntityType} type - Entity type object.
@@ -7252,7 +7252,7 @@
                 return this.allEntities.length;
             };
 
-            /** 
+            /**
              * Finds entity set for given type in the cache.
              * @param {EntityType} type - Entity type object.
              * @returns {EntitySet} Entity set if found, otherwise null.
@@ -7261,7 +7261,7 @@
                 return helper.findInArray(this.entitySets, type.name, 'typeName');
             };
 
-            /** 
+            /**
              * Search entity set for given type in the cache, creates if there isn't any.
              * @param {EntityType} type - Entity type object.
              * @returns {EntitySet} Found or newly created entity set.
@@ -7461,7 +7461,7 @@
                 this.changedValues.length = 0;
             };
 
-            /** 
+            /**
              * Gets internal value of the property from observable entity.
              * @param {string} property - Name of the property.
              */
@@ -7469,7 +7469,7 @@
                 return this.observableProvider.getValue(this.entity, property);
             };
 
-            /** 
+            /**
              * Sets internal value of the property of observable entity.
              * @param {string} property - Name of the property.
              * @param {any} value - Value to set.
@@ -7626,7 +7626,7 @@
                 return data;
             };
 
-            /** 
+            /**
              * Starts tracking the entity, this is a static method.
              * @param {Object} result - The raw result.
              * @param {EntityType} result - The entity type.
@@ -8147,7 +8147,7 @@
                 return p;
             };
 
-            /** 
+            /**
              * Gets entity type by its short name from data service.
              * @param {string} shortName - Entity type short name.
              * @returns {EntityType} Entity type object if found, otherwise null.
@@ -8190,7 +8190,7 @@
              * Creates an entity based on metadata information.
              * @param {string} shortName - Short name of the type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.createEntity = function (shortName, initialValues) {
                 var result = this.dataService.createEntity(shortName, initialValues);
@@ -8203,7 +8203,7 @@
              * Creates an entity based on metadata information but doesn't attach to manager.
              * @param {string} shortName - Short name of the type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.createDetachedEntity = function (shortName, initialValues) {
                 return this.dataService.createEntity(shortName, initialValues);
@@ -8213,7 +8213,7 @@
              * Creates a raw entity based on metadata information.
              * @param {string} shortName - Short name of the type.
              * @param {Object} initialValues - Entity initial values.
-             * @returns {Entity} Entity without observable properties. 
+             * @returns {Entity} Entity without observable properties.
              */
             proto.createRawEntity = function (shortName, initialValues) {
                 return this.dataService.createRawEntity(shortName, initialValues);
@@ -8320,7 +8320,7 @@
 
             /**
              * Executes given query.
-             * @param {EntityQuery} query 
+             * @param {EntityQuery} query
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
@@ -8442,7 +8442,7 @@
 
             /**
              * Executes given query against local cache.
-             * @param {EntityQuery} query 
+             * @param {EntityQuery} query
              * @param {Object|any[]} varContext - Variable context for the query.
              * @param {boolean} calculateInlineCountDiff - When true, effect of the local entities to server entities will be calculated.
              */
@@ -8491,7 +8491,7 @@
                 return array;
             };
 
-            /** 
+            /**
              * Finds entity with given key by searching entity type's entity set.
              * @param {string} key - Entity key as a string. When entity has more than one key, the key is keys joined with a ','.
              * @param {EntityType} type - Entity type or type short name.
@@ -8600,7 +8600,7 @@
                 });
             };
 
-            /** 
+            /**
              * Reject all changes made to this entity to initial values and detach from context if its newly added.
              * @param {Entity} entity - The entity.
              * @param {boolean} includeRelations - If set to true, rejectChanges will be called for all navigation properties too.
@@ -8621,7 +8621,7 @@
                 });
             };
 
-            /** 
+            /**
              * Resets all changes to last accepted values.
              * @param {Entity} entity - The entity.
              * @param {boolean} includeRelations - If set to true, undoChanges will be called for all navigation properties too.
@@ -8634,7 +8634,7 @@
                 });
             };
 
-            /** 
+            /**
              * Accept all changes made to this entity (clear changed values).
              * @param {Entity} entity - The entity.
              * @param {boolean} includeRelations - If set to true, acceptChanges will be called for all navigation properties too.
@@ -8685,7 +8685,7 @@
 
             /**
              * Exports entities from manager to raw list.
-             * @param {Entity[]=} entities - Entities to export. 
+             * @param {Entity[]=} entities - Entities to export.
              * @param {ExportOptions=} options - Export options.
              */
             proto.exportEntities = function (entities, options) {
@@ -8821,7 +8821,7 @@
                 return this.pendingChangeCount > 0;
             };
 
-            /** 
+            /**
              * Gets changes made in this manager's cache.
              * @returns {Entity[]}
              */
@@ -8961,7 +8961,7 @@
              * Creates an entity based on metadata information.
              * @param {Object} result - Entity initial object. This object instance will be made observable.
              * @param {string} typeName - Entity type name (full).
-             * @returns {Entity} Entity with observable properties. 
+             * @returns {Entity} Entity with observable properties.
              */
             proto.toEntity = function (result, typeName) {
                 return this.dataService.toEntity(result, typeName || result.$type);
@@ -9064,7 +9064,7 @@
                 return flatList;
             };
 
-            /** 
+            /**
              * Returns tracking info for given entity.
              * @param {Entity} entity - The entity.
              * @returns {EntityTracker} Entity tracking object.
@@ -9327,7 +9327,7 @@
                     setEntityState(ow.o, state);
                 });
                 // If an existing entity is found in cache, we don't add new entity to the cache, so we need to fix returning array.
-                // This could create strange behaviour when adding or attaching a single entity because even if we change given array, 
+                // This could create strange behaviour when adding or attaching a single entity because even if we change given array,
                 // developer still works with discarded entity. So we do not allow adding or attaching an existing entity (like most ORMs).
                 helper.forEach(toReplace, function (tr) {
                     var index = helper.indexOf(newEntities, tr.o);
@@ -9508,7 +9508,7 @@
                     });
             }
 
-            /** 
+            /**
              * Clears navigation properties of given entity.
              * @param {boolean} preserveFK - When true, we can keep beetle from emptying related foreign key properties.
              */
@@ -9639,7 +9639,7 @@
          * @param {EntityType} type - Entity type object.
          * @param {EntityManager=} manager - Entity manager.
          * @param {Object=} initialValues - Entity's initial values.
-         * @returns {Entity} 
+         * @returns {Entity}
          */
         EntityBase: function (type, manager, initialValues) {
             if (initialValues)
@@ -9652,7 +9652,7 @@
         }
     };
 
-    /** 
+    /**
      * Data service implementations like ODataService, BeetleService etc..
      * @namespace
      */
@@ -9750,7 +9750,7 @@
 
             /**
              * Executes given query.
-             * @param {EntityQuery} query 
+             * @param {EntityQuery} query
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
@@ -9795,7 +9795,7 @@
                         var converter = beetle.settings.getDateConverter();
                         value = converter.toISOString(date);
                     }
-                    
+
                     prmsArr.push(prm.name + "=" + (value != null ? encodeURIComponent(value) : ""));
                 });
 
@@ -9818,7 +9818,7 @@
                         bodyParameter = helper.extend(bodyParameter, bp);
                     }
                 }
-            
+
                 if (options.useBody && queryParams.length > 0) {
                     prmsArr.push("!beetle-use-body", queryParams.length);
                     bodyParameter = bodyParameter || {};
@@ -9831,7 +9831,7 @@
                         prmsArr.push(qp.name + "=" + encodeURIComponent(qp.value));
                     });
                 }
-                
+
                 var queryString = prmsArr.join("&");
                 uri += "?" + queryString;
                 var data = bodyParameter == null ? null : this.serializationService.serialize(bodyParameter);
@@ -10010,7 +10010,7 @@
             /**
              * Executes given query.
              * Try to use OData, but might fallback to beetle way.
-             * @param {EntityQuery} query 
+             * @param {EntityQuery} query
              * @param {QueryOptions} options - Query options.
              * @param {Function} successCallback - Function to call after operation succeeded.
              * @param {Function} errorCallback - Function to call when operation fails.
@@ -10042,7 +10042,7 @@
         return expose;
     })();
 
-    /** 
+    /**
      * Beetle enums.
      * @namespace
      */
@@ -10152,7 +10152,7 @@
         serviceTypes: new libs.Enum('OData', 'Beetle')
     };
 
-    /** 
+    /**
      * Manager independent static events.
      * @namespace
      */
@@ -10173,7 +10173,7 @@
         error: new core.Event('beetleError', this)
     };
 
-    /** 
+    /**
      * Beetle settings.
      * @namespace
      */
@@ -10245,14 +10245,14 @@
         expose.cacheMetadata = true;
         /** when true, metadata entities will be registered as classes to manager (tracked entity) and global scope (detached entity). Also, enums will be registered to global scope. */
         expose.registerMetadataTypes = false;
-        /** 
-         * when not equals to false all Ajax calls will be made asynchronously, 
+        /**
+         * when not equals to false all Ajax calls will be made asynchronously,
          * when false createEntityAsync, executeQuery, saveChanges will returns results immediately (when supported).
          */
         expose.workAsync = true;
         /** default timeout for AJAX calls. this value is used when not given with options argument. */
         expose.ajaxTimeout = null;
-        /** 
+        /**
          * when true, while creating save package, for modified only changed and key properties, for deleted only key properties will be used.
          * entities will be created with only sent properties filled, other properties will have default values, please use carefully.
          */
@@ -10262,7 +10262,7 @@
         /** when true, throws error when a not nullable property set with null. */
         expose.checkNulls = false;
 
-        /** 
+        /**
          * Gets default observable provider instance.
          * @returns {baseTypes.ObservableProviderBase} Current observable provider instance.
          */
@@ -10270,7 +10270,7 @@
             return _observableProvider;
         };
 
-        /** 
+        /**
          * Sets default observable provider instance. Will be used when another instance is not injected.
          * @param {ObservableProviderBase} provider - Observable provider instance.
          */
@@ -10278,7 +10278,7 @@
             _observableProvider = getValue(provider, baseTypes.ObservableProviderBase);
         };
 
-        /** 
+        /**
          * Gets default promise provider instance.
          * @returns {baseTypes.PromiseProviderBase} Current promise provider instance.
          */
@@ -10286,7 +10286,7 @@
             return _promiseProvider;
         };
 
-        /** 
+        /**
          * Sets default promise provider instance. Will be used when another instance is not injected.
          * @param {PromiseProviderBase} provider - Promise provider instance.
          */
@@ -10294,7 +10294,7 @@
             _promiseProvider = provider != null ? getValue(provider, baseTypes.PromiseProviderBase) : null;
         };
 
-        /** 
+        /**
          * Gets default ajax provider instance.
          * @returns {baseTypes.AjaxProviderBase} Current ajax provider instance.
          */
@@ -10302,7 +10302,7 @@
             return _ajaxProvider;
         };
 
-        /** 
+        /**
          * Sets default ajax provider instance. Will be used when another instance is not injected.
          * @param {AjaxProviderBase} provider - Ajax provider instance.
          */
@@ -10310,7 +10310,7 @@
             _ajaxProvider = getValue(provider, baseTypes.AjaxProviderBase);
         };
 
-        /** 
+        /**
          * Gets default serialization service instance.
          * @returns {baseTypes.SerializationServiceBase} Current serialization service instance.
          */
@@ -10326,7 +10326,7 @@
             _serializationService = getValue(service, baseTypes.SerializationServiceBase);
         };
 
-        /** 
+        /**
          * Gets array set behaviour.
          * @returns {enums.arraySetBehaviour} Current array set behaviour enum value.
          */
@@ -10343,7 +10343,7 @@
             _arraySetBehaviour = getValue(behaviour, null, enums.arraySetBehaviour);
         };
 
-        /** 
+        /**
          * Gets default service type.
          * @returns {enums.serviceTypes} Current service type enum value.
          */
@@ -10502,8 +10502,8 @@
 
     /** Export types */
     return {
-        version: '3.0.3',
-        /** 
+        version: '3.0.5',
+        /**
          * Register localization
          * @param {string} code - Language code.
          * @param {Object} i18n - Localization object.
@@ -10513,7 +10513,7 @@
             i18Ns[code] = i18n;
             if (active) i18N = i18n;
         },
-        /** 
+        /**
          * Change current localization. Code must be registered before.
          * @param {string} code - Language code.
          */
