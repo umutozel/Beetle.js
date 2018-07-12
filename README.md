@@ -5,7 +5,7 @@ Beetle.js
 [![NuGet Badge](https://buildstats.info/nuget/Beetle.Server)](https://www.nuget.org/packages/Beetle.Server/)
 [![npm version](https://badge.fury.io/js/beetle.js.svg)](https://badge.fury.io/js/beetle.js)
 <a href="https://snyk.io/test/npm/beetle.js"><img src="https://snyk.io/test/npm/beetle.js/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/beetle.js" style="max-width:100%;"></a>
-[![Join the chat at https://gitter.im/umutozel/Beetle.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/umutozel/Beetle.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/umutozel/Beetle.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/umutozel/Beetle.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Greenkeeper badge](https://badges.greenkeeper.io/umutozel/Beetle.js.svg)](https://greenkeeper.io/)
 
 Beetle is a data manager for Javascript.
 The goal is to be able to work with data as easy as Entity Framework and LINQ.
