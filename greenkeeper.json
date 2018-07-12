@@ -1,0 +1,10 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "src/beetle-query-extensions/package.json",
+        "src/beetle/package.json"
+      ]
+    }
+  }
+}
