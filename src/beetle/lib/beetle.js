@@ -5259,7 +5259,7 @@
 
                     proto.impl = function (value, source) {
                         var v = source ? source(value) : value;
-                        return v ? v.toUpperCase() : v;
+                        return v ? v.replace(/ı/g, 'I').toLocaleUpperCase(navigator.language) : v;
                     };
 
                     return new ctor();
@@ -5275,7 +5275,7 @@
 
                     proto.impl = function (value, source) {
                         var v = source ? source(value) : value;
-                        return v ? v.toLowerCase() : v;
+                        return v ? v.replace(/İ/g, 'i').toLocaleLowerCase(navigator.language) : v;
                     };
 
                     return new ctor();
