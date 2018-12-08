@@ -116,4 +116,4 @@ toupper, tolower, substring, substringof, length, trim, concat, replace, startsw
 ## License
 See [License](https://github.com/umutozel/Beetle.js/blob/master/LICENSE)
 
-<img src="jetbrains.png" alt="drawing" width="150"/> Thanks to [JetBrains](http://www.jetbrains.com/) for providing me with free licenses to their great tools.
+<a href="https://www.jetbrains.com/"><img src="jetbrains.png" alt="drawing" width="150"/></a> Thanks to [JetBrains](https://www.jetbrains.com/) for providing me with free licenses to their great tools.
