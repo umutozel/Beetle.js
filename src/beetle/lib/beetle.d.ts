@@ -1211,7 +1211,7 @@ declare module beetle {
             /** Gets entity type from metadata by its short name. */
             getEntityType(shortName: string): interfaces.EntityType;
             /** Gets entity type from metadata by its short name. */
-            getEntityType<T extends IEntity>(constructor: new () => T): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: string | (new () => T)): interfaces.EntityType;
             /** Creates a query for a resource. Every data service can have their own query types. */
             createQuery<T extends IEntity>(resourceName: string, type?: string | (new () => T), manager?: core.EntityManager): querying.EntityQuery<T>;
             /** Creates a query for a resource. Every data service can have their own query types. */
@@ -1373,7 +1373,7 @@ declare module beetle {
              * @param throwIfNotFound Throws an error if given type name could not be found in cache.
              */
             getEntityType(shortName: string, throwIfNotFound?: boolean): interfaces.EntityType;
-            getEntityType<T extends IEntity>(constructor: new () => T, throwIfNotFound?: boolean): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: string | (new () => T), throwIfNotFound?: boolean): interfaces.EntityType;
             /**
              * Register constructor and initializer (optional) for the type.
              * @param shortName Short type name.
@@ -1388,7 +1388,7 @@ declare module beetle {
              * @returns Entity with observable properties. 
              */
             createEntity(shortName: string, initialValues?: Object): IEntity;
-            createEntity<T extends IEntity>(constructor: new () => T, initialValues?: Object): T;
+            createEntity<T extends IEntity>(constructor: string | (new () => T), initialValues?: Object): T;
             /**
              * Creates a raw entity for this type.
              * @param shortName Short type name.
@@ -1396,7 +1396,7 @@ declare module beetle {
              * @returns Entity without observable properties. 
              */
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
-            createRawEntity<T extends IEntity>(constructor: new () => T, initialValues?: Object): interfaces.RawEntity;
+            createRawEntity<T extends IEntity>(constructor: string | (new () => T), initialValues?: Object): interfaces.RawEntity;
             /**
              * Imports metadata from given parameter.
              * @param metadataPrm [Metadata Object] or [Metadata string]
@@ -1620,7 +1620,7 @@ declare module beetle {
             private inlineCountEnabled: boolean;
 
             /** Sets entity type for query (used when executing locally). */
-            setEntityType(type: new() => T | string): EntityQuery<T>;
+            setEntityType(type: string | (new () => T)): EntityQuery<T>;
             /**
              * Indicates wheter or not include total count in result.
              * @param isEnabled When true, total count will be included in result. Default value: true.
@@ -1964,7 +1964,7 @@ declare module beetle {
             /** Gets entity type by its short name from data service. */
             getEntityType(shortName: string): interfaces.EntityType;
             /** Gets entity type by its short name from data service. */
-            getEntityType<T extends IEntity>(constructor: new () => T): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: string | (new () => T)): interfaces.EntityType;
             /**
              * Creates a query for a resource. Every data service can have their own query types.
              * @param resourceName Server resource name to combine with base uri.
@@ -1976,7 +1976,7 @@ declare module beetle {
              * @param resourceName Server resource name to combine with base uri.
              * @param type Type constructor. Beetle can get the name from this function.
              */
-            createQuery<T extends IEntity>(resourceName: string, type?: new () => T): querying.EntityQuery<T>;
+            createQuery<T extends IEntity>(resourceName: string, type?: string | (new () => T)): querying.EntityQuery<T>;
             /**
              * Creates a query for a resource. Every data service can have their own query types.
              * @param resourceName Server resource name to combine with base uri.
@@ -1988,7 +1988,7 @@ declare module beetle {
              * @param type Type constructor. Beetle can get the name from this function.
              * @param resourceName Server resource name to combine with base uri.
              */
-            createEntityQuery<T extends IEntity>(type: (new () => T), resourceName?: string): querying.EntityQuery<T>;
+            createEntityQuery<T extends IEntity>(type: string | (new () => T), resourceName?: string): querying.EntityQuery<T>;
             /**
              * Creates a query for a resource. Every data service can have their own query types.
              * @param shortName Entity type's short name.
@@ -2089,7 +2089,7 @@ declare module beetle {
             createSet<T extends IEntity>(type: string | interfaces.EntityType | (new () => T)): EntitySet<T>;
             createSet(type: interfaces.EntityType): EntitySet<IEntity>;
             /* Finds entity set for given type name. */
-            set<T extends IEntity>(constructor: new () => T): EntitySet<T>;
+            set<T extends IEntity>(constructor: string | (new () => T)): EntitySet<T>;
             set(shortName: string): EntitySet<IEntity>;
             /** Clears local cache, validation errors and resets change counter to 0.*/
             clear();
