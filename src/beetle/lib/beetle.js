@@ -9800,7 +9800,7 @@
 
                     if (value instanceof Date) {
                         var converter = settings.getDateConverter();
-                        value = converter.toISOString(date);
+                        value = converter.toISOString(value);
                     }
 
                     prmsArr.push(prm.name + "=" + (value != null ? encodeURIComponent(value) : ""));
