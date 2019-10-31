@@ -316,7 +316,7 @@ declare module beetle {
              * If model has inheritance, when querying base type we can tell which derived type we want to load.
              * @param type Derived type name.
              */
-            ofType<TResult extends T>(type: string | (new () => TResult)): Query<TResult>;
+            ofType<TResult extends T>(type: string | (new (...args: any[]) => TResult)): Query<TResult>;
             /**
              * Filter query based on given expression.
              * @param predicate A function to test each element for a condition (can be string expression).
@@ -1211,20 +1211,20 @@ declare module beetle {
             /** Gets entity type from metadata by its short name. */
             getEntityType(shortName: string): interfaces.EntityType;
             /** Gets entity type from metadata by its short name. */
-            getEntityType<T extends IEntity>(constructor: string | (new () => T)): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: string | (new (...args: any[]) => T)): interfaces.EntityType;
             /** Creates a query for a resource. Every data service can have their own query types. */
-            createQuery<T extends IEntity>(resourceName: string, type?: string | (new () => T), manager?: core.EntityManager): querying.EntityQuery<T>;
+            createQuery<T extends IEntity>(resourceName: string, type?: string | (new (...args: any[]) => T), manager?: core.EntityManager): querying.EntityQuery<T>;
             /** Creates a query for a resource. Every data service can have their own query types. */
             createQuery(resourceName: string, shortName?: string, manager?: core.EntityManager): querying.EntityQuery<any>;
             /** Creates a query for a resource. Every data service can have their own query types. */
-            createEntityQuery<T extends IEntity>(type: string | (new () => T), resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
+            createEntityQuery<T extends IEntity>(type: string | (new (...args: any[]) => T), resourceName?: string, manager?: core.EntityManager): querying.EntityQuery<T>;
             /**
              * Register constructor and initializer (optional) for given type.
              * @param shortName Short name of the type.
              * @param constructor Constructor function. Called right after the entity object is generated.
              * @param initializer Initializer function. Called after entity started to being tracked (properties converted to observable).
              */
-            registerCtor<T extends IEntity>(type: string | (new () => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
+            registerCtor<T extends IEntity>(type: string | (new (...args: any[]) => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
 
             /**
              * Fetch metadata from server.
@@ -1241,7 +1241,7 @@ declare module beetle {
              * @param successCallback Function to call after operation succeeded.
              * @param errorCallback Function to call when operation fails.
              */
-            createEntityAsync<T extends IEntity>(type: string | (new () => T), initialValues: Object, options: ServiceQueryOptions,
+            createEntityAsync<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues: Object, options: ServiceQueryOptions,
                 successCallback: (entity: T) => void, errorCallback: (e: AjaxError) => void);
             /**
              * When there is no metadata available services may be able to create entities asynchronously (server side must be able to support this).
@@ -1373,14 +1373,14 @@ declare module beetle {
              * @param throwIfNotFound Throws an error if given type name could not be found in cache.
              */
             getEntityType(shortName: string, throwIfNotFound?: boolean): interfaces.EntityType;
-            getEntityType<T extends IEntity>(constructor: string | (new () => T), throwIfNotFound?: boolean): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: string | (new (...args: any[]) => T), throwIfNotFound?: boolean): interfaces.EntityType;
             /**
              * Register constructor and initializer (optional) for the type.
              * @param shortName Short type name.
              * @param constructor Constructor function. Called right after the entity object is generated.
              * @param initializer Initializer function. Called after entity started to being tracked (properties converted to observable).
              */
-            registerCtor<T extends IEntity>(type: string | (new () => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
+            registerCtor<T extends IEntity>(type: string | (new (...args: any[]) => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
             /**
              * Creates an entity for the type.
              * @param shortName Short type name.
@@ -1388,7 +1388,7 @@ declare module beetle {
              * @returns Entity with observable properties. 
              */
             createEntity(shortName: string, initialValues?: Object): IEntity;
-            createEntity<T extends IEntity>(constructor: string | (new () => T), initialValues?: Object): T;
+            createEntity<T extends IEntity>(constructor: string | (new (...args: any[]) => T), initialValues?: Object): T;
             /**
              * Creates a raw entity for this type.
              * @param shortName Short type name.
@@ -1396,7 +1396,7 @@ declare module beetle {
              * @returns Entity without observable properties. 
              */
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
-            createRawEntity<T extends IEntity>(constructor: string | (new () => T), initialValues?: Object): interfaces.RawEntity;
+            createRawEntity<T extends IEntity>(constructor: string | (new (...args: any[]) => T), initialValues?: Object): interfaces.RawEntity;
             /**
              * Imports metadata from given parameter.
              * @param metadataPrm [Metadata Object] or [Metadata string]
@@ -1434,7 +1434,7 @@ declare module beetle {
              * If model has inheritance, when querying base type we can tell which derived type we want to load.
              * @param type Derived type name.
              */
-            ofType<TResult extends T>(type: string | (new () => TResult)): beetle.querying.ArrayQuery<TResult>;
+            ofType<TResult extends T>(type: string | (new (...args: any[]) => TResult)): beetle.querying.ArrayQuery<TResult>;
             /**
              * Filter query based on given expression.
              * @param predicate A function to test each element for a condition (can be string expression).
@@ -1620,7 +1620,7 @@ declare module beetle {
             private inlineCountEnabled: boolean;
 
             /** Sets entity type for query (used when executing locally). */
-            setEntityType(type: string | (new () => T)): EntityQuery<T>;
+            setEntityType(type: string | (new (...args: any[]) => T)): EntityQuery<T>;
             /**
              * Indicates wheter or not include total count in result.
              * @param isEnabled When true, total count will be included in result. Default value: true.
@@ -1630,7 +1630,7 @@ declare module beetle {
              * If model has inheritance, when querying base type we can tell which derived type we want to load.
              * @param type Derived type name.
              */
-            ofType<TResult extends T>(type: string | (new () => TResult)): EntityQuery<TResult>;
+            ofType<TResult extends T>(type: string | (new (...args: any[]) => TResult)): EntityQuery<TResult>;
             /**
              * Filter query based on given expression.
              * @param predicate A function to test each element for a condition (can be string expression).
@@ -1964,7 +1964,7 @@ declare module beetle {
             /** Gets entity type by its short name from data service. */
             getEntityType(shortName: string): interfaces.EntityType;
             /** Gets entity type by its short name from data service. */
-            getEntityType<T extends IEntity>(constructor: string | (new () => T)): interfaces.EntityType;
+            getEntityType<T extends IEntity>(constructor: string | (new (...args: any[]) => T)): interfaces.EntityType;
             /**
              * Creates a query for a resource. Every data service can have their own query types.
              * @param resourceName Server resource name to combine with base uri.
@@ -1976,7 +1976,7 @@ declare module beetle {
              * @param resourceName Server resource name to combine with base uri.
              * @param type Type constructor. Beetle can get the name from this function.
              */
-            createQuery<T extends IEntity>(resourceName: string, type?: string | (new () => T)): querying.EntityQuery<T>;
+            createQuery<T extends IEntity>(resourceName: string, type?: string | (new (...args: any[]) => T)): querying.EntityQuery<T>;
             /**
              * Creates a query for a resource. Every data service can have their own query types.
              * @param resourceName Server resource name to combine with base uri.
@@ -1988,7 +1988,7 @@ declare module beetle {
              * @param type Type constructor. Beetle can get the name from this function.
              * @param resourceName Server resource name to combine with base uri.
              */
-            createEntityQuery<T extends IEntity>(type: string | (new () => T), resourceName?: string): querying.EntityQuery<T>;
+            createEntityQuery<T extends IEntity>(type: string | (new (...args: any[]) => T), resourceName?: string): querying.EntityQuery<T>;
             /**
              * Creates a query for a resource. Every data service can have their own query types.
              * @param shortName Entity type's short name.
@@ -2000,28 +2000,28 @@ declare module beetle {
              * @param constructor Constructor function. Called right after the entity object is generated.
              * @param initializer Initializer function. Called after entity started to being tracked (properties converted to observable).
              */
-            registerCtor<T extends IEntity>(type: string | (new () => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
+            registerCtor<T extends IEntity>(type: string | (new (...args: any[]) => T), ctor?: (rawEntity: interfaces.RawEntity) => void, initializer?: (entity: T) => void);
             /** Creates an entity for the type and starts tracking by adding to cache with 'Added' state. */
-            createEntity<T extends IEntity>(type: string | (new () => T), initialValues?: Object): T;
+            createEntity<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues?: Object): T;
             createEntity(shortName: string, initialValues?: Object): IEntity;
             /** Creates an entity based on metadata information but doesn't attach to manager. */
-            createDetachedEntity<T extends IEntity>(type: string | (new () => T), initialValues?: Object): T;
+            createDetachedEntity<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues?: Object): T;
             createDetachedEntity(shortName: string, initialValues?: Object): IEntity;
             /** Creates a raw entity for this type. */
             createRawEntity(shortName: string, initialValues?: Object): interfaces.RawEntity;
-            createRawEntity<T extends IEntity>(type: string | (new () => T), initialValues?: Object): interfaces.RawEntity;
+            createRawEntity<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues?: Object): interfaces.RawEntity;
             /* When there is no metadata available services may be able to create entities asynchronously (server side must be able to support this). */
-            createEntityAsync<T extends IEntity>(type: string | (new () => T), initialValues?: Object, options?: ManagerQueryOptions,
+            createEntityAsync<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: (entity: T) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<T>;
             createEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: (entity: IEntity) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<IEntity>;
             /** Creates an entity asynchronously but doesn't attach to manager. */
-            createDetachedEntityAsync<T extends IEntity>(type: string | (new () => T), initialValues?: Object, options?: ManagerQueryOptions,
+            createDetachedEntityAsync<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: (entity: T) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<T>;
             createDetachedEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: (entity: IEntity) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<IEntity>;
             /** Creates an entity asynchronously without converting it to observable. */
-            createRawEntityAsync<T extends IEntity>(type: string | (new () => T), initialValues?: Object, options?: ManagerQueryOptions,
+            createRawEntityAsync<T extends IEntity>(type: string | (new (...args: any[]) => T), initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: (rawEntity: interfaces.RawEntity) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<interfaces.RawEntity>;
             createRawEntityAsync(typeName: string, initialValues?: Object, options?: ManagerQueryOptions,
                 successCallback?: (rawEntity: interfaces.RawEntity) => void, errorCallback?: (e: AjaxError) => void): AjaxCall<interfaces.RawEntity>;
@@ -2033,7 +2033,7 @@ declare module beetle {
             executeQueryLocally<T>(query: querying.EntityQuery<T>, varContext?: any): T[];
             executeQueryLocally<T>(query: interfaces.ClosedQueryable<T, any>, varContext?: any): T;
             /* Finds entity with given key by searching entity type's entity set. */
-            getEntityByKey<T extends IEntity>(key: any, type: string | interfaces.EntityType | (new () => T)): T;
+            getEntityByKey<T extends IEntity>(key: any, type: string | interfaces.EntityType | (new (...args: any[]) => T)): T;
             /** Marks entity as deleted and clear all navigations. */
             deleteEntity(entity: IEntity);
             /* Adds given entity to manager's entity container. State will be 'Added'. */
@@ -2086,10 +2086,10 @@ declare module beetle {
             /* Returns tracking info for given entity. */
             entry(entity: IEntity): interfaces.Tracker;
             /* Creates entity set for given type. */
-            createSet<T extends IEntity>(type: string | interfaces.EntityType | (new () => T)): EntitySet<T>;
+            createSet<T extends IEntity>(type: string | interfaces.EntityType | (new (...args: any[]) => T)): EntitySet<T>;
             createSet(type: interfaces.EntityType): EntitySet<IEntity>;
             /* Finds entity set for given type name. */
-            set<T extends IEntity>(constructor: string | (new () => T)): EntitySet<T>;
+            set<T extends IEntity>(constructor: string | (new (...args: any[]) => T)): EntitySet<T>;
             set(shortName: string): EntitySet<IEntity>;
             /** Clears local cache, validation errors and resets change counter to 0.*/
             clear();

@@ -2915,7 +2915,7 @@
                 // If metadata parameter is false or undefined, it means do not use metadata
                 if (metadataPrm !== false || metadataPrm === undefined) {
                     // When there is no metadata or metadata is true fetch metadata from server.
-                    if (metadataPrm == null) {
+                    if (!metadataPrm || metadataPrm === true) {
                         // try to get metadata from cache
                         var cached = null;
                         if (settings.cacheMetadata === true)
@@ -9799,7 +9799,7 @@
                     var value = Assert.isFunction(prm.value) ? prm.value() : prm.value;
 
                     if (value instanceof Date) {
-                        var converter = beetle.settings.getDateConverter();
+                        var converter = settings.getDateConverter();
                         value = converter.toISOString(date);
                     }
 
@@ -10416,7 +10416,7 @@
                         }
                     }
                 }
-                if (Assert.isEnum(value, typeEnum)) return value.instance;
+                if (Assert.isEnum(value, typeEnum)) return value;
             }
             throw helper.createError(i18N.invalidArguments, null, { args: arguments });
         }
